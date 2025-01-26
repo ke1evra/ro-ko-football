@@ -1,5 +1,5 @@
 import { GlobalConfig } from 'payload'
-import { HeroConfig } from '@/blocks/Hero'
+import { HeroConfig } from '@/blocks/HeroBlock'
 
 export const Home: GlobalConfig = {
   slug: 'home',
