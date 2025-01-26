@@ -1,4 +1,5 @@
 import { Section, Container, Craft } from '@/components/craft'
+import { Button } from '@/components/ui/button'
 import type { Block } from 'payload'
 import type { HeroBlock as HeroBlockProps } from '@/payload-types'
 
@@ -45,9 +46,9 @@ export const HeroBlock = (props: HeroBlockProps) => {
   return (
     <Section>
       <Container className="space-y-6 md:space-y-12">
-        <button className="button">
+        <Button variant="outline" size="sm">
           <a href={props.button.link}>{props.button.text}</a>
-        </button>
+        </Button>
         <Craft className="space-y-3">
           <h1>{props.title}</h1>
           <h3 className="text-muted-foreground">{props.subtitle}</h3>
