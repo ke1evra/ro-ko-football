@@ -45,7 +45,7 @@ export const HeroBlock = (props: HeroBlockProps) => {
   return (
     <Section>
       <Container className="space-y-6 md:space-y-12">
-        <button>
+        <button className="button">
           <a href={props.button.link}>{props.button.text}</a>
         </button>
         <Craft className="space-y-3">
