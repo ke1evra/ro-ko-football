@@ -8,8 +8,12 @@ import { fileURLToPath } from 'url'
 import { s3Storage } from '@payloadcms/storage-s3'
 import sharp from 'sharp'
 
+// Collections
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+
+// Globals
+import { Home } from './globals/Home'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -22,6 +26,7 @@ export default buildConfig({
     },
   },
   collections: [Users, Media],
+  globals: [Home],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
