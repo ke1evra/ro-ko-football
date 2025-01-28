@@ -1,8 +1,5 @@
-# blank
+# Payload SaaS Starter
 
-blank
+Open Source SaaS starter for creating applications with Next.js and Payload
 
-## Attributes
-
-- **Database**: mongodb
-- **Storage Adapter**: localDisk
+🏗️ Currently under construction
