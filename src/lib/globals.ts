@@ -3,7 +3,7 @@ import { cache } from 'react'
 
 import configPromise from '@payload-config'
 
-export const getGlobal = cache(async ({ slug }: { slug: any }) => {
+export const getGlobal = cache(async ({ slug }: { slug: 'home' }) => {
   const payload = await getPayload({ config: configPromise })
 
   const result = await payload.findGlobal({
