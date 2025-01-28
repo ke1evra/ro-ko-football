@@ -32,6 +32,7 @@ export const Users: CollectionConfig = {
     {
       name: 'username',
       type: 'text',
+      required: true,
       unique: true,
     },
   ],

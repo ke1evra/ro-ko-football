@@ -15,6 +15,12 @@ type LoginParams = {
   password: string
 }
 
+type RegisterParams = {
+  email: string
+  password: string
+  username: string
+}
+
 export type LoginResponse = {
   success: boolean
   error?: string
@@ -74,7 +80,11 @@ export async function logoutUser() {
   redirect('/')
 }
 
-export async function registerUser({ email, password }: LoginParams): Promise<RegisterResponse> {
+export async function registerUser({
+  email,
+  password,
+  username,
+}: RegisterParams): Promise<RegisterResponse> {
   const payload = await getPayload({ config })
 
   try {
@@ -83,6 +93,7 @@ export async function registerUser({ email, password }: LoginParams): Promise<Re
       data: {
         email,
         password,
+        username,
         role: 'user',
       },
     })
