@@ -1,7 +1,8 @@
 import '@/globals.css'
 
-import { Metadata } from 'next'
 import { Geist as FontSans } from 'next/font/google'
+
+import type { Metadata } from 'next'
 
 const fontSans = FontSans({
   subsets: ['latin'],

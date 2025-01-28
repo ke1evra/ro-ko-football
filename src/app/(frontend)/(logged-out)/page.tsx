@@ -1,6 +1,7 @@
 import { getGlobal } from '@/lib/globals'
-import { Home } from '@/payload-types'
 import { RenderBlocks } from '@/components/render-blocks'
+
+import type { Home } from '@/payload-types'
 
 export default async function Index() {
   const global: Home = await getGlobal({ slug: 'home' })
