@@ -234,15 +234,8 @@ export const Container = ({ children, className, id, style }: BaseProps) => (
   </div>
 )
 
-export const Article = ({
-  children,
-  className,
-  id,
-  dangerouslySetInnerHTML,
-  style,
-}: BaseProps & HTMLProps) => (
+export const Article = ({ children, className, id, style }: BaseProps & HTMLProps) => (
   <article
-    dangerouslySetInnerHTML={dangerouslySetInnerHTML}
     className={cn(articleTypographyStyles, styles.layout.spacing, styles.layout.article, className)}
     id={id}
     style={style}
@@ -258,12 +251,7 @@ export const Prose = ({
   dangerouslySetInnerHTML,
   style,
 }: BaseProps & HTMLProps) => (
-  <div
-    dangerouslySetInnerHTML={dangerouslySetInnerHTML}
-    className={cn(baseTypographyStyles, styles.layout.spacing, className)}
-    id={id}
-    style={style}
-  >
+  <div className={cn(baseTypographyStyles, styles.layout.spacing, className)} id={id} style={style}>
     {children}
   </div>
 )
