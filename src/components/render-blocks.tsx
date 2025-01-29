@@ -18,7 +18,7 @@ export function RenderBlocks({ blocks }: { blocks: Home['blocks'] }) {
         const Block = blockType && blockType in blockComponents ? blockComponents[blockType] : null
 
         return Block ? (
-          <div className="my-16" key={index}>
+          <div key={block.id || index}>
             <Block {...block} />
           </div>
         ) : null
