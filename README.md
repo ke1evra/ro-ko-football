@@ -23,3 +23,4 @@ Open Source SaaS starter for creating applications with Next.js and Payload
 - [ ] Blog
 - [ ] polar.sh for payments
 - [x] S3 storage using R2
+- [ ] Add light and dark mode
