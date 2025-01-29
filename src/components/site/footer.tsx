@@ -1,7 +1,5 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import Balancer from 'react-wrap-balancer'
-import Logo from '@/public/logo.svg'
 
 import { Section, Container } from '../craft'
 
@@ -10,15 +8,8 @@ export default function Footer() {
     <footer className="border-t">
       <Section>
         <Container className="grid gap-6">
-          <div className="space-y-6">
-            <Link href="/" className="space-y-6">
-              <Image
-                src={Logo}
-                alt="Logo"
-                width={48}
-                height={39.09}
-                className="transition-all hover:opacity-75 invert dark:invert-0"
-              />
+          <div className="grid gap-6">
+            <Link href="/" className="space-y-6 text-lg">
               <h3>Payload SaaS Starter</h3>
             </Link>
             <p className="text-muted-foreground">
@@ -31,7 +22,7 @@ export default function Footer() {
               <Link href="/terms-of-service">Terms of Service</Link>
               <Link href="/cookie-policy">Cookie Policy</Link>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               © <a href="https://github.com/brijr">brijr</a>. All rights reserved. 2025-present.
             </p>
           </div>
