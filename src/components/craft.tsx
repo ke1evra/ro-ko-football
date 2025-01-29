@@ -244,13 +244,7 @@ export const Article = ({ children, className, id, style }: BaseProps & HTMLProp
   </article>
 )
 
-export const Prose = ({
-  children,
-  className,
-  id,
-  dangerouslySetInnerHTML,
-  style,
-}: BaseProps & HTMLProps) => (
+export const Prose = ({ children, className, id, style }: BaseProps) => (
   <div className={cn(baseTypographyStyles, styles.layout.spacing, className)} id={id} style={style}>
     {children}
   </div>
