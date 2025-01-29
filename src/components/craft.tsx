@@ -1,7 +1,6 @@
 // craft-ds, v0.3.3
 // This is a design system for building responsive layouts in React and handling prose
 
-import React from 'react'
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
