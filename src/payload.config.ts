@@ -1,19 +1,16 @@
-// storage-adapter-import-placeholder
-import { postgresAdapter } from '@payloadcms/db-postgres'
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import path from 'path'
-import { buildConfig } from 'payload'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 import { fileURLToPath } from 'url'
-import { s3Storage } from '@payloadcms/storage-s3'
-import sharp from 'sharp'
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { buildConfig } from 'payload'
+// import { s3Storage } from '@payloadcms/storage-s3'
 
-// Collections
+import sharp from 'sharp'
+import path from 'path'
+
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
-
-// Globals
-import { Home } from './globals/Home'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -26,7 +23,6 @@ export default buildConfig({
     },
   },
   collections: [Users, Media],
-  globals: [Home],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -40,20 +36,28 @@ export default buildConfig({
   sharp,
   plugins: [
     payloadCloudPlugin(),
-    s3Storage({
+    vercelBlobStorage({
+      enabled: true,
       collections: {
         media: true,
       },
-      bucket: process.env.R2_BUCKET || '',
-      config: {
-        endpoint: process.env.R2_ENDPOINT || '',
-        credentials: {
-          accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-          secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
-        },
-        region: 'auto',
-        forcePathStyle: true,
-      },
+      token: process.env.BLOB_READ_WRITE_TOKEN || '',
     }),
+
+    // s3Storage({
+    //   collections: {
+    //     media: true,
+    //   },
+    //   bucket: process.env.R2_BUCKET || '',
+    //   config: {
+    //     endpoint: process.env.R2_ENDPOINT || '',
+    //     credentials: {
+    //       accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+    //       secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+    //     },
+    //     region: 'auto',
+    //     forcePathStyle: true,
+    //   },
+    // }),
   ],
 })
