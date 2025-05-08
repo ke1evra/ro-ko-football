@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<!-- saved from url=(0027)http://localhost:3000/learn -->
+<html lang="en" class="light" style="color-scheme: light;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="./learn_files/layout.css" data-precedence="next_static/css/app/(frontend)/layout.css"><link rel="stylesheet" href="./learn_files/page.css" data-precedence="next_static/css/app/(frontend)/learn/page.css"><link rel="preload" as="script" fetchpriority="low" href="./learn_files/webpack.js"><script src="./learn_files/main-app.js" async=""></script><script src="./learn_files/app-pages-internals.js" async=""></script><script src="./learn_files/layout.js" async=""></script><script src="./learn_files/page.js" async=""></script><meta name="next-size-adjust" content=""><script src="./learn_files/polyfills.js" nomodule=""></script><style type="text/css">:where(html[dir="ltr"]),:where([data-sonner-toaster][dir="ltr"]){--toast-icon-margin-start: -3px;--toast-icon-margin-end: 4px;--toast-svg-margin-start: -1px;--toast-svg-margin-end: 0px;--toast-button-margin-start: auto;--toast-button-margin-end: 0;--toast-close-button-start: 0;--toast-close-button-end: unset;--toast-close-button-transform: translate(-35%, -35%)}:where(html[dir="rtl"]),:where([data-sonner-toaster][dir="rtl"]){--toast-icon-margin-start: 4px;--toast-icon-margin-end: -3px;--toast-svg-margin-start: 0px;--toast-svg-margin-end: -1px;--toast-button-margin-start: 0;--toast-button-margin-end: auto;--toast-close-button-start: unset;--toast-close-button-end: 0;--toast-close-button-transform: translate(35%, -35%)}:where([data-sonner-toaster]){position:fixed;width:var(--width);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;--gray1: hsl(0, 0%, 99%);--gray2: hsl(0, 0%, 97.3%);--gray3: hsl(0, 0%, 95.1%);--gray4: hsl(0, 0%, 93%);--gray5: hsl(0, 0%, 90.9%);--gray6: hsl(0, 0%, 88.7%);--gray7: hsl(0, 0%, 85.8%);--gray8: hsl(0, 0%, 78%);--gray9: hsl(0, 0%, 56.1%);--gray10: hsl(0, 0%, 52.3%);--gray11: hsl(0, 0%, 43.5%);--gray12: hsl(0, 0%, 9%);--border-radius: 8px;box-sizing:border-box;padding:0;margin:0;list-style:none;outline:none;z-index:999999999;transition:transform .4s ease}:where([data-sonner-toaster][data-lifted="true"]){transform:translateY(-10px)}@media (hover: none) and (pointer: coarse){:where([data-sonner-toaster][data-lifted="true"]){transform:none}}:where([data-sonner-toaster][data-x-position="right"]){right:var(--offset-right)}:where([data-sonner-toaster][data-x-position="left"]){left:var(--offset-left)}:where([data-sonner-toaster][data-x-position="center"]){left:50%;transform:translate(-50%)}:where([data-sonner-toaster][data-y-position="top"]){top:var(--offset-top)}:where([data-sonner-toaster][data-y-position="bottom"]){bottom:var(--offset-bottom)}:where([data-sonner-toast]){--y: translateY(100%);--lift-amount: calc(var(--lift) * var(--gap));z-index:var(--z-index);position:absolute;opacity:0;transform:var(--y);filter:blur(0);touch-action:none;transition:transform .4s,opacity .4s,height .4s,box-shadow .2s;box-sizing:border-box;outline:none;overflow-wrap:anywhere}:where([data-sonner-toast][data-styled="true"]){padding:16px;background:var(--normal-bg);border:1px solid var(--normal-border);color:var(--normal-text);border-radius:var(--border-radius);box-shadow:0 4px 12px #0000001a;width:var(--width);font-size:13px;display:flex;align-items:center;gap:6px}:where([data-sonner-toast]:focus-visible){box-shadow:0 4px 12px #0000001a,0 0 0 2px #0003}:where([data-sonner-toast][data-y-position="top"]){top:0;--y: translateY(-100%);--lift: 1;--lift-amount: calc(1 * var(--gap))}:where([data-sonner-toast][data-y-position="bottom"]){bottom:0;--y: translateY(100%);--lift: -1;--lift-amount: calc(var(--lift) * var(--gap))}:where([data-sonner-toast]) :where([data-description]){font-weight:400;line-height:1.4;color:inherit}:where([data-sonner-toast]) :where([data-title]){font-weight:500;line-height:1.5;color:inherit}:where([data-sonner-toast]) :where([data-icon]){display:flex;height:16px;width:16px;position:relative;justify-content:flex-start;align-items:center;flex-shrink:0;margin-left:var(--toast-icon-margin-start);margin-right:var(--toast-icon-margin-end)}:where([data-sonner-toast][data-promise="true"]) :where([data-icon])>svg{opacity:0;transform:scale(.8);transform-origin:center;animation:sonner-fade-in .3s ease forwards}:where([data-sonner-toast]) :where([data-icon])>*{flex-shrink:0}:where([data-sonner-toast]) :where([data-icon]) svg{margin-left:var(--toast-svg-margin-start);margin-right:var(--toast-svg-margin-end)}:where([data-sonner-toast]) :where([data-content]){display:flex;flex-direction:column;gap:2px}[data-sonner-toast][data-styled=true] [data-button]{border-radius:4px;padding-left:8px;padding-right:8px;height:24px;font-size:12px;color:var(--normal-bg);background:var(--normal-text);margin-left:var(--toast-button-margin-start);margin-right:var(--toast-button-margin-end);border:none;cursor:pointer;outline:none;display:flex;align-items:center;flex-shrink:0;transition:opacity .4s,box-shadow .2s}:where([data-sonner-toast]) :where([data-button]):focus-visible{box-shadow:0 0 0 2px #0006}:where([data-sonner-toast]) :where([data-button]):first-of-type{margin-left:var(--toast-button-margin-start);margin-right:var(--toast-button-margin-end)}:where([data-sonner-toast]) :where([data-cancel]){color:var(--normal-text);background:rgba(0,0,0,.08)}:where([data-sonner-toast][data-theme="dark"]) :where([data-cancel]){background:rgba(255,255,255,.3)}:where([data-sonner-toast]) :where([data-close-button]){position:absolute;left:var(--toast-close-button-start);right:var(--toast-close-button-end);top:0;height:20px;width:20px;display:flex;justify-content:center;align-items:center;padding:0;color:var(--gray12);border:1px solid var(--gray4);transform:var(--toast-close-button-transform);border-radius:50%;cursor:pointer;z-index:1;transition:opacity .1s,background .2s,border-color .2s}[data-sonner-toast] [data-close-button]{background:var(--gray1)}:where([data-sonner-toast]) :where([data-close-button]):focus-visible{box-shadow:0 4px 12px #0000001a,0 0 0 2px #0003}:where([data-sonner-toast]) :where([data-disabled="true"]){cursor:not-allowed}:where([data-sonner-toast]):hover :where([data-close-button]):hover{background:var(--gray2);border-color:var(--gray5)}:where([data-sonner-toast][data-swiping="true"]):before{content:"";position:absolute;left:-50%;right:-50%;height:100%;z-index:-1}:where([data-sonner-toast][data-y-position="top"][data-swiping="true"]):before{bottom:50%;transform:scaleY(3) translateY(50%)}:where([data-sonner-toast][data-y-position="bottom"][data-swiping="true"]):before{top:50%;transform:scaleY(3) translateY(-50%)}:where([data-sonner-toast][data-swiping="false"][data-removed="true"]):before{content:"";position:absolute;inset:0;transform:scaleY(2)}:where([data-sonner-toast]):after{content:"";position:absolute;left:0;height:calc(var(--gap) + 1px);bottom:100%;width:100%}:where([data-sonner-toast][data-mounted="true"]){--y: translateY(0);opacity:1}:where([data-sonner-toast][data-expanded="false"][data-front="false"]){--scale: var(--toasts-before) * .05 + 1;--y: translateY(calc(var(--lift-amount) * var(--toasts-before))) scale(calc(-1 * var(--scale)));height:var(--front-toast-height)}:where([data-sonner-toast])>*{transition:opacity .4s}:where([data-sonner-toast][data-expanded="false"][data-front="false"][data-styled="true"])>*{opacity:0}:where([data-sonner-toast][data-visible="false"]){opacity:0;pointer-events:none}:where([data-sonner-toast][data-mounted="true"][data-expanded="true"]){--y: translateY(calc(var(--lift) * var(--offset)));height:var(--initial-height)}:where([data-sonner-toast][data-removed="true"][data-front="true"][data-swipe-out="false"]){--y: translateY(calc(var(--lift) * -100%));opacity:0}:where([data-sonner-toast][data-removed="true"][data-front="false"][data-swipe-out="false"][data-expanded="true"]){--y: translateY(calc(var(--lift) * var(--offset) + var(--lift) * -100%));opacity:0}:where([data-sonner-toast][data-removed="true"][data-front="false"][data-swipe-out="false"][data-expanded="false"]){--y: translateY(40%);opacity:0;transition:transform .5s,opacity .2s}:where([data-sonner-toast][data-removed="true"][data-front="false"]):before{height:calc(var(--initial-height) + 20%)}[data-sonner-toast][data-swiping=true]{transform:var(--y) translateY(var(--swipe-amount-y, 0px)) translate(var(--swipe-amount-x, 0px));transition:none}[data-sonner-toast][data-swiped=true]{user-select:none}[data-sonner-toast][data-swipe-out=true][data-y-position=bottom],[data-sonner-toast][data-swipe-out=true][data-y-position=top]{animation-duration:.2s;animation-timing-function:ease-out;animation-fill-mode:forwards}[data-sonner-toast][data-swipe-out=true][data-swipe-direction=left]{animation-name:swipe-out-left}[data-sonner-toast][data-swipe-out=true][data-swipe-direction=right]{animation-name:swipe-out-right}[data-sonner-toast][data-swipe-out=true][data-swipe-direction=up]{animation-name:swipe-out-up}[data-sonner-toast][data-swipe-out=true][data-swipe-direction=down]{animation-name:swipe-out-down}@keyframes swipe-out-left{0%{transform:var(--y) translate(var(--swipe-amount-x));opacity:1}to{transform:var(--y) translate(calc(var(--swipe-amount-x) - 100%));opacity:0}}@keyframes swipe-out-right{0%{transform:var(--y) translate(var(--swipe-amount-x));opacity:1}to{transform:var(--y) translate(calc(var(--swipe-amount-x) + 100%));opacity:0}}@keyframes swipe-out-up{0%{transform:var(--y) translateY(var(--swipe-amount-y));opacity:1}to{transform:var(--y) translateY(calc(var(--swipe-amount-y) - 100%));opacity:0}}@keyframes swipe-out-down{0%{transform:var(--y) translateY(var(--swipe-amount-y));opacity:1}to{transform:var(--y) translateY(calc(var(--swipe-amount-y) + 100%));opacity:0}}@media (max-width: 600px){[data-sonner-toaster]{position:fixed;right:var(--mobile-offset-right);left:var(--mobile-offset-left);width:100%}[data-sonner-toaster][dir=rtl]{left:calc(var(--mobile-offset-left) * -1)}[data-sonner-toaster] [data-sonner-toast]{left:0;right:0;width:calc(100% - var(--mobile-offset-left) * 2)}[data-sonner-toaster][data-x-position=left]{left:var(--mobile-offset-left)}[data-sonner-toaster][data-y-position=bottom]{bottom:var(--mobile-offset-bottom)}[data-sonner-toaster][data-y-position=top]{top:var(--mobile-offset-top)}[data-sonner-toaster][data-x-position=center]{left:var(--mobile-offset-left);right:var(--mobile-offset-right);transform:none}}[data-sonner-toaster][data-theme=light]{--normal-bg: #fff;--normal-border: var(--gray4);--normal-text: var(--gray12);--success-bg: hsl(143, 85%, 96%);--success-border: hsl(145, 92%, 91%);--success-text: hsl(140, 100%, 27%);--info-bg: hsl(208, 100%, 97%);--info-border: hsl(221, 91%, 91%);--info-text: hsl(210, 92%, 45%);--warning-bg: hsl(49, 100%, 97%);--warning-border: hsl(49, 91%, 91%);--warning-text: hsl(31, 92%, 45%);--error-bg: hsl(359, 100%, 97%);--error-border: hsl(359, 100%, 94%);--error-text: hsl(360, 100%, 45%)}[data-sonner-toaster][data-theme=light] [data-sonner-toast][data-invert=true]{--normal-bg: #000;--normal-border: hsl(0, 0%, 20%);--normal-text: var(--gray1)}[data-sonner-toaster][data-theme=dark] [data-sonner-toast][data-invert=true]{--normal-bg: #fff;--normal-border: var(--gray3);--normal-text: var(--gray12)}[data-sonner-toaster][data-theme=dark]{--normal-bg: #000;--normal-bg-hover: hsl(0, 0%, 12%);--normal-border: hsl(0, 0%, 20%);--normal-border-hover: hsl(0, 0%, 25%);--normal-text: var(--gray1);--success-bg: hsl(150, 100%, 6%);--success-border: hsl(147, 100%, 12%);--success-text: hsl(150, 86%, 65%);--info-bg: hsl(215, 100%, 6%);--info-border: hsl(223, 100%, 12%);--info-text: hsl(216, 87%, 65%);--warning-bg: hsl(64, 100%, 6%);--warning-border: hsl(60, 100%, 12%);--warning-text: hsl(46, 87%, 65%);--error-bg: hsl(358, 76%, 10%);--error-border: hsl(357, 89%, 16%);--error-text: hsl(358, 100%, 81%)}[data-sonner-toaster][data-theme=dark] [data-sonner-toast] [data-close-button]{background:var(--normal-bg);border-color:var(--normal-border);color:var(--normal-text)}[data-sonner-toaster][data-theme=dark] [data-sonner-toast] [data-close-button]:hover{background:var(--normal-bg-hover);border-color:var(--normal-border-hover)}[data-rich-colors=true][data-sonner-toast][data-type=success],[data-rich-colors=true][data-sonner-toast][data-type=success] [data-close-button]{background:var(--success-bg);border-color:var(--success-border);color:var(--success-text)}[data-rich-colors=true][data-sonner-toast][data-type=info],[data-rich-colors=true][data-sonner-toast][data-type=info] [data-close-button]{background:var(--info-bg);border-color:var(--info-border);color:var(--info-text)}[data-rich-colors=true][data-sonner-toast][data-type=warning],[data-rich-colors=true][data-sonner-toast][data-type=warning] [data-close-button]{background:var(--warning-bg);border-color:var(--warning-border);color:var(--warning-text)}[data-rich-colors=true][data-sonner-toast][data-type=error],[data-rich-colors=true][data-sonner-toast][data-type=error] [data-close-button]{background:var(--error-bg);border-color:var(--error-border);color:var(--error-text)}.sonner-loading-wrapper{--size: 16px;height:var(--size);width:var(--size);position:absolute;inset:0;z-index:10}.sonner-loading-wrapper[data-visible=false]{transform-origin:center;animation:sonner-fade-out .2s ease forwards}.sonner-spinner{position:relative;top:50%;left:50%;height:var(--size);width:var(--size)}.sonner-loading-bar{animation:sonner-spin 1.2s linear infinite;background:var(--gray11);border-radius:6px;height:8%;left:-10%;position:absolute;top:-3.9%;width:24%}.sonner-loading-bar:nth-child(1){animation-delay:-1.2s;transform:rotate(.0001deg) translate(146%)}.sonner-loading-bar:nth-child(2){animation-delay:-1.1s;transform:rotate(30deg) translate(146%)}.sonner-loading-bar:nth-child(3){animation-delay:-1s;transform:rotate(60deg) translate(146%)}.sonner-loading-bar:nth-child(4){animation-delay:-.9s;transform:rotate(90deg) translate(146%)}.sonner-loading-bar:nth-child(5){animation-delay:-.8s;transform:rotate(120deg) translate(146%)}.sonner-loading-bar:nth-child(6){animation-delay:-.7s;transform:rotate(150deg) translate(146%)}.sonner-loading-bar:nth-child(7){animation-delay:-.6s;transform:rotate(180deg) translate(146%)}.sonner-loading-bar:nth-child(8){animation-delay:-.5s;transform:rotate(210deg) translate(146%)}.sonner-loading-bar:nth-child(9){animation-delay:-.4s;transform:rotate(240deg) translate(146%)}.sonner-loading-bar:nth-child(10){animation-delay:-.3s;transform:rotate(270deg) translate(146%)}.sonner-loading-bar:nth-child(11){animation-delay:-.2s;transform:rotate(300deg) translate(146%)}.sonner-loading-bar:nth-child(12){animation-delay:-.1s;transform:rotate(330deg) translate(146%)}@keyframes sonner-fade-in{0%{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}@keyframes sonner-fade-out{0%{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.8)}}@keyframes sonner-spin{0%{opacity:1}to{opacity:.15}}@media (prefers-reduced-motion){[data-sonner-toast],[data-sonner-toast]>*,.sonner-loading-bar{transition:none!important;animation:none!important}}.sonner-loader{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transform-origin:center;transition:opacity .2s,transform .2s}.sonner-loader[data-visible=false]{opacity:0;transform:scale(.8) translate(-50%,-50%)}
+</style><link rel="preload" href="http://localhost:3000/_next/static/media/569ce4b8f30dc480-s.p.woff2" as="font" crossorigin="" type="font/woff2"><link rel="preload" href="http://localhost:3000/_next/static/media/93f479601ee12b01-s.p.woff2" as="font" crossorigin="" type="font/woff2"><link rel="preload" as="style" href="http://localhost:3000/_next/static/css/app/(frontend)/layout.css?v=1738360973474"></head><body class="__className_4d318d __variable_ea5f4b antialiased scroll-smooth"><script>((e, r, s, u, d, m, l, h)=>{
+    let c = document.documentElement, v = [
+        "light",
+        "dark"
+    ];
+    function p(i) {
+        (Array.isArray(e) ? e : [
+            e
+        ]).forEach((y)=>{
+            let k = y === "class", S = k && m ? d.map((f)=>m[f] || f) : d;
+            k ? (c.classList.remove(...S), c.classList.add(i)) : c.setAttribute(y, i);
+        }), R(i);
+    }
+    function R(i) {
+        h && v.includes(i) && (c.style.colorScheme = i);
+    }
+    function a() {
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    if (u) p(u);
+    else try {
+        let i = localStorage.getItem(r) || s, y = l && i === "system" ? a() : i;
+        p(y);
+    } catch (i) {}
+})("class","theme","system",null,["light","dark"],null,true,true)</script><header class="sticky top-0 z-50 w-full border-b bg-background px-4 lg:px-8"><div class="mx-auto max-w-[1200px]"><div class="flex h-14 items-center"><a class="flex items-center gap-3 font-bold" href="http://localhost:3000/"><div class="flex items-center"><svg width="20" height="17.5" viewBox="0 0 1155 1000" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Academy Logo" role="img"><path d="M577.344 0L1154.69 1000H0L577.344 0Z" fill="currentColor"></path></svg><svg height="32" viewBox="0 0 32 32" width="32" class="text-muted" aria-label="Academy Logo" role="img"><path d="M22 5L9 28" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path></svg><svg width="98" height="20" viewBox="0 0 394 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Academy Logo" role="img"><path d="M261.919 0.0330722H330.547V12.7H303.323V79.339H289.71V12.7H261.919V0.0330722Z" fill="currentColor"></path><path d="M149.052 0.0330722V12.7H94.0421V33.0772H138.281V45.7441H94.0421V66.6721H149.052V79.339H80.43V12.7H80.4243V0.0330722H149.052Z" fill="currentColor"></path><path d="M183.32 0.0661486H165.506L229.312 79.3721H247.178L215.271 39.7464L247.127 0.126654L229.312 0.154184L206.352 28.6697L183.32 0.0661486Z" fill="currentColor"></path><path d="M201.6 56.7148L192.679 45.6229L165.455 79.4326H183.32L201.6 56.7148Z" fill="currentColor"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M80.907 79.339L17.0151 0H0V79.3059H13.6121V16.9516L63.8067 79.339H80.907Z" fill="currentColor"></path></svg></div></a><nav class="mx-6 hidden items-center gap-5 md:flex"><a class="text-sm font-normal text-muted-foreground hover:text-foreground" href="http://localhost:3000/learn">Learn</a><a class="text-sm font-normal text-muted-foreground hover:text-foreground" href="http://localhost:3000/docs">Docs</a><a class="text-sm font-normal text-muted-foreground hover:text-foreground" href="http://localhost:3000/showcase">Showcase</a><a class="text-sm font-normal text-muted-foreground hover:text-foreground" href="http://localhost:3000/templates">Templates</a><a class="text-sm font-normal text-muted-foreground hover:text-foreground" href="http://localhost:3000/enterprise">Enterprise</a><a class="text-sm font-normal text-muted-foreground hover:text-foreground" href="http://localhost:3000/blog">Blog</a></nav><div class="ml-auto flex items-center gap-4" data-dashlane-rid="7544763278b921c6"><div class="relative hidden w-[250px] max-w-sm md:block"><input type="search" class="flex h-9 rounded-md border border-input px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm w-full border-none bg-muted pl-3 pr-12 focus-visible:ring-0 focus-visible:ring-offset-0" placeholder="Search documentation..." data-dashlane-rid="34970a22a190273b"><kbd class="pointer-events-none absolute right-1.5 top-[7px] hidden h-6 select-none items-center gap-1 rounded-[6px] border bg-background px-1.5 font-mono text-[13px] font-medium opacity-100 sm:flex">⌘K</kbd></div><button class="items-center justify-center gap-2 whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 rounded-md px-3 text-xs hidden md:inline-flex" data-dashlane-label="true" data-dashlane-rid="ae22722d26ac7b4b">Feedback</button><button class="items-center justify-center gap-2 whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-8 rounded-md px-3 text-xs hidden md:inline-flex" data-dashlane-label="true" data-dashlane-rid="d4258b2da3224099">Deploy</button><div class="md:hidden"><div class="flex items-center gap-2 md:hidden"><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 w-9 md:hidden" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="radix-:Rpmdt7:" data-state="closed"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu h-5 w-5"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg><span class="sr-only">Toggle menu</span></button><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 w-9 md:hidden"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search h-5 w-5"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg><span class="sr-only">Search documentation</span></button></div></div></div></div></div></header><main class="section"><section class="container ds spaced"><h1>Welcome to Vercel Academy</h1><p class="max-w-prose">Go from beginner to expert by learning the foundations of Vercel and Next.js and building a fully functional demo website that uses all the latest features.</p></section><section class="border divide-y max-w-6xl mx-auto"><div class="px-4 py-2 bg-accent/75"><h4>Beginner</h4></div><div class="p-4"><div class="gap-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3"><a class="border grid grid-cols-[auto_1fr] rounded-md transition-all group relative" href="http://localhost:3000/learn/vercel-foundations"><div class="p-4 border-r bg-accent/75 group-hover:pt-3 group-hover:pb-5 transition-all duration-300 ease-out"><div class="relative flex flex-shrink-0 h-[100px] w-[80px] shadow-sm group-hover:shadow-md transition-shadow duration-300 ease-out rounded-l-[4px] rounded-r-[2px]"><div class="h-full shrink-0 bg-gradient-to-r border-r from-foreground/20 to-foreground/10 w-2 rounded-l-[4px]"></div><div class="flex h-full w-full items-center justify-center rounded-r-[2px] bg-gradient-to-br from-foreground/10 to-foreground/20"><div class="rounded-full aspect-square flex items-center justify-center text-foreground size-12 p-1 bg-background/20"><svg xmlns="http://www.w3.org/2000/svg" width="1.5rem" height="1.5rem" viewBox="0 0 24 24" aria-label="Vercel Icon" class="-mt-1" role="img"><path fill="currentColor" d="M23 21.648H1L12 2.352z"></path></svg></div></div></div></div><div class="grid p-4 gap-1 grid-rows-[auto_1fr_auto]"><h3 class="text-xl font-medium">Vercel Foundations</h3><div class="article text-muted-foreground ds text-xs"><p>Understanding the Ins and Outs of the Vercel</p></div><div class="text-sm flex flex-wrap gap-1"><div class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">Coming soon</div><div class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">23,123 students</div></div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg></div></a><a class="border grid grid-cols-[auto_1fr] rounded-md transition-all group relative" href="http://localhost:3000/learn/v0"><div class="p-4 border-r bg-accent/75 group-hover:pt-3 group-hover:pb-5 transition-all duration-300 ease-out"><div class="relative flex flex-shrink-0 h-[100px] w-[80px] shadow-sm group-hover:shadow-md transition-shadow duration-300 ease-out rounded-l-[4px] rounded-r-[2px]"><div class="h-full shrink-0 bg-gradient-to-r border-r from-foreground/20 to-foreground/10 w-2 rounded-l-[4px]"></div><div class="flex h-full w-full items-center justify-center rounded-r-[2px] bg-gradient-to-br from-foreground/10 to-foreground/20"><div class="rounded-full aspect-square flex items-center justify-center text-foreground size-12 p-1 bg-background/20"><svg xmlns="http://www.w3.org/2000/svg" aria-label="v0 Icon" width="1.5rem" height="1.5rem" viewBox="0 0 40 40" role="img" class="fill-current -ml-px -mb-px"><path d="M23.3919 8H32.9188C36.7819 8 39.9136 11.1317 39.9136 14.9948V24.0805H36.0006V14.9948C36.0006 14.9017 35.9969 14.8093 35.9898 14.7177L26.4628 24.079C26.4949 24.08 26.5272 24.0805 26.5595 24.0805H36.0006V27.7762H26.5595C22.6964 27.7762 19.4788 24.6139 19.4788 20.7508V11.6892H23.3919V20.7508C23.3919 20.9253 23.4054 21.0977 23.4316 21.2668L33.1682 11.6995C33.0861 11.6927 33.003 11.6892 32.9188 11.6892H23.3919V8Z"></path><path d="M13.7688 27.0956L0 11.6876H5.53933L13.6231 20.7337V11.6876H17.7535V25.5746C17.7535 27.6705 15.1654 28.6584 13.7688 27.0956Z"></path></svg></div></div></div></div><div class="grid p-4 gap-1 grid-rows-[auto_1fr_auto]"><h3 class="text-xl font-medium">v0 Basics</h3><div class="article text-muted-foreground ds text-xs"><p>Anyone can cook</p></div><div class="text-sm flex flex-wrap gap-1"><div class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">Coming soon</div><div class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">23,123 students</div></div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg></div></a><a class="border grid grid-cols-[auto_1fr] rounded-md transition-all group relative" href="http://localhost:3000/learn/react-foundations"><div class="p-4 border-r bg-accent/75 group-hover:pt-3 group-hover:pb-5 transition-all duration-300 ease-out"><div class="relative flex flex-shrink-0 h-[100px] w-[80px] shadow-sm group-hover:shadow-md transition-shadow duration-300 ease-out rounded-l-[4px] rounded-r-[2px]"><div class="h-full shrink-0 bg-gradient-to-r border-r from-foreground/20 to-foreground/10 w-2 rounded-l-[4px]"></div><div class="flex h-full w-full items-center justify-center rounded-r-[2px] bg-gradient-to-br from-foreground/10 to-foreground/20"><div class="rounded-full aspect-square flex items-center justify-center text-foreground size-12 p-1 bg-accent/75 dark:bg-background/20"><svg xmlns="http://www.w3.org/2000/svg" width="1.5rem" height="1.5rem" viewBox="0 0 128 128" aria-label="V0 Icon" role="img"><g fill="#61DAFB"><circle cx="64" cy="64" r="11.4"></circle><path d="M107.3 45.2c-2.2-.8-4.5-1.6-6.9-2.3c.6-2.4 1.1-4.8 1.5-7.1c2.1-13.2-.2-22.5-6.6-26.1c-1.9-1.1-4-1.6-6.4-1.6c-7 0-15.9 5.2-24.9 13.9c-9-8.7-17.9-13.9-24.9-13.9c-2.4 0-4.5.5-6.4 1.6c-6.4 3.7-8.7 13-6.6 26.1c.4 2.3.9 4.7 1.5 7.1c-2.4.7-4.7 1.4-6.9 2.3C8.2 50 1.4 56.6 1.4 64s6.9 14 19.3 18.8c2.2.8 4.5 1.6 6.9 2.3c-.6 2.4-1.1 4.8-1.5 7.1c-2.1 13.2.2 22.5 6.6 26.1c1.9 1.1 4 1.6 6.4 1.6c7.1 0 16-5.2 24.9-13.9c9 8.7 17.9 13.9 24.9 13.9c2.4 0 4.5-.5 6.4-1.6c6.4-3.7 8.7-13 6.6-26.1c-.4-2.3-.9-4.7-1.5-7.1c2.4-.7 4.7-1.4 6.9-2.3c12.5-4.8 19.3-11.4 19.3-18.8s-6.8-14-19.3-18.8M92.5 14.7c4.1 2.4 5.5 9.8 3.8 20.3c-.3 2.1-.8 4.3-1.4 6.6c-5.2-1.2-10.7-2-16.5-2.5c-3.4-4.8-6.9-9.1-10.4-13c7.4-7.3 14.9-12.3 21-12.3c1.3 0 2.5.3 3.5.9M81.3 74c-1.8 3.2-3.9 6.4-6.1 9.6c-3.7.3-7.4.4-11.2.4c-3.9 0-7.6-.1-11.2-.4q-3.3-4.8-6-9.6c-1.9-3.3-3.7-6.7-5.3-10c1.6-3.3 3.4-6.7 5.3-10c1.8-3.2 3.9-6.4 6.1-9.6c3.7-.3 7.4-.4 11.2-.4c3.9 0 7.6.1 11.2.4q3.3 4.8 6 9.6c1.9 3.3 3.7 6.7 5.3 10c-1.7 3.3-3.4 6.6-5.3 10m8.3-3.3c1.5 3.5 2.7 6.9 3.8 10.3c-3.4.8-7 1.4-10.8 1.9c1.2-1.9 2.5-3.9 3.6-6c1.2-2.1 2.3-4.2 3.4-6.2M64 97.8c-2.4-2.6-4.7-5.4-6.9-8.3c2.3.1 4.6.2 6.9.2s4.6-.1 6.9-.2c-2.2 2.9-4.5 5.7-6.9 8.3m-18.6-15c-3.8-.5-7.4-1.1-10.8-1.9c1.1-3.3 2.3-6.8 3.8-10.3c1.1 2 2.2 4.1 3.4 6.1c1.2 2.2 2.4 4.1 3.6 6.1m-7-25.5c-1.5-3.5-2.7-6.9-3.8-10.3c3.4-.8 7-1.4 10.8-1.9c-1.2 1.9-2.5 3.9-3.6 6c-1.2 2.1-2.3 4.2-3.4 6.2M64 30.2c2.4 2.6 4.7 5.4 6.9 8.3c-2.3-.1-4.6-.2-6.9-.2s-4.6.1-6.9.2c2.2-2.9 4.5-5.7 6.9-8.3m22.2 21l-3.6-6c3.8.5 7.4 1.1 10.8 1.9c-1.1 3.3-2.3 6.8-3.8 10.3c-1.1-2.1-2.2-4.2-3.4-6.2M31.7 35c-1.7-10.5-.3-17.9 3.8-20.3c1-.6 2.2-.9 3.5-.9c6 0 13.5 4.9 21 12.3c-3.5 3.8-7 8.2-10.4 13c-5.8.5-11.3 1.4-16.5 2.5c-.6-2.3-1-4.5-1.4-6.6M7 64c0-4.7 5.7-9.7 15.7-13.4c2-.8 4.2-1.5 6.4-2.1c1.6 5 3.6 10.3 6 15.6c-2.4 5.3-4.5 10.5-6 15.5C15.3 75.6 7 69.6 7 64m28.5 49.3c-4.1-2.4-5.5-9.8-3.8-20.3c.3-2.1.8-4.3 1.4-6.6c5.2 1.2 10.7 2 16.5 2.5c3.4 4.8 6.9 9.1 10.4 13c-7.4 7.3-14.9 12.3-21 12.3c-1.3 0-2.5-.3-3.5-.9M96.3 93c1.7 10.5.3 17.9-3.8 20.3c-1 .6-2.2.9-3.5.9c-6 0-13.5-4.9-21-12.3c3.5-3.8 7-8.2 10.4-13c5.8-.5 11.3-1.4 16.5-2.5c.6 2.3 1 4.5 1.4 6.6m9-15.6c-2 .8-4.2 1.5-6.4 2.1c-1.6-5-3.6-10.3-6-15.6c2.4-5.3 4.5-10.5 6-15.5c13.8 4 22.1 10 22.1 15.6c0 4.7-5.8 9.7-15.7 13.4"></path></g></svg></div></div></div></div><div class="grid p-4 gap-1 grid-rows-[auto_1fr_auto]"><h3 class="text-xl font-medium">React Foundations</h3><div class="article text-muted-foreground ds text-xs"><p>Gain a Baseline Understanding of React </p></div><div class="text-sm flex flex-wrap gap-1"><div class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">Coming soon</div><div class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">23,123 students</div></div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg></div></a><a class="border grid grid-cols-[auto_1fr] rounded-md transition-all group relative" href="http://localhost:3000/learn/dashboard-app"><div class="p-4 border-r bg-accent/75 group-hover:pt-3 group-hover:pb-5 transition-all duration-300 ease-out"><div class="relative flex flex-shrink-0 h-[100px] w-[80px] shadow-sm group-hover:shadow-md transition-shadow duration-300 ease-out rounded-l-[4px] rounded-r-[2px]"><div class="h-full shrink-0 bg-gradient-to-r border-r from-foreground/20 to-foreground/10 w-2 rounded-l-[4px]"></div><div class="flex h-full w-full items-center justify-center rounded-r-[2px] bg-gradient-to-br from-foreground/10 to-foreground/20"><div class="rounded-full aspect-square flex items-center justify-center text-foreground size-12 p-1 bg-background/20"><svg xmlns="http://www.w3.org/2000/svg" width="1.5rem" height="1.5rem" viewBox="0 0 128 128" aria-label="Next.js Icon" role="img"><circle cx="64" cy="64" r="64"></circle><path fill="url(#deviconNextjs0)" d="M106.317 112.014L49.167 38.4H38.4v51.179h8.614v-40.24l52.54 67.884a64 64 0 0 0 6.763-5.209"></path><path fill="url(#deviconNextjs1)" d="M81.778 38.4h8.533v51.2h-8.533z"></path><defs><lineargradient id="deviconNextjs0" x1="109" x2="144.5" y1="116.5" y2="160.5" gradientTransform="scale(.71111)" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop></lineargradient><lineargradient id="deviconNextjs1" x1="121" x2="120.799" y1="54" y2="106.875" gradientTransform="scale(.71111)" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop></lineargradient></defs></svg></div></div></div></div><div class="grid p-4 gap-1 grid-rows-[auto_1fr_auto]"><h3 class="text-xl font-medium">Learn Next.js</h3><div class="article text-muted-foreground ds text-xs"><p>16 chapters that take you from React to Next.js.</p></div><div class="text-sm flex flex-wrap gap-1"><div class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">3<!-- --> chapters</div><div class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">23,123 students</div></div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg></div></a></div></div><div class="px-4 py-2 bg-accent/75"><h4>Intermediate</h4></div><div class="p-4"><div class="gap-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3"><a class="border grid grid-cols-[auto_1fr] rounded-md transition-all group relative" href="http://localhost:3000/learn/seo"><div class="p-4 border-r bg-accent/75 group-hover:pt-3 group-hover:pb-5 transition-all duration-300 ease-out"><div class="relative flex flex-shrink-0 h-[100px] w-[80px] shadow-sm group-hover:shadow-md transition-shadow duration-300 ease-out rounded-l-[4px] rounded-r-[2px]"><div class="h-full shrink-0 bg-gradient-to-r border-r from-foreground/20 to-foreground/10 w-2 rounded-l-[4px]"></div><div class="flex h-full w-full items-center justify-center rounded-r-[2px] bg-gradient-to-br from-foreground/10 to-foreground/20"><div class="rounded-full aspect-square flex items-center justify-center text-foreground size-12 p-1 bg-background/20"><svg xmlns="http://www.w3.org/2000/svg" width="1.5rem" height="1.5rem" viewBox="0 0 128 128" aria-label="Next.js Icon" role="img"><circle cx="64" cy="64" r="64"></circle><path fill="url(#deviconNextjs0)" d="M106.317 112.014L49.167 38.4H38.4v51.179h8.614v-40.24l52.54 67.884a64 64 0 0 0 6.763-5.209"></path><path fill="url(#deviconNextjs1)" d="M81.778 38.4h8.533v51.2h-8.533z"></path><defs><lineargradient id="deviconNextjs0" x1="109" x2="144.5" y1="116.5" y2="160.5" gradientTransform="scale(.71111)" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop></lineargradient><lineargradient id="deviconNextjs1" x1="121" x2="120.799" y1="54" y2="106.875" gradientTransform="scale(.71111)" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"></stop><stop offset="1" stop-color="#fff" stop-opacity="0"></stop></lineargradient></defs></svg></div></div></div></div><div class="grid p-4 gap-1 grid-rows-[auto_1fr_auto]"><h3 class="text-xl font-medium">SEO Course</h3><div class="article text-muted-foreground ds text-xs"><p>Learn the SEO Super Powers that Next.js Provides</p></div><div class="text-sm flex flex-wrap gap-1"><div class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">Coming soon</div><div class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">23,123 students</div></div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg></div></a></div></div><div class="px-4 py-2 bg-accent/75"><h4>Advanced</h4></div><div class="p-4"><div class="gap-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3"><a class="border grid grid-cols-[auto_1fr] rounded-md transition-all group relative" href="http://localhost:3000/learn/turborepo"><div class="p-4 border-r bg-accent/75 group-hover:pt-3 group-hover:pb-5 transition-all duration-300 ease-out"><div class="relative flex flex-shrink-0 h-[100px] w-[80px] shadow-sm group-hover:shadow-md transition-shadow duration-300 ease-out rounded-l-[4px] rounded-r-[2px]"><div class="h-full shrink-0 bg-gradient-to-r border-r from-foreground/20 to-foreground/10 w-2 rounded-l-[4px]"></div><div class="flex h-full w-full items-center justify-center rounded-r-[2px] bg-gradient-to-br from-foreground/10 to-foreground/20"><div class="rounded-full aspect-square flex items-center justify-center text-foreground size-12 p-1 bg-background/20"><svg xmlns="http://www.w3.org/2000/svg" aria-label="Turborepo Icon" width="1.5rem" height="1.5rem" viewBox="0 0 40 40" role="img" class="fill-current"><path d="M20 7C12.818 7 7 12.818 7 20s5.818 13 13 13 13-5.818 13-13S27.182 7 20 7zm0 19.5c-3.584 0-6.5-2.916-6.5-6.5s2.916-6.5 6.5-6.5 6.5 2.916 6.5 6.5-2.916 6.5-6.5 6.5z" fill="currentColor"></path><path clip-rule="evenodd" d="M21 5v-5c10.493.5 19 9.507 19 20s-8.507 19.5-19 20v-5c7.732-.5 14-7.268 14-15s-6.268-14.5-14-15zm-12.478 25.069c-2.084-2.408-3.427-5.474-3.667-8.841h-4.855c.252 4.711 2.135 8.986 5.085 12.278l3.434-3.437h.003zm10.373 10.069v-5c-3.367-.24-6.433-1.582-8.838-3.67l-3.435 3.437c3.289 2.955 7.564 4.838 12.273 5.09v.143z" fill="url(#:S9:paint0_linear_902_224)" fill-rule="evenodd"></path><defs><lineargradient gradientUnits="userSpaceOnUse" id=":S9:paint0_linear_902_224" x1="21.858" x2="2.17" y1="2.812" y2="22.484"><stop stop-color="#0096FF"></stop><stop offset="1" stop-color="#FF1E56"></stop></lineargradient></defs></svg></div></div></div></div><div class="grid p-4 gap-1 grid-rows-[auto_1fr_auto]"><h3 class="text-xl font-medium">Turborepo</h3><div class="article text-muted-foreground ds text-xs"><p>Solving the Monorepo problem</p></div><div class="text-sm flex flex-wrap gap-1"><div class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">Coming soon</div><div class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">23,123 students</div></div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg></div></a></div></div></section></main><footer class="w-full border-t border-border"><div class="mx-auto max-w-[1200px] px-4 py-9"><div class="flex items-center justify-between md:hidden mb-8"><a class="text-foreground" href="http://localhost:3000/"><svg height="20" viewBox="0 0 76 65" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Academy Logo" role="img"><path d="M37.5274 0L75.0548 65H0L37.5274 0Z" fill="currentColor"></path></svg></a><div class="flex items-center gap-3"><a class="text-muted-foreground hover:text-foreground" href="https://github.com/vercel"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 98 96" class="h-4 w-4" aria-label="Academy Logo" role="img"><path fill="currentColor" fill-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" clip-rule="evenodd"></path></svg></a><a class="text-muted-foreground hover:text-foreground" href="https://twitter.com/vercel"><svg fill="none" height="16" width="16" viewBox="0 0 24 24" aria-label="Academy Logo" role="img"><path fill="currentColor" d="M16.99 0H20.298L13.071 8.26L21.573 19.5H14.916L9.702 12.683L3.736 19.5H0.426L8.156 10.665L0 0H6.826L11.539 6.231L16.99 0ZM15.829 17.52H17.662L5.83 1.876H3.863L15.829 17.52Z"></path></svg></a><a class="text-muted-foreground hover:text-foreground" href="https://bsky.app/profile/vercel.com"><svg class="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-label="Academy Logo" role="img"><path fill="currentColor" d="M3.468 1.948C5.303 3.325 7.276 6.118 8 7.616c.725-1.498 2.697-4.29 4.532-5.668C13.855.955 16 .186 16 2.632c0 .489-.28 4.105-.444 4.692-.572 2.04-2.653 2.561-4.504 2.246 3.236.551 4.06 2.375 2.281 4.2-3.376 3.464-4.852-.87-5.23-1.98-.07-.204-.103-.3-.103-.218 0-.081-.033.014-.102.218-.379 1.11-1.855 5.444-5.231 1.98-1.778-1.825-.955-3.65 2.28-4.2-1.85.315-3.932-.205-4.503-2.246C.28 6.737 0 3.12 0 2.632 0 .186 2.145.955 3.468 1.948Z"></path></svg></a></div></div><div class="hidden md:grid md:grid-cols-7 md:gap-8"><div class="md:col-span-1"><a class="text-foreground" href="http://localhost:3000/"><svg height="20" viewBox="0 0 76 65" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Academy Logo" role="img"><path d="M37.5274 0L75.0548 65H0L37.5274 0Z" fill="currentColor"></path></svg></a></div><div class="md:col-span-1"><h4 class="mb-4 text-sm font-medium">Resources</h4><div class="flex flex-col gap-3"><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/docs">Docs</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/learn">Learn</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/showcase">Showcase</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/blog">Blog</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/team">Team</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/analytics">Analytics</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/conf">Next.js Conf</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/previews">Previews</a></div></div><div class="md:col-span-1"><h4 class="mb-4 text-sm font-medium">More</h4><div class="flex flex-col gap-3"><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/commerce">Next.js Commerce</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/contact">Contact Sales</a><a class="text-sm text-muted-foreground hover:text-foreground" href="https://github.com/vercel/next.js">GitHub</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/releases">Releases</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/telemetry">Telemetry</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/governance">Governance</a></div></div><div class="md:col-span-1"><h4 class="mb-4 text-sm font-medium">About Vercel</h4><div class="flex flex-col gap-3"><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/next">Next.js + Vercel</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/oss">Open Source Software</a><a class="text-sm text-muted-foreground hover:text-foreground" href="https://github.com/vercel">GitHub</a><a class="text-sm text-muted-foreground hover:text-foreground" href="https://bsky.app/profile/vercel.com">Bluesky</a><a class="text-sm text-muted-foreground hover:text-foreground" href="https://twitter.com/vercel">X</a></div></div><div class="md:col-span-1"><h4 class="mb-4 text-sm font-medium">Legal</h4><div class="flex flex-col gap-3"><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/privacy">Privacy Policy</a><button type="button" class="text-left text-sm text-muted-foreground hover:text-foreground">Cookie Preferences</button></div></div><div class="md:col-span-2"><h4 class="mb-4 text-sm font-medium">Subscribe to our newsletter</h4><p class="mb-4 text-sm text-muted-foreground">Stay updated on new releases and features, guides, and case studies.</p><div class="relative" data-dashlane-rid="f91f8562a9888129" data-dashlane-classification="newsletter"><input type="email" class="flex w-full rounded-md border border-input px-3 py-1 shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm bg-muted pr-20 h-8 text-sm" placeholder="you@domain.com" value="" data-dashlane-rid="66c4874c4923517e" data-dashlane-classification="email,new" data-kwimpalastatus="alive" data-kwimpalaid="1738360937720-0"><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 rounded-md absolute right-1 top-1 h-6 text-xs px-2" data-dashlane-label="true" data-dashlane-rid="4c53da4b3562e0ac" data-dashlane-classification="action,subscribe">Subscribe</button></div></div></div><div class="grid grid-cols-2 gap-8 md:hidden"><div><h4 class="mb-4 text-sm font-medium">Resources</h4><div class="flex flex-col gap-3"><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/docs">Docs</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/learn">Learn</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/showcase">Showcase</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/blog">Blog</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/team">Team</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/analytics">Analytics</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/conf">Next.js Conf</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/previews">Previews</a></div></div><div><h4 class="mb-4 text-sm font-medium">More</h4><div class="flex flex-col gap-3"><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/commerce">Next.js Commerce</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/contact">Contact Sales</a><a class="text-sm text-muted-foreground hover:text-foreground" href="https://github.com/vercel/next.js">GitHub</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/releases">Releases</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/telemetry">Telemetry</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/governance">Governance</a></div></div><div><h4 class="mb-4 text-sm font-medium">About Vercel</h4><div class="flex flex-col gap-3"><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/next">Next.js + Vercel</a><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/oss">Open Source Software</a><a class="text-sm text-muted-foreground hover:text-foreground" href="https://github.com/vercel">GitHub</a><a class="text-sm text-muted-foreground hover:text-foreground" href="https://bsky.app/profile/vercel.com">Bluesky</a><a class="text-sm text-muted-foreground hover:text-foreground" href="https://twitter.com/vercel">X</a></div></div><div><h4 class="mb-4 text-sm font-medium">Legal</h4><div class="flex flex-col gap-3"><a class="text-sm text-muted-foreground hover:text-foreground" href="http://localhost:3000/privacy">Privacy Policy</a><button type="button" class="text-left text-sm text-muted-foreground hover:text-foreground">Cookie Preferences</button></div></div><div class="col-span-2 mt-8"><h4 class="mb-4 text-sm font-medium">Subscribe to our newsletter</h4><p class="mb-4 text-sm text-muted-foreground">Stay updated on new releases and features, guides, and case studies.</p><div class="relative"><input type="email" class="flex w-full rounded-md border border-input px-3 py-1 shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm bg-muted pr-20 h-8 text-sm" placeholder="you@domain.com" value=""><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-primary/90 rounded-md absolute right-1 top-1 h-6 text-xs px-2">Subscribe</button></div></div></div><div class="mt-12 flex flex-col items-center justify-between gap-4 pt-8 md:flex-row"><div class="flex flex-col gap-4 md:gap-6"><span class="text-sm text-muted-foreground">© <!-- -->2025<!-- --> Vercel, Inc.</span><div class="hidden md:flex items-center gap-3"><a class="text-muted-foreground hover:text-foreground" href="https://github.com/vercel"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 98 96" class="h-4 w-4" aria-label="Academy Logo" role="img"><path fill="currentColor" fill-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" clip-rule="evenodd"></path></svg></a><div class="h-4 w-px bg-border"></div><a class="text-muted-foreground hover:text-foreground" href="https://twitter.com/vercel"><svg fill="none" height="16" width="16" viewBox="0 0 24 24" aria-label="Academy Logo" role="img"><path fill="currentColor" d="M16.99 0H20.298L13.071 8.26L21.573 19.5H14.916L9.702 12.683L3.736 19.5H0.426L8.156 10.665L0 0H6.826L11.539 6.231L16.99 0ZM15.829 17.52H17.662L5.83 1.876H3.863L15.829 17.52Z"></path></svg></a><div class="h-4 w-px bg-border"></div><a class="text-muted-foreground hover:text-foreground" href="https://bsky.app/profile/vercel.com"><svg class="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-label="Academy Logo" role="img"><path fill="currentColor" d="M3.468 1.948C5.303 3.325 7.276 6.118 8 7.616c.725-1.498 2.697-4.29 4.532-5.668C13.855.955 16 .186 16 2.632c0 .489-.28 4.105-.444 4.692-.572 2.04-2.653 2.561-4.504 2.246 3.236.551 4.06 2.375 2.281 4.2-3.376 3.464-4.852-.87-5.23-1.98-.07-.204-.103-.3-.103-.218 0-.081-.033.014-.102.218-.379 1.11-1.855 5.444-5.231 1.98-1.778-1.825-.955-3.65 2.28-4.2-1.85.315-3.932-.205-4.503-2.246C.28 6.737 0 3.12 0 2.632 0 .186 2.145.955 3.468 1.948Z"></path></svg></a></div></div><div class="flex items-center gap-2"><div class="flex w-fit rounded-full bg-background-100 shadow-border"><span class="h-full"><input class="peer sr-only" type="radio" id="theme-switch-system" value="system"><label for="theme-switch-system" class="relative flex h-[28px] w-[28px] cursor-pointer items-center justify-center rounded-full text-gray-700 peer-checked:text-gray-1000 peer-checked:shadow-border"><svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"><path d="M2 4.25C2 4.11193 2.11193 4 2.25 4H12.75C12.8881 4 13 4.11193 13 4.25V11.5H2V4.25ZM2.25 3C1.55964 3 1 3.55964 1 4.25V12H0V12.5C0 12.7761 0.223858 13 0.5 13H14.5C14.7761 13 15 12.7761 15 12.5V12H14V4.25C14 3.55964 13.4404 3 12.75 3H2.25Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg></label></span><span class="h-full"><input class="peer sr-only" type="radio" id="theme-switch-light" value="light" checked=""><label for="theme-switch-light" class="relative flex h-[28px] w-[28px] cursor-pointer items-center justify-center rounded-full text-gray-700 peer-checked:text-gray-1000 peer-checked:shadow-border"><svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"><path d="M7.5 0C7.77614 0 8 0.223858 8 0.5V2.5C8 2.77614 7.77614 3 7.5 3C7.22386 3 7 2.77614 7 2.5V0.5C7 0.223858 7.22386 0 7.5 0ZM2.1967 2.1967C2.39196 2.00144 2.70854 2.00144 2.90381 2.1967L4.31802 3.61091C4.51328 3.80617 4.51328 4.12276 4.31802 4.31802C4.12276 4.51328 3.80617 4.51328 3.61091 4.31802L2.1967 2.90381C2.00144 2.70854 2.00144 2.39196 2.1967 2.1967ZM0.5 7C0.223858 7 0 7.22386 0 7.5C0 7.77614 0.223858 8 0.5 8H2.5C2.77614 8 3 7.77614 3 7.5C3 7.22386 2.77614 7 2.5 7H0.5ZM2.1967 12.8033C2.00144 12.608 2.00144 12.2915 2.1967 12.0962L3.61091 10.682C3.80617 10.4867 4.12276 10.4867 4.31802 10.682C4.51328 10.8772 4.51328 11.1938 4.31802 11.3891L2.90381 12.8033C2.70854 12.9986 2.39196 12.9986 2.1967 12.8033ZM12.5 7C12.2239 7 12 7.22386 12 7.5C12 7.77614 12.2239 8 12.5 8H14.5C14.7761 8 15 7.77614 15 7.5C15 7.22386 14.7761 7 14.5 7H12.5ZM10.682 4.31802C10.4867 4.12276 10.4867 3.80617 10.682 3.61091L12.0962 2.1967C12.2915 2.00144 12.608 2.00144 12.8033 2.1967C12.9986 2.39196 12.9986 2.70854 12.8033 2.90381L11.3891 4.31802C11.1938 4.51328 10.8772 4.51328 10.682 4.31802ZM8 12.5C8 12.2239 7.77614 12 7.5 12C7.22386 12 7 12.2239 7 12.5V14.5C7 14.7761 7.22386 15 7.5 15C7.77614 15 8 14.7761 8 14.5V12.5ZM10.682 10.682C10.8772 10.4867 11.1938 10.4867 11.3891 10.682L12.8033 12.0962C12.9986 12.2915 12.9986 12.608 12.8033 12.8033C12.608 12.9986 12.2915 12.9986 12.0962 12.8033L10.682 11.3891C10.4867 11.1938 10.4867 10.8772 10.682 10.682ZM5.5 7.5C5.5 6.39543 6.39543 5.5 7.5 5.5C8.60457 5.5 9.5 6.39543 9.5 7.5C9.5 8.60457 8.60457 9.5 7.5 9.5C6.39543 9.5 5.5 8.60457 5.5 7.5ZM7.5 4.5C5.84315 4.5 4.5 5.84315 4.5 7.5C4.5 9.15685 5.84315 10.5 7.5 10.5C9.15685 10.5 10.5 9.15685 10.5 7.5C10.5 5.84315 9.15685 4.5 7.5 4.5Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg></label></span><span class="h-full"><input class="peer sr-only" type="radio" id="theme-switch-dark" value="dark"><label for="theme-switch-dark" class="relative flex h-[28px] w-[28px] cursor-pointer items-center justify-center rounded-full text-gray-700 peer-checked:text-gray-1000 peer-checked:shadow-border"><svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"><path d="M2.89998 0.499976C2.89998 0.279062 2.72089 0.0999756 2.49998 0.0999756C2.27906 0.0999756 2.09998 0.279062 2.09998 0.499976V1.09998H1.49998C1.27906 1.09998 1.09998 1.27906 1.09998 1.49998C1.09998 1.72089 1.27906 1.89998 1.49998 1.89998H2.09998V2.49998C2.09998 2.72089 2.27906 2.89998 2.49998 2.89998C2.72089 2.89998 2.89998 2.72089 2.89998 2.49998V1.89998H3.49998C3.72089 1.89998 3.89998 1.72089 3.89998 1.49998C3.89998 1.27906 3.72089 1.09998 3.49998 1.09998H2.89998V0.499976ZM5.89998 3.49998C5.89998 3.27906 5.72089 3.09998 5.49998 3.09998C5.27906 3.09998 5.09998 3.27906 5.09998 3.49998V4.09998H4.49998C4.27906 4.09998 4.09998 4.27906 4.09998 4.49998C4.09998 4.72089 4.27906 4.89998 4.49998 4.89998H5.09998V5.49998C5.09998 5.72089 5.27906 5.89998 5.49998 5.89998C5.72089 5.89998 5.89998 5.72089 5.89998 5.49998V4.89998H6.49998C6.72089 4.89998 6.89998 4.72089 6.89998 4.49998C6.89998 4.27906 6.72089 4.09998 6.49998 4.09998H5.89998V3.49998ZM1.89998 6.49998C1.89998 6.27906 1.72089 6.09998 1.49998 6.09998C1.27906 6.09998 1.09998 6.27906 1.09998 6.49998V7.09998H0.499976C0.279062 7.09998 0.0999756 7.27906 0.0999756 7.49998C0.0999756 7.72089 0.279062 7.89998 0.499976 7.89998H1.09998V8.49998C1.09998 8.72089 1.27906 8.89997 1.49998 8.89997C1.72089 8.89997 1.89998 8.72089 1.89998 8.49998V7.89998H2.49998C2.72089 7.89998 2.89998 7.72089 2.89998 7.49998C2.89998 7.27906 2.72089 7.09998 2.49998 7.09998H1.89998V6.49998ZM8.54406 0.98184L8.24618 0.941586C8.03275 0.917676 7.90692 1.1655 8.02936 1.34194C8.17013 1.54479 8.29981 1.75592 8.41754 1.97445C8.91878 2.90485 9.20322 3.96932 9.20322 5.10022C9.20322 8.37201 6.82247 11.0878 3.69887 11.6097C3.45736 11.65 3.20988 11.6772 2.96008 11.6906C2.74563 11.702 2.62729 11.9535 2.77721 12.1072C2.84551 12.1773 2.91535 12.2458 2.98667 12.3128L3.05883 12.3795L3.31883 12.6045L3.50684 12.7532L3.62796 12.8433L3.81491 12.9742L3.99079 13.089C4.11175 13.1651 4.23536 13.2375 4.36157 13.3059L4.62496 13.4412L4.88553 13.5607L5.18837 13.6828L5.43169 13.7686C5.56564 13.8128 5.70149 13.8529 5.83857 13.8885C5.94262 13.9155 6.04767 13.9401 6.15405 13.9622C6.27993 13.9883 6.40713 14.0109 6.53544 14.0298L6.85241 14.0685L7.11934 14.0892C7.24637 14.0965 7.37436 14.1002 7.50322 14.1002C11.1483 14.1002 14.1032 11.1453 14.1032 7.50023C14.1032 7.25044 14.0893 7.00389 14.0623 6.76131L14.0255 6.48407C13.991 6.26083 13.9453 6.04129 13.8891 5.82642C13.8213 5.56709 13.7382 5.31398 13.6409 5.06881L13.5279 4.80132L13.4507 4.63542L13.3766 4.48666C13.2178 4.17773 13.0353 3.88295 12.8312 3.60423L12.6782 3.40352L12.4793 3.16432L12.3157 2.98361L12.1961 2.85951L12.0355 2.70246L11.8134 2.50184L11.4925 2.24191L11.2483 2.06498L10.9562 1.87446L10.6346 1.68894L10.3073 1.52378L10.1938 1.47176L9.95488 1.3706L9.67791 1.2669L9.42566 1.1846L9.10075 1.09489L8.83599 1.03486L8.54406 0.98184ZM10.4032 5.30023C10.4032 4.27588 10.2002 3.29829 9.83244 2.40604C11.7623 3.28995 13.1032 5.23862 13.1032 7.50023C13.1032 10.593 10.596 13.1002 7.50322 13.1002C6.63646 13.1002 5.81597 12.9036 5.08355 12.5522C6.5419 12.0941 7.81081 11.2082 8.74322 10.0416C8.87963 10.2284 9.10028 10.3497 9.34928 10.3497C9.76349 10.3497 10.0993 10.0139 10.0993 9.59971C10.0993 9.24256 9.84965 8.94373 9.51535 8.86816C9.57741 8.75165 9.63653 8.63334 9.6926 8.51332C9.88358 8.63163 10.1088 8.69993 10.35 8.69993C11.0403 8.69993 11.6 8.14028 11.6 7.44993C11.6 6.75976 11.0406 6.20024 10.3505 6.19993C10.3853 5.90487 10.4032 5.60464 10.4032 5.30023Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg></label></span></div></div></div></div></footer><section aria-label="Notifications alt+T" tabindex="-1" aria-live="polite" aria-relevant="additions text" aria-atomic="false"></section><script src="./learn_files/webpack.js" async=""></script><script>(self.__next_f=self.__next_f||[]).push([0])</script><script>self.__next_f.push([1,"3:\"$Sreact.fragment\"\n4:I[\"(app-pages-browser)/./node_modules/.pnpm/next@15.1.6_react-dom@19.0.0_react@19.0.0__react@19.0.0_sass@1.77.4/node_modules/next/dist/client/components/layout-router.js\",[\"app-pages-internals\",\"static/chunks/app-pages-internals.js\"],\"\"]\n5:I[\"(app-pages-browser)/./node_modules/.pnpm/next@15.1.6_react-dom@19.0.0_react@19.0.0__react@19.0.0_sass@1.77.4/node_modules/next/dist/client/components/render-from-template-context.js\",[\"app-pages-internals\",\"static/chunks/app-pages-internals.js\"],\"\"]\nb:I[\"(app-pages-browser)/./src/components/site/theme-provider.tsx\",[\"app/(frontend)/layout\",\"static/chunks/app/(frontend)/layout.js\"],\"ThemeProvider\"]\nc:I[\"(app-pages-browser)/./src/components/site/navbar.tsx\",[\"app/(frontend)/layout\",\"static/chunks/app/(frontend)/layout.js\"],\"Navbar\"]\n10:I[\"(app-pages-browser)/./src/components/site/footer.tsx\",[\"app/(frontend)/layout\",\"static/chunks/app/(frontend)/layout.js\"],\"Footer\"]\n11:I[\"(app-pages-browser)/./src/components/ui/sonner.tsx\",[\"app/(frontend)/layout\",\"static/chunks/app/(frontend)/layout.js\"],\"Toaster\"]\n14:I[\"(app-pages-browser)/./node_modules/.pnpm/next@15.1.6_react-dom@19.0.0_react@19.0.0__react@19.0.0_sass@1.77.4/node_modules/next/dist/lib/metadata/metadata-boundary.js\",[\"app-pages-internals\",\"static/chunks/app-pages-internals.js\"],\"OutletBoundary\"]\n18:I[\"(app-pages-browser)/./node_modules/.pnpm/next@15.1.6_react-dom@19.0.0_react@19.0.0__react@19.0.0_sass@1.77.4/node_modules/next/dist/client/components/error-boundary.js\",[\"app-pages-internals\",\"static/chunks/app-pages-internals.js\"],\"\"]\n19:I[\"(app-pages-browser)/./node_modules/.pnpm/next@15.1.6_react-dom@19.0.0_react@19.0.0__react@19.0.0_sass@1.77.4/node_modules/next/dist/client/components/client-page.js\",[\"app-pages-internals\",\"static/chunks/app-pages-internals.js\"],\"ClientPageRoot\"]\n1a:I[\"(app-pages-browser)/./node_modules/.pnpm/next@15.1.6_react-dom@19.0.0_react@19.0.0__react@19.0.0_sass@1.77.4/node_modules/next/dist/client/components/client-segment.js\",[\"app-pages-internals\",\"static/chunks/app-pages-"])</script><script>self.__next_f.push([1,"internals.js\"],\"ClientSegmentRoot\"]\n1b:I[\"(app-pages-browser)/./node_modules/.pnpm/next@15.1.6_react-dom@19.0.0_react@19.0.0__react@19.0.0_sass@1.77.4/node_modules/next/dist/client/components/http-access-fallback/error-boundary.js\",[\"app-pages-internals\",\"static/chunks/app-pages-internals.js\"],\"HTTPAccessFallbackBoundary\"]\n1c:I[\"(app-pages-browser)/./node_modules/.pnpm/next@15.1.6_react-dom@19.0.0_react@19.0.0__react@19.0.0_sass@1.77.4/node_modules/next/dist/lib/metadata/metadata-boundary.js\",[\"app-pages-internals\",\"static/chunks/app-pages-internals.js\"],\"MetadataBoundary\"]\n1d:I[\"(app-pages-browser)/./node_modules/.pnpm/next@15.1.6_react-dom@19.0.0_react@19.0.0__react@19.0.0_sass@1.77.4/node_modules/next/dist/lib/metadata/metadata-boundary.js\",[\"app-pages-internals\",\"static/chunks/app-pages-internals.js\"],\"ViewportBoundary\"]\n:HL[\"/_next/static/media/569ce4b8f30dc480-s.p.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n:HL[\"/_next/static/media/93f479601ee12b01-s.p.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n:HL[\"/_next/static/css/app/(frontend)/layout.css?v=1738360937186\",\"style\"]\n:HL[\"/_next/static/css/app/(frontend)/learn/page.css?v=1738360937186\",\"style\"]\n2:{\"name\":\"Preloads\",\"env\":\"Server\",\"key\":null,\"owner\":null,\"props\":{\"preloadCallbacks\":[\"$E(()=\u003e{ctx.componentMod.preloadFont(href,type,ctx.renderOpts.crossOrigin,ctx.nonce)})\",\"$E(()=\u003e{ctx.componentMod.preloadFont(href,type,ctx.renderOpts.crossOrigin,ctx.nonce)})\",\"$E(()=\u003e{ctx.componentMod.preloadStyle(fullHref,ctx.renderOpts.crossOrigin,ctx.nonce)})\",\"$E(()=\u003e{ctx.componentMod.preloadStyle(fullHref,ctx.renderOpts.crossOrigin,ctx.nonce)})\"]}}\n1:D\"$2\"\n1:null\n7:{\"name\":\"NotFound\",\"env\":\"Server\",\"key\":null,\"owner\":null,\"props\":{}}\n6:D\"$7\"\n8:{\"name\":\"HTTPAccessErrorFallback\",\"env\":\"Server\",\"key\":null,\"owner\":\"$7\",\"props\":{\"status\":404,\"message\":\"This page could not be found.\"}}\n6:D\"$8\"\n6:[[\"$\",\"title\",null,{\"children\":\"404: This page could not be found.\"},\"$8\"],[\"$\",\"div\",null,{\"style\":{\"fontFamily\":\"system-ui,\\\"Segoe UI\\\",Roboto,Helvetica,Arial,sa"])</script><script>self.__next_f.push([1,"ns-serif,\\\"Apple Color Emoji\\\",\\\"Segoe UI Emoji\\\"\",\"height\":\"100vh\",\"textAlign\":\"center\",\"display\":\"flex\",\"flexDirection\":\"column\",\"alignItems\":\"center\",\"justifyContent\":\"center\"},\"children\":[\"$\",\"div\",null,{\"children\":[[\"$\",\"style\",null,{\"dangerouslySetInnerHTML\":{\"__html\":\"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}\"}},\"$8\"],[\"$\",\"h1\",null,{\"className\":\"next-error-h1\",\"style\":{\"display\":\"inline-block\",\"margin\":\"0 20px 0 0\",\"padding\":\"0 23px 0 0\",\"fontSize\":24,\"fontWeight\":500,\"verticalAlign\":\"top\",\"lineHeight\":\"49px\"},\"children\":404},\"$8\"],[\"$\",\"div\",null,{\"style\":{\"display\":\"inline-block\"},\"children\":[\"$\",\"h2\",null,{\"style\":{\"fontSize\":14,\"fontWeight\":400,\"lineHeight\":\"49px\",\"margin\":0},\"children\":\"This page could not be found.\"},\"$8\"]},\"$8\"]]},\"$8\"]},\"$8\"]]\na:{\"name\":\"RootLayout\",\"env\":\"Server\",\"key\":null,\"owner\":null,\"props\":{\"children\":[\"$\",\"$L4\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\",\"(frontend)\",\"children\"],\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$3\",null,{\"children\":[\"$\",\"$L5\",null,{},null]},null],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[\"$\",\"$3\",null,{\"children\":\"$Y\"},null],\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"},null],\"params\":\"$Y\"}}\n9:D\"$a\"\ne:{\"name\":\"NotFound\",\"env\":\"Server\",\"key\":null,\"owner\":null,\"props\":{}}\nd:D\"$e\"\nf:{\"name\":\"HTTPAccessErrorFallback\",\"env\":\"Server\",\"key\":null,\"owner\":\"$e\",\"props\":{\"status\":404,\"message\":\"This page could not be found.\"}}\nd:D\"$f\"\nd:[[\"$\",\"title\",null,{\"children\":\"404: This page could not be found.\"},\"$f\"],[\"$\",\"div\",null,{\"style\":\"$6:1:props:style\",\"children\":[\"$\",\"div\",null,{\"children\":[[\"$\",\"style\",null,{\"dangerouslySetInnerHTML\":{\"__html\":\"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){b"])</script><script>self.__next_f.push([1,"ody{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}\"}},\"$f\"],[\"$\",\"h1\",null,{\"className\":\"next-error-h1\",\"style\":\"$6:1:props:children:props:children:1:props:style\",\"children\":404},\"$f\"],[\"$\",\"div\",null,{\"style\":\"$6:1:props:children:props:children:2:props:style\",\"children\":[\"$\",\"h2\",null,{\"style\":\"$6:1:props:children:props:children:2:props:children:props:style\",\"children\":\"This page could not be found.\"},\"$f\"]},\"$f\"]]},\"$f\"]},\"$f\"]]\n9:[\"$\",\"html\",null,{\"suppressHydrationWarning\":true,\"lang\":\"en\",\"children\":[\"$\",\"body\",null,{\"className\":\"__className_4d318d __variable_ea5f4b antialiased scroll-smooth\",\"children\":[[\"$\",\"$Lb\",null,{\"attribute\":\"class\",\"defaultTheme\":\"system\",\"enableSystem\":true,\"disableTransitionOnChange\":true,\"children\":[[\"$\",\"$Lc\",null,{},\"$a\"],[\"$\",\"$L4\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\",\"(frontend)\",\"children\"],\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L5\",null,{},null],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[[],\"$d\"],\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"},null],[\"$\",\"$L10\",null,{},\"$a\"]]},\"$a\"],[\"$\",\"$L11\",null,{},\"$a\"]]},\"$a\"]},\"$a\"]\n13:{\"name\":\"LearnPage\",\"env\":\"Server\",\"key\":null,\"owner\":null,\"props\":{\"params\":\"$@\",\"searchParams\":\"$@\"}}\n12:D\"$13\"\n16:{\"name\":\"__next_outlet_boundary__\",\"env\":\"Server\",\"key\":null,\"owner\":null,\"props\":{\"ready\":\"$E(async function getMetadataAndViewportReady() {\\n        await viewport();\\n        await metadata();\\n        return undefined;\\n    })\"}}\n15:D\"$16\"\n"])</script><script>self.__next_f.push([1,"1e:{\"name\":\"NonIndex\",\"env\":\"Server\",\"key\":null,\"owner\":null,\"props\":{\"ctx\":{\"componentMod\":{\"GlobalError\":\"$18\",\"__next_app__\":{\"require\":\"$E(function __webpack_require__(moduleId) {\\n/******/ \\t\\t// Check if module is in cache\\n/******/ \\t\\tvar cachedModule = __webpack_module_cache__[moduleId];\\n/******/ \\t\\tif (cachedModule !== undefined) {\\n/******/ \\t\\t\\treturn cachedModule.exports;\\n/******/ \\t\\t}\\n/******/ \\t\\t// Create a new module (and put it into the cache)\\n/******/ \\t\\tvar module = __webpack_module_cache__[moduleId] = {\\n/******/ \\t\\t\\tid: moduleId,\\n/******/ \\t\\t\\tloaded: false,\\n/******/ \\t\\t\\texports: {}\\n/******/ \\t\\t};\\n/******/ \\t\\n/******/ \\t\\t// Execute the module function\\n/******/ \\t\\tvar threw = true;\\n/******/ \\t\\ttry {\\n/******/ \\t\\t\\t__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);\\n/******/ \\t\\t\\tthrew = false;\\n/******/ \\t\\t} finally {\\n/******/ \\t\\t\\tif(threw) delete __webpack_module_cache__[moduleId];\\n/******/ \\t\\t}\\n/******/ \\t\\n/******/ \\t\\t// Flag the module as loaded\\n/******/ \\t\\tmodule.loaded = true;\\n/******/ \\t\\n/******/ \\t\\t// Return the exports of the module\\n/******/ \\t\\treturn module.exports;\\n/******/ \\t})\",\"loadChunk\":\"$E(() =\u003e Promise.resolve())\"},\"pages\":[\"/Users/brijr/brijr/academy/src/app/(frontend)/learn/page.tsx\"],\"routeModule\":{\"userland\":{\"loaderTree\":[\"\",{\"children\":\"$Y\"},\"$Y\"]},\"definition\":\"$Y\"},\"tree\":\"$Y\",\"ClientPageRoot\":\"$19\",\"ClientSegmentRoot\":\"$1a\",\"HTTPAccessFallbackBoundary\":\"$1b\",\"LayoutRouter\":\"$4\",\"MetadataBoundary\":\"$1c\",\"OutletBoundary\":\"$14\",\"Postpone\":\"$E(function Postpone({ reason, route }) {\\n    const prerenderStore = _workunitasyncstorageexternal.workUnitAsyncStorage.getStore();\\n    const dynamicTracking = prerenderStore \u0026\u0026 prerenderStore.type === 'prerender-ppr' ? prerenderStore.dynamicTracking : null;\\n    postponeWithTracking(route, reason, dynamicTracking);\\n})\",\"RenderFromTemplateContext\":\"$5\",\"ViewportBoundary\":\"$1d\",\"actionAsyncStorage\":\"$Y\",\"collectSegmentData\":\"$E(async function collectSegmentData(fullPageDataBuffer, staleTime, clientModules, serverConsumerManifest) {\\n    // Traverse the router tree and generate a prefetch response for each segment.\\n    // A mutable map to collect the results as we traverse the route tree.\\n    const resultMap = new Map();\\n    // Before we start, warm up the module cache by decoding the page data once.\\n    // Then we can assume that any remaining async tasks that occur the next time\\n    // are due to hanging promises caused by dynamic data access. Note we only\\n    // have to do this once per page, not per individual segment.\\n    //\\n    try {\\n        await (0, _clientedge.createFromReadableStream)((0, _nodewebstreamshelper.streamFromBuffer)(fullPageDataBuffer), {\\n            serverConsumerManifest\\n        });\\n        await (0, _scheduler.waitAtLeastOneReactRenderTask)();\\n    } catch  {}\\n    // Create an abort controller that we'll use to stop the stream.\\n    const abortController = new AbortController();\\n    const onCompletedProcessingRouteTree = async ()=\u003e{\\n        // Since all we're doing is decoding and re-encoding a cached prerender, if\\n        // serializing the stream takes longer than a microtask, it must because of\\n        // hanging promises caused by dynamic data.\\n        await (0, _scheduler.waitAtLeastOneReactRenderTask)();\\n        abortController.abort();\\n    };\\n    // Generate a stream for the route tree prefetch. While we're walking the\\n    // tree, we'll also spawn additional tasks to generate the segment prefetches.\\n    // The promises for these tasks are pushed to a mutable array that we will\\n    // await once the route tree is fully rendered.\\n    const segmentTasks = [];\\n    const { prelude: treeStream } = await (0, _staticedge.prerender)(// RootTreePrefetch is not a valid return type for a React component, but\\n    // we need to use a component so that when we decode the original stream\\n    // inside of it, the side effects are transferred to the new stream.\\n    // @ts-expect-error\\n    /*#__PURE__*/ (0, _jsxruntime.jsx)(PrefetchTreeData, {\\n        fullPageDataBuffer: fullPageDataBuffer,\\n        serverConsumerManifest: serverConsumerManifest,\\n        clientModules: clientModules,\\n        staleTime: staleTime,\\n        segmentTasks: segmentTasks,\\n        onCompletedProcessingRouteTree: onCompletedProcessingRouteTree\\n    }), clientModules, {\\n        signal: abortController.signal,\\n        onError () {\\n        // Ignore any errors. These would have already been reported when\\n        // we created the full page data.\\n        }\\n    });\\n    // Write the route tree to a special `/_tree` segment.\\n    const treeBuffer = await (0, _nodewebstreamshelper.streamToBuffer)(treeStream);\\n    resultMap.set('/_tree', treeBuffer);\\n    // Now that we've finished rendering the route tree, all the segment tasks\\n    // should have been spawned. Await them in parallel and write the segment\\n    // prefetches to the result map.\\n    for (const [segmentPath, buffer] of (await Promise.all(segmentTasks))){\\n        resultMap.set(segmentPath, buffer);\\n    }\\n    return resultMap;\\n})\",\"createMetadataComponents\":\"$E(function createMetadataComponents({ tree, searchParams, metadataContext, getDynamicParamFromSegment, appUsingSizeAdjustment, errorType, createServerParamsForMetadata, workStore, MetadataBoundary, ViewportBoundary }) {\\n    function MetadataRoot() {\\n        return /*#__PURE__*/ (0, _jsxruntime.jsxs)(_jsxruntime.Fragment, {\\n            children: [\\n                /*#__PURE__*/ (0, _jsxruntime.jsx)(MetadataBoundary, {\\n                    children: /*#__PURE__*/ (0, _jsxruntime.jsx)(Metadata, {})\\n                }),\\n                /*#__PURE__*/ (0, _jsxruntime.jsx)(ViewportBoundary, {\\n                    children: /*#__PURE__*/ (0, _jsxruntime.jsx)(Viewport, {})\\n                }),\\n                appUsingSizeAdjustment ? /*#__PURE__*/ (0, _jsxruntime.jsx)(\\\"meta\\\", {\\n                    name: \\\"next-size-adjust\\\",\\n                    content: \\\"\\\"\\n                }) : null\\n            ]\\n        });\\n    }\\n    async function viewport() {\\n        return getResolvedViewport(tree, searchParams, getDynamicParamFromSegment, createServerParamsForMetadata, workStore, errorType);\\n    }\\n    async function Viewport() {\\n        try {\\n            return await viewport();\\n        } catch (error) {\\n            if (!errorType \u0026\u0026 (0, _httpaccessfallback.isHTTPAccessFallbackError)(error)) {\\n                try {\\n                    return await getNotFoundViewport(tree, searchParams, getDynamicParamFromSegment, createServerParamsForMetadata, workStore);\\n                } catch  {}\\n            }\\n            // We don't actually want to error in this component. We will\\n            // also error in the MetadataOutlet which causes the error to\\n            // bubble from the right position in the page to be caught by the\\n            // appropriate boundaries\\n            return null;\\n        }\\n    }\\n    Viewport.displayName = _metadataconstants.VIEWPORT_BOUNDARY_NAME;\\n    async function metadata() {\\n        return getResolvedMetadata(tree, searchParams, getDynamicParamFromSegment, metadataContext, createServerParamsForMetadata, workStore, errorType);\\n    }\\n    async function Metadata() {\\n        try {\\n            return await metadata();\\n        } catch (error) {\\n            if (!errorType \u0026\u0026 (0, _httpaccessfallback.isHTTPAccessFallbackError)(error)) {\\n                try {\\n                    return await getNotFoundMetadata(tree, searchParams, getDynamicParamFromSegment, metadataContext, createServerParamsForMetadata, workStore);\\n                } catch  {}\\n            }\\n            // We don't actually want to error in this component. We will\\n            // also error in the MetadataOutlet which causes the error to\\n            // bubble from the right position in the page to be caught by the\\n            // appropriate boundaries\\n            return null;\\n        }\\n    }\\n    Metadata.displayName = _metadataconstants.METADATA_BOUNDARY_NAME;\\n    async function getMetadataAndViewportReady() {\\n        await viewport();\\n        await metadata();\\n        return undefined;\\n    }\\n    return [\\n        MetadataRoot,\\n        getMetadataAndViewportReady\\n    ];\\n})\",\"createPrerenderParamsForClientSegment\":\"$E(function createPrerenderParamsForClientSegment(underlyingParams, workStore) {\\n    const prerenderStore = _workunitasyncstorageexternal.workUnitAsyncStorage.getStore();\\n    if (prerenderStore \u0026\u0026 prerenderStore.type === 'prerender') {\\n        const fallbackParams = workStore.fallbackRouteParams;\\n        if (fallbackParams) {\\n            for(let key in underlyingParams){\\n                if (fallbackParams.has(key)) {\\n                    // This params object has one of more fallback params so we need to consider\\n                    // the awaiting of this params object \\\"dynamic\\\". Since we are in dynamicIO mode\\n                    // we encode this as a promise that never resolves\\n                    return (0, _dynamicrenderingutils.makeHangingPromise)(prerenderStore.renderSignal, '`params`');\\n                }\\n            }\\n        }\\n    }\\n    // We're prerendering in a mode that does not abort. We resolve the promise without\\n    // any tracking because we're just transporting a value from server to client where the tracking\\n    // will be applied.\\n    return Promise.resolve(underlyingParams);\\n})\",\"createPrerenderSearchParamsForClientPage\":\"$E(function createPrerenderSearchParamsForClientPage(workStore) {\\n    if (workStore.forceStatic) {\\n        // When using forceStatic we override all other logic and always just return an empty\\n        // dictionary object.\\n        return Promise.resolve({});\\n    }\\n    const prerenderStore = _workunitasyncstorageexternal.workUnitAsyncStorage.getStore();\\n    if (prerenderStore \u0026\u0026 prerenderStore.type === 'prerender') {\\n        // dynamicIO Prerender\\n        // We're prerendering in a mode that aborts (dynamicIO) and should stall\\n        // the promise to ensure the RSC side is considered dynamic\\n        return (0, _dynamicrenderingutils.makeHangingPromise)(prerenderStore.renderSignal, '`searchParams`');\\n    }\\n    // We're prerendering in a mode that does not aborts. We resolve the promise without\\n    // any tracking because we're just transporting a value from server to client where the tracking\\n    // will be applied.\\n    return Promise.resolve({});\\n})\",\"createServerParamsForMetadata\":\"$E(function createServerParamsForServerSegment(underlyingParams, workStore) {\\n    const workUnitStore = _workunitasyncstorageexternal.workUnitAsyncStorage.getStore();\\n    if (workUnitStore) {\\n        switch(workUnitStore.type){\\n            case 'prerender':\\n            case 'prerender-ppr':\\n            case 'prerender-legacy':\\n                return createPrerenderParams(underlyingParams, workStore, workUnitStore);\\n            default:\\n        }\\n    }\\n    return createRenderParams(underlyingParams, workStore);\\n})\",\"createServerParamsForServerSegment\":\"$E(function createServerParamsForServerSegment(underlyingParams, workStore) {\\n    const workUnitStore = _workunitasyncstorageexternal.workUnitAsyncStorage.getStore();\\n    if (workUnitStore) {\\n        switch(workUnitStore.type){\\n            case 'prerender':\\n            case 'prerender-ppr':\\n            case 'prerender-legacy':\\n                return createPrerenderParams(underlyingParams, workStore, workUnitStore);\\n            default:\\n        }\\n    }\\n    return createRenderParams(underlyingParams, workStore);\\n})\",\"createServerSearchParamsForMetadata\":\"$E(function createServerSearchParamsForServerPage(underlyingSearchParams, workStore) {\\n    const workUnitStore = _workunitasyncstorageexternal.workUnitAsyncStorage.getStore();\\n    if (workUnitStore) {\\n        switch(workUnitStore.type){\\n            case 'prerender':\\n            case 'prerender-ppr':\\n            case 'prerender-legacy':\\n                return createPrerenderSearchParams(workStore, workUnitStore);\\n            default:\\n        }\\n    }\\n    return createRenderSearchParams(underlyingSearchParams, workStore);\\n})\",\"createServerSearchParamsForServerPage\":\"$E(function createServerSearchParamsForServerPage(underlyingSearchParams, workStore) {\\n    const workUnitStore = _workunitasyncstorageexternal.workUnitAsyncStorage.getStore();\\n    if (workUnitStore) {\\n        switch(workUnitStore.type){\\n            case 'prerender':\\n            case 'prerender-ppr':\\n            case 'prerender-legacy':\\n                return createPrerenderSearchParams(workStore, workUnitStore);\\n            default:\\n        }\\n    }\\n    return createRenderSearchParams(underlyingSearchParams, workStore);\\n})\",\"createTemporaryReferenceSet\":\"$E(function(){return new WeakMap})\",\"decodeAction\":\"$E(function(body,serverManifest){var formData=new FormData,action=null;return body.forEach(function(value1,key){key.startsWith(\\\"$ACTION_\\\")?key.startsWith(\\\"$ACTION_REF_\\\")?(value1=decodeBoundActionMetaData(body,serverManifest,value1=\\\"$ACTION_\\\"+key.slice(12)+\\\":\\\"),action=loadServerReference(serverManifest,value1.id,value1.bound)):key.startsWith(\\\"$ACTION_ID_\\\")\u0026\u0026(action=loadServerReference(serverManifest,value1=key.slice(11),null)):formData.append(key,value1)}),null===action?null:action.then(function(fn){return fn.bind(null,formData)})})\",\"decodeFormState\":\"$E(function(actionResult,body,serverManifest){var keyPath=body.get(\\\"$ACTION_KEY\\\");if(\\\"string\\\"!=typeof keyPath)return Promise.resolve(null);var metaData=null;if(body.forEach(function(value1,key){key.startsWith(\\\"$ACTION_REF_\\\")\u0026\u0026(metaData=decodeBoundActionMetaData(body,serverManifest,\\\"$ACTION_\\\"+key.slice(12)+\\\":\\\"))}),null===metaData)return Promise.resolve(null);var referenceId=metaData.id;return Promise.resolve(metaData.bound).then(function(bound){return null===bound?null:[actionResult,keyPath,referenceId,bound.length-1]})})\",\"decodeReply\":\"$E(function(body,webpackMap,options){if(\\\"string\\\"==typeof body){var form=new FormData;form.append(\\\"0\\\",body),body=form}return webpackMap=getChunk(body=createResponse(webpackMap,\\\"\\\",options?options.temporaryReferences:void 0,body),0),close(body),webpackMap})\",\"patchFetch\":\"$E(function patchFetch() {\\n    return (0, _patchfetch.patchFetch)({\\n        workAsyncStorage: _workasyncstorageexternal.workAsyncStorage,\\n        workUnitAsyncStorage: _workunitasyncstorageexternal.workUnitAsyncStorage\\n    });\\n})\",\"preconnect\":\"$E(function preconnect(href, crossOrigin, nonce) {\\n    const opts = {};\\n    if (typeof crossOrigin === 'string') {\\n        opts.crossOrigin = crossOrigin;\\n    }\\n    if (typeof nonce === 'string') {\\n        opts.nonce = nonce;\\n    }\\n    ;\\n    _reactdom.default.preconnect(href, opts);\\n})\",\"preloadFont\":\"$E(function preloadFont(href, type, crossOrigin, nonce) {\\n    const opts = {\\n        as: 'font',\\n        type\\n    };\\n    if (typeof crossOrigin === 'string') {\\n        opts.crossOrigin = crossOrigin;\\n    }\\n    if (typeof nonce === 'string') {\\n        opts.nonce = nonce;\\n    }\\n    _reactdom.default.preload(href, opts);\\n})\",\"preloadStyle\":\"$E(function preloadStyle(href, crossOrigin, nonce) {\\n    const opts = {\\n        as: 'style'\\n    };\\n    if (typeof crossOrigin === 'string') {\\n        opts.crossOrigin = crossOrigin;\\n    }\\n    if (typeof nonce === 'string') {\\n        opts.nonce = nonce;\\n    }\\n    _reactdom.default.preload(href, opts);\\n})\",\"prerender\":\"$undefined\",\"renderToReadableStream\":\"$E(function(model,webpackMap,options){var request=new RequestInstance(20,model,webpackMap,options?options.onError:void 0,options?options.identifierPrefix:void 0,options?options.onPostpone:void 0,options?options.temporaryReferences:void 0,options?options.environmentName:void 0,options?options.filterStackFrame:void 0,noop,noop);if(options\u0026\u0026options.signal){var signal=options.signal;if(signal.aborted)abort(request,signal.reason);else{var listener=function(){abort(request,signal.reason),signal.removeEventListener(\\\"abort\\\",listener)};signal.addEventListener(\\\"abort\\\",listener)}}return new ReadableStream({type:\\\"bytes\\\",start:function(){request.flushScheduled=null!==request.destination,supportsRequestStorage?scheduleMicrotask(function(){requestStorage.run(request,performWork,request)}):scheduleMicrotask(function(){return performWork(request)}),setTimeoutOrImmediate(function(){request.status===OPENING\u0026\u0026(request.status=11)},0)},pull:function(controller){if(request.status===CLOSING)request.status=CLOSED,closeWithError(controller,request.fatalError);else if(request.status!==CLOSED\u0026\u0026null===request.destination){request.destination=controller;try{flushCompletedChunks(request,controller)}catch(error){logRecoverableError(request,error,null),fatalError(request,error)}}},cancel:function(reason){request.destination=null,abort(request,reason)}},{highWaterMark:0})})\",\"serverHooks\":\"$Y\",\"taintObjectReference\":\"$E(function notImplemented() {\\n    throw new Error('Taint can only be used with the taint flag.');\\n})\",\"workAsyncStorage\":\"$Y\",\"workUnitAsyncStorage\":\"$Y\"},\"url\":\"$Y\",\"renderOpts\":\"$Y\",\"workStore\":\"$Y\",\"parsedRequestHeaders\":\"$Y\",\"getDynamicParamFromSegment\":\"$E(function(segment){let segmentParam=getSegmentParam(segment);if(!segmentParam)return null;let key=segmentParam.param,value1=params[key];if(fallbackRouteParams\u0026\u0026fallbackRouteParams.has(segmentParam.param)?value1=fallbackRouteParams.get(segmentParam.param):Array.isArray(value1)?value1=value1.map(i=\u003eencodeURIComponent(i)):\\\"string\\\"==typeof value1\u0026\u0026(value1=encodeURIComponent(value1)),!value1){let isCatchall=\\\"catchall\\\"===segmentParam.type,isOptionalCatchall=\\\"optional-catchall\\\"===segmentParam.type;if(isCatchall||isOptionalCatchall){let dynamicParamType=dynamicParamTypes[segmentParam.type];return isOptionalCatchall?{param:key,value:null,type:dynamicParamType,treeSegment:[key,\\\"\\\",dynamicParamType]}:{param:key,value:value1=pagePath.split(\\\"/\\\").slice(1).flatMap(pathSegment=\u003e{let param=function(param){let match=param.match(PARAMETER_PATTERN);return match?parseMatchedParameter(match[1]):parseMatchedParameter(param)}(pathSegment);return params[param.key]??param.key}),type:dynamicParamType,treeSegment:[key,value1.join(\\\"/\\\"),dynamicParamType]}}}let type=function(type){let short=dynamicParamTypes[type];if(!short)throw Error(\\\"Unknown dynamic param type\\\");return short}(segmentParam.type);return{param:key,value:value1,treeSegment:[key,Array.isArray(value1)?value1.join(\\\"/\\\"):value1,type],type:type}})\",\"query\":\"$Y\",\"isPrefetch\":false,\"isAction\":false,\"requestTimestamp\":1738360937186,\"appUsingSizeAdjustment\":true,\"flightRouterState\":\"$undefined\",\"requestId\":\"rCyGz_0fRHTy46Oo3PFbK\",\"pagePath\":\"/learn\",\"clientReferenceManifest\":\"$Y\",\"assetPrefix\":\"\",\"isNotFoundPath\":false,\"nonce\":\"$undefined\",\"res\":\"$Y\"}}}\n"])</script><script>self.__next_f.push([1,"17:D\"$1e\"\n17:null\n20:{\"name\":\"MetadataRoot\",\"env\":\"Server\",\"key\":\"rCyGz_0fRHTy46Oo3PFbK\",\"owner\":null,\"props\":{}}\n1f:D\"$20\"\n22:{\"name\":\"__next_metadata_boundary__\",\"env\":\"Server\",\"key\":null,\"owner\":\"$20\",\"props\":{}}\n21:D\"$22\"\n24:{\"name\":\"__next_viewport_boundary__\",\"env\":\"Server\",\"key\":null,\"owner\":\"$20\",\"props\":{}}\n23:D\"$24\"\n1f:[\"$\",\"$3\",\"rCyGz_0fRHTy46Oo3PFbK\",{\"children\":[[\"$\",\"$L1c\",null,{\"children\":\"$L21\"},\"$20\"],[\"$\",\"$L1d\",null,{\"children\":\"$L23\"},\"$20\"],[\"$\",\"meta\",null,{\"name\":\"next-size-adjust\",\"content\":\"\"},\"$20\"]]},null]\n25:[]\n0:{\"P\":\"$1\",\"b\":\"development\",\"p\":\"\",\"c\":[\"\",\"learn\"],\"i\":false,\"f\":[[[\"\",{\"children\":[\"(frontend)\",{\"children\":[\"learn\",{\"children\":[\"__PAGE__\",{}]}]},\"$undefined\",\"$undefined\",true]}],[\"\",[\"$\",\"$3\",\"c\",{\"children\":[null,[\"$\",\"$L4\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\"],\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L5\",null,{},null],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[[],\"$6\"],\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"},null]]},null],{\"children\":[\"(frontend)\",[\"$\",\"$3\",\"c\",{\"children\":[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/app/(frontend)/layout.css?v=1738360937186\",\"precedence\":\"next_static/css/app/(frontend)/layout.css\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"},null]],\"$9\"]},null],{\"children\":[\"learn\",[\"$\",\"$3\",\"c\",{\"children\":[null,[\"$\",\"$L4\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\",\"(frontend)\",\"children\",\"learn\",\"children\"],\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L5\",null,{},null],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$undefined\",\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"},null]]},null],{\"children\":[\"__PAGE__\",[\"$\",\"$3\",\"c\",{\"children\":[\"$L12\",[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/app/(frontend)/learn/page.css?v=1738360937186\",\"precedence\":\"next_static/css/app/(frontend)/learn/page"])</script><script>self.__next_f.push([1,".css\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"},null]],[\"$\",\"$L14\",null,{\"children\":\"$L15\"},null]]},null],{},null,false]},null,false]},null,false]},null,false],[\"$\",\"$3\",\"h\",{\"children\":[\"$17\",\"$1f\"]},null],false]],\"m\":\"$W25\",\"G\":[\"$18\",\"$undefined\"],\"s\":false,\"S\":false}\n23:[[\"$\",\"meta\",\"0\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"},\"$16\"]]\n21:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"},\"$22\"]]\n15:null\n"])</script><script>self.__next_f.push([1,"2a:I[\"(app-pages-browser)/./node_modules/.pnpm/next@15.1.6_react-dom@19.0.0_react@19.0.0__react@19.0.0_sass@1.77.4/node_modules/next/dist/client/app-dir/link.js\",[\"app/(frontend)/learn/page\",\"static/chunks/app/(frontend)/learn/page.js\"],\"\"]\n27:{\"name\":\"CourseList\",\"env\":\"Server\",\"key\":\"Beginner\",\"owner\":\"$13\",\"props\":{\"title\":\"Beginner\",\"courses\":[{\"id\":3,\"title\":\"Vercel Foundations\",\"slug\":\"vercel-foundations\",\"category\":{\"id\":1,\"name\":\"Beginner\",\"slug\":\"beginner\",\"updatedAt\":\"2025-01-30T23:52:07.867Z\",\"createdAt\":\"2025-01-30T23:51:58.732Z\"},\"brand\":\"vercel\",\"description\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[\"$Y\"],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}},\"chapters\":\"$Y\",\"meta\":\"$Y\",\"updatedAt\":\"2025-01-31T18:47:49.567Z\",\"createdAt\":\"2025-01-29T22:54:23.944Z\"},\"$Y\",\"$Y\",\"$Y\"]}}\n26:D\"$27\"\n29:{\"name\":\"CourseCard\",\"env\":\"Server\",\"key\":\"3\",\"owner\":\"$27\",\"props\":{\"course\":{\"id\":3,\"title\":\"Vercel Foundations\",\"slug\":\"vercel-foundations\",\"category\":{\"id\":1,\"name\":\"Beginner\",\"slug\":\"beginner\",\"updatedAt\":\"2025-01-30T23:52:07.867Z\",\"createdAt\":\"2025-01-30T23:51:58.732Z\"},\"brand\":\"vercel\",\"description\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"Understanding the Ins and Outs of the Vercel\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}},\"chapters\":\"$Y\",\"meta\":\"$Y\",\"updatedAt\":\"2025-01-31T18:47:49.567Z\",\"createdAt\":\"2025-01-29T22:54:23.944Z\"}}}\n28:D\"$29\"\n2c:{\"name\":\"CourseBook\",\"env\":\"Server\",\"key\":null,\"owner\":\"$29\",\"props\":{\"brand\":\"vercel\"}}\n2b:D\"$2c\"\n2e:{\"name\":\"VercelIcon\",\"env\":\"Server\",\"key\":null,\"owner\":\"$2c\",\"props\":{}}\n2d:D\"$2e\"\n2d:[\"$\",\"svg\",null,{\"xmlns\":\"http://www.w3.org/2000/svg\",\"width\":\"1.5rem\",\"height\":\"1.5rem\",\"viewBox\":\"0 0 24 24\",\"aria-label\":\"Vercel Icon\",\"className\":\"-mt-1\",\"r"])</script><script>self.__next_f.push([1,"ole\":\"img\",\"children\":[\"$\",\"path\",null,{\"fill\":\"currentColor\",\"d\":\"M23 21.648H1L12 2.352z\"},\"$2e\"]},\"$2e\"]\n2b:[\"$\",\"div\",null,{\"className\":\"relative flex flex-shrink-0 h-[100px] w-[80px] shadow-sm group-hover:shadow-md transition-shadow duration-300 ease-out rounded-l-[4px] rounded-r-[2px]\",\"children\":[[\"$\",\"div\",null,{\"className\":\"h-full shrink-0 bg-gradient-to-r border-r from-foreground/20 to-foreground/10 w-2 rounded-l-[4px]\"},\"$2c\"],[\"$\",\"div\",null,{\"className\":\"flex h-full w-full items-center justify-center rounded-r-[2px] bg-gradient-to-br from-foreground/10 to-foreground/20\",\"children\":[\"$\",\"div\",null,{\"className\":\"rounded-full aspect-square flex items-center justify-center text-foreground size-12 p-1 bg-background/20\",\"children\":\"$2d\"},\"$2c\"]},\"$2c\"]]},\"$2c\"]\n30:{\"name\":\"RichText\",\"env\":\"Server\",\"key\":null,\"owner\":\"$29\",\"props\":{\"className\":\"text-muted-foreground ds leading-tight text-xs\",\"data\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"Understanding the Ins and Outs of the Vercel\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}}}}\n2f:D\"$30\"\n31:{\"name\":\"RichText\",\"env\":\"Server\",\"key\":null,\"owner\":\"$30\",\"props\":{\"converters\":\"$E(({ defaultConverters })=\u003e({\\n        ...defaultConverters,\\n        ...(0,_payloadcms_richtext_lexical_react__WEBPACK_IMPORTED_MODULE_4__.LinkJSXConverter)({\\n            internalDocToHref\\n        }),\\n        blocks: {\\n            code: ({ node })=\u003e/*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_blocks_CodeBlock__WEBPACK_IMPORTED_MODULE_2__.CodeBlock, {\\n                    ...node.fields\\n                }, void 0, false, {\\n                    fileName: \\\"/Users/brijr/brijr/academy/src/components/render-rich-text.tsx\\\",\\n                    lineNumber: 46,\\n                    columnNumber: 23\\n                }, undefined),\\n            quiz: ({ nod"])</script><script>self.__next_f.push([1,"e })=\u003e/*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_blocks_QuizBlock__WEBPACK_IMPORTED_MODULE_3__.QuizBlock, {\\n                    ...node.fields\\n                }, void 0, false, {\\n                    fileName: \\\"/Users/brijr/brijr/academy/src/components/render-rich-text.tsx\\\",\\n                    lineNumber: 47,\\n                    columnNumber: 23\\n                }, undefined)\\n        }\\n    }))\",\"className\":\"article text-muted-foreground ds text-xs\",\"data\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"Understanding the Ins and Outs of the Vercel\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}}}}\n2f:D\"$31\"\n2f:[\"$\",\"div\",null,{\"className\":\"article text-muted-foreground ds text-xs\",\"children\":[[\"$\",\"p\",\"0\",{\"children\":[\"Understanding the Ins and Outs of the Vercel\"]},\"$31\"]]},\"$31\"]\n33:{\"name\":\"Badge\",\"env\":\"Server\",\"key\":null,\"owner\":\"$29\",\"props\":{\"variant\":\"outline\",\"children\":\"Coming soon\"}}\n32:D\"$33\"\n32:[\"$\",\"div\",null,{\"className\":\"inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground\",\"children\":\"Coming soon\"},\"$33\"]\n35:{\"name\":\"Badge\",\"env\":\"Server\",\"key\":null,\"owner\":\"$29\",\"props\":{\"variant\":\"outline\",\"children\":\"23,123 students\"}}\n34:D\"$35\"\n34:[\"$\",\"div\",null,{\"className\":\"inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground\",\"children\":\"23,123 students\"},\"$35\"]\n37:{\"name\":\"ArrowUpRight\",\"env\":\"Server\",\"key\":null,\"owner\":\"$29\",\"props\":{\"className\":\"h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\"}}\n36:D\"$37\"\n38:{\"name\":\"\",\"env\":\"Server\",\"key"])</script><script>self.__next_f.push([1,"\":null,\"owner\":\"$37\",\"props\":{\"ref\":\"$undefined\",\"iconNode\":[[\"path\",{\"d\":\"M7 7h10v10\",\"key\":\"1tivn9\"}],[\"path\",{\"d\":\"M7 17 17 7\",\"key\":\"1vkiza\"}]],\"className\":\"lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\"}}\n36:D\"$38\"\n36:[\"$\",\"svg\",null,{\"ref\":\"$undefined\",\"xmlns\":\"http://www.w3.org/2000/svg\",\"width\":24,\"height\":24,\"viewBox\":\"0 0 24 24\",\"fill\":\"none\",\"stroke\":\"currentColor\",\"strokeWidth\":2,\"strokeLinecap\":\"round\",\"strokeLinejoin\":\"round\",\"className\":\"lucide lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\",\"children\":[[\"$\",\"path\",\"1tivn9\",{\"d\":\"M7 7h10v10\"},\"$38\"],[\"$\",\"path\",\"1vkiza\",{\"d\":\"M7 17 17 7\"},\"$38\"],\"$undefined\"]},\"$38\"]\n28:[\"$\",\"$L2a\",\"3\",{\"href\":\"./learn/vercel-foundations\",\"className\":\"border grid grid-cols-[auto_1fr] rounded-md transition-all group relative\",\"children\":[[\"$\",\"div\",null,{\"className\":\"p-4 border-r bg-accent/75 group-hover:pt-3 group-hover:pb-5 transition-all duration-300 ease-out\",\"children\":\"$2b\"},\"$29\"],[\"$\",\"div\",null,{\"className\":\"grid p-4 gap-1 grid-rows-[auto_1fr_auto]\",\"children\":[[\"$\",\"h3\",null,{\"className\":\"text-xl font-medium\",\"children\":\"Vercel Foundations\"},\"$29\"],\"$2f\",[\"$\",\"div\",null,{\"className\":\"text-sm flex flex-wrap gap-1\",\"children\":[\"$32\",\"$34\"]},\"$29\"],\"$36\"]},\"$29\"]]},\"$29\"]\n3a:{\"name\":\"CourseCard\",\"env\":\"Server\",\"key\":\"5\",\"owner\":\"$27\",\"props\":{\"course\":{\"id\":5,\"title\":\"v0 Basics\",\"slug\":\"v0\",\"category\":{\"id\":1,\"name\":\"Beginner\",\"slug\":\"beginner\",\"updatedAt\":\"2025-01-30T23:52:07.867Z\",\"createdAt\":\"2025-01-30T23:51:58.732Z\"},\"brand\":\"v0\",\"description\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"Anyone can cook\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}},\"ch"])</script><script>self.__next_f.push([1,"apters\":\"$Y\",\"meta\":\"$Y\",\"updatedAt\":\"2025-01-31T18:48:12.007Z\",\"createdAt\":\"2025-01-31T18:04:03.705Z\"}}}\n39:D\"$3a\"\n3c:{\"name\":\"CourseBook\",\"env\":\"Server\",\"key\":null,\"owner\":\"$3a\",\"props\":{\"brand\":\"v0\"}}\n3b:D\"$3c\"\n3e:{\"name\":\"V0Icon\",\"env\":\"Server\",\"key\":null,\"owner\":\"$3c\",\"props\":{}}\n3d:D\"$3e\"\n3d:[\"$\",\"svg\",null,{\"xmlns\":\"http://www.w3.org/2000/svg\",\"aria-label\":\"v0 Icon\",\"width\":\"1.5rem\",\"height\":\"1.5rem\",\"viewBox\":\"0 0 40 40\",\"role\":\"img\",\"className\":\"fill-current -ml-px -mb-px\",\"children\":[[\"$\",\"path\",null,{\"d\":\"M23.3919 8H32.9188C36.7819 8 39.9136 11.1317 39.9136 14.9948V24.0805H36.0006V14.9948C36.0006 14.9017 35.9969 14.8093 35.9898 14.7177L26.4628 24.079C26.4949 24.08 26.5272 24.0805 26.5595 24.0805H36.0006V27.7762H26.5595C22.6964 27.7762 19.4788 24.6139 19.4788 20.7508V11.6892H23.3919V20.7508C23.3919 20.9253 23.4054 21.0977 23.4316 21.2668L33.1682 11.6995C33.0861 11.6927 33.003 11.6892 32.9188 11.6892H23.3919V8Z\"},\"$3e\"],[\"$\",\"path\",null,{\"d\":\"M13.7688 27.0956L0 11.6876H5.53933L13.6231 20.7337V11.6876H17.7535V25.5746C17.7535 27.6705 15.1654 28.6584 13.7688 27.0956Z\"},\"$3e\"]]},\"$3e\"]\n3b:[\"$\",\"div\",null,{\"className\":\"relative flex flex-shrink-0 h-[100px] w-[80px] shadow-sm group-hover:shadow-md transition-shadow duration-300 ease-out rounded-l-[4px] rounded-r-[2px]\",\"children\":[[\"$\",\"div\",null,{\"className\":\"h-full shrink-0 bg-gradient-to-r border-r from-foreground/20 to-foreground/10 w-2 rounded-l-[4px]\"},\"$3c\"],[\"$\",\"div\",null,{\"className\":\"flex h-full w-full items-center justify-center rounded-r-[2px] bg-gradient-to-br from-foreground/10 to-foreground/20\",\"children\":[\"$\",\"div\",null,{\"className\":\"rounded-full aspect-square flex items-center justify-center text-foreground size-12 p-1 bg-background/20\",\"children\":\"$3d\"},\"$3c\"]},\"$3c\"]]},\"$3c\"]\n40:{\"name\":\"RichText\",\"env\":\"Server\",\"key\":null,\"owner\":\"$3a\",\"props\":{\"className\":\"text-muted-foreground ds leading-tight text-xs\",\"data\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"chil"])</script><script>self.__next_f.push([1,"dren\":[{\"mode\":\"normal\",\"text\":\"Anyone can cook\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}}}}\n3f:D\"$40\"\n41:{\"name\":\"RichText\",\"env\":\"Server\",\"key\":null,\"owner\":\"$40\",\"props\":{\"converters\":\"$E(({ defaultConverters })=\u003e({\\n        ...defaultConverters,\\n        ...(0,_payloadcms_richtext_lexical_react__WEBPACK_IMPORTED_MODULE_4__.LinkJSXConverter)({\\n            internalDocToHref\\n        }),\\n        blocks: {\\n            code: ({ node })=\u003e/*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_blocks_CodeBlock__WEBPACK_IMPORTED_MODULE_2__.CodeBlock, {\\n                    ...node.fields\\n                }, void 0, false, {\\n                    fileName: \\\"/Users/brijr/brijr/academy/src/components/render-rich-text.tsx\\\",\\n                    lineNumber: 46,\\n                    columnNumber: 23\\n                }, undefined),\\n            quiz: ({ node })=\u003e/*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_blocks_QuizBlock__WEBPACK_IMPORTED_MODULE_3__.QuizBlock, {\\n                    ...node.fields\\n                }, void 0, false, {\\n                    fileName: \\\"/Users/brijr/brijr/academy/src/components/render-rich-text.tsx\\\",\\n                    lineNumber: 47,\\n                    columnNumber: 23\\n                }, undefined)\\n        }\\n    }))\",\"className\":\"article text-muted-foreground ds text-xs\",\"data\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"Anyone can cook\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}}}}\n3f:D\"$41\"\n3f:[\"$\",\"div\",null,{\"className\":\"article text-muted-foreground ds text-xs\",\"children\":[[\"$\",\"p\",\"0\",{\"children\":[\"Anyone can cook\"]},\"$41\"]]},\"$41\"]\n43:{\"name\":\"Badge\",\"env\":\"Server\",\"key\":null,\"owner\":\"$3a\",\"props\":{\"variant\":\"outline\",\"children\":\"Co"])</script><script>self.__next_f.push([1,"ming soon\"}}\n42:D\"$43\"\n42:[\"$\",\"div\",null,{\"className\":\"inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground\",\"children\":\"Coming soon\"},\"$43\"]\n45:{\"name\":\"Badge\",\"env\":\"Server\",\"key\":null,\"owner\":\"$3a\",\"props\":{\"variant\":\"outline\",\"children\":\"23,123 students\"}}\n44:D\"$45\"\n44:[\"$\",\"div\",null,{\"className\":\"inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground\",\"children\":\"23,123 students\"},\"$45\"]\n47:{\"name\":\"ArrowUpRight\",\"env\":\"Server\",\"key\":null,\"owner\":\"$3a\",\"props\":{\"className\":\"h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\"}}\n46:D\"$47\"\n48:{\"name\":\"\",\"env\":\"Server\",\"key\":null,\"owner\":\"$47\",\"props\":{\"ref\":\"$undefined\",\"iconNode\":[[\"path\",{\"d\":\"M7 7h10v10\",\"key\":\"1tivn9\"}],[\"path\",{\"d\":\"M7 17 17 7\",\"key\":\"1vkiza\"}]],\"className\":\"lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\"}}\n46:D\"$48\"\n46:[\"$\",\"svg\",null,{\"ref\":\"$undefined\",\"xmlns\":\"http://www.w3.org/2000/svg\",\"width\":24,\"height\":24,\"viewBox\":\"0 0 24 24\",\"fill\":\"none\",\"stroke\":\"currentColor\",\"strokeWidth\":2,\"strokeLinecap\":\"round\",\"strokeLinejoin\":\"round\",\"className\":\"lucide lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\",\"children\":[[\"$\",\"path\",\"1tivn9\",{\"d\":\"M7 7h10v10\"},\"$48\"],[\"$\",\"path\",\"1vkiza\",{\"d\":\"M7 17 17 7\"},\"$48\"],\"$undefined\"]},\"$48\"]\n39:[\"$\",\"$L2a\",\"5\",{\"href\":\"./learn/v0\",\"className\":\"border grid grid-cols-[auto_1fr] rounded-md transition-all group relative\",\"children\":[[\"$\",\"div\",null,{\"className\":\"p-4 border-r bg-accent/75 group-hover:pt-3 group-hover:pb-5 transition-all duration-300 ease-out\",\"children\":\"$3b\"},\""])</script><script>self.__next_f.push([1,"$3a\"],[\"$\",\"div\",null,{\"className\":\"grid p-4 gap-1 grid-rows-[auto_1fr_auto]\",\"children\":[[\"$\",\"h3\",null,{\"className\":\"text-xl font-medium\",\"children\":\"v0 Basics\"},\"$3a\"],\"$3f\",[\"$\",\"div\",null,{\"className\":\"text-sm flex flex-wrap gap-1\",\"children\":[\"$42\",\"$44\"]},\"$3a\"],\"$46\"]},\"$3a\"]]},\"$3a\"]\n4a:{\"name\":\"CourseCard\",\"env\":\"Server\",\"key\":\"2\",\"owner\":\"$27\",\"props\":{\"course\":{\"id\":2,\"title\":\"React Foundations\",\"slug\":\"react-foundations\",\"category\":{\"id\":1,\"name\":\"Beginner\",\"slug\":\"beginner\",\"updatedAt\":\"2025-01-30T23:52:07.867Z\",\"createdAt\":\"2025-01-30T23:51:58.732Z\"},\"brand\":\"react\",\"description\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"Gain a Baseline Understanding of React \",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}},\"chapters\":\"$Y\",\"meta\":\"$Y\",\"updatedAt\":\"2025-01-31T18:48:24.526Z\",\"createdAt\":\"2025-01-29T22:53:49.316Z\"}}}\n49:D\"$4a\"\n4c:{\"name\":\"CourseBook\",\"env\":\"Server\",\"key\":null,\"owner\":\"$4a\",\"props\":{\"brand\":\"react\"}}\n4b:D\"$4c\"\n4e:{\"name\":\"ReactIcon\",\"env\":\"Server\",\"key\":null,\"owner\":\"$4c\",\"props\":{}}\n4d:D\"$4e\"\n4f:T8c7,"])</script><script>self.__next_f.push([1,"M107.3 45.2c-2.2-.8-4.5-1.6-6.9-2.3c.6-2.4 1.1-4.8 1.5-7.1c2.1-13.2-.2-22.5-6.6-26.1c-1.9-1.1-4-1.6-6.4-1.6c-7 0-15.9 5.2-24.9 13.9c-9-8.7-17.9-13.9-24.9-13.9c-2.4 0-4.5.5-6.4 1.6c-6.4 3.7-8.7 13-6.6 26.1c.4 2.3.9 4.7 1.5 7.1c-2.4.7-4.7 1.4-6.9 2.3C8.2 50 1.4 56.6 1.4 64s6.9 14 19.3 18.8c2.2.8 4.5 1.6 6.9 2.3c-.6 2.4-1.1 4.8-1.5 7.1c-2.1 13.2.2 22.5 6.6 26.1c1.9 1.1 4 1.6 6.4 1.6c7.1 0 16-5.2 24.9-13.9c9 8.7 17.9 13.9 24.9 13.9c2.4 0 4.5-.5 6.4-1.6c6.4-3.7 8.7-13 6.6-26.1c-.4-2.3-.9-4.7-1.5-7.1c2.4-.7 4.7-1.4 6.9-2.3c12.5-4.8 19.3-11.4 19.3-18.8s-6.8-14-19.3-18.8M92.5 14.7c4.1 2.4 5.5 9.8 3.8 20.3c-.3 2.1-.8 4.3-1.4 6.6c-5.2-1.2-10.7-2-16.5-2.5c-3.4-4.8-6.9-9.1-10.4-13c7.4-7.3 14.9-12.3 21-12.3c1.3 0 2.5.3 3.5.9M81.3 74c-1.8 3.2-3.9 6.4-6.1 9.6c-3.7.3-7.4.4-11.2.4c-3.9 0-7.6-.1-11.2-.4q-3.3-4.8-6-9.6c-1.9-3.3-3.7-6.7-5.3-10c1.6-3.3 3.4-6.7 5.3-10c1.8-3.2 3.9-6.4 6.1-9.6c3.7-.3 7.4-.4 11.2-.4c3.9 0 7.6.1 11.2.4q3.3 4.8 6 9.6c1.9 3.3 3.7 6.7 5.3 10c-1.7 3.3-3.4 6.6-5.3 10m8.3-3.3c1.5 3.5 2.7 6.9 3.8 10.3c-3.4.8-7 1.4-10.8 1.9c1.2-1.9 2.5-3.9 3.6-6c1.2-2.1 2.3-4.2 3.4-6.2M64 97.8c-2.4-2.6-4.7-5.4-6.9-8.3c2.3.1 4.6.2 6.9.2s4.6-.1 6.9-.2c-2.2 2.9-4.5 5.7-6.9 8.3m-18.6-15c-3.8-.5-7.4-1.1-10.8-1.9c1.1-3.3 2.3-6.8 3.8-10.3c1.1 2 2.2 4.1 3.4 6.1c1.2 2.2 2.4 4.1 3.6 6.1m-7-25.5c-1.5-3.5-2.7-6.9-3.8-10.3c3.4-.8 7-1.4 10.8-1.9c-1.2 1.9-2.5 3.9-3.6 6c-1.2 2.1-2.3 4.2-3.4 6.2M64 30.2c2.4 2.6 4.7 5.4 6.9 8.3c-2.3-.1-4.6-.2-6.9-.2s-4.6.1-6.9.2c2.2-2.9 4.5-5.7 6.9-8.3m22.2 21l-3.6-6c3.8.5 7.4 1.1 10.8 1.9c-1.1 3.3-2.3 6.8-3.8 10.3c-1.1-2.1-2.2-4.2-3.4-6.2M31.7 35c-1.7-10.5-.3-17.9 3.8-20.3c1-.6 2.2-.9 3.5-.9c6 0 13.5 4.9 21 12.3c-3.5 3.8-7 8.2-10.4 13c-5.8.5-11.3 1.4-16.5 2.5c-.6-2.3-1-4.5-1.4-6.6M7 64c0-4.7 5.7-9.7 15.7-13.4c2-.8 4.2-1.5 6.4-2.1c1.6 5 3.6 10.3 6 15.6c-2.4 5.3-4.5 10.5-6 15.5C15.3 75.6 7 69.6 7 64m28.5 49.3c-4.1-2.4-5.5-9.8-3.8-20.3c.3-2.1.8-4.3 1.4-6.6c5.2 1.2 10.7 2 16.5 2.5c3.4 4.8 6.9 9.1 10.4 13c-7.4 7.3-14.9 12.3-21 12.3c-1.3 0-2.5-.3-3.5-.9M96.3 93c1.7 10.5.3 17.9-3.8 20.3c-1 .6-2.2.9-3.5.9c-6 0-13.5-4.9-21-12.3c3.5-3.8 7-8.2 10.4-13c5.8-.5 11.3-1.4 16.5-2.5c.6 2.3 1 4.5 1.4 6.6m9-15.6c-2 .8-4.2 1.5-6.4 2.1c-1.6-5-3.6-10.3-6-15.6c2.4-5.3 4.5-10.5 6-15.5c13.8 4 22.1 10 22.1 15.6c0 4.7-5.8 9.7-15.7 13.4"])</script><script>self.__next_f.push([1,"4d:[\"$\",\"svg\",null,{\"xmlns\":\"http://www.w3.org/2000/svg\",\"width\":\"1.5rem\",\"height\":\"1.5rem\",\"viewBox\":\"0 0 128 128\",\"aria-label\":\"V0 Icon\",\"role\":\"img\",\"children\":[\"$\",\"g\",null,{\"fill\":\"#61DAFB\",\"children\":[[\"$\",\"circle\",null,{\"cx\":\"64\",\"cy\":\"64\",\"r\":\"11.4\"},\"$4e\"],[\"$\",\"path\",null,{\"d\":\"$4f\"},\"$4e\"]]},\"$4e\"]},\"$4e\"]\n4b:[\"$\",\"div\",null,{\"className\":\"relative flex flex-shrink-0 h-[100px] w-[80px] shadow-sm group-hover:shadow-md transition-shadow duration-300 ease-out rounded-l-[4px] rounded-r-[2px]\",\"children\":[[\"$\",\"div\",null,{\"className\":\"h-full shrink-0 bg-gradient-to-r border-r from-foreground/20 to-foreground/10 w-2 rounded-l-[4px]\"},\"$4c\"],[\"$\",\"div\",null,{\"className\":\"flex h-full w-full items-center justify-center rounded-r-[2px] bg-gradient-to-br from-foreground/10 to-foreground/20\",\"children\":[\"$\",\"div\",null,{\"className\":\"rounded-full aspect-square flex items-center justify-center text-foreground size-12 p-1 bg-accent/75 dark:bg-background/20\",\"children\":\"$4d\"},\"$4c\"]},\"$4c\"]]},\"$4c\"]\n51:{\"name\":\"RichText\",\"env\":\"Server\",\"key\":null,\"owner\":\"$4a\",\"props\":{\"className\":\"text-muted-foreground ds leading-tight text-xs\",\"data\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"Gain a Baseline Understanding of React \",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}}}}\n50:D\"$51\"\n52:{\"name\":\"RichText\",\"env\":\"Server\",\"key\":null,\"owner\":\"$51\",\"props\":{\"converters\":\"$E(({ defaultConverters })=\u003e({\\n        ...defaultConverters,\\n        ...(0,_payloadcms_richtext_lexical_react__WEBPACK_IMPORTED_MODULE_4__.LinkJSXConverter)({\\n            internalDocToHref\\n        }),\\n        blocks: {\\n            code: ({ node })=\u003e/*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_blocks_CodeBlock__WEBPACK_IMPORTED_MODULE_2__.CodeBlock, {\\n                    ...node.fields\\n                }, void 0, false, {\\n     "])</script><script>self.__next_f.push([1,"               fileName: \\\"/Users/brijr/brijr/academy/src/components/render-rich-text.tsx\\\",\\n                    lineNumber: 46,\\n                    columnNumber: 23\\n                }, undefined),\\n            quiz: ({ node })=\u003e/*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_blocks_QuizBlock__WEBPACK_IMPORTED_MODULE_3__.QuizBlock, {\\n                    ...node.fields\\n                }, void 0, false, {\\n                    fileName: \\\"/Users/brijr/brijr/academy/src/components/render-rich-text.tsx\\\",\\n                    lineNumber: 47,\\n                    columnNumber: 23\\n                }, undefined)\\n        }\\n    }))\",\"className\":\"article text-muted-foreground ds text-xs\",\"data\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"Gain a Baseline Understanding of React \",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}}}}\n50:D\"$52\"\n50:[\"$\",\"div\",null,{\"className\":\"article text-muted-foreground ds text-xs\",\"children\":[[\"$\",\"p\",\"0\",{\"children\":[\"Gain a Baseline Understanding of React \"]},\"$52\"]]},\"$52\"]\n54:{\"name\":\"Badge\",\"env\":\"Server\",\"key\":null,\"owner\":\"$4a\",\"props\":{\"variant\":\"outline\",\"children\":\"Coming soon\"}}\n53:D\"$54\"\n53:[\"$\",\"div\",null,{\"className\":\"inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground\",\"children\":\"Coming soon\"},\"$54\"]\n56:{\"name\":\"Badge\",\"env\":\"Server\",\"key\":null,\"owner\":\"$4a\",\"props\":{\"variant\":\"outline\",\"children\":\"23,123 students\"}}\n55:D\"$56\"\n55:[\"$\",\"div\",null,{\"className\":\"inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground\",\"children\":\"23,123 students\"},\"$56\"]\n58:{\"name\":\"ArrowUpRight\",\"env\":\"Server\",\"key\":"])</script><script>self.__next_f.push([1,"null,\"owner\":\"$4a\",\"props\":{\"className\":\"h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\"}}\n57:D\"$58\"\n59:{\"name\":\"\",\"env\":\"Server\",\"key\":null,\"owner\":\"$58\",\"props\":{\"ref\":\"$undefined\",\"iconNode\":[[\"path\",{\"d\":\"M7 7h10v10\",\"key\":\"1tivn9\"}],[\"path\",{\"d\":\"M7 17 17 7\",\"key\":\"1vkiza\"}]],\"className\":\"lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\"}}\n57:D\"$59\"\n57:[\"$\",\"svg\",null,{\"ref\":\"$undefined\",\"xmlns\":\"http://www.w3.org/2000/svg\",\"width\":24,\"height\":24,\"viewBox\":\"0 0 24 24\",\"fill\":\"none\",\"stroke\":\"currentColor\",\"strokeWidth\":2,\"strokeLinecap\":\"round\",\"strokeLinejoin\":\"round\",\"className\":\"lucide lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\",\"children\":[[\"$\",\"path\",\"1tivn9\",{\"d\":\"M7 7h10v10\"},\"$59\"],[\"$\",\"path\",\"1vkiza\",{\"d\":\"M7 17 17 7\"},\"$59\"],\"$undefined\"]},\"$59\"]\n49:[\"$\",\"$L2a\",\"2\",{\"href\":\"./learn/react-foundations\",\"className\":\"border grid grid-cols-[auto_1fr] rounded-md transition-all group relative\",\"children\":[[\"$\",\"div\",null,{\"className\":\"p-4 border-r bg-accent/75 group-hover:pt-3 group-hover:pb-5 transition-all duration-300 ease-out\",\"children\":\"$4b\"},\"$4a\"],[\"$\",\"div\",null,{\"className\":\"grid p-4 gap-1 grid-rows-[auto_1fr_auto]\",\"children\":[[\"$\",\"h3\",null,{\"className\":\"text-xl font-medium\",\"children\":\"React Foundations\"},\"$4a\"],\"$50\",[\"$\",\"div\",null,{\"className\":\"text-sm flex flex-wrap gap-1\",\"children\":[\"$53\",\"$55\"]},\"$4a\"],\"$57\"]},\"$4a\"]]},\"$4a\"]\n5b:{\"name\":\"CourseCard\",\"env\":\"Server\",\"key\":\"1\",\"owner\":\"$27\",\"props\":{\"course\":{\"id\":1,\"title\":\"Learn Next.js\",\"slug\":\"dashboard-app\",\"category\":{\"id\":1,\"name\":\"Beginner\",\"slug\":\"beginner\",\"updatedAt\":\"2025-01-30T23:52:07.867Z\",\"createdAt\":\"2025-01-30T23:51:58.732Z\"},\"brand\":\"next\",\"description\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"para"])</script><script>self.__next_f.push([1,"graph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"16 chapters that take you from React to Next.js.\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}},\"chapters\":\"$Y\",\"meta\":\"$Y\",\"updatedAt\":\"2025-01-31T20:50:32.230Z\",\"createdAt\":\"2025-01-29T06:15:23.765Z\"}}}\n5a:D\"$5b\"\n5d:{\"name\":\"CourseBook\",\"env\":\"Server\",\"key\":null,\"owner\":\"$5b\",\"props\":{\"brand\":\"next\"}}\n5c:D\"$5d\"\n5f:{\"name\":\"NextIcon\",\"env\":\"Server\",\"key\":null,\"owner\":\"$5d\",\"props\":{}}\n5e:D\"$5f\"\n5e:[\"$\",\"svg\",null,{\"xmlns\":\"http://www.w3.org/2000/svg\",\"width\":\"1.5rem\",\"height\":\"1.5rem\",\"viewBox\":\"0 0 128 128\",\"aria-label\":\"Next.js Icon\",\"role\":\"img\",\"children\":[[\"$\",\"circle\",null,{\"cx\":\"64\",\"cy\":\"64\",\"r\":\"64\"},\"$5f\"],[\"$\",\"path\",null,{\"fill\":\"url(#deviconNextjs0)\",\"d\":\"M106.317 112.014L49.167 38.4H38.4v51.179h8.614v-40.24l52.54 67.884a64 64 0 0 0 6.763-5.209\"},\"$5f\"],[\"$\",\"path\",null,{\"fill\":\"url(#deviconNextjs1)\",\"d\":\"M81.778 38.4h8.533v51.2h-8.533z\"},\"$5f\"],[\"$\",\"defs\",null,{\"children\":[[\"$\",\"linearGradient\",null,{\"id\":\"deviconNextjs0\",\"x1\":\"109\",\"x2\":\"144.5\",\"y1\":\"116.5\",\"y2\":\"160.5\",\"gradientTransform\":\"scale(.71111)\",\"gradientUnits\":\"userSpaceOnUse\",\"children\":[[\"$\",\"stop\",null,{\"stopColor\":\"#fff\"},\"$5f\"],[\"$\",\"stop\",null,{\"offset\":\"1\",\"stopColor\":\"#fff\",\"stopOpacity\":\"0\"},\"$5f\"]]},\"$5f\"],[\"$\",\"linearGradient\",null,{\"id\":\"deviconNextjs1\",\"x1\":\"121\",\"x2\":\"120.799\",\"y1\":\"54\",\"y2\":\"106.875\",\"gradientTransform\":\"scale(.71111)\",\"gradientUnits\":\"userSpaceOnUse\",\"children\":[[\"$\",\"stop\",null,{\"stopColor\":\"#fff\"},\"$5f\"],[\"$\",\"stop\",null,{\"offset\":\"1\",\"stopColor\":\"#fff\",\"stopOpacity\":\"0\"},\"$5f\"]]},\"$5f\"]]},\"$5f\"]]},\"$5f\"]\n5c:[\"$\",\"div\",null,{\"className\":\"relative flex flex-shrink-0 h-[100px] w-[80px] shadow-sm group-hover:shadow-md transition-shadow duration-300 ease-out rounded-l-[4px] rounded-r-[2px]\",\"children\":[[\"$\",\"div\",null,{\"className\":\"h-full shrink-0 bg-gradient-to-r border-r from-foreground/20 to-foreground/10 w-2 rounded-l-[4px]\"},\"$5d\"],[\"$\",\"d"])</script><script>self.__next_f.push([1,"iv\",null,{\"className\":\"flex h-full w-full items-center justify-center rounded-r-[2px] bg-gradient-to-br from-foreground/10 to-foreground/20\",\"children\":[\"$\",\"div\",null,{\"className\":\"rounded-full aspect-square flex items-center justify-center text-foreground size-12 p-1 bg-background/20\",\"children\":\"$5e\"},\"$5d\"]},\"$5d\"]]},\"$5d\"]\n61:{\"name\":\"RichText\",\"env\":\"Server\",\"key\":null,\"owner\":\"$5b\",\"props\":{\"className\":\"text-muted-foreground ds leading-tight text-xs\",\"data\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"16 chapters that take you from React to Next.js.\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}}}}\n60:D\"$61\"\n62:{\"name\":\"RichText\",\"env\":\"Server\",\"key\":null,\"owner\":\"$61\",\"props\":{\"converters\":\"$E(({ defaultConverters })=\u003e({\\n        ...defaultConverters,\\n        ...(0,_payloadcms_richtext_lexical_react__WEBPACK_IMPORTED_MODULE_4__.LinkJSXConverter)({\\n            internalDocToHref\\n        }),\\n        blocks: {\\n            code: ({ node })=\u003e/*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_blocks_CodeBlock__WEBPACK_IMPORTED_MODULE_2__.CodeBlock, {\\n                    ...node.fields\\n                }, void 0, false, {\\n                    fileName: \\\"/Users/brijr/brijr/academy/src/components/render-rich-text.tsx\\\",\\n                    lineNumber: 46,\\n                    columnNumber: 23\\n                }, undefined),\\n            quiz: ({ node })=\u003e/*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_blocks_QuizBlock__WEBPACK_IMPORTED_MODULE_3__.QuizBlock, {\\n                    ...node.fields\\n                }, void 0, false, {\\n                    fileName: \\\"/Users/brijr/brijr/academy/src/components/render-rich-text.tsx\\\",\\n                    lineNumber: 47,\\n                    columnNumber: 23\\n                }, undefined)\\n        }\\n    }))\",\"cl"])</script><script>self.__next_f.push([1,"assName\":\"article text-muted-foreground ds text-xs\",\"data\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"16 chapters that take you from React to Next.js.\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}}}}\n60:D\"$62\"\n60:[\"$\",\"div\",null,{\"className\":\"article text-muted-foreground ds text-xs\",\"children\":[[\"$\",\"p\",\"0\",{\"children\":[\"16 chapters that take you from React to Next.js.\"]},\"$62\"]]},\"$62\"]\n64:{\"name\":\"Badge\",\"env\":\"Server\",\"key\":null,\"owner\":\"$5b\",\"props\":{\"variant\":\"outline\",\"children\":[3,\" chapters\"]}}\n63:D\"$64\"\n63:[\"$\",\"div\",null,{\"className\":\"inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground\",\"children\":[3,\" chapters\"]},\"$64\"]\n66:{\"name\":\"Badge\",\"env\":\"Server\",\"key\":null,\"owner\":\"$5b\",\"props\":{\"variant\":\"outline\",\"children\":\"23,123 students\"}}\n65:D\"$66\"\n65:[\"$\",\"div\",null,{\"className\":\"inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground\",\"children\":\"23,123 students\"},\"$66\"]\n68:{\"name\":\"ArrowUpRight\",\"env\":\"Server\",\"key\":null,\"owner\":\"$5b\",\"props\":{\"className\":\"h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\"}}\n67:D\"$68\"\n69:{\"name\":\"\",\"env\":\"Server\",\"key\":null,\"owner\":\"$68\",\"props\":{\"ref\":\"$undefined\",\"iconNode\":[[\"path\",{\"d\":\"M7 7h10v10\",\"key\":\"1tivn9\"}],[\"path\",{\"d\":\"M7 17 17 7\",\"key\":\"1vkiza\"}]],\"className\":\"lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\"}}\n67:D\"$69\"\n67:[\"$\",\"svg\",null,{\"ref\":\"$undefined\",\"xmlns\":\"http://www.w3.org/2000/svg\",\"width\":24,\"height\":24,\"viewBox\""])</script><script>self.__next_f.push([1,":\"0 0 24 24\",\"fill\":\"none\",\"stroke\":\"currentColor\",\"strokeWidth\":2,\"strokeLinecap\":\"round\",\"strokeLinejoin\":\"round\",\"className\":\"lucide lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\",\"children\":[[\"$\",\"path\",\"1tivn9\",{\"d\":\"M7 7h10v10\"},\"$69\"],[\"$\",\"path\",\"1vkiza\",{\"d\":\"M7 17 17 7\"},\"$69\"],\"$undefined\"]},\"$69\"]\n5a:[\"$\",\"$L2a\",\"1\",{\"href\":\"./learn/dashboard-app\",\"className\":\"border grid grid-cols-[auto_1fr] rounded-md transition-all group relative\",\"children\":[[\"$\",\"div\",null,{\"className\":\"p-4 border-r bg-accent/75 group-hover:pt-3 group-hover:pb-5 transition-all duration-300 ease-out\",\"children\":\"$5c\"},\"$5b\"],[\"$\",\"div\",null,{\"className\":\"grid p-4 gap-1 grid-rows-[auto_1fr_auto]\",\"children\":[[\"$\",\"h3\",null,{\"className\":\"text-xl font-medium\",\"children\":\"Learn Next.js\"},\"$5b\"],\"$60\",[\"$\",\"div\",null,{\"className\":\"text-sm flex flex-wrap gap-1\",\"children\":[\"$63\",\"$65\"]},\"$5b\"],\"$67\"]},\"$5b\"]]},\"$5b\"]\n26:[\"$\",\"$3\",\"Beginner\",{\"children\":[[\"$\",\"div\",null,{\"className\":\"px-4 py-2 bg-accent/75\",\"children\":[\"$\",\"h4\",null,{\"children\":\"Beginner\"},\"$27\"]},\"$27\"],[\"$\",\"div\",null,{\"className\":\"p-4\",\"children\":[\"$\",\"div\",null,{\"className\":\"gap-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3\",\"children\":[\"$28\",\"$39\",\"$49\",\"$5a\"]},\"$27\"]},\"$27\"]]},null]\n6b:{\"name\":\"CourseList\",\"env\":\"Server\",\"key\":\"Intermediate\",\"owner\":\"$13\",\"props\":{\"title\":\"Intermediate\",\"courses\":[{\"id\":4,\"title\":\"SEO Course\",\"slug\":\"seo\",\"category\":{\"id\":2,\"name\":\"Intermediate\",\"slug\":\"intermediate\",\"updatedAt\":\"2025-01-30T23:52:17.902Z\",\"createdAt\":\"2025-01-30T23:52:17.902Z\"},\"brand\":\"next\",\"description\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[\"$Y\"],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}},\"chapters\":\"$Y\",\"meta\":\"$Y\",\"updatedAt\":\"2025-01-31T18:48:06.264Z\",\"createdAt\":\"2025-01-29T22:54:36.680Z\"}]}}\n6a:D\"$6b\"\n6d:{\"name\":\"CourseCard\",\"en"])</script><script>self.__next_f.push([1,"v\":\"Server\",\"key\":\"4\",\"owner\":\"$6b\",\"props\":{\"course\":{\"id\":4,\"title\":\"SEO Course\",\"slug\":\"seo\",\"category\":{\"id\":2,\"name\":\"Intermediate\",\"slug\":\"intermediate\",\"updatedAt\":\"2025-01-30T23:52:17.902Z\",\"createdAt\":\"2025-01-30T23:52:17.902Z\"},\"brand\":\"next\",\"description\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"Learn the SEO Super Powers that Next.js Provides\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}},\"chapters\":\"$Y\",\"meta\":\"$Y\",\"updatedAt\":\"2025-01-31T18:48:06.264Z\",\"createdAt\":\"2025-01-29T22:54:36.680Z\"}}}\n6c:D\"$6d\"\n6f:{\"name\":\"CourseBook\",\"env\":\"Server\",\"key\":null,\"owner\":\"$6d\",\"props\":{\"brand\":\"next\"}}\n6e:D\"$6f\"\n71:{\"name\":\"NextIcon\",\"env\":\"Server\",\"key\":null,\"owner\":\"$6f\",\"props\":{}}\n70:D\"$71\"\n70:[\"$\",\"svg\",null,{\"xmlns\":\"http://www.w3.org/2000/svg\",\"width\":\"1.5rem\",\"height\":\"1.5rem\",\"viewBox\":\"0 0 128 128\",\"aria-label\":\"Next.js Icon\",\"role\":\"img\",\"children\":[[\"$\",\"circle\",null,{\"cx\":\"64\",\"cy\":\"64\",\"r\":\"64\"},\"$71\"],[\"$\",\"path\",null,{\"fill\":\"url(#deviconNextjs0)\",\"d\":\"M106.317 112.014L49.167 38.4H38.4v51.179h8.614v-40.24l52.54 67.884a64 64 0 0 0 6.763-5.209\"},\"$71\"],[\"$\",\"path\",null,{\"fill\":\"url(#deviconNextjs1)\",\"d\":\"M81.778 38.4h8.533v51.2h-8.533z\"},\"$71\"],[\"$\",\"defs\",null,{\"children\":[[\"$\",\"linearGradient\",null,{\"id\":\"deviconNextjs0\",\"x1\":\"109\",\"x2\":\"144.5\",\"y1\":\"116.5\",\"y2\":\"160.5\",\"gradientTransform\":\"scale(.71111)\",\"gradientUnits\":\"userSpaceOnUse\",\"children\":[[\"$\",\"stop\",null,{\"stopColor\":\"#fff\"},\"$71\"],[\"$\",\"stop\",null,{\"offset\":\"1\",\"stopColor\":\"#fff\",\"stopOpacity\":\"0\"},\"$71\"]]},\"$71\"],[\"$\",\"linearGradient\",null,{\"id\":\"deviconNextjs1\",\"x1\":\"121\",\"x2\":\"120.799\",\"y1\":\"54\",\"y2\":\"106.875\",\"gradientTransform\":\"scale(.71111)\",\"gradientUnits\":\"userSpaceOnUse\",\"children\":[[\"$\",\"stop\",null,{\"stopColor\":\"#fff\"},\"$71\"],[\"$\",\"stop\",null,{\"offset\":\"1\",\"stopColor\":\"#fff\",\"stopOpacity\":\"0\"},\"$71\"]]},\"$71\"]]},\"$71\"]]"])</script><script>self.__next_f.push([1,"},\"$71\"]\n6e:[\"$\",\"div\",null,{\"className\":\"relative flex flex-shrink-0 h-[100px] w-[80px] shadow-sm group-hover:shadow-md transition-shadow duration-300 ease-out rounded-l-[4px] rounded-r-[2px]\",\"children\":[[\"$\",\"div\",null,{\"className\":\"h-full shrink-0 bg-gradient-to-r border-r from-foreground/20 to-foreground/10 w-2 rounded-l-[4px]\"},\"$6f\"],[\"$\",\"div\",null,{\"className\":\"flex h-full w-full items-center justify-center rounded-r-[2px] bg-gradient-to-br from-foreground/10 to-foreground/20\",\"children\":[\"$\",\"div\",null,{\"className\":\"rounded-full aspect-square flex items-center justify-center text-foreground size-12 p-1 bg-background/20\",\"children\":\"$70\"},\"$6f\"]},\"$6f\"]]},\"$6f\"]\n73:{\"name\":\"RichText\",\"env\":\"Server\",\"key\":null,\"owner\":\"$6d\",\"props\":{\"className\":\"text-muted-foreground ds leading-tight text-xs\",\"data\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"Learn the SEO Super Powers that Next.js Provides\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}}}}\n72:D\"$73\"\n74:{\"name\":\"RichText\",\"env\":\"Server\",\"key\":null,\"owner\":\"$73\",\"props\":{\"converters\":\"$E(({ defaultConverters })=\u003e({\\n        ...defaultConverters,\\n        ...(0,_payloadcms_richtext_lexical_react__WEBPACK_IMPORTED_MODULE_4__.LinkJSXConverter)({\\n            internalDocToHref\\n        }),\\n        blocks: {\\n            code: ({ node })=\u003e/*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_blocks_CodeBlock__WEBPACK_IMPORTED_MODULE_2__.CodeBlock, {\\n                    ...node.fields\\n                }, void 0, false, {\\n                    fileName: \\\"/Users/brijr/brijr/academy/src/components/render-rich-text.tsx\\\",\\n                    lineNumber: 46,\\n                    columnNumber: 23\\n                }, undefined),\\n            quiz: ({ node })=\u003e/*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_blocks_Quiz"])</script><script>self.__next_f.push([1,"Block__WEBPACK_IMPORTED_MODULE_3__.QuizBlock, {\\n                    ...node.fields\\n                }, void 0, false, {\\n                    fileName: \\\"/Users/brijr/brijr/academy/src/components/render-rich-text.tsx\\\",\\n                    lineNumber: 47,\\n                    columnNumber: 23\\n                }, undefined)\\n        }\\n    }))\",\"className\":\"article text-muted-foreground ds text-xs\",\"data\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"Learn the SEO Super Powers that Next.js Provides\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}}}}\n72:D\"$74\"\n72:[\"$\",\"div\",null,{\"className\":\"article text-muted-foreground ds text-xs\",\"children\":[[\"$\",\"p\",\"0\",{\"children\":[\"Learn the SEO Super Powers that Next.js Provides\"]},\"$74\"]]},\"$74\"]\n76:{\"name\":\"Badge\",\"env\":\"Server\",\"key\":null,\"owner\":\"$6d\",\"props\":{\"variant\":\"outline\",\"children\":\"Coming soon\"}}\n75:D\"$76\"\n75:[\"$\",\"div\",null,{\"className\":\"inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground\",\"children\":\"Coming soon\"},\"$76\"]\n78:{\"name\":\"Badge\",\"env\":\"Server\",\"key\":null,\"owner\":\"$6d\",\"props\":{\"variant\":\"outline\",\"children\":\"23,123 students\"}}\n77:D\"$78\"\n77:[\"$\",\"div\",null,{\"className\":\"inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground\",\"children\":\"23,123 students\"},\"$78\"]\n7a:{\"name\":\"ArrowUpRight\",\"env\":\"Server\",\"key\":null,\"owner\":\"$6d\",\"props\":{\"className\":\"h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\"}}\n79:D\"$7a\"\n7b:{\"name\":\"\",\"env\":\"Server\",\"key\":null,\"owner\":\"$7a\",\"props\":{\"ref\":\"$undefined\",\"iconNode\":[[\"path\",{\"d\":\"M7 7h10v10\""])</script><script>self.__next_f.push([1,",\"key\":\"1tivn9\"}],[\"path\",{\"d\":\"M7 17 17 7\",\"key\":\"1vkiza\"}]],\"className\":\"lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\"}}\n79:D\"$7b\"\n79:[\"$\",\"svg\",null,{\"ref\":\"$undefined\",\"xmlns\":\"http://www.w3.org/2000/svg\",\"width\":24,\"height\":24,\"viewBox\":\"0 0 24 24\",\"fill\":\"none\",\"stroke\":\"currentColor\",\"strokeWidth\":2,\"strokeLinecap\":\"round\",\"strokeLinejoin\":\"round\",\"className\":\"lucide lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\",\"children\":[[\"$\",\"path\",\"1tivn9\",{\"d\":\"M7 7h10v10\"},\"$7b\"],[\"$\",\"path\",\"1vkiza\",{\"d\":\"M7 17 17 7\"},\"$7b\"],\"$undefined\"]},\"$7b\"]\n6c:[\"$\",\"$L2a\",\"4\",{\"href\":\"./learn/seo\",\"className\":\"border grid grid-cols-[auto_1fr] rounded-md transition-all group relative\",\"children\":[[\"$\",\"div\",null,{\"className\":\"p-4 border-r bg-accent/75 group-hover:pt-3 group-hover:pb-5 transition-all duration-300 ease-out\",\"children\":\"$6e\"},\"$6d\"],[\"$\",\"div\",null,{\"className\":\"grid p-4 gap-1 grid-rows-[auto_1fr_auto]\",\"children\":[[\"$\",\"h3\",null,{\"className\":\"text-xl font-medium\",\"children\":\"SEO Course\"},\"$6d\"],\"$72\",[\"$\",\"div\",null,{\"className\":\"text-sm flex flex-wrap gap-1\",\"children\":[\"$75\",\"$77\"]},\"$6d\"],\"$79\"]},\"$6d\"]]},\"$6d\"]\n6a:[\"$\",\"$3\",\"Intermediate\",{\"children\":[[\"$\",\"div\",null,{\"className\":\"px-4 py-2 bg-accent/75\",\"children\":[\"$\",\"h4\",null,{\"children\":\"Intermediate\"},\"$6b\"]},\"$6b\"],[\"$\",\"div\",null,{\"className\":\"p-4\",\"children\":[\"$\",\"div\",null,{\"className\":\"gap-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3\",\"children\":[\"$6c\"]},\"$6b\"]},\"$6b\"]]},null]\n7d:{\"name\":\"CourseList\",\"env\":\"Server\",\"key\":\"Advanced\",\"owner\":\"$13\",\"props\":{\"title\":\"Advanced\",\"courses\":[{\"id\":6,\"title\":\"Turborepo\",\"slug\":\"turborepo\",\"category\":{\"id\":3,\"name\":\"Advanced\",\"slug\":\"advanced\",\"updatedAt\":\"2025-01-30T23:52:27.522Z\",\"createdAt\":\"2025-01-30T23:52:27.522Z\"},\"brand\":\"turborepo\",\"description\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\""])</script><script>self.__next_f.push([1,":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[\"$Y\"],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}},\"chapters\":\"$Y\",\"meta\":\"$Y\",\"updatedAt\":\"2025-01-31T18:42:45.452Z\",\"createdAt\":\"2025-01-31T18:42:00.197Z\"}]}}\n7c:D\"$7d\"\n7f:{\"name\":\"CourseCard\",\"env\":\"Server\",\"key\":\"6\",\"owner\":\"$7d\",\"props\":{\"course\":{\"id\":6,\"title\":\"Turborepo\",\"slug\":\"turborepo\",\"category\":{\"id\":3,\"name\":\"Advanced\",\"slug\":\"advanced\",\"updatedAt\":\"2025-01-30T23:52:27.522Z\",\"createdAt\":\"2025-01-30T23:52:27.522Z\"},\"brand\":\"turborepo\",\"description\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"Solving the Monorepo problem\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}},\"chapters\":\"$Y\",\"meta\":\"$Y\",\"updatedAt\":\"2025-01-31T18:42:45.452Z\",\"createdAt\":\"2025-01-31T18:42:00.197Z\"}}}\n7e:D\"$7f\"\n81:{\"name\":\"CourseBook\",\"env\":\"Server\",\"key\":null,\"owner\":\"$7f\",\"props\":{\"brand\":\"turborepo\"}}\n80:D\"$81\"\n83:{\"name\":\"TurborepoIcon\",\"env\":\"Server\",\"key\":null,\"owner\":\"$81\",\"props\":{}}\n82:D\"$83\"\n82:[\"$\",\"svg\",null,{\"xmlns\":\"http://www.w3.org/2000/svg\",\"aria-label\":\"Turborepo Icon\",\"width\":\"1.5rem\",\"height\":\"1.5rem\",\"viewBox\":\"0 0 40 40\",\"role\":\"img\",\"className\":\"fill-current\",\"children\":[[\"$\",\"path\",null,{\"d\":\"M20 7C12.818 7 7 12.818 7 20s5.818 13 13 13 13-5.818 13-13S27.182 7 20 7zm0 19.5c-3.584 0-6.5-2.916-6.5-6.5s2.916-6.5 6.5-6.5 6.5 2.916 6.5 6.5-2.916 6.5-6.5 6.5z\",\"fill\":\"currentColor\"},\"$83\"],[\"$\",\"path\",null,{\"clipRule\":\"evenodd\",\"d\":\"M21 5v-5c10.493.5 19 9.507 19 20s-8.507 19.5-19 20v-5c7.732-.5 14-7.268 14-15s-6.268-14.5-14-15zm-12.478 25.069c-2.084-2.408-3.427-5.474-3.667-8.841h-4.855c.252 4.711 2.135 8.986 5.085 12.278l3.434-3.437h.003zm10.373 10.069v-5c-3.367-.24-6.433-1.582-8.838-3.67l-3.435 3.437c3.289 2.955 7.564 4.838 12.273 5.09v.143z\",\"fill\":\"url(#:S9:paint0_linear_902_224)\",\"fillRule\":"])</script><script>self.__next_f.push([1,"\"evenodd\"},\"$83\"],[\"$\",\"defs\",null,{\"children\":[\"$\",\"linearGradient\",null,{\"gradientUnits\":\"userSpaceOnUse\",\"id\":\":S9:paint0_linear_902_224\",\"x1\":\"21.858\",\"x2\":\"2.17\",\"y1\":\"2.812\",\"y2\":\"22.484\",\"children\":[[\"$\",\"stop\",null,{\"stopColor\":\"#0096FF\"},\"$83\"],[\"$\",\"stop\",null,{\"offset\":\"1\",\"stopColor\":\"#FF1E56\"},\"$83\"]]},\"$83\"]},\"$83\"]]},\"$83\"]\n80:[\"$\",\"div\",null,{\"className\":\"relative flex flex-shrink-0 h-[100px] w-[80px] shadow-sm group-hover:shadow-md transition-shadow duration-300 ease-out rounded-l-[4px] rounded-r-[2px]\",\"children\":[[\"$\",\"div\",null,{\"className\":\"h-full shrink-0 bg-gradient-to-r border-r from-foreground/20 to-foreground/10 w-2 rounded-l-[4px]\"},\"$81\"],[\"$\",\"div\",null,{\"className\":\"flex h-full w-full items-center justify-center rounded-r-[2px] bg-gradient-to-br from-foreground/10 to-foreground/20\",\"children\":[\"$\",\"div\",null,{\"className\":\"rounded-full aspect-square flex items-center justify-center text-foreground size-12 p-1 bg-background/20\",\"children\":\"$82\"},\"$81\"]},\"$81\"]]},\"$81\"]\n85:{\"name\":\"RichText\",\"env\":\"Server\",\"key\":null,\"owner\":\"$7f\",\"props\":{\"className\":\"text-muted-foreground ds leading-tight text-xs\",\"data\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"Solving the Monorepo problem\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}}}}\n84:D\"$85\"\n86:{\"name\":\"RichText\",\"env\":\"Server\",\"key\":null,\"owner\":\"$85\",\"props\":{\"converters\":\"$E(({ defaultConverters })=\u003e({\\n        ...defaultConverters,\\n        ...(0,_payloadcms_richtext_lexical_react__WEBPACK_IMPORTED_MODULE_4__.LinkJSXConverter)({\\n            internalDocToHref\\n        }),\\n        blocks: {\\n            code: ({ node })=\u003e/*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_blocks_CodeBlock__WEBPACK_IMPORTED_MODULE_2__.CodeBlock, {\\n                    ...node.fields\\n                }, void 0, false, {\\n            "])</script><script>self.__next_f.push([1,"        fileName: \\\"/Users/brijr/brijr/academy/src/components/render-rich-text.tsx\\\",\\n                    lineNumber: 46,\\n                    columnNumber: 23\\n                }, undefined),\\n            quiz: ({ node })=\u003e/*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(_blocks_QuizBlock__WEBPACK_IMPORTED_MODULE_3__.QuizBlock, {\\n                    ...node.fields\\n                }, void 0, false, {\\n                    fileName: \\\"/Users/brijr/brijr/academy/src/components/render-rich-text.tsx\\\",\\n                    lineNumber: 47,\\n                    columnNumber: 23\\n                }, undefined)\\n        }\\n    }))\",\"className\":\"article text-muted-foreground ds text-xs\",\"data\":{\"root\":{\"type\":\"root\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"type\":\"paragraph\",\"format\":\"\",\"indent\":0,\"version\":1,\"children\":[{\"mode\":\"normal\",\"text\":\"Solving the Monorepo problem\",\"type\":\"text\",\"style\":\"\",\"detail\":0,\"format\":0,\"version\":1}],\"direction\":\"ltr\",\"textStyle\":\"\",\"textFormat\":0}],\"direction\":\"ltr\"}}}}\n84:D\"$86\"\n84:[\"$\",\"div\",null,{\"className\":\"article text-muted-foreground ds text-xs\",\"children\":[[\"$\",\"p\",\"0\",{\"children\":[\"Solving the Monorepo problem\"]},\"$86\"]]},\"$86\"]\n88:{\"name\":\"Badge\",\"env\":\"Server\",\"key\":null,\"owner\":\"$7f\",\"props\":{\"variant\":\"outline\",\"children\":\"Coming soon\"}}\n87:D\"$88\"\n87:[\"$\",\"div\",null,{\"className\":\"inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground\",\"children\":\"Coming soon\"},\"$88\"]\n8a:{\"name\":\"Badge\",\"env\":\"Server\",\"key\":null,\"owner\":\"$7f\",\"props\":{\"variant\":\"outline\",\"children\":\"23,123 students\"}}\n89:D\"$8a\"\n89:[\"$\",\"div\",null,{\"className\":\"inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground\",\"children\":\"23,123 students\"},\"$8a\"]\n8c:{\"name\":\"ArrowUpRight\",\"env\":\"Server\",\"key\":null,\"owner\":\"$7f\",\"props\":{\""])</script><script>self.__next_f.push([1,"className\":\"h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\"}}\n8b:D\"$8c\"\n8d:{\"name\":\"\",\"env\":\"Server\",\"key\":null,\"owner\":\"$8c\",\"props\":{\"ref\":\"$undefined\",\"iconNode\":[[\"path\",{\"d\":\"M7 7h10v10\",\"key\":\"1tivn9\"}],[\"path\",{\"d\":\"M7 17 17 7\",\"key\":\"1vkiza\"}]],\"className\":\"lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\"}}\n8b:D\"$8d\"\n8b:[\"$\",\"svg\",null,{\"ref\":\"$undefined\",\"xmlns\":\"http://www.w3.org/2000/svg\",\"width\":24,\"height\":24,\"viewBox\":\"0 0 24 24\",\"fill\":\"none\",\"stroke\":\"currentColor\",\"strokeWidth\":2,\"strokeLinecap\":\"round\",\"strokeLinejoin\":\"round\",\"className\":\"lucide lucide-arrow-up-right h-4 w-4 text-muted-foreground absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out\",\"children\":[[\"$\",\"path\",\"1tivn9\",{\"d\":\"M7 7h10v10\"},\"$8d\"],[\"$\",\"path\",\"1vkiza\",{\"d\":\"M7 17 17 7\"},\"$8d\"],\"$undefined\"]},\"$8d\"]\n7e:[\"$\",\"$L2a\",\"6\",{\"href\":\"./learn/turborepo\",\"className\":\"border grid grid-cols-[auto_1fr] rounded-md transition-all group relative\",\"children\":[[\"$\",\"div\",null,{\"className\":\"p-4 border-r bg-accent/75 group-hover:pt-3 group-hover:pb-5 transition-all duration-300 ease-out\",\"children\":\"$80\"},\"$7f\"],[\"$\",\"div\",null,{\"className\":\"grid p-4 gap-1 grid-rows-[auto_1fr_auto]\",\"children\":[[\"$\",\"h3\",null,{\"className\":\"text-xl font-medium\",\"children\":\"Turborepo\"},\"$7f\"],\"$84\",[\"$\",\"div\",null,{\"className\":\"text-sm flex flex-wrap gap-1\",\"children\":[\"$87\",\"$89\"]},\"$7f\"],\"$8b\"]},\"$7f\"]]},\"$7f\"]\n7c:[\"$\",\"$3\",\"Advanced\",{\"children\":[[\"$\",\"div\",null,{\"className\":\"px-4 py-2 bg-accent/75\",\"children\":[\"$\",\"h4\",null,{\"children\":\"Advanced\"},\"$7d\"]},\"$7d\"],[\"$\",\"div\",null,{\"className\":\"p-4\",\"children\":[\"$\",\"div\",null,{\"className\":\"gap-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3\",\"children\":[\"$7e\"]},\"$7d\"]},\"$7d\"]]},null]\n12:[\"$\",\"main\",null,{\"className\":\"section\",\"children\":[[\"$\",\"section\",null,{\"className\":\"container"])</script><script>self.__next_f.push([1," ds spaced\",\"children\":[[\"$\",\"h1\",null,{\"children\":\"Welcome to Vercel Academy\"},\"$13\"],[\"$\",\"p\",null,{\"className\":\"max-w-prose\",\"children\":\"Go from beginner to expert by learning the foundations of Vercel and Next.js and building a fully functional demo website that uses all the latest features.\"},\"$13\"]]},\"$13\"],[\"$\",\"section\",null,{\"className\":\"border divide-y max-w-6xl mx-auto\",\"children\":[\"$26\",\"$6a\",\"$7c\"]},\"$13\"]]},\"$13\"]\n"])</script><nextjs-portal data-dashlane-shadowhost="true" data-dashlane-observed="true"><template shadowrootmode="open"><style>
+        :host {
+          all: initial;
+
+          /* the direction property is not reset by 'all' */
+          direction: ltr;
+        }
+
+        /*!
+         * Bootstrap Reboot v4.4.1 (https://getbootstrap.com/)
+         * Copyright 2011-2019 The Bootstrap Authors
+         * Copyright 2011-2019 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         * Forked from Normalize.css, licensed MIT (https://github.com/necolas/normalize.css/blob/master/LICENSE.md)
+         */
+        *,
+        *::before,
+        *::after {
+          box-sizing: border-box;
+        }
+
+        :host {
+          font-family: sans-serif;
+          line-height: 1.15;
+          -webkit-text-size-adjust: 100%;
+          -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        }
+
+        article,
+        aside,
+        figcaption,
+        figure,
+        footer,
+        header,
+        hgroup,
+        main,
+        nav,
+        section {
+          display: block;
+        }
+
+        :host {
+          margin: 0;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+            'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+            'Noto Color Emoji';
+          font-size: 16px;
+          font-weight: 400;
+          line-height: 1.5;
+          color: var(--color-font);
+          text-align: left;
+          background-color: #fff;
+        }
+
+        [tabindex='-1']:focus:not(:focus-visible) {
+          outline: 0 !important;
+        }
+
+        hr {
+          box-sizing: content-box;
+          height: 0;
+          overflow: visible;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+          margin-top: 0;
+          margin-bottom: 8px;
+        }
+
+        p {
+          margin-top: 0;
+          margin-bottom: 16px;
+        }
+
+        abbr[title],
+        abbr[data-original-title] {
+          text-decoration: underline;
+          -webkit-text-decoration: underline dotted;
+          text-decoration: underline dotted;
+          cursor: help;
+          border-bottom: 0;
+          -webkit-text-decoration-skip-ink: none;
+          text-decoration-skip-ink: none;
+        }
+
+        address {
+          margin-bottom: 16px;
+          font-style: normal;
+          line-height: inherit;
+        }
+
+        ol,
+        ul,
+        dl {
+          margin-top: 0;
+          margin-bottom: 16px;
+        }
+
+        ol ol,
+        ul ul,
+        ol ul,
+        ul ol {
+          margin-bottom: 0;
+        }
+
+        dt {
+          font-weight: 700;
+        }
+
+        dd {
+          margin-bottom: 8px;
+          margin-left: 0;
+        }
+
+        blockquote {
+          margin: 0 0 16px;
+        }
+
+        b,
+        strong {
+          font-weight: bolder;
+        }
+
+        small {
+          font-size: 80%;
+        }
+
+        sub,
+        sup {
+          position: relative;
+          font-size: 75%;
+          line-height: 0;
+          vertical-align: baseline;
+        }
+
+        sub {
+          bottom: -0.25em;
+        }
+
+        sup {
+          top: -0.5em;
+        }
+
+        a {
+          color: #007bff;
+          text-decoration: none;
+          background-color: transparent;
+        }
+
+        a:hover {
+          color: #0056b3;
+          text-decoration: underline;
+        }
+
+        a:not([href]) {
+          color: inherit;
+          text-decoration: none;
+        }
+
+        a:not([href]):hover {
+          color: inherit;
+          text-decoration: none;
+        }
+
+        pre,
+        code,
+        kbd,
+        samp {
+          font-family: SFMono-Regular, Menlo, Monaco, Consolas,
+            'Liberation Mono', 'Courier New', monospace;
+          font-size: 1em;
+        }
+
+        pre {
+          margin-top: 0;
+          margin-bottom: 16px;
+          overflow: auto;
+        }
+
+        figure {
+          margin: 0 0 16px;
+        }
+
+        img {
+          vertical-align: middle;
+          border-style: none;
+        }
+
+        svg {
+          overflow: hidden;
+          vertical-align: middle;
+        }
+
+        table {
+          border-collapse: collapse;
+        }
+
+        caption {
+          padding-top: 12px;
+          padding-bottom: 12px;
+          color: #6c757d;
+          text-align: left;
+          caption-side: bottom;
+        }
+
+        th {
+          text-align: inherit;
+        }
+
+        label {
+          display: inline-block;
+          margin-bottom: 8px;
+        }
+
+        button {
+          border-radius: 0;
+        }
+
+        button:focus {
+          outline: 1px dotted;
+          outline: 5px auto -webkit-focus-ring-color;
+        }
+
+        input,
+        button,
+        select,
+        optgroup,
+        textarea {
+          margin: 0;
+          font-family: inherit;
+          font-size: inherit;
+          line-height: inherit;
+        }
+
+        button,
+        input {
+          overflow: visible;
+        }
+
+        button,
+        select {
+          text-transform: none;
+        }
+
+        select {
+          word-wrap: normal;
+        }
+
+        button,
+        [type='button'],
+        [type='reset'],
+        [type='submit'] {
+          -webkit-appearance: button;
+        }
+
+        button:not(:disabled),
+        [type='button']:not(:disabled),
+        [type='reset']:not(:disabled),
+        [type='submit']:not(:disabled) {
+          cursor: pointer;
+        }
+
+        button::-moz-focus-inner,
+        [type='button']::-moz-focus-inner,
+        [type='reset']::-moz-focus-inner,
+        [type='submit']::-moz-focus-inner {
+          padding: 0;
+          border-style: none;
+        }
+
+        input[type='radio'],
+        input[type='checkbox'] {
+          box-sizing: border-box;
+          padding: 0;
+        }
+
+        input[type='date'],
+        input[type='time'],
+        input[type='datetime-local'],
+        input[type='month'] {
+          -webkit-appearance: listbox;
+        }
+
+        textarea {
+          overflow: auto;
+          resize: vertical;
+        }
+
+        fieldset {
+          min-width: 0;
+          padding: 0;
+          margin: 0;
+          border: 0;
+        }
+
+        legend {
+          display: block;
+          width: 100%;
+          max-width: 100%;
+          padding: 0;
+          margin-bottom: 8px;
+          font-size: 24px;
+          line-height: inherit;
+          color: inherit;
+          white-space: normal;
+        }
+
+        progress {
+          vertical-align: baseline;
+        }
+
+        [type='number']::-webkit-inner-spin-button,
+        [type='number']::-webkit-outer-spin-button {
+          height: auto;
+        }
+
+        [type='search'] {
+          outline-offset: -2px;
+          -webkit-appearance: none;
+        }
+
+        [type='search']::-webkit-search-decoration {
+          -webkit-appearance: none;
+        }
+
+        ::-webkit-file-upload-button {
+          font: inherit;
+          -webkit-appearance: button;
+        }
+
+        output {
+          display: inline-block;
+        }
+
+        summary {
+          display: list-item;
+          cursor: pointer;
+        }
+
+        template {
+          display: none;
+        }
+
+        [hidden] {
+          display: none !important;
+        }
+      </style><style>
+        :host {
+          --size-gap-half: 4px;
+          --size-gap: 8px;
+          --size-gap-double: 16px;
+          --size-gap-triple: 24px;
+          --size-gap-quad: 32px;
+
+          --size-font-small: 14px;
+          --size-font: 16px;
+          --size-font-big: 20px;
+          --size-font-bigger: 24px;
+
+          --color-background: white;
+          --color-font: #757575;
+          --color-backdrop: rgba(17, 17, 17, 0.2);
+          --color-border-shadow: rgba(0, 0, 0, 0.145);
+
+          --color-title-color: #1f1f1f;
+          --color-stack-h6: #222;
+          --color-stack-headline: #666;
+          --color-stack-subline: #999;
+          --color-stack-notes: #777;
+
+          --color-accents-1: #808080;
+          --color-accents-2: #222222;
+          --color-accents-3: #404040;
+
+          --color-text-color-red-1: #ff5555;
+          --color-text-background-red-1: #fff9f9;
+
+          --font-stack-monospace: 'SFMono-Regular', Consolas, 'Liberation Mono',
+            Menlo, Courier, monospace;
+          --font-stack-sans: -apple-system, 'Source Sans Pro', sans-serif;
+
+          --color-ansi-selection: rgba(95, 126, 151, 0.48);
+          --color-ansi-bg: #111111;
+          --color-ansi-fg: #cccccc;
+
+          --color-ansi-white: #777777;
+          --color-ansi-black: #141414;
+          --color-ansi-blue: #00aaff;
+          --color-ansi-cyan: #88ddff;
+          --color-ansi-green: #98ec65;
+          --color-ansi-magenta: #aa88ff;
+          --color-ansi-red: #ff5555;
+          --color-ansi-yellow: #ffcc33;
+          --color-ansi-bright-white: #ffffff;
+          --color-ansi-bright-black: #777777;
+          --color-ansi-bright-blue: #33bbff;
+          --color-ansi-bright-cyan: #bbecff;
+          --color-ansi-bright-green: #b6f292;
+          --color-ansi-bright-magenta: #cebbff;
+          --color-ansi-bright-red: #ff8888;
+          --color-ansi-bright-yellow: #ffd966;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          :host {
+            --color-background: rgb(28, 28, 30);
+            --color-font: white;
+            --color-backdrop: rgb(44, 44, 46);
+            --color-border-shadow: rgba(255, 255, 255, 0.145);
+
+            --color-title-color: #fafafa;
+            --color-stack-h6: rgb(200, 200, 204);
+            --color-stack-headline: rgb(99, 99, 102);
+            --color-stack-notes: #a9a9a9;
+            --color-stack-subline: rgb(121, 121, 121);
+
+            --color-accents-3: rgb(118, 118, 118);
+
+            --color-text-background-red-1: #2a1e1e;
+          }
+        }
+
+        .mono {
+          font-family: var(--font-stack-monospace);
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+          margin-bottom: var(--size-gap);
+          font-weight: 500;
+          line-height: 1.5;
+        }
+      </style><style>
+        
+  [data-nextjs-dialog-overlay] {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+    z-index: 9000;
+
+    display: flex;
+    align-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 10vh 15px 0;
+  }
+
+  @media (max-height: 812px) {
+    [data-nextjs-dialog-overlay] {
+      padding: 15px 15px 0;
+    }
+  }
+
+  [data-nextjs-dialog-backdrop] {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: var(--color-backdrop);
+    pointer-events: all;
+    z-index: -1;
+  }
+
+  [data-nextjs-dialog-backdrop-fixed] {
+    cursor: not-allowed;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+
+        
+  .nextjs-toast {
+    position: fixed;
+    bottom: var(--size-gap-double);
+    left: var(--size-gap-double);
+    max-width: 420px;
+    z-index: 9000;
+    box-shadow: 0px var(--size-gap-double) var(--size-gap-quad)
+      rgba(0, 0, 0, 0.25);
+  }
+
+  @media (max-width: 440px) {
+    .nextjs-toast {
+      max-width: 90vw;
+      left: 5vw;
+    }
+  }
+
+  .nextjs-toast-errors-parent {
+    padding: 16px;
+    border-radius: var(--size-gap-quad);
+    font-weight: 500;
+    color: var(--color-ansi-bright-white);
+    background-color: var(--color-ansi-red);
+  }
+
+  .nextjs-static-indicator-toast-wrapper {
+    width: 30px;
+    height: 30px;
+    overflow: hidden;
+    border: 0;
+    border-radius: var(--size-gap-triple);
+    background: var(--color-background);
+    color: var(--color-font);
+    transition: all 0.3s ease-in-out;
+    box-shadow:
+      inset 0 0 0 1px var(--color-border-shadow),
+      0 11px 40px 0 rgba(0, 0, 0, 0.25),
+      0 2px 10px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  .nextjs-static-indicator-toast-wrapper:hover {
+    width: 140px;
+  }
+
+  .nextjs-static-indicator-toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+  }
+
+  .nextjs-static-indicator-toast-text {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    white-space: nowrap;
+    transition: opacity 0.3s ease-in-out;
+    line-height: 30px;
+    position: absolute;
+    left: 30px;
+    top: 0;
+  }
+
+  .nextjs-static-indicator-toast-wrapper:hover
+    .nextjs-static-indicator-toast-text {
+    opacity: 1;
+  }
+
+  .nextjs-static-indicator-toast-wrapper button {
+    color: var(--color-font);
+    opacity: 0.8;
+    background: none;
+    border: none;
+    margin-left: 6px;
+    margin-top: -2px;
+    outline: 0;
+  }
+
+  .nextjs-static-indicator-toast-wrapper button:focus {
+    opacity: 1;
+  }
+
+  .nextjs-static-indicator-toast-wrapper button > svg {
+    width: 16px;
+    height: 16px;
+  }
+
+        
+  [data-nextjs-dialog] {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    outline: none;
+    background: var(--color-background);
+    border-radius: var(--size-gap);
+    box-shadow: 0 var(--size-gap-half) var(--size-gap-double)
+      rgba(0, 0, 0, 0.25);
+    max-height: calc(100% - 56px);
+    overflow-y: hidden;
+  }
+
+  @media (max-height: 812px) {
+    [data-nextjs-dialog-overlay] {
+      max-height: calc(100% - 15px);
+    }
+  }
+
+  @media (min-width: 576px) {
+    [data-nextjs-dialog] {
+      max-width: 540px;
+      box-shadow: 0 var(--size-gap) var(--size-gap-quad) rgba(0, 0, 0, 0.25);
+    }
+  }
+
+  @media (min-width: 768px) {
+    [data-nextjs-dialog] {
+      max-width: 720px;
+    }
+  }
+
+  @media (min-width: 992px) {
+    [data-nextjs-dialog] {
+      max-width: 960px;
+    }
+  }
+
+  [data-nextjs-dialog-banner] {
+    position: relative;
+  }
+  [data-nextjs-dialog-banner].banner-warning {
+    border-color: var(--color-ansi-yellow);
+  }
+  [data-nextjs-dialog-banner].banner-error {
+    border-color: var(--color-ansi-red);
+  }
+
+  [data-nextjs-dialog-banner]::after {
+    z-index: 2;
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    /* banner width: */
+    border-top-width: var(--size-gap-half);
+    border-bottom-width: 0;
+    border-top-style: solid;
+    border-bottom-style: solid;
+    border-top-color: inherit;
+    border-bottom-color: transparent;
+  }
+
+  [data-nextjs-dialog-content] {
+    overflow-y: auto;
+    border: none;
+    margin: 0;
+    /* calc(padding + banner width offset) */
+    padding: calc(var(--size-gap-double) + var(--size-gap-half))
+      var(--size-gap-double);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  [data-nextjs-dialog-content] > [data-nextjs-dialog-header] {
+    flex-shrink: 0;
+    margin-bottom: var(--size-gap-double);
+  }
+  [data-nextjs-dialog-content] > [data-nextjs-dialog-body] {
+    position: relative;
+    flex: 1 1 auto;
+  }
+
+        
+  [data-nextjs-dialog-left-right] {
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    align-items: center;
+    justify-content: space-between;
+  }
+  [data-nextjs-dialog-left-right] > nav {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    margin-right: var(--size-gap);
+  }
+  [data-nextjs-dialog-left-right] > nav > button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: calc(var(--size-gap-double) + var(--size-gap));
+    height: calc(var(--size-gap-double) + var(--size-gap));
+    font-size: 0;
+    border: none;
+    background-color: rgba(255, 85, 85, 0.1);
+    color: var(--color-ansi-red);
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+  }
+  [data-nextjs-dialog-left-right] > nav > button > svg {
+    width: auto;
+    height: calc(var(--size-gap) + var(--size-gap-half));
+  }
+  [data-nextjs-dialog-left-right] > nav > button:hover {
+    background-color: rgba(255, 85, 85, 0.2);
+  }
+  [data-nextjs-dialog-left-right] > nav > button:disabled {
+    background-color: rgba(255, 85, 85, 0.1);
+    color: rgba(255, 85, 85, 0.4);
+    cursor: not-allowed;
+  }
+
+  [data-nextjs-dialog-left-right] > nav > button:first-of-type {
+    border-radius: var(--size-gap-half) 0 0 var(--size-gap-half);
+    margin-right: 1px;
+  }
+  [data-nextjs-dialog-left-right] > nav > button:last-of-type {
+    border-radius: 0 var(--size-gap-half) var(--size-gap-half) 0;
+  }
+
+  [data-nextjs-dialog-left-right] > button:last-of-type {
+    border: 0;
+    padding: 0;
+
+    background-color: transparent;
+    appearance: none;
+
+    opacity: 0.4;
+    transition: opacity 0.25s ease;
+
+    color: var(--color-font);
+  }
+  [data-nextjs-dialog-left-right] > button:last-of-type:hover {
+    opacity: 0.7;
+  }
+
+        
+  [data-nextjs-codeframe] {
+    overflow: auto;
+    border-radius: var(--size-gap-half);
+    background-color: var(--color-ansi-bg);
+    color: var(--color-ansi-fg);
+    margin-bottom: var(--size-gap-double);
+  }
+  [data-nextjs-codeframe]::selection,
+  [data-nextjs-codeframe] *::selection {
+    background-color: var(--color-ansi-selection);
+  }
+  [data-nextjs-codeframe] * {
+    color: inherit;
+    background-color: transparent;
+    font-family: var(--font-stack-monospace);
+  }
+
+  [data-nextjs-codeframe] > * {
+    margin: 0;
+    padding: calc(var(--size-gap) + var(--size-gap-half))
+      calc(var(--size-gap-double) + var(--size-gap-half));
+  }
+  [data-nextjs-codeframe] > div {
+    display: inline-block;
+    width: auto;
+    min-width: 100%;
+    border-bottom: 1px solid var(--color-ansi-bright-black);
+  }
+  [data-nextjs-codeframe] > div > p {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    margin: 0;
+  }
+  [data-nextjs-codeframe] > div > p:hover {
+    text-decoration: underline dotted;
+  }
+  [data-nextjs-codeframe] div > p > svg {
+    width: auto;
+    height: 1em;
+    margin-left: 8px;
+  }
+  [data-nextjs-codeframe] div > pre {
+    overflow: hidden;
+    display: inline-block;
+  }
+
+        
+  [data-nextjs-terminal] {
+    border-radius: var(--size-gap-half);
+    background-color: var(--color-ansi-bg);
+    color: var(--color-ansi-fg);
+  }
+  [data-nextjs-terminal]::selection,
+  [data-nextjs-terminal] *::selection {
+    background-color: var(--color-ansi-selection);
+  }
+  [data-nextjs-terminal] * {
+    color: inherit;
+    background-color: transparent;
+    font-family: var(--font-stack-monospace);
+  }
+  [data-nextjs-terminal] > * {
+    margin: 0;
+    padding: calc(var(--size-gap) + var(--size-gap-half))
+      calc(var(--size-gap-double) + var(--size-gap-half));
+  }
+
+  [data-nextjs-terminal] pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  [data-with-open-in-editor-link] svg {
+    width: auto;
+    height: var(--size-font-small);
+    margin-left: var(--size-gap);
+  }
+  [data-with-open-in-editor-link] {
+    cursor: pointer;
+  }
+  [data-with-open-in-editor-link]:hover {
+    text-decoration: underline dotted;
+  }
+  [data-with-open-in-editor-link-source-file] {
+    border-bottom: 1px solid var(--color-ansi-bright-black);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    line-break: anywhere;
+  }
+  [data-with-open-in-editor-link-import-trace] {
+    margin-left: var(--size-gap-double);
+  }
+  [data-nextjs-terminal] a {
+    color: inherit;
+  }
+
+        
+  h1.nextjs__container_errors_label {
+    font-size: var(--size-font-big);
+    line-height: var(--size-font-bigger);
+    font-weight: bold;
+    margin: var(--size-gap-double) 0;
+  }
+  .nextjs-container-errors-header p {
+    font-size: var(--size-font-small);
+    line-height: var(--size-font-big);
+    white-space: pre-wrap;
+  }
+  .nextjs-container-errors-body footer {
+    margin-top: var(--size-gap);
+  }
+  .nextjs-container-errors-body footer p {
+    margin: 0;
+  }
+
+  .nextjs-container-errors-body small {
+    color: var(--color-font);
+  }
+
+        
+  .nextjs-error-with-static {
+    bottom: calc(var(--size-gap-double) * 4.5);
+  }
+  .nextjs-container-errors-header {
+    position: relative;
+  }
+  .nextjs-container-errors-header > h1 {
+    font-size: var(--size-font-big);
+    line-height: var(--size-font-bigger);
+    font-weight: bold;
+    margin: calc(var(--size-gap-double) * 1.5) 0;
+    color: var(--color-title-h1);
+  }
+  .nextjs-container-errors-header small {
+    font-size: var(--size-font-small);
+    color: var(--color-accents-1);
+    margin-left: var(--size-gap-double);
+  }
+  .nextjs-container-errors-header small > span {
+    font-family: var(--font-stack-monospace);
+  }
+  .nextjs-container-errors-header p {
+    font-size: var(--size-font-small);
+    line-height: var(--size-font-big);
+    white-space: pre-wrap;
+  }
+  .nextjs__container_errors_desc {
+    font-family: var(--font-stack-monospace);
+    padding: var(--size-gap) var(--size-gap-double);
+    border-left: 2px solid var(--color-text-color-red-1);
+    margin-top: var(--size-gap);
+    font-weight: bold;
+    color: var(--color-text-color-red-1);
+    background-color: var(--color-text-background-red-1);
+  }
+  p.nextjs__container_errors__link {
+    margin: var(--size-gap-double) auto;
+    color: var(--color-text-color-red-1);
+    font-weight: 600;
+    font-size: 15px;
+  }
+  p.nextjs__container_errors__notes {
+    margin: var(--size-gap-double) auto;
+    color: var(--color-stack-notes);
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .nextjs-container-errors-header > div > small {
+    margin: 0;
+    margin-top: var(--size-gap-half);
+  }
+  .nextjs-container-errors-header > p > a {
+    color: inherit;
+    font-weight: bold;
+  }
+  .nextjs-container-errors-body > h2:not(:first-child) {
+    margin-top: calc(var(--size-gap-double) + var(--size-gap));
+  }
+  .nextjs-container-errors-body > h2 {
+    color: var(--color-title-color);
+    margin-bottom: var(--size-gap);
+    font-size: var(--size-font-big);
+  }
+  .nextjs__container_errors__component-stack {
+    padding: 12px 32px;
+    color: var(--color-ansi-fg);
+    background: var(--color-ansi-bg);
+  }
+  .nextjs-toast-errors-parent {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  .nextjs-toast-errors-parent:hover {
+    transform: scale(1.1);
+  }
+  .nextjs-toast-errors {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  .nextjs-toast-errors > svg {
+    margin-right: var(--size-gap);
+  }
+  .nextjs-toast-hide-button {
+    margin-left: var(--size-gap-triple);
+    border: none;
+    background: none;
+    color: var(--color-ansi-bright-white);
+    padding: 0;
+    transition: opacity 0.25s ease;
+    opacity: 0.7;
+  }
+  .nextjs-toast-hide-button:hover {
+    opacity: 1;
+  }
+  .nextjs-container-errors-header
+    > .nextjs-container-build-error-version-status {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+  .nextjs__container_errors_inspect_copy_button {
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--color-ansi-bright-white);
+    font-size: 1.5rem;
+    padding: 0;
+    margin: 0;
+    margin-left: var(--size-gap);
+    transition: opacity 0.25s ease;
+  }
+  .nextjs__container_errors__error_title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nextjs-data-runtime-error-inspect-link,
+  .nextjs-data-runtime-error-inspect-link:hover {
+    margin: 0 8px;
+    color: inherit;
+  }
+
+        
+  [data-nextjs-call-stack-frame]:not(:last-child),
+  [data-nextjs-component-stack-frame]:not(:last-child) {
+    margin-bottom: var(--size-gap-double);
+  }
+
+  [data-expand-ignore-button]:focus:not(:focus-visible),
+  [data-expand-ignore-button] {
+    background: none;
+    border: none;
+    color: var(--color-font);
+    cursor: pointer;
+    font-size: var(--size-font);
+    margin: var(--size-gap) 0;
+    padding: 0;
+    text-decoration: underline;
+    outline: none;
+  }
+
+  [data-nextjs-data-runtime-error-copy-button],
+  [data-nextjs-data-runtime-error-copy-button]:focus:not(:focus-visible) {
+    position: relative;
+    margin-left: var(--size-gap);
+    padding: 0;
+    border: none;
+    background: none;
+    outline: none;
+  }
+  [data-nextjs-data-runtime-error-copy-button] > svg {
+    vertical-align: middle;
+  }
+  .nextjs-data-runtime-error-copy-button {
+    color: inherit;
+  }
+  .nextjs-data-runtime-error-copy-button--initial:hover {
+    cursor: pointer;
+  }
+  .nextjs-data-runtime-error-copy-button[aria-disabled='true'] {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .nextjs-data-runtime-error-copy-button--error,
+  .nextjs-data-runtime-error-copy-button--error:hover {
+    color: var(--color-ansi-red);
+  }
+  .nextjs-data-runtime-error-copy-button--success {
+    color: var(--color-ansi-green);
+  }
+
+  [data-nextjs-call-stack-frame] > h3,
+  [data-nextjs-component-stack-frame] > h3 {
+    margin-top: 0;
+    margin-bottom: 0;
+    font-family: var(--font-stack-monospace);
+    font-size: var(--size-font);
+  }
+  [data-nextjs-call-stack-frame] > h3[data-nextjs-frame-expanded='false'] {
+    color: #666;
+    display: inline-block;
+  }
+  [data-nextjs-call-stack-frame] > div,
+  [data-nextjs-component-stack-frame] > div {
+    display: flex;
+    align-items: center;
+    padding-left: calc(var(--size-gap) + var(--size-gap-half));
+    font-size: var(--size-font-small);
+    color: #999;
+  }
+  [data-nextjs-call-stack-frame] > div > svg,
+  [data-nextjs-component-stack-frame] > [role='link'] > svg {
+    width: auto;
+    height: var(--size-font-small);
+    margin-left: var(--size-gap);
+    flex-shrink: 0;
+    display: none;
+  }
+
+  [data-nextjs-call-stack-frame] > div[data-has-source],
+  [data-nextjs-component-stack-frame] > [role='link'] {
+    cursor: pointer;
+  }
+  [data-nextjs-call-stack-frame] > div[data-has-source]:hover,
+  [data-nextjs-component-stack-frame] > [role='link']:hover {
+    text-decoration: underline dotted;
+  }
+  [data-nextjs-call-stack-frame] > div[data-has-source] > svg,
+  [data-nextjs-component-stack-frame] > [role='link'] > svg {
+    display: unset;
+  }
+
+  [data-nextjs-call-stack-framework-icon] {
+    margin-right: var(--size-gap);
+  }
+  [data-nextjs-call-stack-framework-icon='next'] > mask {
+    mask-type: alpha;
+  }
+  [data-nextjs-call-stack-framework-icon='react'] {
+    color: rgb(20, 158, 202);
+  }
+  [data-nextjs-collapsed-call-stack-details][open]
+    [data-nextjs-call-stack-chevron-icon] {
+    transform: rotate(90deg);
+  }
+  [data-nextjs-collapsed-call-stack-details] summary {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--size-gap);
+    list-style: none;
+  }
+  [data-nextjs-collapsed-call-stack-details] summary::-webkit-details-marker {
+    display: none;
+  }
+
+  [data-nextjs-collapsed-call-stack-details] h3 {
+    color: #666;
+  }
+  [data-nextjs-collapsed-call-stack-details] [data-nextjs-call-stack-frame] {
+    margin-bottom: var(--size-gap-double);
+  }
+
+  [data-nextjs-container-errors-pseudo-html] {
+    position: relative;
+  }
+  [data-nextjs-container-errors-pseudo-html-collapse] {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    color: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  [data-nextjs-container-errors-pseudo-html--diff='add'] {
+    color: var(--color-ansi-green);
+  }
+  [data-nextjs-container-errors-pseudo-html--diff='remove'] {
+    color: var(--color-ansi-red);
+  }
+  [data-nextjs-container-errors-pseudo-html--tag-error] {
+    color: var(--color-ansi-red);
+    font-weight: bold;
+  }
+  /* hide but text are still accessible in DOM */
+  [data-nextjs-container-errors-pseudo-html--hint] {
+    display: inline-block;
+    font-size: 0;
+  }
+  [data-nextjs-container-errors-pseudo-html--tag-adjacent='false'] {
+    color: var(--color-accents-1);
+  }
+
+        
+  .nextjs-container-build-error-version-status {
+    flex: 1;
+    text-align: right;
+    font-size: var(--size-font-small);
+  }
+  .nextjs-container-build-error-version-status span {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background: var(--color-ansi-bright-black);
+  }
+  .nextjs-container-build-error-version-status span.fresh {
+    background: var(--color-ansi-green);
+  }
+  .nextjs-container-build-error-version-status span.stale {
+    background: var(--color-ansi-yellow);
+  }
+  .nextjs-container-build-error-version-status span.outdated {
+    background: var(--color-ansi-red);
+  }
+
+      </style></template></nextjs-portal><next-route-announcer data-dashlane-shadowhost="true" style="position: absolute;" data-dashlane-observed="true"><template shadowrootmode="open"><div aria-live="assertive" id="__next-route-announcer__" role="alert" style="position: absolute; border: 0px; height: 1px; margin: -1px; padding: 0px; width: 1px; clip: rect(0px, 0px, 0px, 0px); overflow: hidden; white-space: nowrap; overflow-wrap: normal;"></div></template></next-route-announcer></body></html>
