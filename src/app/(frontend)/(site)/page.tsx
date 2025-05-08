@@ -10,7 +10,7 @@ export default async function Index() {
 
 const ToDelete = () => {
   return (
-    <Section className="border-t">
+    <Section>
       <Container>
         <Prose>
           <h2>What&apos;s included?</h2>
