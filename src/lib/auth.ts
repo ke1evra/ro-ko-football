@@ -18,7 +18,6 @@ type LoginParams = {
 type RegisterParams = {
   email: string
   password: string
-  username: string
 }
 
 export type LoginResponse = {
