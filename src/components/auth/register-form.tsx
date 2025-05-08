@@ -19,9 +19,8 @@ export const RegisterForm = () => {
     const formData = new FormData(e.currentTarget)
     const email = formData.get('email') as string
     const password = formData.get('password') as string
-    const username = formData.get('username') as string
 
-    const res: RegisterResponse = await registerUser({ email, password, username })
+    const res: RegisterResponse = await registerUser({ email, password })
 
     setIsPending(false)
 
@@ -34,7 +33,6 @@ export const RegisterForm = () => {
 
   return (
     <form className="grid gap-6 my-6" onSubmit={handleSubmit}>
-      <input type="text" name="username" placeholder="Username" className="focus:outline-none" />
       <input type="email" name="email" placeholder="Email" className="focus:outline-none" />
       <input
         type="password"

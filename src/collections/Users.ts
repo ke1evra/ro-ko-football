@@ -2,7 +2,6 @@ import type { CollectionConfig } from 'payload'
 import type { User } from '@/payload-types'
 import type { PayloadRequest } from 'payload'
 
-// Check if the user is an admin
 const isAdmin = ({ req }: { req: PayloadRequest }): boolean => {
   const user = req.user as User | null
   return user?.role === 'admin'
@@ -15,7 +14,6 @@ export const Users: CollectionConfig = {
   },
   auth: true,
   access: {
-    // Only admins can see the /admin panel
     admin: isAdmin,
   },
   fields: [
@@ -29,11 +27,12 @@ export const Users: CollectionConfig = {
       required: true,
       defaultValue: 'user',
     },
-    {
-      name: 'username',
-      type: 'text',
-      required: true,
-      unique: true,
-    },
+    // If you want to add a username field, uncomment the following lines
+    // {
+    //   name: 'username',
+    //   type: 'text',
+    //   required: true,
+    //   unique: true,
+    // },
   ],
 }

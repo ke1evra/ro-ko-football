@@ -5,7 +5,7 @@ import { Section, Container } from '../craft'
 
 export default function Footer() {
   return (
-    <footer className="border-t">
+    <footer className="border-t bg-accent/30">
       <Section>
         <Container className="grid gap-6">
           <div className="grid gap-6">

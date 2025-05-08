@@ -80,11 +80,7 @@ export async function logoutUser() {
   redirect('/')
 }
 
-export async function registerUser({
-  email,
-  password,
-  username,
-}: RegisterParams): Promise<RegisterResponse> {
+export async function registerUser({ email, password }: RegisterParams): Promise<RegisterResponse> {
   const payload = await getPayload({ config })
 
   try {
@@ -93,7 +89,6 @@ export async function registerUser({
       data: {
         email,
         password,
-        username,
         role: 'user',
       },
     })
