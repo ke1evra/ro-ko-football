@@ -4,6 +4,8 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 import { fileURLToPath } from 'url'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
+
+// If you want to use Cloudflare R2 or AWS S3, uncomment the following lines
 // import { s3Storage } from '@payloadcms/storage-s3'
 
 import sharp from 'sharp'
