@@ -1,5 +1,7 @@
-import { LoginForm } from '@/components/auth/login-form'
 import { Section, Container } from '@/components/ds'
+import { LoginForm } from '@/components/auth/login-form'
+import { AuthBox } from '@/components/auth/auth-box'
+
 import { getUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
@@ -17,14 +19,16 @@ export default async function LoginPage() {
   return (
     <Section>
       <Container>
-        <h1>Login</h1>
-        <LoginForm />
-        <p className="text-muted-foreground">
-          Don&apos;t have an account?{' '}
-          <Link className="text-foreground" href="/register">
-            Sign Up Now
-          </Link>
-        </p>
+        <AuthBox>
+          <h1>Login</h1>
+          <LoginForm />
+          <p className="text-muted-foreground">
+            Don&apos;t have an account?{' '}
+            <Link className="text-foreground" href="/register">
+              Sign Up Now
+            </Link>
+          </p>
+        </AuthBox>
       </Container>
     </Section>
   )

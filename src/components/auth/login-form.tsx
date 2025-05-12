@@ -40,14 +40,14 @@ export const LoginForm = () => {
         name="email"
         placeholder="Email"
         autoComplete="email"
-        className="focus:outline-none"
+        className="focus:outline-none border-b pb-2"
       />
       <input
         type="password"
         name="password"
         placeholder="Password"
         autoComplete="current-password"
-        className="focus:outline-none"
+        className="focus:outline-none border-b pb-2"
       />
       {error && <p className="text-red-500">{error}</p>}
       <SubmitButton loading={isPending} text="Login" />

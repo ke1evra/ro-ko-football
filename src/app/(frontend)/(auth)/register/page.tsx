@@ -1,7 +1,9 @@
-import { RegisterForm } from '@/components/auth/register-form'
 import { Section, Container } from '@/components/ds'
-import { getUser } from '@/lib/auth'
+import { RegisterForm } from '@/components/auth/register-form'
+import { AuthBox } from '@/components/auth/auth-box'
+
 import { redirect } from 'next/navigation'
+import { getUser } from '@/lib/auth'
 
 import Link from 'next/link'
 
@@ -17,14 +19,16 @@ export default async function RegisterPage() {
   return (
     <Section>
       <Container>
-        <h1>Sign Up</h1>
-        <RegisterForm />
-        <p className="text-muted-foreground">
-          Already have an account?{' '}
-          <Link className="text-foreground" href="/login">
-            Login Now
-          </Link>
-        </p>
+        <AuthBox>
+          <h1>Sign Up</h1>
+          <RegisterForm />
+          <p className="text-muted-foreground">
+            Already have an account?{' '}
+            <Link className="text-foreground" href="/login">
+              Login Now
+            </Link>
+          </p>
+        </AuthBox>
       </Container>
     </Section>
   )

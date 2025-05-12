@@ -40,14 +40,14 @@ export const RegisterForm = () => {
         name="email"
         autoComplete="email"
         placeholder="Email"
-        className="focus:outline-none"
+        className="focus:outline-none border-b pb-2"
       />
       <input
         type="password"
         name="password"
         autoComplete="new-password"
         placeholder="Password"
-        className="focus:outline-none"
+        className="focus:outline-none border-b pb-2"
       />
       {error && <p className="text-red-500">{error}</p>}
       <SubmitButton loading={isPending} text="Sign Up" />
