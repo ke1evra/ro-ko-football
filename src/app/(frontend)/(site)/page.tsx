@@ -1,10 +1,10 @@
-import { Section, Container, Prose } from '@/components/craft'
+import { Section, Container, Prose } from '@/components/ds'
 
 export default async function Index() {
   return (
-    <main>
+    <>
       <ToDelete />
-    </main>
+    </>
   )
 }
 

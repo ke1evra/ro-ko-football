@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Balancer from 'react-wrap-balancer'
 
-import { Section, Container } from '../craft'
+import { Section, Container } from '@/components/ds'
 
 export default function Footer() {
   return (

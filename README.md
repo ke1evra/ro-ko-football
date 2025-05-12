@@ -11,16 +11,16 @@ Open Source SaaS starter for creating applications with Next.js and Payload
 ## ToDo List
 
 - [x] User / Admin Authentication
-- [ ] UI for Auth Pages
-- [ ] Google Auth
-- [ ] GitHub Auth
+- [ ] Blog Setup
+- [ ] Auth Pages UI
+- [ ] Dashboard UI
+- [ ] Blog UI
+- [ ] Polar for payments
 - [x] Tailwind 4
 - [x] shadcn/ui
 - [x] brijr/craft
-- [ ] Dashboard UI
 - [x] Editable Homepage using Globals
 - [x] Blocks
-- [ ] Blog
-- [ ] polar.sh for payments
 - [x] S3 storage using R2
+- [x] Vercel Analytics
 - [ ] Add light and dark mode
