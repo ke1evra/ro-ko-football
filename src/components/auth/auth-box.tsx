@@ -1,0 +1,3 @@
+export const AuthBox = ({ children }: { children: React.ReactNode }) => {
+  return <div>{children}</div>
+}

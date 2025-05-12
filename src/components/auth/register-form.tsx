@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { registerUser } from '@/lib/auth'
 import { SubmitButton } from './submit-button'
+
+import { registerUser } from '@/lib/auth'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+
 import type { RegisterResponse } from '@/lib/auth'
 
 export const RegisterForm = () => {
@@ -33,10 +35,17 @@ export const RegisterForm = () => {
 
   return (
     <form className="grid gap-6 my-6" onSubmit={handleSubmit}>
-      <input type="email" name="email" placeholder="Email" className="focus:outline-none" />
+      <input
+        type="email"
+        name="email"
+        autoComplete="email"
+        placeholder="Email"
+        className="focus:outline-none"
+      />
       <input
         type="password"
         name="password"
+        autoComplete="new-password"
         placeholder="Password"
         className="focus:outline-none"
       />
