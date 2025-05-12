@@ -1,6 +1,8 @@
 'use client'
 
 import { SubmitButton } from '@/components/auth/submit-button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { AlertCircle } from 'lucide-react'
 
 import { loginUser } from '@/lib/auth'
 import { useRouter } from 'next/navigation'
@@ -11,6 +13,7 @@ import type { LoginResponse } from '@/lib/auth'
 export const LoginForm = () => {
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [rememberMe, setRememberMe] = useState(false)
   const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -22,12 +25,12 @@ export const LoginForm = () => {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
-    const res: LoginResponse = await loginUser({ email, password })
+    const res: LoginResponse = await loginUser({ email, password, rememberMe })
 
     setIsPending(false)
 
     if (res.error) {
-      setError(res.error || 'Email or password is incorrect')
+      setError(res.error)
     } else {
       router.push('/dashboard')
     }
@@ -40,16 +43,44 @@ export const LoginForm = () => {
         name="email"
         placeholder="Email"
         autoComplete="email"
-        className="focus:outline-none border-b pb-2"
+        className="w-full focus:outline-none border-b pb-2 h-8"
+        required
       />
+
       <input
         type="password"
         name="password"
         placeholder="Password"
         autoComplete="current-password"
-        className="focus:outline-none border-b pb-2"
+        className="w-full focus:outline-none border-b pb-2 h-8"
+        required
       />
-      {error && <p className="text-red-500">{error}</p>}
+      <div className="text-xs text-muted-foreground">
+        <a href="#" className="hover:underline">
+          Forgot password?
+        </a>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="remember-me"
+          checked={rememberMe}
+          onChange={(e) => setRememberMe(e.target.checked)}
+          className="rounded border-gray-300 text-primary focus:ring-primary"
+        />
+        <label htmlFor="remember-me" className="text-sm text-muted-foreground cursor-pointer">
+          Remember me for 30 days
+        </label>
+      </div>
+
+      {error && (
+        <Alert variant="destructive" className="py-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="text-sm ml-2">{error}</AlertDescription>
+        </Alert>
+      )}
+
       <SubmitButton loading={isPending} text="Login" />
     </form>
   )
