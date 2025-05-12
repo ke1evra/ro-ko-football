@@ -36,7 +36,7 @@ const ToDelete = () => {
           </Prose>
           <div className="flex flex-col sm:flex-row gap-4 mt-8">
             <Button asChild>
-              <Link href="https://github.com//payload-saas-starter">Get Started</Link>
+              <Link href="https://github.com/brijr/payload-saas-starter">Get Started</Link>
             </Button>
             <Button asChild variant="outline">
               <Link href="/register">Sign Up</Link>
