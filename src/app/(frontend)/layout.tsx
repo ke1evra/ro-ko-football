@@ -1,6 +1,7 @@
 import '@/globals.css'
 
 import { Geist as FontSans } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
 
 import type { Metadata } from 'next'
 
@@ -30,7 +31,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={fontSans.className}>
-      <body className={fontSans.className}>{children}</body>
+      <body className={fontSans.className}>
+        {children}
+        <Analytics />
+      </body>
     </html>
   )
 }
