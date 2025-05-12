@@ -3,6 +3,7 @@ import { Section, Container, Prose } from '@/components/ds'
 export default async function Index() {
   return (
     <>
+      {/* Replace with your homepage  */}
       <ToDelete />
     </>
   )
