@@ -2,8 +2,6 @@ import { Section, Container } from '@/components/ds'
 import { User as UserIcon } from 'lucide-react'
 import { LogoutButton } from '@/components/auth/logout-button'
 
-import Link from 'next/link'
-
 import { getUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
