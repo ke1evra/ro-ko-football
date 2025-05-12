@@ -2,7 +2,8 @@ import '@/globals.css'
 
 import { Geist as FontSans } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
-import { Main } from '@/components/ds'
+
+import { cn } from '@/lib/utils'
 
 import type { Metadata } from 'next'
 
@@ -32,8 +33,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={fontSans.className}>
-      <body className={fontSans.className}>
-        <Main>{children}</Main>
+      <body className={cn('flex flex-col min-h-screen', fontSans.className)}>
+        {children}
         <Analytics />
       </body>
     </html>

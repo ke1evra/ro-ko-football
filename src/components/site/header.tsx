@@ -9,7 +9,7 @@ import { getUser } from '@/lib/auth'
 
 import type { User } from '@/payload-types'
 
-export default async function Header() {
+export const Header = async () => {
   const user: User | null = await getUser()
 
   return (

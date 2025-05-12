@@ -3,7 +3,7 @@ import Balancer from 'react-wrap-balancer'
 
 import { Section, Container } from '@/components/ds'
 
-export default function Footer() {
+export const Footer = () => {
   return (
     <footer className="border-t bg-accent/30">
       <Section>
