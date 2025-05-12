@@ -1,3 +1,4 @@
+import { LogoutButton } from '@/components/auth/logout-button'
 import { Button } from '../ui/button'
 import { Nav } from '@/components/ds'
 
@@ -24,9 +25,12 @@ export const Header = async () => {
 
       <div className="flex gap-2">
         {user ? (
-          <Button asChild>
-            <Link href="/dashboard">Dashboard</Link>
-          </Button>
+          <>
+            <LogoutButton />
+            <Button asChild>
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+          </>
         ) : (
           <>
             <Button asChild variant="ghost">
