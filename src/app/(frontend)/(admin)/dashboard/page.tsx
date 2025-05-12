@@ -36,7 +36,7 @@ export default async function Admin() {
 
             <div className="space-y-6">
               <div className="border rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-4">Account Summary</h2>
+                <h2 className="text-lg mb-4">Account Summary</h2>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Account type</span>
@@ -50,7 +50,7 @@ export default async function Admin() {
               </div>
 
               <div className="border rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-4">Quick Links</h2>
+                <h2 className="text-lg mb-4">Quick Links</h2>
                 <div className="space-y-2">
                   <Link href="/" className="block text-primary hover:underline">
                     Home
@@ -79,7 +79,7 @@ const UserProfile = ({ user, accountAgeDays }: { user: User; accountAgeDays: num
           <UserIcon className="h-8 w-8 text-primary" />
         </div>
         <div>
-          <h2 className="text-xl font-semibold">Welcome, {user.email}</h2>
+          <h2 className="text-lg">Welcome, {user.email}</h2>
           <p className="text-muted-foreground text-sm">
             Member for {accountAgeDays} {accountAgeDays === 1 ? 'day' : 'days'}
           </p>
