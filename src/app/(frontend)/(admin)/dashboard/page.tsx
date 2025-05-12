@@ -18,6 +18,7 @@ export default async function Admin() {
 
   const createdAt = user.createdAt ? new Date(user.createdAt) : new Date()
   const now = new Date()
+  const formattedCreatedAt = createdAt.toLocaleDateString()
   const accountAgeDays = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
 
   return (
@@ -34,33 +35,24 @@ export default async function Admin() {
               <UserProfile user={user} accountAgeDays={accountAgeDays} />
             </div>
 
-            <div className="space-y-6">
-              <div className="border rounded-lg p-6">
-                <h2 className="text-lg mb-4">Account Summary</h2>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Account type</span>
-                    <span className="font-medium capitalize">{user.role}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Account age</span>
-                    <span className="font-medium">{accountAgeDays} days</span>
-                  </div>
+            <div className="border rounded-lg p-6">
+              <h2 className="text-lg mb-4">Account Summary</h2>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Account type</span>
+                  <span className="font-medium capitalize">{user.role}</span>
                 </div>
-              </div>
-
-              <div className="border rounded-lg p-6">
-                <h2 className="text-lg mb-4">Quick Links</h2>
-                <div className="space-y-2">
-                  <Link href="/" className="block text-primary hover:underline">
-                    Home
-                  </Link>
-                  <Link href="#" className="block text-primary hover:underline">
-                    Account Settings
-                  </Link>
-                  <Link href="#" className="block text-primary hover:underline">
-                    Help & Support
-                  </Link>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Account age</span>
+                  <span className="font-medium">{accountAgeDays} days</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Email</span>
+                  <span className="font-medium">{user.email}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Created at</span>
+                  <span className="font-medium">{formattedCreatedAt}</span>
                 </div>
               </div>
             </div>
