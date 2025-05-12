@@ -1,13 +1,14 @@
-import Link from 'next/link'
-import Balancer from 'react-wrap-balancer'
-
 import { Section, Container } from '@/components/ds'
+import { ThemeToggle } from '@/components/theme/theme-toggle'
+
+import Balancer from 'react-wrap-balancer'
+import Link from 'next/link'
 
 export const Footer = () => {
   return (
     <footer className="border-t bg-accent/30">
       <Section>
-        <Container className="grid gap-6">
+        <Container className="grid gap-6 grid-cols-[1fr_auto]">
           <div className="grid gap-6">
             <Link href="/" className="space-y-6 text-lg">
               <h3>Payload SaaS Starter</h3>
@@ -26,6 +27,7 @@ export const Footer = () => {
               © <a href="https://github.com/brijr">brijr</a>. All rights reserved. 2025-present.
             </p>
           </div>
+          <ThemeToggle />
         </Container>
       </Section>
     </footer>

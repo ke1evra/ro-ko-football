@@ -1,5 +1,5 @@
 import { LoginForm } from '@/components/auth/login-form'
-import { Section, Container } from '@/components/craft'
+import { Section, Container } from '@/components/ds'
 import { getUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 

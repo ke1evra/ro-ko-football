@@ -1,4 +1,4 @@
-import { Section, Container } from '@/components/craft'
+import { Section, Container } from '@/components/ds'
 import { getUser } from '@/lib/auth'
 import { LogoutButton } from '@/components/auth/logout-button'
 
