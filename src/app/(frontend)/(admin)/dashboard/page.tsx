@@ -1,6 +1,9 @@
 import { Section, Container, Prose } from '@/components/ds'
-import { getUser } from '@/lib/auth'
 import { LogoutButton } from '@/components/auth/logout-button'
+
+import Link from 'next/link'
+
+import { getUser } from '@/lib/auth'
 
 import type { User } from '@/payload-types'
 
@@ -24,6 +27,7 @@ const ToDelete = ({ user }: { user: User | null }) => {
       <p className="text-muted-foreground">
         This is the admin dashboard. You cannot access this page if you are not logged in.
       </p>
+      <Link href="/">&larr; Back to home</Link>
     </Prose>
   )
 }
