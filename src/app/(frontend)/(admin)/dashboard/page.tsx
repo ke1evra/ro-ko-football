@@ -1,7 +1,6 @@
 import { Section, Container } from '@/components/ds'
+import { User as UserIcon } from 'lucide-react'
 import { LogoutButton } from '@/components/auth/logout-button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Shield, AlertCircle, User as UserIcon } from 'lucide-react'
 
 import Link from 'next/link'
 
@@ -13,12 +12,10 @@ import type { User } from '@/payload-types'
 export default async function Admin() {
   const user: User | null = await getUser()
 
-  // Double protection - middleware + server component check
   if (!user) {
     redirect('/login')
   }
 
-  // Calculate account age
   const createdAt = user.createdAt ? new Date(user.createdAt) : new Date()
   const now = new Date()
   const accountAgeDays = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
@@ -28,7 +25,7 @@ export default async function Admin() {
       <Section>
         <Container>
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <h1 className="text-xl">Dashboard</h1>
             <LogoutButton />
           </div>
 
