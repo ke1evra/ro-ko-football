@@ -14,7 +14,7 @@ export const Header = async () => {
 
   return (
     <Nav
-      className="border-b sticky top-0 bg-accent"
+      className="border-b sticky top-0 bg-accent/30 backdrop-blur-md"
       containerClassName="flex justify-between items-center gap-4"
     >
       <Link href="/" className="flex gap-3 items-center">
