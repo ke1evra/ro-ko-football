@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { resetPassword } from '@/lib/auth'
+import { resetPassword, getUser } from '@/lib/auth'
 import { Section, Container } from '@/components/ds'
 import { Button } from '@/components/ui/button'
 import { AuthBox } from '@/components/auth/auth-box'
@@ -18,6 +18,25 @@ function ResetPasswordForm() {
   const [email, setEmail] = useState('')
 
   const searchParams = useSearchParams()
+  const router = useRouter()
+
+  // Check if user is already authenticated
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const user = await getUser()
+        if (user) {
+          toast.info('Already Signed In', {
+            description: 'You are already signed in. Redirecting to dashboard...',
+          })
+          router.push('/dashboard')
+        }
+      } catch (_error) {
+        // User is not authenticated, continue with reset flow
+      }
+    }
+    checkAuth()
+  }, [router])
 
   useEffect(() => {
     const tokenParam = searchParams.get('token')

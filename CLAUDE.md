@@ -48,7 +48,9 @@ This is a modern SaaS starter kit built with Next.js 15 and Payload CMS, designe
 - Password strength validation
 - "Remember me" functionality (30-day vs 1-day sessions)
 - Protected routes with middleware
+- Automatic redirects for authenticated users accessing auth pages
 - Email service integration with Resend
+- Toast notifications for all auth feedback
 - Components in `/src/components/auth/`
 
 ### Design System
@@ -153,6 +155,8 @@ R2_ENDPOINT=YOUR_ENDPOINT_HERE
 - Always use the authentication utilities from `/src/lib/auth.ts`
 - Protected routes should be placed under `/(admin)/` directory
 - Use middleware for route protection rather than client-side checks
+- Auth pages automatically redirect authenticated users to dashboard
+- All auth feedback uses toast notifications for better UX
 
 ### Styling
 - Use Tailwind CSS classes
