@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 // Define protected routes that require authentication
 const PROTECTED_ROUTES = ['/dashboard']
 // Define routes that should redirect to dashboard if already authenticated
-const AUTH_ROUTES = ['/login', '/register']
+const AUTH_ROUTES = ['/login', '/register', '/forgot-password', '/reset-password']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -34,5 +34,7 @@ export const config = {
     // Match auth routes
     '/login',
     '/register',
+    '/forgot-password',
+    '/reset-password',
   ],
 }

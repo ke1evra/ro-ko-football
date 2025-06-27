@@ -3,6 +3,7 @@
 import { SubmitButton } from '@/components/auth/submit-button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
+import Link from 'next/link'
 
 import { loginUser } from '@/lib/auth'
 import { useRouter } from 'next/navigation'
@@ -56,9 +57,9 @@ export const LoginForm = () => {
         required
       />
       <div className="text-xs text-muted-foreground">
-        <a href="#" className="hover:underline">
+        <Link href="/forgot-password" className="hover:underline">
           Forgot password?
-        </a>
+        </Link>
       </div>
 
       <div className="flex items-center space-x-2">

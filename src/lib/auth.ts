@@ -8,6 +8,8 @@ import configPromise from '@payload-config'
 import { redirect } from 'next/navigation'
 import type { User } from '@/payload-types'
 import { validateEmail, validatePassword } from './validation'
+import { sendEmail, verificationEmailTemplate, passwordResetEmailTemplate, passwordChangedEmailTemplate } from './email'
+import { randomBytes } from 'crypto'
 
 // Auth Types
 
@@ -35,6 +37,18 @@ export type Result = {
 }
 
 export type RegisterResponse = {
+  success: boolean
+  error?: string
+  errorCode?: string
+}
+
+export type ForgotPasswordResponse = {
+  success: boolean
+  error?: string
+  errorCode?: string
+}
+
+export type ResetPasswordResponse = {
   success: boolean
   error?: string
   errorCode?: string
@@ -181,6 +195,10 @@ export async function registerUser({ email, password }: RegisterParams): Promise
     const payload = await getPayload({ config })
 
     try {
+      // Generate email verification token
+      const verificationToken = randomBytes(32).toString('hex')
+      const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+
       // Create the user
       await payload.create({
         collection: 'users',
@@ -188,10 +206,20 @@ export async function registerUser({ email, password }: RegisterParams): Promise
           email,
           password,
           role: 'user',
+          emailVerified: false,
+          emailVerificationToken: verificationToken,
+          emailVerificationExpires: verificationExpires.toISOString(),
         },
       })
 
-      // Log the user in
+      // Send verification email
+      await sendEmail({
+        to: email,
+        subject: 'Verify your email address',
+        html: verificationEmailTemplate(email, verificationToken),
+      })
+
+      // Log the user in (they can use the app but with limited access until verified)
       const loginResponse = await loginUser({ email, password })
 
       if (loginResponse.success) {
@@ -238,5 +266,209 @@ export async function registerUser({ email, password }: RegisterParams): Promise
       error: 'We encountered a system error. Please try again later.', 
       errorCode: 'SYSTEM_ERROR' 
     }
+  }
+}
+
+/**
+ * Send password reset email
+ * @param email Email address to send reset link to
+ * @returns Response indicating success or failure
+ */
+export async function forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+  // Validate email
+  const emailValidation = validateEmail(email)
+  if (!emailValidation.valid) {
+    return { success: false, error: emailValidation.error, errorCode: 'INVALID_EMAIL' }
+  }
+
+  try {
+    const payload = await getPayload({ config: await configPromise })
+
+    // Find user by email
+    const users = await payload.find({
+      collection: 'users',
+      where: {
+        email: { equals: email },
+      },
+    })
+
+    // Always return success to prevent email enumeration attacks
+    // Even if user doesn't exist, we say we sent an email
+    if (users.docs.length === 0) {
+      return { success: true }
+    }
+
+    const user = users.docs[0]
+
+    // Generate reset token
+    const resetToken = randomBytes(32).toString('hex')
+    const resetExpires = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+
+    // Update user with reset token
+    await payload.update({
+      collection: 'users',
+      id: user.id,
+      data: {
+        passwordResetToken: resetToken,
+        passwordResetExpires: resetExpires.toISOString(),
+      },
+    })
+
+    // Send reset email
+    await sendEmail({
+      to: email,
+      subject: 'Reset your password',
+      html: passwordResetEmailTemplate(email, resetToken),
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error('Forgot password error:', error)
+    return {
+      success: false,
+      error: 'We encountered an error. Please try again later.',
+      errorCode: 'SYSTEM_ERROR',
+    }
+  }
+}
+
+/**
+ * Reset password using token
+ * @param token Reset token from email
+ * @param email User's email address
+ * @param newPassword New password to set
+ * @returns Response indicating success or failure
+ */
+export async function resetPassword(
+  token: string,
+  email: string,
+  newPassword: string
+): Promise<ResetPasswordResponse> {
+  // Validate inputs
+  const emailValidation = validateEmail(email)
+  if (!emailValidation.valid) {
+    return { success: false, error: emailValidation.error, errorCode: 'INVALID_EMAIL' }
+  }
+
+  const passwordValidation = validatePassword(newPassword)
+  if (!passwordValidation.valid) {
+    return { success: false, error: passwordValidation.error, errorCode: 'INVALID_PASSWORD' }
+  }
+
+  if (!token) {
+    return { success: false, error: 'Invalid reset token', errorCode: 'INVALID_TOKEN' }
+  }
+
+  try {
+    const payload = await getPayload({ config: await configPromise })
+
+    // Find user with matching email and valid reset token
+    const users = await payload.find({
+      collection: 'users',
+      where: {
+        and: [
+          { email: { equals: email } },
+          { passwordResetToken: { equals: token } },
+          { passwordResetExpires: { greater_than: new Date().toISOString() } },
+        ],
+      },
+    })
+
+    if (users.docs.length === 0) {
+      return {
+        success: false,
+        error: 'Invalid or expired reset token',
+        errorCode: 'INVALID_OR_EXPIRED_TOKEN',
+      }
+    }
+
+    const user = users.docs[0]
+
+    // Update password and clear reset token
+    await payload.update({
+      collection: 'users',
+      id: user.id,
+      data: {
+        password: newPassword,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+      },
+    })
+
+    // Send confirmation email
+    await sendEmail({
+      to: email,
+      subject: 'Your password was changed',
+      html: passwordChangedEmailTemplate(),
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error('Reset password error:', error)
+    return {
+      success: false,
+      error: 'We encountered an error. Please try again later.',
+      errorCode: 'SYSTEM_ERROR',
+    }
+  }
+}
+
+/**
+ * Resend email verification
+ * @param email Email address to resend verification to
+ * @returns Response indicating success or failure
+ */
+export async function resendVerification(email: string): Promise<{ success: boolean; error?: string }> {
+  const emailValidation = validateEmail(email)
+  if (!emailValidation.valid) {
+    return { success: false, error: emailValidation.error }
+  }
+
+  try {
+    const payload = await getPayload({ config: await configPromise })
+
+    // Find user by email
+    const users = await payload.find({
+      collection: 'users',
+      where: {
+        and: [
+          { email: { equals: email } },
+          { emailVerified: { equals: false } },
+        ],
+      },
+    })
+
+    if (users.docs.length === 0) {
+      // Don't reveal if email exists or is already verified
+      return { success: true }
+    }
+
+    const user = users.docs[0]
+
+    // Generate new verification token
+    const verificationToken = randomBytes(32).toString('hex')
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+
+    // Update user with new token
+    await payload.update({
+      collection: 'users',
+      id: user.id,
+      data: {
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: verificationExpires.toISOString(),
+      },
+    })
+
+    // Send verification email
+    await sendEmail({
+      to: email,
+      subject: 'Verify your email address',
+      html: verificationEmailTemplate(email, verificationToken),
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error('Resend verification error:', error)
+    return { success: false, error: 'Failed to send verification email' }
   }
 }

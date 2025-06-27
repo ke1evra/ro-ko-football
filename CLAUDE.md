@@ -42,11 +42,13 @@ This is a modern SaaS starter kit built with Next.js 15 and Payload CMS, designe
 
 ### Authentication System
 - HTTP-only cookies for secure authentication
-- Email/password registration and login
+- Email/password registration and login with email verification
+- Password reset functionality via email
 - Role-based access control (admin/user roles)
 - Password strength validation
-- "Remember me" functionality
+- "Remember me" functionality (30-day vs 1-day sessions)
 - Protected routes with middleware
+- Email service integration with Resend
 - Components in `/src/components/auth/`
 
 ### Design System
@@ -97,6 +99,11 @@ DATABASE_URI=postgres://postgres:<password>@127.0.0.1:5432/your-database-name
 # Payload secret key
 PAYLOAD_SECRET=YOUR_SECRET_HERE
 
+# Email Configuration (Resend)
+RESEND_API_KEY=re_xxxxxxxx
+EMAIL_FROM=noreply@yourdomain.com
+APP_URL=http://localhost:3000
+
 # Vercel Blob Storage
 BLOB_READ_WRITE_TOKEN=YOUR_READ_WRITE_TOKEN_HERE
 
@@ -120,9 +127,13 @@ R2_ENDPOINT=YOUR_ENDPOINT_HERE
 - `/src/collections/Media.ts` - Media/file upload collection
 
 ### Authentication
-- `/src/lib/auth.ts` - Authentication utilities
+- `/src/lib/auth.ts` - Authentication utilities and server actions
+- `/src/lib/email.ts` - Email service with Resend integration
 - `/src/middleware.ts` - Route protection middleware
 - `/src/components/auth/` - Authentication UI components
+- `/src/app/api/auth/verify-email/route.ts` - Email verification endpoint
+- `/src/app/(frontend)/(auth)/forgot-password/` - Password reset request page
+- `/src/app/(frontend)/(auth)/reset-password/` - Password reset page
 
 ### Layouts
 - `/src/app/(frontend)/layout.tsx` - Main frontend layout
@@ -197,3 +208,11 @@ The project is configured for Vercel deployment:
 1. Use the existing form components as examples
 2. Implement proper validation using `/src/lib/validation.ts`
 3. Handle form submissions with Server Actions
+
+### Email and Authentication Features
+1. Email verification is automatic on registration
+2. Password reset flow includes email verification
+3. Email templates are customizable in `/src/lib/email.ts`
+4. Users collection includes email verification fields
+5. Use `EmailVerificationBanner` component for unverified users
+6. Security headers are configured in `next.config.mjs`
