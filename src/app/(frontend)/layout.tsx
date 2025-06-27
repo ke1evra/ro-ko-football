@@ -3,6 +3,7 @@ import '@/globals.css'
 import { Geist as FontSans } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme/theme-provider'
 import { Analytics } from '@vercel/analytics/next'
+import { Toaster } from 'sonner'
 
 import { cn } from '@/lib/utils'
 
@@ -42,6 +43,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           disableTransitionOnChange
         >
           {children}
+          <Toaster 
+            richColors 
+            position="top-center" 
+            expand={true}
+            closeButton
+          />
         </ThemeProvider>
         <Analytics />
       </body>

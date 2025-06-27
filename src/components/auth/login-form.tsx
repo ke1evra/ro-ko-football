@@ -1,9 +1,8 @@
 'use client'
 
 import { SubmitButton } from '@/components/auth/submit-button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 
 import { loginUser } from '@/lib/auth'
 import { useRouter } from 'next/navigation'
@@ -13,14 +12,12 @@ import type { LoginResponse } from '@/lib/auth'
 
 export const LoginForm = () => {
   const [isPending, setIsPending] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [rememberMe, setRememberMe] = useState(false)
   const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsPending(true)
-    setError(null)
 
     const formData = new FormData(e.currentTarget)
     const email = formData.get('email') as string
@@ -31,8 +28,32 @@ export const LoginForm = () => {
     setIsPending(false)
 
     if (res.error) {
-      setError(res.error)
+      // Show error toast with specific error message
+      switch (res.errorCode) {
+        case 'INVALID_EMAIL':
+          toast.error('Invalid Email', {
+            description: res.error,
+          })
+          break
+        case 'INVALID_CREDENTIALS':
+          toast.error('Invalid Credentials', {
+            description: 'The email or password you entered is incorrect',
+          })
+          break
+        case 'AUTH_ERROR':
+          toast.error('Authentication Failed', {
+            description: 'Please try again later',
+          })
+          break
+        default:
+          toast.error('Login Failed', {
+            description: res.error || 'Something went wrong',
+          })
+      }
     } else {
+      toast.success('Welcome back!', {
+        description: 'Redirecting to dashboard...',
+      })
       router.push('/dashboard')
     }
   }
@@ -74,13 +95,6 @@ export const LoginForm = () => {
           Remember me for 30 days
         </label>
       </div>
-
-      {error && (
-        <Alert variant="destructive" className="py-2">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="text-sm ml-2">{error}</AlertDescription>
-        </Alert>
-      )}
 
       <SubmitButton loading={isPending} text="Login" />
     </form>

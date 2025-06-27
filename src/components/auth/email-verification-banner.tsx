@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { resendVerification } from '@/lib/auth'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Mail, AlertCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface EmailVerificationBannerProps {
   userEmail: string
@@ -12,24 +12,26 @@ interface EmailVerificationBannerProps {
 
 export const EmailVerificationBanner = ({ userEmail }: EmailVerificationBannerProps) => {
   const [isResending, setIsResending] = useState(false)
-  const [message, setMessage] = useState('')
-  const [isSuccess, setIsSuccess] = useState(false)
 
   const handleResendVerification = async () => {
     setIsResending(true)
-    setMessage('')
     
     try {
       const result = await resendVerification(userEmail)
       
       if (result.success) {
-        setIsSuccess(true)
-        setMessage('Verification email sent! Please check your inbox.')
+        toast.success('Verification Email Sent!', {
+          description: 'Please check your inbox for the verification link.',
+        })
       } else {
-        setMessage(result.error || 'Failed to send verification email. Please try again.')
+        toast.error('Failed to Send Email', {
+          description: result.error || 'Please try again later.',
+        })
       }
     } catch (_error) {
-      setMessage('Something went wrong. Please try again.')
+      toast.error('Something went wrong', {
+        description: 'Please try again later.',
+      })
     } finally {
       setIsResending(false)
     }
@@ -65,16 +67,6 @@ export const EmailVerificationBanner = ({ userEmail }: EmailVerificationBannerPr
             </Button>
           </div>
         </div>
-        
-        {message && (
-          <div className="mt-2">
-            <Alert variant={isSuccess ? "default" : "destructive"} className="py-2">
-              <AlertDescription className="text-sm">
-                {message}
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
       </div>
     </div>
   )

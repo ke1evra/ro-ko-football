@@ -7,12 +7,12 @@ import { resetPassword } from '@/lib/auth'
 import { Section, Container } from '@/components/ds'
 import { Button } from '@/components/ui/button'
 import { AuthBox } from '@/components/auth/auth-box'
+import { toast } from 'sonner'
 
 function ResetPasswordForm() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [message, setMessage] = useState('')
   const [isSuccess, setIsSuccess] = useState(false)
   const [token, setToken] = useState('')
   const [email, setEmail] = useState('')
@@ -26,24 +26,25 @@ function ResetPasswordForm() {
     if (tokenParam && emailParam) {
       setToken(tokenParam)
       setEmail(decodeURIComponent(emailParam))
-    } else {
-      setMessage('Invalid reset link. Please request a new password reset.')
     }
   }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setMessage('')
 
     if (password !== confirmPassword) {
-      setMessage('Passwords do not match.')
+      toast.error('Passwords do not match', {
+        description: 'Please make sure both passwords are the same.',
+      })
       setIsLoading(false)
       return
     }
 
     if (password.length < 8) {
-      setMessage('Password must be at least 8 characters long.')
+      toast.error('Password too short', {
+        description: 'Password must be at least 8 characters long.',
+      })
       setIsLoading(false)
       return
     }
@@ -53,12 +54,31 @@ function ResetPasswordForm() {
       
       if (result.success) {
         setIsSuccess(true)
-        setMessage('Your password has been successfully reset. You can now sign in with your new password.')
+        toast.success('Password Reset Successfully!', {
+          description: 'You can now sign in with your new password.',
+        })
       } else {
-        setMessage(result.error || 'Something went wrong. Please try again or request a new reset link.')
+        switch (result.errorCode) {
+          case 'INVALID_OR_EXPIRED_TOKEN':
+            toast.error('Invalid or Expired Link', {
+              description: 'This reset link has expired. Please request a new one.',
+            })
+            break
+          case 'INVALID_PASSWORD':
+            toast.error('Invalid Password', {
+              description: result.error || 'Please enter a valid password',
+            })
+            break
+          default:
+            toast.error('Reset Failed', {
+              description: result.error || 'Something went wrong. Please try again.',
+            })
+        }
       }
     } catch (_error) {
-      setMessage('Something went wrong. Please try again.')
+      toast.error('Reset Failed', {
+        description: 'Something went wrong. Please try again.',
+      })
     } finally {
       setIsLoading(false)
     }
@@ -97,19 +117,15 @@ function ResetPasswordForm() {
           </p>
 
           {isSuccess ? (
-            <div className="space-y-4">
-              <div className="rounded-md bg-green-50 p-4 dark:bg-green-950">
-                <div className="text-sm text-green-800 dark:text-green-200">
-                  {message}
-                </div>
-              </div>
-              <div className="text-center">
-                <Button asChild>
-                  <Link href="/login">
-                    Sign In
-                  </Link>
-                </Button>
-              </div>
+            <div className="space-y-4 text-center">
+              <p className="text-muted-foreground">
+                Your password has been reset successfully.
+              </p>
+              <Button asChild>
+                <Link href="/login">
+                  Sign In
+                </Link>
+              </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="grid gap-6 my-6">
@@ -141,14 +157,6 @@ function ResetPasswordForm() {
                 className="w-full focus:outline-none border-b pb-2 h-8"
                 required
               />
-
-              {message && !isSuccess && (
-                <div className="rounded-md bg-red-50 p-4 dark:bg-red-950">
-                  <div className="text-sm text-red-800 dark:text-red-200">
-                    {message}
-                  </div>
-                </div>
-              )}
 
               <Button
                 type="submit"

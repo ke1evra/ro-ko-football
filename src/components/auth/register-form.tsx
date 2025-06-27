@@ -1,8 +1,7 @@
 'use client'
 
 import { SubmitButton } from './submit-button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { registerUser } from '@/lib/auth'
 import { validatePassword, validateEmail } from '@/lib/validation'
@@ -13,7 +12,6 @@ import type { RegisterResponse } from '@/lib/auth'
 
 export const RegisterForm = () => {
   const [isPending, setIsPending] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordFeedback, setPasswordFeedback] = useState<string | null>(null)
@@ -53,19 +51,22 @@ export const RegisterForm = () => {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsPending(true)
-    setError(null)
 
     // Client-side validation first
     const emailValidation = validateEmail(email)
     if (!emailValidation.valid) {
-      setError(emailValidation.error || 'Please enter a valid email')
+      toast.error('Invalid Email', {
+        description: emailValidation.error || 'Please enter a valid email',
+      })
       setIsPending(false)
       return
     }
 
     const passwordValidation = validatePassword(password)
     if (!passwordValidation.valid) {
-      setError(passwordValidation.error || 'Please enter a valid password')
+      toast.error('Invalid Password', {
+        description: passwordValidation.error || 'Please enter a valid password',
+      })
       setIsPending(false)
       return
     }
@@ -75,8 +76,32 @@ export const RegisterForm = () => {
     setIsPending(false)
 
     if (res.error) {
-      setError(res.error)
+      // Show error toast with specific error message
+      switch (res.errorCode) {
+        case 'EMAIL_EXISTS':
+          toast.error('Email Already Exists', {
+            description: 'An account with this email already exists. Please log in or use a different email.',
+          })
+          break
+        case 'VALIDATION_ERROR':
+          toast.error('Validation Error', {
+            description: res.error,
+          })
+          break
+        case 'REGISTRATION_FAILED':
+          toast.error('Registration Failed', {
+            description: 'We couldn\'t create your account. Please try again.',
+          })
+          break
+        default:
+          toast.error('Registration Failed', {
+            description: res.error || 'Something went wrong',
+          })
+      }
     } else {
+      toast.success('Account Created!', {
+        description: 'Check your email to verify your account. Redirecting to dashboard...',
+      })
       router.push('/dashboard')
     }
   }
@@ -126,13 +151,6 @@ export const RegisterForm = () => {
         Password must be at least 8 characters with uppercase, lowercase, number, and special
         character.
       </div>
-
-      {error && (
-        <Alert variant="destructive" className="py-2">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="text-sm ml-2">{error}</AlertDescription>
-        </Alert>
-      )}
 
       <SubmitButton loading={isPending} text="Sign Up" />
     </form>
