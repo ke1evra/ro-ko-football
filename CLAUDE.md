@@ -133,6 +133,12 @@ R2_ENDPOINT=YOUR_ENDPOINT_HERE
 - `/src/lib/email.ts` - Email service with Resend integration
 - `/src/middleware.ts` - Route protection middleware
 - `/src/components/auth/` - Authentication UI components
+  - `login-form.tsx` - Login form with toast notifications
+  - `register-form.tsx` - Registration form with email verification
+  - `logout-button.tsx` - Client-side logout with router navigation
+  - `logout-form.tsx` - Server action logout form (works without JS)
+  - `forgot-password-form.tsx` - Password reset request form
+  - `email-verification-banner.tsx` - Email verification status banner
 - `/src/app/api/auth/verify-email/route.ts` - Email verification endpoint
 - `/src/app/(frontend)/(auth)/forgot-password/` - Password reset request page
 - `/src/app/(frontend)/(auth)/reset-password/` - Password reset page
@@ -157,6 +163,9 @@ R2_ENDPOINT=YOUR_ENDPOINT_HERE
 - Use middleware for route protection rather than client-side checks
 - Auth pages automatically redirect authenticated users to dashboard
 - All auth feedback uses toast notifications for better UX
+- For logout: use `LogoutButton` (client-side) or `LogoutForm` (server action)
+- Client logout uses `clearAuthCookies()` + router navigation
+- Server logout uses `logoutUser()` server action with redirect
 
 ### Styling
 - Use Tailwind CSS classes

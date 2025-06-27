@@ -155,7 +155,7 @@ export async function loginUser({ email, password, rememberMe = false }: LoginPa
 }
 
 /**
- * Log out the current user by removing their authentication token
+ * Log out the current user by removing their authentication token (Server Action)
  */
 export async function logoutUser() {
   try {
@@ -170,6 +170,25 @@ export async function logoutUser() {
   } catch (error) {
     console.error('Logout error:', error)
     redirect('/')
+  }
+}
+
+/**
+ * Clear authentication cookies without redirect (for client components)
+ */
+export async function clearAuthCookies(): Promise<{ success: boolean }> {
+  try {
+    const cookieStore = await cookies()
+    // Delete the auth cookie with proper options
+    cookieStore.delete('payload-token')
+    
+    // Clear any other auth-related cookies if they exist
+    cookieStore.delete('user-session')
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Clear cookies error:', error)
+    return { success: false }
   }
 }
 
