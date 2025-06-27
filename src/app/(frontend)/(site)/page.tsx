@@ -5,11 +5,6 @@ import { Check } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function Index() {
-  return <ToDelete />
-}
-
-// Delete and make this your homepage
-const ToDelete = () => {
   const FeatureCategory = ({ title, features }: { title: string; features: string[] }) => {
     return (
       <div>
@@ -46,82 +41,84 @@ const ToDelete = () => {
       </Section>
       <Section>
         <Container>
-          <div>
-            <h2 className="sr-only">What&apos;s Included</h2>
-            <div className="grid md:grid-cols-2 gap-x-12 gap-y-8">
-              <FeatureCategory
-                title="Authentication System"
-                features={[
-                  'Secure user authentication with HTTP-only cookies',
-                  'Email/password registration and login',
-                  'Role-based access control (admin/user)',
-                  'Password strength validation',
-                  'Remember me functionality',
-                  'Protected routes with middleware',
-                  'JWT-based authentication',
-                ]}
-              />
-              <FeatureCategory
-                title="Modern Tech Stack"
-                features={[
-                  'Next.js 15 with App Router',
-                  'Payload CMS for content management',
-                  'TypeScript for type safety',
-                  'Vercel Blob or Cloudflare R2 for file storage',
-                  'PostgreSQL database with Payload adapter',
-                  'Tailwind CSS for styling',
-                  'shadcn/ui components',
-                  'craft-ds for design system',
-                  'Dark/light mode with theme persistence',
-                ]}
-              />
-              <FeatureCategory
-                title="Developer Experience"
-                features={[
-                  'Clean project structure',
-                  'Server components and actions',
-                  'Reusable design system components',
-                  'Type-safe APIs',
-                  'Vercel deployment ready',
-                ]}
-              />
-              <FeatureCategory
-                title="Ready-to-Use Features"
-                features={[
-                  'User dashboard',
-                  'Account management',
-                  'Responsive layouts',
-                  'SEO optimized',
-                  'Accessibility focused',
-                ]}
-              />
-            </div>
+          <Prose isSpaced>
+            <h2>What's Included</h2>
+          </Prose>
+          <div className="grid md:grid-cols-2 gap-x-12 gap-y-8 mt-6">
+            <FeatureCategory
+              title="Complete Authentication System"
+              features={[
+                'Secure user authentication with HTTP-only cookies',
+                'Email verification with automated emails',
+                'Password reset flow with secure tokens',
+                'Role-based access control (admin/user)',
+                'Remember me functionality',
+                'Protected routes with middleware',
+                'Toast notifications for user feedback',
+              ]}
+            />
+            <FeatureCategory
+              title="Modern Tech Stack"
+              features={[
+                'Next.js 15 with App Router',
+                'Payload CMS for content management',
+                'TypeScript for type safety',
+                'Resend for email service',
+                'PostgreSQL database with Payload adapter',
+                'Tailwind CSS for styling',
+                'shadcn/ui components',
+                'Sonner for toast notifications',
+                'Dark/light mode with theme persistence',
+              ]}
+            />
+            <FeatureCategory
+              title="Developer Experience"
+              features={[
+                'Clean project structure',
+                'Server components and actions',
+                'Reusable design system components',
+                'Type-safe APIs',
+                'Docker configuration included',
+                'Vercel deployment ready',
+              ]}
+            />
+            <FeatureCategory
+              title="Production Ready Features"
+              features={[
+                'User dashboard',
+                'Account management',
+                'Email templates with inline styles',
+                'Responsive layouts',
+                'SEO optimized',
+                'Accessibility focused',
+              ]}
+            />
           </div>
         </Container>
       </Section>
       <Section className="border-t">
         <Container>
-          <p className="text-muted-foreground">
-            Created by{' '}
-            <a
-              href="https://bridger.to"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              Bridger Tower
-            </a>
-            . Follow on{' '}
-            <a
-              href="https://bridger.to/x"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              X for updates
-            </a>
-            .
-          </p>
+          <Prose>
+            <p>
+              Created by{' '}
+              <a
+                href="https://bridger.to"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Bridger Tower
+              </a>
+              . Follow on{' '}
+              <a
+                href="https://bridger.to/x"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                X for updates
+              </a>
+              .
+            </p>
+          </Prose>
         </Container>
       </Section>
     </>
