@@ -4,7 +4,8 @@
       "Bash(pnpm add:*)",
       "Bash(pnpm generate:types:*)",
       "Bash(pnpm lint:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }

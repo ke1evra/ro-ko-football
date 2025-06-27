@@ -3,6 +3,8 @@ import { getUser } from '@/lib/auth'
 
 import type { User } from '@/payload-types'
 
+export const dynamic = 'force-dynamic'
+
 type AuthLayoutProps = {
   children: React.ReactNode
 }

@@ -42,7 +42,7 @@ export default async function Index() {
       <Section>
         <Container>
           <Prose isSpaced>
-            <h2>What's Included</h2>
+            <h2>What&apos;s Included</h2>
           </Prose>
           <div className="grid md:grid-cols-2 gap-x-12 gap-y-8 mt-6">
             <FeatureCategory
