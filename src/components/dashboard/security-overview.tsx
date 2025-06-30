@@ -8,7 +8,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   Lock,
-  Smartphone,
   Globe
 } from 'lucide-react'
 
@@ -85,14 +84,6 @@ export function SecurityOverview({ user }: SecurityOverviewProps) {
       action: 'Change Password'
     },
     {
-      name: 'Two-Factor Authentication',
-      status: false, // Not implemented yet
-      description: 'Add an extra layer of security',
-      icon: Smartphone,
-      action: 'Enable 2FA',
-      disabled: true
-    },
-    {
       name: 'Login Monitoring',
       status: true,
       description: 'Track account access activity',
@@ -157,7 +148,6 @@ export function SecurityOverview({ user }: SecurityOverviewProps) {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    disabled={feature.disabled}
                     className="text-xs"
                   >
                     {feature.action}
@@ -188,17 +178,6 @@ export function SecurityOverview({ user }: SecurityOverviewProps) {
               </div>
             )}
             
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
-              <Smartphone className="h-4 w-4 text-blue-600 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                  Enable Two-Factor Authentication
-                </p>
-                <p className="text-xs text-blue-700 dark:text-blue-300">
-                  Add an extra layer of security to your account (coming soon).
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </CardContent>
