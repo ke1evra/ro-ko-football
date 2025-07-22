@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # Payload SaaS Starter - AI Assistant Guide
 
 ## Project Overview
@@ -6,14 +10,30 @@ This is a modern SaaS starter kit built with Next.js 15 and Payload CMS, designe
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 with App Router
-- **CMS**: Payload CMS 3.43.0
+- **Framework**: Next.js 15.4.1 with App Router
+- **CMS**: Payload CMS 3.48.0
 - **Database**: PostgreSQL with Payload adapter
 - **Language**: TypeScript 5.7.3
 - **Styling**: Tailwind CSS v4 with Shadcn UI components
 - **Storage**: Vercel Blob Storage (with optional Cloudflare R2/AWS S3 support)
 - **Node**: v18.20.2+ or v20.9.0+
 - **Package Manager**: pnpm
+
+## Architecture Overview
+
+### Core Architecture Patterns
+- **App Router Architecture**: Uses Next.js 15 App Router with clear separation between frontend and Payload admin routes
+- **Server-First Approach**: Defaults to Server Components, using Client Components only when necessary for interactivity
+- **Type Safety**: Leverages Payload's automatic type generation for end-to-end type safety
+- **Authentication Flow**: Cookie-based auth with middleware protection, server actions for mutations
+- **Storage Abstraction**: Configurable storage backend (Vercel Blob/S3/R2) through Payload plugins
+
+### Route Organization
+- Public routes: `/(site)/*` - Accessible to all users
+- Auth routes: `/(auth)/*` - Login, register, password reset (redirects if already authenticated)
+- Protected routes: `/(admin)/*` - Requires authentication via middleware
+- Payload admin: `/(payload)/*` - CMS admin interface
+- API routes: `/api/*` - REST endpoints, Payload API at `/api`, GraphQL at `/api/graphql`
 
 ## Project Structure
 
@@ -25,39 +45,23 @@ This is a modern SaaS starter kit built with Next.js 15 and Payload CMS, designe
       /(auth)          # Authentication routes (login, register)
       /(site)          # Public site routes
     /(payload)         # Payload CMS routes
+    /api               # API routes including auth verification
   /collections         # Payload collections (Users, Media)
   /components          # React components
     /auth              # Authentication components
-    /ds                # Design system components
+    /dashboard         # Dashboard components
+    /ds.tsx            # Design system exports
     /site              # Site components (header, footer)
     /theme             # Theme components (dark/light mode)
     /ui                # Shadcn UI components
   /lib                 # Utility functions
+    /auth.ts           # Authentication utilities and server actions
+    /email.ts          # Email service with Resend
+    /validation.ts     # Form validation schemas
   /middleware.ts       # Next.js middleware for route protection
   /payload.config.ts   # Payload CMS configuration
   /payload-types.ts    # Auto-generated Payload types
 ```
-
-## Key Features
-
-### Authentication System
-- HTTP-only cookies for secure authentication
-- Email/password registration and login with email verification
-- Password reset functionality via email
-- Role-based access control (admin/user roles)
-- Password strength validation
-- "Remember me" functionality (30-day vs 1-day sessions)
-- Protected routes with middleware
-- Automatic redirects for authenticated users accessing auth pages
-- Email service integration with Resend
-- Toast notifications for all auth feedback
-- Components in `/src/components/auth/`
-
-### Design System
-- Dark/light mode with theme persistence
-- Shadcn UI components
-- Tailwind CSS for styling
-- Reusable components in `/src/components/ui/`
 
 ## Development Commands
 
@@ -88,6 +92,10 @@ pnpm lint
 
 # Access Payload CLI
 pnpm payload
+
+# Testing
+# Note: No test framework is currently configured. 
+# To run tests, first install a test framework (e.g., Jest, Vitest)
 ```
 
 ## Environment Variables
@@ -120,16 +128,17 @@ R2_ENDPOINT=YOUR_ENDPOINT_HERE
 
 ### Configuration
 - `/src/payload.config.ts` - Payload CMS configuration
-- `/next.config.mjs` - Next.js configuration
-- `/tsconfig.json` - TypeScript configuration
+- `/next.config.mjs` - Next.js configuration with security headers
+- `/tsconfig.json` - TypeScript configuration with path aliases
 - `/tailwind.config.js` - Tailwind CSS configuration
+- `/Dockerfile` - Docker configuration for containerized deployment
 
 ### Collections
-- `/src/collections/Users.ts` - User collection with authentication
+- `/src/collections/Users.ts` - User collection with authentication fields
 - `/src/collections/Media.ts` - Media/file upload collection
 
-### Authentication
-- `/src/lib/auth.ts` - Authentication utilities and server actions
+### Authentication System
+- `/src/lib/auth.ts` - Core authentication utilities and server actions
 - `/src/lib/email.ts` - Email service with Resend integration
 - `/src/middleware.ts` - Route protection middleware
 - `/src/components/auth/` - Authentication UI components
@@ -144,9 +153,14 @@ R2_ENDPOINT=YOUR_ENDPOINT_HERE
 - `/src/app/(frontend)/(auth)/reset-password/` - Password reset page
 
 ### Layouts
-- `/src/app/(frontend)/layout.tsx` - Main frontend layout
+- `/src/app/(frontend)/layout.tsx` - Main frontend layout with providers
 - `/src/app/(frontend)/(admin)/layout.tsx` - Admin area layout
 - `/src/app/(payload)/layout.tsx` - Payload CMS layout
+
+### Components
+- `/src/components/ds.tsx` - Design system component exports
+- `/src/components/ui/` - Shadcn UI components (button, card, form, etc.)
+- `/src/components/theme/` - Theme provider and toggle components
 
 ## Coding Guidelines
 
@@ -183,14 +197,16 @@ R2_ENDPOINT=YOUR_ENDPOINT_HERE
 - Place custom API routes in `/src/app/api/`
 - Payload API routes are automatically handled at `/api/`
 - GraphQL endpoint is available at `/api/graphql`
+- Use Payload's REST API for collection operations
 
 ### Best Practices
 1. Keep components small and focused
 2. Use proper TypeScript types (generated from Payload)
-3. Handle errors gracefully
+3. Handle errors gracefully with try-catch blocks
 4. Follow Next.js 15 best practices (App Router, Server Components)
 5. Use environment variables for sensitive data
 6. Test authentication flows thoroughly
+7. Use `cross-env` for cross-platform compatibility in scripts
 
 ## Deployment
 
@@ -199,6 +215,7 @@ The project is configured for Vercel deployment:
 2. The project uses Vercel Blob Storage for media uploads
 3. PostgreSQL database connection is required
 4. Use the "Deploy with Vercel" button in the README for quick setup
+5. Docker deployment is also supported with the included Dockerfile
 
 ## Common Tasks
 
@@ -206,6 +223,7 @@ The project is configured for Vercel deployment:
 1. Create a new file in `/src/collections/`
 2. Add the collection to `/src/payload.config.ts`
 3. Run `pnpm generate:types` to update TypeScript types
+4. Create UI components if needed for the collection
 
 ### Creating Protected Pages
 1. Add pages under `/src/app/(frontend)/(admin)/`
@@ -221,6 +239,7 @@ The project is configured for Vercel deployment:
 1. Use the existing form components as examples
 2. Implement proper validation using `/src/lib/validation.ts`
 3. Handle form submissions with Server Actions
+4. Use toast notifications for user feedback
 
 ### Email and Authentication Features
 1. Email verification is automatic on registration
@@ -229,3 +248,17 @@ The project is configured for Vercel deployment:
 4. Users collection includes email verification fields
 5. Use `EmailVerificationBanner` component for unverified users
 6. Security headers are configured in `next.config.mjs`
+
+### Storage Configuration
+1. Default: Vercel Blob Storage (configured in payload.config.ts)
+2. Alternative: Uncomment S3/R2 configuration in payload.config.ts
+3. Update environment variables accordingly
+4. Media collection handles all file uploads
+
+### Development Workflow
+1. Use `pnpm devsafe` if you encounter Next.js caching issues
+2. Always run `pnpm generate:types` after modifying Payload collections
+3. Check `pnpm lint` before committing code
+4. Use Server Actions for data mutations
+5. Implement loading states for better UX
+6. Handle errors with appropriate user feedback
