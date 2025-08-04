@@ -27,7 +27,7 @@ export const Header = async () => {
         {user ? (
           <>
             <LogoutButton />
-            <Button asChild>
+            <Button asChild size="sm">
               <Link href="/dashboard">Dashboard</Link>
             </Button>
           </>
