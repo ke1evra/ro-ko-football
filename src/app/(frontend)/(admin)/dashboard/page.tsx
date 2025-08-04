@@ -47,11 +47,9 @@ export default async function Dashboard() {
           {/* Left Column - Profile and Email Verification */}
           <div className="lg:col-span-2 space-y-6">
             <UserProfileCard user={user} accountAgeDays={accountAgeDays} />
-            
+
             {/* Email Verification - Only show if not verified */}
-            {!user.emailVerified && (
-              <EmailVerificationStatus user={user} />
-            )}
+            {!user.emailVerified && <EmailVerificationStatus user={user} />}
           </div>
 
           {/* Right Column - Security Overview */}
