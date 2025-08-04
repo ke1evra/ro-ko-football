@@ -10,8 +10,8 @@ This is a modern SaaS starter kit built with Next.js 15 and Payload CMS, designe
 
 ## Tech Stack
 
-- **Framework**: Next.js 15.4.1 with App Router
-- **CMS**: Payload CMS 3.48.0
+- **Framework**: Next.js 15.4.5 with App Router
+- **CMS**: Payload CMS 3.49.1
 - **Database**: PostgreSQL with Payload adapter
 - **Language**: TypeScript 5.7.3
 - **Styling**: Tailwind CSS v4 with Shadcn UI components
@@ -262,3 +262,31 @@ The project is configured for Vercel deployment:
 4. Use Server Actions for data mutations
 5. Implement loading states for better UX
 6. Handle errors with appropriate user feedback
+
+## Testing Strategy
+
+Currently, no test framework is configured. When implementing tests:
+1. Choose a test framework (Jest, Vitest, or Playwright for E2E)
+2. Focus on testing:
+   - Authentication flows (login, register, password reset)
+   - Protected route access
+   - Form validations
+   - Server actions
+   - API endpoints
+
+## Performance Considerations
+
+1. **Image Optimization**: Media uploads are automatically optimized via Sharp
+2. **Server Components**: Default to Server Components for better performance
+3. **Code Splitting**: Automatic with Next.js App Router
+4. **Database Queries**: Use Payload's built-in query optimization
+5. **Caching**: Leverage Next.js caching strategies for static content
+
+## Security Best Practices
+
+1. **Authentication**: HTTP-only cookies with secure flags
+2. **CSRF Protection**: Built into Payload's authentication
+3. **Input Validation**: Use Zod schemas in `/src/lib/validation.ts`
+4. **Security Headers**: Configured in `next.config.mjs`
+5. **Environment Variables**: Never commit sensitive data
+6. **Database Security**: Use connection pooling and prepared statements
