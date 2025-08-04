@@ -8,8 +8,8 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import path from 'node:path'
 
-import { Users } from './collections/Users'
-import { Media } from './collections/Media'
+import { Users } from '@/collections/Users'
+import { Media } from '@/collections/Media'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
