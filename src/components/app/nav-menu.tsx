@@ -35,13 +35,13 @@ export const NavMenu = () => {
           <Link
             key={item.label}
             href={item.href}
-            className={`text-sm transition-all ${
+            className={`text-sm transition-all flex items-center gap-1 ${
               isActive
                 ? 'text-foreground cursor-default'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            {isActive ? <div className="flex rounded-full mr-1 w-2 h-2 bg-primary" /> : ''}
+            {isActive ? <div className="flex rounded-full w-2 h-2 bg-primary" /> : ''}
             {item.label}
           </Link>
         )
