@@ -41,7 +41,7 @@ export const NavMenu = () => {
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            {isActive ? <div className="flex rounded-full w-2 h-2 bg-primary" /> : ''}
+            {isActive ? <div className="flex rounded-full w-1.5 h-1.5 bg-primary" /> : ''}
             {item.label}
           </Link>
         )
