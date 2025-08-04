@@ -1,13 +1,14 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { LogOut } from 'lucide-react'
 
 import { clearAuthCookies } from '@/lib/auth'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-export function LogoutButton() {
+export const LogoutButton = () => {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
@@ -38,8 +39,22 @@ export function LogoutButton() {
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={handleLogout} disabled={isLoading}>
+    <Button variant="outline" onClick={handleLogout} disabled={isLoading}>
       {isLoading ? 'Signing out...' : 'Logout'}
+    </Button>
+  )
+}
+
+export const LogoutIconButton = () => {
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await clearAuthCookies()
+  }
+
+  return (
+    <Button variant="outline" size="icon" onClick={handleLogout}>
+      <LogOut />
     </Button>
   )
 }

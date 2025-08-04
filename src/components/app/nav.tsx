@@ -1,4 +1,4 @@
-import { LogoutButton } from '@/components/auth/logout-button'
+import { LogoutIconButton } from '@/components/auth/logout-button'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
 import { Button } from '@/components/ui/button'
 import { Home } from 'lucide-react'
@@ -52,7 +52,7 @@ export const AppNav = async () => {
       </div>
 
       <div className="flex gap-2 items-center justify-end">
-        <LogoutButton />
+        <LogoutIconButton />
         <ThemeToggle />
       </div>
     </Nav>

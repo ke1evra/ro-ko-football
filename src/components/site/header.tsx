@@ -27,16 +27,16 @@ export const Header = async () => {
         {user ? (
           <>
             <LogoutButton />
-            <Button asChild size="sm">
+            <Button asChild>
               <Link href="/dashboard">Dashboard</Link>
             </Button>
           </>
         ) : (
           <>
-            <Button asChild size="sm" variant="ghost">
+            <Button asChild variant="ghost">
               <Link href="/login">Login</Link>
             </Button>
-            <Button asChild size="sm">
+            <Button asChild>
               <Link href="/register">Sign Up</Link>
             </Button>
           </>
