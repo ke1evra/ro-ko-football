@@ -112,9 +112,8 @@ PAYLOAD_SECRET=YOUR_SECRET_HERE
 # Email Configuration (Resend)
 RESEND_API_KEY=re_xxxxxxxx
 EMAIL_FROM=noreply@yourdomain.com
-APP_URL=http://localhost:3000
 
-# Vercel Blob Storage
+# Storage
 BLOB_READ_WRITE_TOKEN=YOUR_READ_WRITE_TOKEN_HERE
 
 # Optional: Cloudflare R2
@@ -124,13 +123,15 @@ R2_BUCKET=YOUR_BUCKET_HERE
 R2_ENDPOINT=YOUR_ENDPOINT_HERE
 ```
 
+Note: `APP_URL` is no longer required in the latest version.
+
 ## Important Files
 
 ### Configuration
 - `/src/payload.config.ts` - Payload CMS configuration
 - `/next.config.mjs` - Next.js configuration with security headers
 - `/tsconfig.json` - TypeScript configuration with path aliases
-- `/tailwind.config.js` - Tailwind CSS configuration
+- `/postcss.config.mjs` - PostCSS configuration for Tailwind CSS v4
 - `/Dockerfile` - Docker configuration for containerized deployment
 
 ### Collections
@@ -161,6 +162,8 @@ R2_ENDPOINT=YOUR_ENDPOINT_HERE
 - `/src/components/ds.tsx` - Design system component exports
 - `/src/components/ui/` - Shadcn UI components (button, card, form, etc.)
 - `/src/components/theme/` - Theme provider and toggle components
+- `/src/components/app/` - App-specific components (navigation)
+- `/src/lib/utils.ts` - Utility functions including `cn()` for className merging
 
 ## Coding Guidelines
 
@@ -182,10 +185,11 @@ R2_ENDPOINT=YOUR_ENDPOINT_HERE
 - Server logout uses `logoutUser()` server action with redirect
 
 ### Styling
-- Use Tailwind CSS classes
+- Use Tailwind CSS v4 classes
 - Follow the existing theme system for dark/light mode support
 - Use Shadcn UI components when available
 - Custom components should go in `/src/components/`
+- Use the `cn()` utility from `/src/lib/utils.ts` for conditional classes
 
 ### Database & CMS
 - Define collections in `/src/collections/`
