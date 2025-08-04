@@ -24,7 +24,7 @@ export default async function RegisterPage() {
         <AuthBox>
           <h1>Sign Up</h1>
           <RegisterForm />
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             Already have an account?{' '}
             <Link className="text-foreground" href="/login">
               Login Now

@@ -17,11 +17,12 @@ export function ForgotPasswordForm() {
 
     try {
       const result = await forgotPassword(email)
-      
+
       if (result.success) {
         setIsSuccess(true)
         toast.success('Email Sent!', {
-          description: 'If an account with that email exists, we\'ve sent you a password reset link.',
+          description:
+            "If an account with that email exists, we've sent you a password reset link.",
         })
       } else {
         switch (result.errorCode) {
@@ -48,13 +49,8 @@ export function ForgotPasswordForm() {
   if (isSuccess) {
     return (
       <div className="space-y-4 text-center my-6">
-        <p className="text-muted-foreground">
-          Check your email for the password reset link.
-        </p>
-        <Link
-          href="/login"
-          className="text-foreground hover:underline"
-        >
+        <p className="text-muted-foreground">Check your email for the password reset link.</p>
+        <Link href="/login" className="text-foreground hover:underline">
           Return to login
         </Link>
       </div>
@@ -74,11 +70,7 @@ export function ForgotPasswordForm() {
         required
       />
 
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={isLoading}
-      >
+      <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? 'Sending...' : 'Send Reset Link'}
       </Button>
     </form>

@@ -41,7 +41,7 @@ function ResetPasswordForm() {
   useEffect(() => {
     const tokenParam = searchParams.get('token')
     const emailParam = searchParams.get('email')
-    
+
     if (tokenParam && emailParam) {
       setToken(tokenParam)
       setEmail(decodeURIComponent(emailParam))
@@ -70,7 +70,7 @@ function ResetPasswordForm() {
 
     try {
       const result = await resetPassword(token, email, password)
-      
+
       if (result.success) {
         setIsSuccess(true)
         toast.success('Password Reset Successfully!', {
@@ -113,10 +113,7 @@ function ResetPasswordForm() {
               This password reset link is invalid or has expired.
             </p>
             <div className="text-center">
-              <Link
-                href="/forgot-password"
-                className="text-foreground hover:underline"
-              >
+              <Link href="/forgot-password" className="text-foreground hover:underline">
                 Request a new password reset
               </Link>
             </div>
@@ -131,19 +128,13 @@ function ResetPasswordForm() {
       <Container>
         <AuthBox>
           <h1>Reset Password</h1>
-          <p className="text-muted-foreground mb-4">
-            Enter your new password below.
-          </p>
+          <p className="text-muted-foreground mb-4">Enter your new password below.</p>
 
           {isSuccess ? (
             <div className="space-y-4 text-center">
-              <p className="text-muted-foreground">
-                Your password has been reset successfully.
-              </p>
+              <p className="text-muted-foreground">Your password has been reset successfully.</p>
               <Button asChild>
-                <Link href="/login">
-                  Sign In
-                </Link>
+                <Link href="/login">Sign In</Link>
               </Button>
             </div>
           ) : (
@@ -177,11 +168,7 @@ function ResetPasswordForm() {
                 required
               />
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Resetting...' : 'Reset Password'}
               </Button>
 
@@ -200,15 +187,17 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={
-      <Section>
-        <Container>
-          <AuthBox>
-            <h1>Loading...</h1>
-          </AuthBox>
-        </Container>
-      </Section>
-    }>
+    <Suspense
+      fallback={
+        <Section>
+          <Container>
+            <AuthBox>
+              <h1>Loading...</h1>
+            </AuthBox>
+          </Container>
+        </Section>
+      }
+    >
       <ResetPasswordForm />
     </Suspense>
   )

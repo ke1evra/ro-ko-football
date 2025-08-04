@@ -43,12 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           disableTransitionOnChange
         >
           {children}
-          <Toaster 
-            richColors 
-            position="top-center" 
-            expand={true}
-            closeButton
-          />
+          <Toaster richColors position="top-center" expand={true} closeButton />
         </ThemeProvider>
         <Analytics />
       </body>
