@@ -94,7 +94,7 @@ pnpm lint
 pnpm payload
 
 # Testing
-# Note: No test framework is currently configured. 
+# Note: No test framework is currently configured.
 # To run tests, first install a test framework (e.g., Jest, Vitest)
 ```
 
