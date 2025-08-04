@@ -19,7 +19,7 @@ const fontMono = FontMono({
 })
 
 export const metadata: Metadata = {
-  title: 'Payload SaaS Starter by Bridger Tower',
+  title: 'Payload App Starter by Bridger Tower',
   description: 'A modern SaaS starter built with Payload CMS, Next.js, and TypeScript',
   metadataBase: new URL('https://payload-saas-starter.vercel.app/'),
   openGraph: {

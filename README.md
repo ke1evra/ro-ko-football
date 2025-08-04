@@ -1,4 +1,4 @@
-# Payload SaaS Starter
+# Payload App Starter
 
 A modern, open-source SaaS starter kit built with Next.js 15 and Payload CMS, designed to accelerate your SaaS development.
 

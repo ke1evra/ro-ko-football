@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# Payload SaaS Starter - AI Assistant Guide
+# Payload App Starter - AI Assistant Guide
 
 ## Project Overview
 

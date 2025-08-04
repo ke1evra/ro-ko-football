@@ -20,7 +20,7 @@ export const Header = async () => {
     >
       <Link href="/" className="flex gap-3 items-center">
         <Image src={Logo} width={14} alt="Payload SaaS Starter" className="invert dark:invert-0" />
-        <h3 className="sm:text-lg">Payload SaaS Starter</h3>
+        <h3 className="sm:text-lg">Payload Starter</h3>
       </Link>
 
       <div className="flex gap-2">
