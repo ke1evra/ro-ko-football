@@ -21,7 +21,7 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
 
   return (
     <main className="flex flex-col min-h-screen">
-      <Header user={user} />
+      <Header />
       <section className="flex-1">{children}</section>
       <Footer />
     </main>
