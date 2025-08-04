@@ -26,7 +26,7 @@ const ToDelete = ({ user }: { user: User }) => {
       <Container className="font-mono space-y-4">
         <h1>Payload Starter Dashboard</h1>
         <p>
-          You are: <span className="text-orange-500">{user.email}</span>
+          You are: <span className="text-primary">{user.email}</span>
         </p>
         <p>Your created your account on {createdAt.toLocaleDateString()}</p>
         <p>Your account is {accountAgeDays} days old</p>

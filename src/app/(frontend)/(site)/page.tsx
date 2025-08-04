@@ -11,7 +11,7 @@ const ToDelete = () => {
         <h1>
           Payload Starter (<a href="https://payloadstarter.dev">payloadstarter.dev</a>)
         </h1>
-        <p className="grid gap-1 underline text-orange-500 dark:text-orange-400">
+        <p className="grid gap-1 underline text-primary">
           <a href="https://github.com/brijr/payload-starter">View on GitHub &rarr;</a>
           <a href="https://payloadcms.com/docs">Read the Payload Docs &rarr;</a>
         </p>
@@ -21,7 +21,7 @@ const ToDelete = () => {
         </p>
         <p>
           Created by{' '}
-          <a className="underline text-orange-500 dark:text-orange-400" href="https://brijr.dev">
+          <a className="underline text-primary" href="https://brijr.dev">
             @brijr
           </a>
         </p>
