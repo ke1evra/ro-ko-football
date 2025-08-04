@@ -25,12 +25,6 @@ const ToDelete = () => {
             @brijr
           </a>
         </p>
-        <a
-          className="block mt-8"
-          href="https://vercel.com/new/clone?repository-url=github.com%2Fbrijr%2Fpayload-starter&project-name=payload-starter&repository-name=payload-starter&env=DATABASE_URI%2CPAYLOAD_SECRET%2CRESEND_API_KEY%2CEMAIL_FROM%2CAPP_URL%2CBLOB_READ_WRITE_TOKEN%2CR2_ACCESS_KEY_ID%2CR2_SECRET_ACCESS_KEY%2CR2_BUCKET%2CR2_ENDPOINT&envDescription=Environment+variables+required+for+payload-starter"
-        >
-          <img src="https://vercel.com/button" alt="Deploy with Vercel" />
-        </a>
       </Container>
     </Section>
   )
