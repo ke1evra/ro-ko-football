@@ -45,9 +45,9 @@
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "react-wrap-balancer": "^1.1.1",
-    "resend": "^4.7.0",
+    "resend": "^4.8.0",
     "sharp": "0.33.5",
-    "sonner": "^2.0.6",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^2.6.0",
     "tailwindcss": "^4.1.11",
     "tailwindcss-animate": "^1.0.7"
