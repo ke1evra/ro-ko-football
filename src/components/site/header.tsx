@@ -1,5 +1,5 @@
 import { LogoutButton } from '@/components/auth/logout-button'
-import { Button } from '../ui/button'
+import { Button } from '@/components/ui/button'
 import { Nav } from '@/components/ds'
 
 import Image from 'next/image'
@@ -33,10 +33,10 @@ export const Header = async () => {
           </>
         ) : (
           <>
-            <Button asChild variant="ghost">
+            <Button asChild size="sm" variant="ghost">
               <Link href="/login">Login</Link>
             </Button>
-            <Button asChild>
+            <Button asChild size="sm">
               <Link href="/register">Sign Up</Link>
             </Button>
           </>
