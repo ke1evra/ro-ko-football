@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { toast } from 'sonner'
 
 import { clearAuthCookies } from '@/lib/auth'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 export function LogoutButton() {
   const [isLoading, setIsLoading] = useState(false)
@@ -13,10 +13,10 @@ export function LogoutButton() {
 
   const handleLogout = async () => {
     setIsLoading(true)
-    
+
     try {
       const result = await clearAuthCookies()
-      
+
       if (result.success) {
         toast.success('Logged out successfully', {
           description: 'You have been signed out of your account.',
@@ -38,11 +38,7 @@ export function LogoutButton() {
   }
 
   return (
-    <Button 
-      variant="outline" 
-      onClick={handleLogout}
-      disabled={isLoading}
-    >
+    <Button variant="outline" size="sm" onClick={handleLogout} disabled={isLoading}>
       {isLoading ? 'Signing out...' : 'Logout'}
     </Button>
   )

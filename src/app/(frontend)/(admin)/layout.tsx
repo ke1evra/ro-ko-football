@@ -1,3 +1,6 @@
+import { Header } from '@/components/app/header'
+import { Footer } from '@/components/app/footer'
+
 import { redirect } from 'next/navigation'
 import { getUser } from '@/lib/auth'
 
@@ -16,5 +19,11 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
     redirect('/login')
   }
 
-  return <>{children}</>
+  return (
+    <main className="flex flex-col min-h-screen">
+      <Header user={user} />
+      <section className="flex-1">{children}</section>
+      <Footer />
+    </main>
+  )
 }
