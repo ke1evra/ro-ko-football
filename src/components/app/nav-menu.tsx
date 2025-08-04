@@ -14,10 +14,6 @@ const NAV_MENU_ITEMS = [
     href: '#',
   },
   {
-    label: 'Profile',
-    href: '#',
-  },
-  {
     label: 'Settings',
     href: '#',
   },
@@ -35,7 +31,7 @@ export const NavMenu = () => {
           <Link
             key={item.label}
             href={item.href}
-            className={`text-sm transition-all flex items-center gap-1 ${
+            className={`transition-all text-sm flex items-center gap-1 ${
               isActive
                 ? 'text-foreground cursor-default'
                 : 'text-muted-foreground hover:text-foreground'

@@ -23,14 +23,21 @@ const ToDelete = ({ user }: { user: User }) => {
   const accountAgeDays = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
   return (
     <Section>
-      <Container className="font-mono space-y-4">
-        <h1>Payload Starter Dashboard</h1>
+      <Container className="font-mono space-y-2">
+        <h1 className="mb-4">Payload Starter Dashboard</h1>
         <p>
-          You are: <span className="text-primary">{user.email}</span>
+          &gt; You&apos;re email is <span className="text-primary">{user.email}</span>
         </p>
-        <p>Your created your account on {createdAt.toLocaleDateString()}</p>
-        <p>Your account is {accountAgeDays} days old</p>
-        <p>You have the role of {user.role}</p>
+        <p>
+          &gt; Your created your account at{' '}
+          <span className="text-primary">{createdAt.toLocaleString()}</span>
+        </p>
+        <p>
+          &gt; Your account is <span className="text-primary">{accountAgeDays}</span> days old
+        </p>
+        <p>
+          &gt; You have the role of <span className="text-primary">{user.role}</span>
+        </p>
       </Container>
     </Section>
   )
