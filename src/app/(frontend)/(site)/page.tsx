@@ -14,6 +14,9 @@ const ToDelete = () => {
         <p className="grid gap-1 underline text-primary">
           <a href="https://github.com/brijr/payload-starter">View on GitHub &rarr;</a>
           <a href="https://payloadcms.com/docs">Read the Payload Docs &rarr;</a>
+          <a href="https://payloadcms.com/docs/plugins/overview#official-plugins">
+            Explore Official Plugins &rarr;
+          </a>
         </p>
         <p>This starter uses Payload, Postgres, Resend, and Vercel Blob.</p>
         <p>
