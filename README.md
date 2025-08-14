@@ -2,7 +2,7 @@
 
 A modern, open-source SaaS starter kit built with Next.js 15 and Payload CMS, designed to accelerate your SaaS development.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=github.com%2Fbrijr%2Fpayload-saas-starter&project-name=payload-saas-starter&repository-name=payload-saas-starter&env=DATABASE_URI%2CPAYLOAD_SECRET%2CAPP_URL%2CRESEND_API_KEY%2CEMAIL_FROM%2CBLOB_READ_WRITE_TOKEN&envDescription=Environment+variables+required+for+payload-saas-starter)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=github.com%2Fbrijr%2Fpayload-starter&project-name=payload-starter&repository-name=payload-starter&env=DATABASE_URI%2CPAYLOAD_SECRET%2CAPP_URL%2CRESEND_API_KEY%2CEMAIL_FROM%2CBLOB_READ_WRITE_TOKEN&envDescription=Environment+variables+required+for+payload-starter)
 
 ![Payload SaaS Starter](https://payloadstarter.dev/opengraph-image.jpg)
 
@@ -49,8 +49,9 @@ A modern, open-source SaaS starter kit built with Next.js 15 and Payload CMS, de
 
 ### Prerequisites
 
-- Node.js 18.20.2+ or 20.9.0+ and pnpm
+- Node.js and pnpm
 - PostgreSQL database
+- Blob Storage (Vercel Blob or S3/R2)
 - Resend account for email functionality (optional but recommended)
 
 ### Installation
@@ -58,8 +59,8 @@ A modern, open-source SaaS starter kit built with Next.js 15 and Payload CMS, de
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/brijr/payload-saas-starter.git
-   cd payload-saas-starter
+   git clone https://github.com/brijr/payload-starter.git
+   cd payload-starter
    ```
 
 2. Install dependencies:
