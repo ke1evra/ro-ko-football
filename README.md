@@ -2,8 +2,6 @@
 
 A modern, open-source SaaS starter kit built with Next.js 15 and Payload CMS, designed to accelerate your SaaS development.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=github.com%2Fbrijr%2Fpayload-starter&project-name=payload-starter&repository-name=payload-starter&env=DATABASE_URI%2CPAYLOAD_SECRET%2CAPP_URL%2CRESEND_API_KEY%2CEMAIL_FROM%2CBLOB_READ_WRITE_TOKEN&envDescription=Environment+variables+required+for+payload-starter)
-
 ![Payload SaaS Starter](https://payloadstarter.dev/opengraph-image.jpg)
 
 ## Demo
