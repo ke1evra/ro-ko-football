@@ -4,17 +4,15 @@ A modern, open-source SaaS starter kit built with Next.js 15 and Payload CMS, de
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=github.com%2Fbrijr%2Fpayload-saas-starter&project-name=payload-saas-starter&repository-name=payload-saas-starter&env=DATABASE_URI%2CPAYLOAD_SECRET%2CAPP_URL%2CRESEND_API_KEY%2CEMAIL_FROM%2CBLOB_READ_WRITE_TOKEN&envDescription=Environment+variables+required+for+payload-saas-starter)
 
-![Payload SaaS Starter](https://payload-saas-starter.vercel.app/opengraph-image.jpg)
-
+![Payload SaaS Starter](https://payloadstarter.dev/opengraph-image.jpg)
 
 ## Demo
 
-[payload-saas-starter.vercel.app](https://payload-saas-starter.vercel.app)
+[payloadstarter.dev](https://payloadstarter.dev)
 
 ## Features
 
 - **Authentication System**
-
   - Secure user authentication with HTTP-only cookies
   - Email/password registration and login
   - Email verification with automatic emails
@@ -27,16 +25,15 @@ A modern, open-source SaaS starter kit built with Next.js 15 and Payload CMS, de
   - Toast notifications for all auth feedback
 
 - **Modern Tech Stack**
-
-  - Next.js 15.4.5 with App Router
-  - Payload CMS 3.49.1 for content management
-  - TypeScript 5.7.3 for type safety
+  - Next.js 15+ with App Router
+  - Payload CMS 3+ for content management
+  - TypeScript 5+ for type safety
   - PostgreSQL database with Payload adapter
-  - Tailwind CSS v4 for styling
-  - Shadcn UI components
+  - Tailwind 4+ for styling
+  - shadcn/ui components
   - Dark/light mode with theme persistence
   - Resend for transactional emails
-  - Vercel Blob Storage (with S3/R2 support)
+  - Vercel Blob Storage (or S3/R2)
 
 - **Developer Experience**
   - Clean project structure
@@ -175,6 +172,7 @@ This starter uses [Resend](https://resend.com) for transactional emails. To set 
 4. Add the API key to your `.env` file
 
 Email features include:
+
 - Welcome emails on registration
 - Email verification links
 - Password reset emails
@@ -183,6 +181,7 @@ Email features include:
 ## Key Components
 
 ### Authentication Components
+
 - `login-form.tsx` - Login with email/password
 - `register-form.tsx` - User registration with validation
 - `email-verification-banner.tsx` - Shows when email is unverified
@@ -191,6 +190,7 @@ Email features include:
 - `logout-form.tsx` - Server-side logout (works without JS)
 
 ### Design System
+
 - All UI components are in `/src/components/ui/`
 - Import common components from `/src/components/ds.tsx`
 - Consistent theming with CSS variables
