@@ -38,7 +38,7 @@ export async function sendEmail({ to, subject, html }: EmailOptions) {
 
 export function verificationEmailTemplate(email: string, token: string): string {
   const verificationUrl = `${appUrl}/api/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`
-  
+
   return `
     <!DOCTYPE html>
     <html>
@@ -104,7 +104,7 @@ export function verificationEmailTemplate(email: string, token: string): string 
 
 export function passwordResetEmailTemplate(email: string, token: string): string {
   const resetUrl = `${appUrl}/reset-password?token=${token}&email=${encodeURIComponent(email)}`
-  
+
   return `
     <!DOCTYPE html>
     <html>

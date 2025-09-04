@@ -22,6 +22,7 @@ This is a modern SaaS starter kit built with Next.js 15 and Payload CMS, designe
 ## Architecture Overview
 
 ### Core Architecture Patterns
+
 - **App Router Architecture**: Uses Next.js 15 App Router with clear separation between frontend and Payload admin routes
 - **Server-First Approach**: Defaults to Server Components, using Client Components only when necessary for interactivity
 - **Type Safety**: Leverages Payload's automatic type generation for end-to-end type safety
@@ -29,6 +30,7 @@ This is a modern SaaS starter kit built with Next.js 15 and Payload CMS, designe
 - **Storage Abstraction**: Configurable storage backend (Vercel Blob/S3/R2) through Payload plugins
 
 ### Route Organization
+
 - Public routes: `/(site)/*` - Accessible to all users
 - Auth routes: `/(auth)/*` - Login, register, password reset (redirects if already authenticated)
 - Protected routes: `/(admin)/*` - Requires authentication via middleware
@@ -128,6 +130,7 @@ Note: `APP_URL` is no longer required in the latest version.
 ## Important Files
 
 ### Configuration
+
 - `/src/payload.config.ts` - Payload CMS configuration
 - `/next.config.mjs` - Next.js configuration with security headers
 - `/tsconfig.json` - TypeScript configuration with path aliases
@@ -135,10 +138,12 @@ Note: `APP_URL` is no longer required in the latest version.
 - `/Dockerfile` - Docker configuration for containerized deployment
 
 ### Collections
+
 - `/src/collections/Users.ts` - User collection with authentication fields
 - `/src/collections/Media.ts` - Media/file upload collection
 
 ### Authentication System
+
 - `/src/lib/auth.ts` - Core authentication utilities and server actions
 - `/src/lib/email.ts` - Email service with Resend integration
 - `/src/middleware.ts` - Route protection middleware
@@ -154,11 +159,13 @@ Note: `APP_URL` is no longer required in the latest version.
 - `/src/app/(frontend)/(auth)/reset-password/` - Password reset page
 
 ### Layouts
+
 - `/src/app/(frontend)/layout.tsx` - Main frontend layout with providers
 - `/src/app/(frontend)/(admin)/layout.tsx` - Admin area layout
 - `/src/app/(payload)/layout.tsx` - Payload CMS layout
 
 ### Components
+
 - `/src/components/ds.tsx` - Design system component exports
 - `/src/components/ui/` - Shadcn UI components (button, card, form, etc.)
 - `/src/components/theme/` - Theme provider and toggle components
@@ -168,6 +175,7 @@ Note: `APP_URL` is no longer required in the latest version.
 ## Coding Guidelines
 
 ### General Rules
+
 1. Use TypeScript for all new files
 2. Follow the existing project structure
 3. Use server components by default, client components only when necessary
@@ -175,6 +183,7 @@ Note: `APP_URL` is no longer required in the latest version.
 5. Use the design system components from `/src/components/ui/`
 
 ### Authentication
+
 - Always use the authentication utilities from `/src/lib/auth.ts`
 - Protected routes should be placed under `/(admin)/` directory
 - Use middleware for route protection rather than client-side checks
@@ -185,6 +194,7 @@ Note: `APP_URL` is no longer required in the latest version.
 - Server logout uses `logoutUser()` server action with redirect
 
 ### Styling
+
 - Use Tailwind CSS v4 classes
 - Follow the existing theme system for dark/light mode support
 - Use Shadcn UI components when available
@@ -192,18 +202,21 @@ Note: `APP_URL` is no longer required in the latest version.
 - Use the `cn()` utility from `/src/lib/utils.ts` for conditional classes
 
 ### Database & CMS
+
 - Define collections in `/src/collections/`
 - Run `pnpm generate:types` after modifying collections
 - Use Payload's built-in authentication for the Users collection
 - Media uploads are configured to use Vercel Blob Storage by default
 
 ### API Routes
+
 - Place custom API routes in `/src/app/api/`
 - Payload API routes are automatically handled at `/api/`
 - GraphQL endpoint is available at `/api/graphql`
 - Use Payload's REST API for collection operations
 
 ### Best Practices
+
 1. Keep components small and focused
 2. Use proper TypeScript types (generated from Payload)
 3. Handle errors gracefully with try-catch blocks
@@ -215,6 +228,7 @@ Note: `APP_URL` is no longer required in the latest version.
 ## Deployment
 
 The project is configured for Vercel deployment:
+
 1. Ensure all environment variables are set in Vercel
 2. The project uses Vercel Blob Storage for media uploads
 3. PostgreSQL database connection is required
@@ -224,28 +238,33 @@ The project is configured for Vercel deployment:
 ## Common Tasks
 
 ### Adding a New Collection
+
 1. Create a new file in `/src/collections/`
 2. Add the collection to `/src/payload.config.ts`
 3. Run `pnpm generate:types` to update TypeScript types
 4. Create UI components if needed for the collection
 
 ### Creating Protected Pages
+
 1. Add pages under `/src/app/(frontend)/(admin)/`
 2. The middleware will automatically protect these routes
 3. Use authentication utilities to check user roles if needed
 
 ### Customizing the Theme
+
 1. Modify theme components in `/src/components/theme/`
 2. Update Tailwind configuration if needed
 3. Ensure dark mode compatibility
 
 ### Working with Forms
+
 1. Use the existing form components as examples
 2. Implement proper validation using `/src/lib/validation.ts`
 3. Handle form submissions with Server Actions
 4. Use toast notifications for user feedback
 
 ### Email and Authentication Features
+
 1. Email verification is automatic on registration
 2. Password reset flow includes email verification
 3. Email templates are customizable in `/src/lib/email.ts`
@@ -254,12 +273,14 @@ The project is configured for Vercel deployment:
 6. Security headers are configured in `next.config.mjs`
 
 ### Storage Configuration
+
 1. Default: Vercel Blob Storage (configured in payload.config.ts)
 2. Alternative: Uncomment S3/R2 configuration in payload.config.ts
 3. Update environment variables accordingly
 4. Media collection handles all file uploads
 
 ### Development Workflow
+
 1. Use `pnpm devsafe` if you encounter Next.js caching issues
 2. Always run `pnpm generate:types` after modifying Payload collections
 3. Check `pnpm lint` before committing code
@@ -270,6 +291,7 @@ The project is configured for Vercel deployment:
 ## Testing Strategy
 
 Currently, no test framework is configured. When implementing tests:
+
 1. Choose a test framework (Jest, Vitest, or Playwright for E2E)
 2. Focus on testing:
    - Authentication flows (login, register, password reset)

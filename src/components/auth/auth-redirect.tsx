@@ -11,10 +11,10 @@ interface AuthRedirectProps {
   message?: string
 }
 
-export function AuthRedirect({ 
-  user, 
-  redirectTo = '/dashboard', 
-  message = 'You are already signed in. Redirecting to dashboard...' 
+export function AuthRedirect({
+  user,
+  redirectTo = '/dashboard',
+  message = 'You are already signed in. Redirecting to dashboard...',
 }: AuthRedirectProps) {
   const router = useRouter()
 
