@@ -1,150 +1,173 @@
 # CLAUDE_MVP.md
 
 ## Overview
-This project is a **fan football platform** combining community-driven content (like Pikabu), match predictions with scoring/leaderboards, and editorial news.  
-Architecture is based on **Next.js frontend**, **Payload CMS + Mongo** for UGC/auth/news, and **Directus + Postgres** for football data imported from external APIs.
+Fan football platform with:
+- Community posts & comments.
+- Match predictions with scoring & leaderboards.
+- Live statistics (leagues, seasons, standings, teams).
+- Editorial news.
 
-Goal: launch a working MVP fast, iterate with clear increments, and keep architecture simple and extensible.
+Stack: **Next.js frontend**, **Payload + Mongo** (UGC/auth/news/predictions), **Directus + Postgres** (football data).  
+MVP: launch fast → start with **live stats pages**, then switch to Directus, then add UGC + predictions + news.
 
 ---
 
-## Architecture Update
+## Architecture
 
 ### Responsibilities
-- **Payload (MongoDB)**
-    - Users & Auth (email + password, JWT).
-    - UGC: posts, comments, votes.
-    - Predictions: user inputs, scoring, leaderboard.
-    - News: editorial content.
+- **Payload (Mongo)**
+  - Users & Auth (JWT).
+  - UGC: posts, comments, votes.
+  - Predictions & scoring.
+  - News content.
 
-- **Directus (PostgreSQL)**
-    - Imported football data (matches, teams, players, leagues, standings).
-    - Only admin-facing, no site users.
-    - Provides REST/GraphQL API for Next.js.
+- **Directus (Postgres)**
+  - Football data (matches, leagues, teams, standings, stats).
+  - Admin-facing only.
+  - REST/GraphQL API for Next.js.
 
-- **Next.js (App Router, shadcn/ui, Tailwind)**
-    - Frontend that merges data from both CMS.
-    - ISR + SWR for caching.
-    - SEO: canonical, sitemap, JSON-LD, robots.
+- **Next.js**
+  - App Router, shadcn/ui, Tailwind.
+  - Data merge from both CMS.
+  - ISR + SWR.
+  - SEO: canonical, sitemap, JSON-LD, robots.
 
 ### Communication
 - No shared DB.
-- Linking by IDs via REST API (`post.matchId` → `directus/matches/:id`).
-- Payload triggers revalidation webhooks to Next.
+- Linking via IDs (e.g. `post.matchId → directus/matches/:id`).
+- Payload webhooks → Next revalidate.
 
 ---
 
 ## 1. Product Requirements
 
-### MVP scope
-- **Auth**: registration/login via Payload.
+### Scope
+- **Leagues**: list, highlight top 10 (ENG, GER, ITA, FRA, ESP, RUS, POR, BEL, NOR, SWE).
+- **Seasons**: per league, show available years.
+- **Standings**: league table (points, W/D/L, goals, form).
+- **Teams**: profile (logo, squad value, basic info).
+- **Directus sync**: switch stats from raw API → Directus.
+- **Auth**: register/login via Payload.
 - **UGC**: posts, comments, voting, feed (hot/new/top).
-- **Matches**: list and match-center (from Directus).
-- **Predictions**: W/D/L (+ optional score), scoring rules (2 pts for outcome, 5 pts for exact score).
-- **Leaderboard**: top-10 predictors.
-- **News**: editorial articles via Payload.
-- **User profile**: posts + prediction stats.
+- **Predictions**: W/D/L, optional score, scoring (2 pts outcome, 5 pts exact).
+- **Leaderboard**: top predictors.
+- **News**: editorial articles.
+- **User profile**: posts, predictions, stats.
 
-### Non-goals (for MVP)
+### Non-goals
 - No chat, notifications, or social login.
-- No advanced stats (only score/result/standings).
+- No advanced player stats (MVP = basic info).
 
 ---
 
 ## 2. Technical Requirements
 
 ### Stack
-- **Frontend**: Next.js 15 (App Router), TypeScript, Tailwind v4, shadcn/ui.
-- **Payload CMS + MongoDB**: users, posts, comments, votes, predictions, news.
-- **Directus + PostgreSQL**: matches, teams, players, leagues, standings.
-- **API Validation**: Zod schemas.
-- **SEO**: generateMetadata, sitemap.xml, JSON-LD.
-- **Cache**: ISR (with tags) + SWR.
-- **Date formatting**: date-fns with Russian locale (`format`, `isToday`, `isTomorrow`).
+- Next.js 15, TypeScript, Tailwind v4, shadcn/ui.
+- Payload + Mongo (users, UGC, predictions, news).
+- Directus + Postgres (football data).
+- Validation: Zod.
+- SEO: metadata, sitemap.xml, JSON-LD.
+- Cache: ISR (tags) + SWR.
+- Dates: date-fns (ru locale).
 
 ### Structure
 /src
 /app
-/(site) # Public pages
-/(auth) # Register/login
-/api # Custom route handlers
-/cms-payload # Payload config
-/cms-directus # Directus config
-/components # UI (shadcn)
+/(site) # public pages
+/(auth) # register/login
+/api # custom routes
+/cms-payload # payload config
+/cms-directus # directus config
+/components # UI
 /contracts # Zod schemas
-/lib # helpers (fetch, auth, seo)
+/lib # fetch, auth, seo
 
 
 ### Infra
 - Docker Compose: Next, Payload, Mongo, Directus, Postgres.
-- Payload → Next webhooks for revalidate.
-- Monitoring: healthchecks + logs.
+- Webhooks: Payload → Next revalidate.
+- Monitoring: healthchecks, logs.
 
 ---
 
 ## 3. QA Requirements
 
-### Unit tests
-- Prediction scoring logic.
-- API validation with Zod.
+### Unit
+- Prediction scoring.
+- Zod validation.
 
-### Integration tests
-- Post creation + comment + vote.
-- Prediction saved and scored after match.
+### Integration
+- Post + comment + vote.
+- Prediction save + scoring.
 
-### E2E (Playwright)
-- Registration/login.
-- Feed scrolling and sorting.
-- Match-center (prediction before deadline, points after result).
-- Leaderboard shows correct top.
-- News pages render with OG-tags.
+### E2E
+- Auth (register/login).
+- Feed scroll & sort.
+- Leagues → season → standings → team.
+- Match-center (prediction before deadline, points after FT).
+- Leaderboard.
+- News pages with OG-tags.
 
-### SEO checks
-- Titles, descriptions, canonical.
+### SEO
+- Title, desc, canonical.
 - JSON-LD valid.
-- Sitemap and robots valid.
+- Sitemap & robots valid.
 
-### Performance (Lighthouse)
+### Performance
 - LCP ≤ 2.5s, CLS < 0.1, INP ≤ 200ms.
-- Bundle main ≤ 180 KB.
+- Bundle ≤ 180 KB.
 
 ### Security
-- Passwords hashed (bcrypt).
-- UGC sanitized.
-- Rate limits for posts, comments, votes, predictions.
+- Bcrypt passwords.
+- Sanitize UGC.
+- Rate limits: posts, comments, votes, predictions.
 
 ---
 
 ## 4. MVP Roadmap
 
-### Iteration 1 — Auth + Users
-- **Goal:** registration/login via Payload.
-- **Exit:** user can register, login, logout; session in cookie.
-- **DoD:** unit (bcrypt), E2E (register/login), passwords hashed.
+### Iteration 1 — **Comments & Votes core**
+- **Goal:** generic threaded comments + up/down votes (attachable to `prediction` and `comment`).
+- **Exit:** create/reply, fetch tree, vote once per user, karma updates.
+- **DoD:** Integration (tree, rate-limit), E2E (reply & vote), sanitize & XSS safe.
 
-### Iteration 2 — Posts + Feed
-- **Goal:** posts and comments.
-- **Exit:** user can create post/comment; feed displays.
-- **DoD:** unit (post validation), E2E (create/view), SEO canonical.
+### Iteration 2 — Leagues (RU + logos)
+- **Goal:** `/leagues` with highlight set (ENG/GER/ITA/FRA/ESP/RUS/POR/BEL/NOR/SWE).
+- **Exit:** list visible, RU names, logos, links to league page.
+- **DoD:** E2E list/links; SEO canonical.
 
-### Iteration 3 — Voting + Ranking
-- **Goal:** voting + hot/top sorting.
-- **Exit:** votes update score; feed sorted.
-- **DoD:** unit (score calc), E2E (vote once, score changes).
+### Iteration 3 — League seasons
+- **Goal:** `/leagues/[leagueId]` seasons.
+- **Exit:** years listed; links to standings.
+- **DoD:** Integration schema validation; E2E navigation; empty states OK.
 
-### Iteration 4 — Matches (Directus data)
-- **Goal:** fixtures list + match-center.
-- **Exit:** fixtures load from Directus; match detail page works.
-- **DoD:** integration (Zod validation), E2E (list + detail), SEO SportsEvent.
+### Iteration 4 — Standings table (+ form)
+- **Goal:** `/leagues/[leagueId]/[year]`.
+- **Exit:** P/W/D/L, GF/GA/GD, form(5) rendered; RU names, logos.
+- **DoD:** E2E render & sort; JSON-LD Competition/Breadcrumb.
 
-### Iteration 5 — Predictions + Leaderboard
-- **Goal:** users predict and get points.
-- **Exit:** predictions before deadline; points after match; leaderboard updates.
-- **DoD:** unit (scoring), integration (save+score), E2E (predict→result→points).
+### Iteration 5 — Team profile
+- **Goal:** `/teams/[teamId]`.
+- **Exit:** logo, squad value (if available), basic info, recent form.
+- **DoD:** Integration (team schema), E2E page; placeholders for missing fields.
 
-### Iteration 6 — News + SEO polish
-- **Goal:** news section + SEO baseline.
-- **Exit:** news render; sitemap+robots valid; JSON-LD everywhere.
-- **DoD:** E2E (news open), SEO tests pass, Lighthouse LCP ≤ 2.5s.
+### Iteration 6 — Directus sync (no UI change)
+- **Goal:** ETL provider → Directus; switch reads to Directus.
+- **Exit:** leagues/seasons/standings/teams now from Directus.
+- **DoD:** Integration (Zod on Directus), E2E parity with provider.
 
----
+### Iteration 7 — Predictions (W/D/X + score + props)
+- **Goal:** create predictions bound to `fixtureId`; enforce deadline.
+- **Exit:** prediction saved; props stored (stats-keys optional); profile shows history.
+- **DoD:** Unit scoring (outcome=2, exact=5 max); Integration CRUD; E2E create/view.
+
+### Iteration 8 — Leaderboard + settle job
+- **Goal:** settle after FT; leaderboard month/season.
+- **Exit:** points appear post-FT; leaderboard updates.
+- **DoD:** Unit scoring; Integration settle job; E2E predict→FT→points.
+
+### Iteration 9 — News + SEO polish
+- **Goal:** editorial news; finalize SEO.
+- **Exit:** news visible; sitemap/robots/JSON-LD valid.
+- **DoD:** E2E news; SEO checks pass; Lighthouse budgets green.

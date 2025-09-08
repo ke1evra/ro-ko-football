@@ -23,9 +23,15 @@ export const Header = async () => {
         <h3 className="sm:text-lg">Payload Starter</h3>
       </Link>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
+        <Button asChild variant="ghost">
+          <Link href="/posts">Посты</Link>
+        </Button>
         {user ? (
           <>
+            <Button asChild variant="outline">
+              <Link href="/posts/new">Новый пост</Link>
+            </Button>
             <LogoutButton />
             <Button asChild>
               <Link href="/dashboard">Dashboard</Link>
