@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { createCommentAction } from './post-server-actions'
 import { toast } from 'sonner'
+import type { Comment } from './post-comments-tree'
 
-export function CommentForm({ postId, parentId, onSuccess }: { postId: string; parentId?: string; onSuccess?: () => void }) {
+export function CommentForm({ postId, parentId, onSuccess }: { postId: string; parentId?: string; onSuccess?: (newComment?: Comment) => void }) {
   const [content, setContent] = useState('')
   const [pending, startTransition] = useTransition()
 
@@ -23,7 +24,7 @@ export function CommentForm({ postId, parentId, onSuccess }: { postId: string; p
           if (res.success) {
             setContent('')
             toast.success('Комментарий добавлен')
-            onSuccess?.()
+            onSuccess?.(res.comment)
           } else {
             toast.error(res.error || 'Ошибка')
           }

@@ -13,12 +13,19 @@ export async function createCommentAction({ postId, content, parentId }: { postI
   const payload = await getPayload({ config: await configPromise })
 
   try {
-    await payload.create({
+    const created = await payload.create({
       collection: 'comments',
       data: { post: postId, content, parent: parentId || undefined },
       user,
     })
-    return { success: true }
+
+    // Получаем документ с наполненными связями (author, post, counters)
+    let fresh: any = created
+    try {
+      fresh = await payload.findByID({ collection: 'comments', id: (created as any).id, depth: 1, user })
+    } catch {}
+
+    return { success: true, comment: fresh }
   } catch (e) {
     console.error(e)
     return { success: false, error: 'Не удалось создать комментарий' }

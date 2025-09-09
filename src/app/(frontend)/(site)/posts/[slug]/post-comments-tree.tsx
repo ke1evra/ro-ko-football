@@ -60,6 +60,14 @@ export function CommentsTree({ postId, comments }: { postId: string; comments: C
           pending={pending}
         />
       ))}
+      <div className="mt-2">
+        <CommentForm
+          postId={postId}
+          onSuccess={(newComment) => {
+            if (newComment) setLocal((prev) => [...prev, newComment])
+          }}
+        />
+      </div>
     </div>
   )
 }
@@ -156,7 +164,8 @@ function CommentNode({
           <CommentForm
             postId={(node as any).post?.id || ''}
             parentId={node.id}
-            onSuccess={() => {
+            onSuccess={(newComment) => {
+              if (newComment) onReplySuccess(newComment)
               setReplyOpen(false)
             }}
           />

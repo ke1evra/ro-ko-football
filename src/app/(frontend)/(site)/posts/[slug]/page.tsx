@@ -4,7 +4,6 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
-import { CommentForm } from './post-comment-form'
 import { CommentsTree } from './post-comments-tree'
 
 export const dynamic = 'force-dynamic'
@@ -49,7 +48,6 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         <section className="space-y-3">
           <h2 className="text-lg font-medium">Комментарии ({comments.totalDocs})</h2>
           <CommentsTree postId={post.id} comments={comments.docs as any[]} />
-          <CommentForm postId={post.id} />
         </section>
       </Container>
     </Section>
