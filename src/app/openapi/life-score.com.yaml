@@ -1,0 +1,995 @@
+openapi: 3.0.3
+info:
+  title: Live-Score API (Professional) — неофициальная OpenAPI-спецификация
+  version: "1.0.0"
+  description: |
+    Полностью локализованная (RU) OpenAPI 3.0 схема для тарифного плана **Professional** Live-Score API.
+    **Авторизация**: используйте query-параметры `key` и `secret` (оба обязательны).
+    **Локализация**: многие эндпоинты принимают `lang=ru` для русских названий (переводы команд/соревнований/стран/федераций).
+    **Ограничения**: это неофициальная спецификация, составленная на основе открытых материалов и типового формата.
+servers:
+  - url: https://live-score-api.com/api-client
+  - url: https://livescore-api.com/api-client
+tags:
+  - name: Matches
+    description: Матчи (live, история)
+  - name: Fixtures
+    description: Запланированные матчи (расписание)
+  - name: Events
+    description: События матча (голы, карточки, замены и т.п.)
+  - name: Lineups & Stats
+    description: Составы и статистика матча
+  - name: Odds
+    description: Коэффициенты (предматчевые и лайв)
+  - name: Tables
+    description: Турнирные таблицы и бомбардиры
+  - name: Catalogs
+    description: Справочники (страны, соревнования, федерации, сезоны, команды)
+  - name: Translations
+    description: Переводы (RU и др. локали)
+  - name: Utility
+    description: Проверка ключа/секрета, флаги стран
+security:
+  - apiKey: []
+    apiSecret: []
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: query
+      name: key
+      description: API ключ
+    apiSecret:
+      type: apiKey
+      in: query
+      name: secret
+      description: API секрет
+  parameters:
+    Lang:
+      name: lang
+      in: query
+      description: ISO 639-1 код языка для перевода (например, `ru`)
+      schema: { type: string, example: ru }
+    Page:
+      name: page
+      in: query
+      description: Номер страницы (по умолчанию 1)
+      schema: { type: integer, minimum: 1, example: 1 }
+    Size:
+      name: size
+      in: query
+      description: Размер страницы (по умолчанию 30, максимум 100)
+      schema: { type: integer, minimum: 1, maximum: 100, example: 30 }
+    Date:
+      name: date
+      in: query
+      description: Конкретная дата (YYYY-MM-DD)
+      schema: { type: string, format: date, example: "2025-08-22" }
+    From:
+      name: from
+      in: query
+      description: Начальная дата диапазона (YYYY-MM-DD)
+      schema: { type: string, format: date, example: "2025-08-01" }
+    To:
+      name: to
+      in: query
+      description: Конечная дата диапазона (YYYY-MM-DD)
+      schema: { type: string, format: date, example: "2025-08-31" }
+    CompetitionId:
+      name: competition_id
+      in: query
+      description: ID соревнования (или несколько через запятую)
+      schema:
+        oneOf:
+          - type: integer
+          - type: string
+        example: "227,67"
+    CountryId:
+      name: country_id
+      in: query
+      description: ID страны
+      schema: { type: integer, example: 2 }
+    FederationId:
+      name: federation_id
+      in: query
+      description: ID федерации
+      schema: { type: integer, example: 5 }
+    TeamId:
+      name: team_id
+      in: query
+      description: ID команды
+      schema: { type: integer, example: 1456 }
+    FixtureId:
+      name: fixture_id
+      in: query
+      description: ID фикстуры (запланированного матча)
+      schema: { type: integer, example: 1580503 }
+    MatchId:
+      name: match_id
+      in: query
+      description: ID матча (live/история)
+      required: true
+      schema: { type: integer, example: 483252 }
+    EventMatchId:
+      name: id
+      in: query
+      description: ID матча для событий
+      required: true
+      schema: { type: integer, example: 483252 }
+    Number:
+      name: number
+      in: query
+      description: Кол-во последних матчей команды (1..30)
+      required: true
+      schema: { type: integer, minimum: 1, maximum: 30, example: 5 }
+  schemas:
+    ApiError:
+      type: object
+      properties:
+        success: { type: boolean, example: false }
+        error: { type: string, example: "Invalid API key or secret" }
+    Pagination:
+      type: object
+      properties:
+        page: { type: integer, example: 1 }
+        size: { type: integer, example: 30 }
+        total_pages: { type: integer, example: 10 }
+        total_items: { type: integer, example: 300 }
+    Country:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        code: { type: string, nullable: true, description: "ISO/FIFA код страны (если доступно)" }
+        is_real: { type: boolean, description: "Реальная (true) или условная/регион (false)" }
+        flag: { type: string, nullable: true, description: "Имя файла PNG флага или URL (в зависимости от реализации)" }
+    Federation:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+    SeasonRef:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string, example: "2025/26" }
+        start: { type: string, format: date }
+        end: { type: string, format: date }
+    Competition:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        is_league: { type: boolean, nullable: true }
+        is_cup: { type: boolean, nullable: true }
+        has_groups: { type: boolean, nullable: true }
+        active: { type: boolean, nullable: true }
+        national_teams_only: { type: boolean, nullable: true }
+        country: { $ref: '#/components/schemas/Country' }
+        federations:
+          type: array
+          items: { $ref: '#/components/schemas/Federation' }
+        season: { $ref: '#/components/schemas/SeasonRef' }
+    Team:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        short_code: { type: string, nullable: true }
+        country_id: { type: integer, nullable: true }
+        country: { $ref: '#/components/schemas/Country' }
+        logo: { type: string, format: uri, nullable: true, description: "URL логотипа (если доступно)" }
+        stadium: { type: string, nullable: true }
+    Score:
+      type: object
+      properties:
+        score: { type: string, nullable: true, example: "2 - 1" }
+        ht_score: { type: string, nullable: true, example: "1 - 0" }
+        ft_score: { type: string, nullable: true, example: "2 - 1" }
+        et_score: { type: string, nullable: true, example: "2 - 2" }
+        ps_score: { type: string, nullable: true, example: "4 - 2" }
+    OddsOneXTwo:
+      type: object
+      properties:
+        "1": { type: number, nullable: true }
+        "X": { type: number, nullable: true }
+        "2": { type: number, nullable: true }
+    Odds:
+      type: object
+      properties:
+        pre:
+          $ref: '#/components/schemas/OddsOneXTwo'
+        live:
+          $ref: '#/components/schemas/OddsOneXTwo'
+    Outcomes:
+      type: object
+      properties:
+        half_time: { type: string, nullable: true }
+        full_time: { type: string, nullable: true }
+        extra_time: { type: string, nullable: true }
+        penalty_shootout: { type: string, nullable: true }
+    Match:
+      type: object
+      description: Универсальная модель матча (live/история)
+      properties:
+        id: { type: integer }
+        fixture_id: { type: integer, nullable: true, description: "ID связанной фикстуры (если есть)" }
+        competition: { $ref: '#/components/schemas/Competition' }
+        date: { type: string, format: date }
+        time: { type: string, example: "18:30" }
+        status: { type: string, example: "IN PLAY" }
+        round: { type: string, nullable: true }
+        group_id: { type: integer, nullable: true }
+        home: { $ref: '#/components/schemas/Team' }
+        away: { $ref: '#/components/schemas/Team' }
+        scores: { $ref: '#/components/schemas/Score' }
+        time_elapsed: { type: string, nullable: true, example: "43" }
+        location: { type: string, nullable: true }
+        odds: { $ref: '#/components/schemas/Odds' }
+        outcomes: { $ref: '#/components/schemas/Outcomes' }
+        urls:
+          type: object
+          properties:
+            events: { type: string, format: uri, nullable: true }
+            statistics: { type: string, format: uri, nullable: true }
+            lineups: { type: string, format: uri, nullable: true }
+            head2head: { type: string, format: uri, nullable: true }
+    Fixture:
+      type: object
+      properties:
+        id: { type: integer }
+        competition: { $ref: '#/components/schemas/Competition' }
+        date: { type: string, format: date }
+        time: { type: string, example: "18:30" }
+        location: { type: string, nullable: true }
+        round: { type: string, nullable: true }
+        group_id: { type: integer, nullable: true }
+        home: { $ref: '#/components/schemas/Team' }
+        away: { $ref: '#/components/schemas/Team' }
+        odds: { $ref: '#/components/schemas/Odds' }
+    Event:
+      type: object
+      properties:
+        time: { type: integer, nullable: true }
+        added_time: { type: integer, nullable: true }
+        type: { type: string, example: "GOAL" }
+        is_home: { type: boolean }
+        is_away: { type: boolean }
+        player: { type: string, nullable: true }
+        player_id: { type: integer, nullable: true }
+        assist: { type: string, nullable: true }
+        assist_id: { type: integer, nullable: true }
+        detail: { type: string, nullable: true, description: "Например, Penalty, Missed Penalty" }
+        result: { type: string, nullable: true, description: "Счет после события" }
+        sort: { type: integer }
+        label: { type: string, example: "Goal" }
+    LineupPlayer:
+      type: object
+      properties:
+        player_id: { type: integer, nullable: true }
+        player_name: { type: string }
+        number: { type: integer, nullable: true }
+        position: { type: string, nullable: true, example: "DF" }
+        captain: { type: boolean, nullable: true }
+    Lineup:
+      type: object
+      properties:
+        team_id: { type: integer }
+        team_name: { type: string }
+        formation: { type: string, nullable: true, example: "4-2-3-1" }
+        coach: { type: string, nullable: true }
+        starting:
+          type: array
+          items: { $ref: '#/components/schemas/LineupPlayer' }
+        substitutes:
+          type: array
+          items: { $ref: '#/components/schemas/LineupPlayer' }
+    TeamStats:
+      type: object
+      properties:
+        possession: { type: number, nullable: true, example: 54 }
+        shots_total: { type: integer, nullable: true }
+        shots_on_target: { type: integer, nullable: true }
+        shots_off_target: { type: integer, nullable: true }
+        corners: { type: integer, nullable: true }
+        offsides: { type: integer, nullable: true }
+        fouls: { type: integer, nullable: true }
+        yellow_cards: { type: integer, nullable: true }
+        red_cards: { type: integer, nullable: true }
+        passes_total: { type: integer, nullable: true }
+        passes_accuracy: { type: number, nullable: true }
+    MatchStats:
+      type: object
+      properties:
+        match_id: { type: integer }
+        home: { $ref: '#/components/schemas/TeamStats' }
+        away: { $ref: '#/components/schemas/TeamStats' }
+    TableRow:
+      type: object
+      properties:
+        competition_id: { type: integer, nullable: true }
+        group_id: { type: integer, nullable: true }
+        group_name: { type: string, nullable: true }
+        team_id: { type: integer }
+        team_name: { type: string }
+        rank: { type: integer }
+        matches: { type: integer }
+        won: { type: integer }
+        drawn: { type: integer }
+        lost: { type: integer }
+        goals_scored: { type: integer }
+        goals_conceded: { type: integer }
+        goal_diff: { type: integer }
+        points: { type: integer }
+        form:
+          type: array
+          items: { type: string, example: "W" }
+          nullable: true
+          description: "Последние результаты (например, ['W','D','L','W','W','D'])"
+    TableResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            competition: { $ref: '#/components/schemas/Competition' }
+            season: { $ref: '#/components/schemas/SeasonRef' }
+            standings:
+              type: array
+              description: "Таблица (список строк). Если лига с группами — возможны несколько групп через group_id/group_name."
+              items: { $ref: '#/components/schemas/TableRow' }
+    LiveMatchesResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            matches:
+              type: array
+              items: { $ref: '#/components/schemas/Match' }
+            pagination: { $ref: '#/components/schemas/Pagination' }
+    HistoryMatchesResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            matches:
+              type: array
+              items: { $ref: '#/components/schemas/Match' }
+            pagination: { $ref: '#/components/schemas/Pagination' }
+    FixturesResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            fixtures:
+              type: array
+              items: { $ref: '#/components/schemas/Fixture' }
+            next_page: { type: string, nullable: true }
+            prev_page: { type: string, nullable: true }
+    EventsResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            match: { $ref: '#/components/schemas/Match' }
+            events:
+              type: array
+              items: { $ref: '#/components/schemas/Event' }
+    LineupsResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            match_id: { type: integer }
+            home: { $ref: '#/components/schemas/Lineup' }
+            away: { $ref: '#/components/schemas/Lineup' }
+    StatsResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data: { $ref: '#/components/schemas/MatchStats' }
+    TeamsResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            teams:
+              type: array
+              items: { $ref: '#/components/schemas/Team' }
+            pagination: { $ref: '#/components/schemas/Pagination' }
+    CompetitionsResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            competitions:
+              type: array
+              items: { $ref: '#/components/schemas/Competition' }
+            pagination: { $ref: '#/components/schemas/Pagination' }
+    CountriesResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            countries:
+              type: array
+              items: { $ref: '#/components/schemas/Country' }
+            pagination: { $ref: '#/components/schemas/Pagination' }
+    FederationsResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            federations:
+              type: array
+              items: { $ref: '#/components/schemas/Federation' }
+    SeasonsResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            seasons:
+              type: array
+              items: { $ref: '#/components/schemas/SeasonRef' }
+    TopScorersResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            competition: { $ref: '#/components/schemas/Competition' }
+            topscorers:
+              type: array
+              items:
+                type: object
+                properties:
+                  goals: { type: integer }
+                  assists: { type: integer, nullable: true }
+                  played: { type: integer }
+                  team: { $ref: '#/components/schemas/Team' }
+                  player:
+                    type: object
+                    properties:
+                      id: { type: integer }
+                      name: { type: string }
+    VerifyResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            plan: { type: string, example: "professional" }
+            endpoints_left: { type: integer, example: 50000 }
+    LastMatchesResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              date: { type: string, format: date }
+              home_name: { type: string }
+              away_name: { type: string }
+              score: { type: string, example: "2 - 0" }
+              ht_score: { type: string, example: "1 - 0" }
+              ft_score: { type: string, example: "2 - 0" }
+              et_score: { type: string, nullable: true }
+              home_id: { type: integer }
+              away_id: { type: integer }
+              competition_id: { type: integer }
+              location: { type: string, nullable: true }
+              scheduled: { type: string, nullable: true }
+              competition: { $ref: '#/components/schemas/Competition' }
+              outcomes: { $ref: '#/components/schemas/Outcomes' }
+    OddsResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              match_id: { type: integer }
+              competition_id: { type: integer }
+              date: { type: string, format: date }
+              time: { type: string, example: "18:30" }
+              home_id: { type: integer }
+              away_id: { type: integer }
+              odds: { $ref: '#/components/schemas/OddsOneXTwo' }
+    TranslationsResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              name_en: { type: string }
+              name_localized: { type: string, description: "Название на языке `lang`" }
+
+paths:
+  /matches/live.json:
+    get:
+      tags: [Matches]
+      summary: Live-матчи (текущие и недавно завершённые)
+      description: Возвращает список текущих live-матчей и недавно завершённых.
+      parameters:
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/CompetitionId'
+        - $ref: '#/components/parameters/CountryId'
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/FixtureId'
+      responses:
+        '200':
+          description: Список live-матчей
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LiveMatchesResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /matches/history.json:
+    get:
+      tags: [Matches]
+      summary: История матчей (завершённые)
+      description: Возвращает матчи за дату или диапазон дат.
+      parameters:
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/CompetitionId'
+        - $ref: '#/components/parameters/CountryId'
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/Date'
+      responses:
+        '200':
+          description: Список завершённых матчей
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HistoryMatchesResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /fixtures/matches.json:
+    get:
+      tags: [Fixtures]
+      summary: Предстоящие матчи (расписание)
+      description: Возвращает будущие игры (fixtures) по дате/диапазону, турнирам, странам, командам.
+      parameters:
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/CompetitionId'
+        - $ref: '#/components/parameters/CountryId'
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/Date'
+      responses:
+        '200':
+          description: Список фикстур
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FixturesResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /matches/events.json:
+    get:
+      tags: [Events]
+      summary: События матча
+      parameters:
+        - $ref: '#/components/parameters/EventMatchId'
+        - $ref: '#/components/parameters/Lang'
+      responses:
+        '200':
+          description: События матча
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventsResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Матч не найден, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /matches/lineups.json:
+    get:
+      tags: [Lineups & Stats]
+      summary: Стартовые составы матча
+      parameters:
+        - $ref: '#/components/parameters/MatchId'
+        - $ref: '#/components/parameters/Lang'
+      responses:
+        '200':
+          description: Составы
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LineupsResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Матч не найден, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /matches/stats.json:
+    get:
+      tags: [Lineups & Stats]
+      summary: Статистика матча
+      parameters:
+        - $ref: '#/components/parameters/MatchId'
+      responses:
+        '200':
+          description: Статистика матча (home/away)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StatsResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Матч не найден, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /odds/pre.json:
+    get:
+      tags: [Odds]
+      summary: Предматчевые коэффициенты (1X2)
+      parameters:
+        - $ref: '#/components/parameters/CompetitionId'
+        - $ref: '#/components/parameters/Date'
+      responses:
+        '200':
+          description: Коэффициенты до матча
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OddsResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /odds/live.json:
+    get:
+      tags: [Odds]
+      summary: Лайв-коэффициенты (1X2)
+      parameters:
+        - $ref: '#/components/parameters/CompetitionId'
+      responses:
+        '200':
+          description: Коэффициенты во время матча
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OddsResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /tables/standings.json:
+    get:
+      tags: [Tables]
+      summary: Турнирная таблица (Standings)
+      parameters:
+        - $ref: '#/components/parameters/CompetitionId'
+        - $ref: '#/components/parameters/Lang'
+        - name: season
+          in: query
+          description: ID сезона (по умолчанию текущий)
+          schema: { type: integer, example: 2025 }
+        - name: group
+          in: query
+          description: Имя группы (если лига с группами)
+          schema: { type: string, example: "A" }
+        - name: include_form
+          in: query
+          description: Включить форму последних игр (0/1)
+          schema: { type: integer, enum: [0,1], example: 1 }
+      responses:
+        '200':
+          description: Турнирная таблица
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TableResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Соревнование не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /competitions/topscorers.json:
+    get:
+      tags: [Tables]
+      summary: Лучшие бомбардиры соревнования
+      parameters:
+        - $ref: '#/components/parameters/Lang'
+        - name: competition_id
+          in: query
+          required: true
+          description: ID соревнования
+          schema: { type: integer, example: 227 }
+      responses:
+        '200':
+          description: Топ бомбардиров
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TopScorersResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Соревнование не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /teams/list.json:
+    get:
+      tags: [Catalogs]
+      summary: Список команд
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/CountryId'
+        - $ref: '#/components/parameters/FederationId'
+      responses:
+        '200':
+          description: Команды
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TeamsResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /competitions/list.json:
+    get:
+      tags: [Catalogs]
+      summary: Список соревнований
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/CountryId'
+        - $ref: '#/components/parameters/FederationId'
+      responses:
+        '200':
+          description: Соревнования
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompetitionsResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /countries/list.json:
+    get:
+      tags: [Catalogs]
+      summary: Список стран
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Страны
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CountriesResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /federations/list.json:
+    get:
+      tags: [Catalogs]
+      summary: Список федераций
+      responses:
+        '200':
+          description: Федераций
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FederationsResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /seasons/list.json:
+    get:
+      tags: [Catalogs]
+      summary: Список сезонов
+      responses:
+        '200':
+          description: Сезоны
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SeasonsResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /teams/lastmatches.json:
+    get:
+      tags: [Catalogs]
+      summary: Последние матчи команды
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/Number'
+      responses:
+        '200':
+          description: Последние матчи
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LastMatchesResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Команда не найдена, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /teams/head2head.json:
+    get:
+      tags: [Lineups & Stats]
+      summary: Очные встречи (H2H) двух команд
+      parameters:
+        - name: team1_id
+          in: query
+          required: true
+          schema: { type: integer, example: 211 }
+          description: ID первой команды
+        - name: team2_id
+          in: query
+          required: true
+          schema: { type: integer, example: 208 }
+          description: ID второй команды
+      responses:
+        '200':
+          description: Последние матчи команд и между собой
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      team1_last6:
+                        type: array
+                        items: { $ref: '#/components/schemas/Match' }
+                      team2_last6:
+                        type: array
+                        items: { $ref: '#/components/schemas/Match' }
+                      h2h_last6:
+                        type: array
+                        items: { $ref: '#/components/schemas/Match' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Одна из команд не найдена, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /translations/teams.json:
+    get:
+      tags: [Translations]
+      summary: Переводы команд
+      parameters:
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/CountryId'
+        - $ref: '#/components/parameters/CompetitionId'
+      responses:
+        '200':
+          description: Переводы (команды)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TranslationsResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /translations/competitions.json:
+    get:
+      tags: [Translations]
+      summary: Переводы соревнований
+      parameters:
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/CountryId'
+        - $ref: '#/components/parameters/FederationId'
+      responses:
+        '200':
+          description: Переводы (соревнования)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TranslationsResponse' }
+
+  /translations/countries.json:
+    get:
+      tags: [Translations]
+      summary: Переводы стран
+      parameters:
+        - $ref: '#/components/parameters/Lang'
+      responses:
+        '200':
+          description: Переводы (страны)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TranslationsResponse' }
+
+  /translations/federations.json:
+    get:
+      tags: [Translations]
+      summary: Переводы федераций
+      parameters:
+        - $ref: '#/components/parameters/Lang'
+      responses:
+        '200':
+          description: Переводы (федерации)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TranslationsResponse' }
+
+  /countries/flag.json:
+    get:
+      tags: [Utility]
+      summary: Флаг национальной команды (PNG)
+      parameters:
+        - name: team_id
+          in: query
+          required: true
+          description: ID национальной команды
+          schema: { type: integer, example: 1456 }
+      responses:
+        '200':
+          description: PNG-файл флага
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+
+  /auth/verify.json:
+    get:
+      tags: [Utility]
+      summary: Проверка API-ключа и секрета
+      responses:
+        '200':
+          description: Ключ действителен
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VerifyResponse' }
+        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }

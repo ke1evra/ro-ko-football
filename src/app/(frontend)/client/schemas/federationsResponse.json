@@ -1,0 +1,1 @@
+{"type":"object","properties":{"success":{"type":"boolean","example":true},"data":{"type":"object","properties":{"federations":{"type":"array","items":{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string"}},"x-readme-ref-name":"Federation"}}}}},"x-readme-ref-name":"FederationsResponse"}

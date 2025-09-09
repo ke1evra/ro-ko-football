@@ -1,0 +1,1 @@
+{"type":"object","properties":{"half_time":{"type":"string","nullable":true},"full_time":{"type":"string","nullable":true},"extra_time":{"type":"string","nullable":true},"penalty_shootout":{"type":"string","nullable":true}},"x-readme-ref-name":"Outcomes"}
