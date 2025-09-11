@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import React from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/app/(frontend)/AuthContext' // Импортируем хук из AuthContext
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import React from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/(frontend)/layout'; // Импортируем хук из layout
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,23 +13,23 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { LogIn, LogOut, User as UserIcon, BarChart2, Trophy } from 'lucide-react'
+} from '@/components/ui/dropdown-menu';
+import { LogIn, LogOut, User as UserIcon, BarChart2, Trophy } from 'lucide-react';
 
-export const Header = () => {
-  const { user, isLoading, logout } = useAuth()
-  const router = useRouter()
+const Header = () => {
+  const { user, isLoading, logout } = useAuth();
+  const router = useRouter();
 
   const handleLogout = () => {
-    logout()
-    router.push('/')
-  }
+    logout();
+    router.push('/');
+  };
 
   const getInitials = (name?: string, email?: string) => {
-    if (name) return name.slice(0, 2).toUpperCase()
-    if (email) return email.slice(0, 2).toUpperCase()
-    return 'U'
-  }
+    if (name) return name.slice(0, 2).toUpperCase();
+    if (email) return email.slice(0, 2).toUpperCase();
+    return 'U';
+  };
 
   return (
     <header className="bg-background border-b sticky top-0 z-50">
@@ -40,22 +40,13 @@ export const Header = () => {
         </Link>
         <nav className="hidden md:flex items-center justify-center flex-1 mx-8">
           <div className="flex items-center gap-8 text-base font-medium">
-            <Link
-              href="/posts"
-              className="text-xl uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-            >
+            <Link href="/posts" className="text-xl uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2">
               Посты
             </Link>
-            <Link
-              href="/leagues"
-              className="text-xl uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-            >
+            <Link href="/leagues" className="text-xl uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2">
               Лиги
             </Link>
-            <Link
-              href="/ui-demo"
-              className="text-xl uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-            >
+            <Link href="/ui-demo" className="text-xl uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2">
               UI Демо
             </Link>
           </div>
@@ -77,7 +68,9 @@ export const Header = () => {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -105,5 +98,7 @@ export const Header = () => {
         </div>
       </div>
     </header>
-  )
-}
+  );
+};
+
+export default Header;

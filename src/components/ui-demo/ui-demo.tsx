@@ -364,7 +364,7 @@ export function UIDemo() {
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="secondary" size="sm">
-                  <FilterDot /> Фильтры
+                  {/* <FilterDot /> */} Фильтры
                 </Button>
               </SheetTrigger>
               <SheetContent side="right">
@@ -1105,7 +1105,7 @@ export function UIDemo() {
 }
 
 // Helpers
-function FilterDot() {
+export function FilterDot() {
   return (
     <span className="relative inline-flex items-center gap-2">
       Фильтры
