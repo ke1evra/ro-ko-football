@@ -10,37 +10,49 @@ import type { SeasonRef } from "./SeasonRef.ts";
 
 export type Competition = {
     /**
-     * @type integer | undefined
+     * @description ID соревнования (строка в API)
+     * @type string | undefined
     */
-    id?: number | undefined;
+    id?: string | undefined;
     /**
      * @type string | undefined
     */
     name?: string | undefined;
     /**
-     * @type boolean
+     * @description Строка \'1\' или \'0\'
+     * @type string
     */
-    is_league?: (boolean | null) | undefined;
+    is_league?: (string | null) | undefined;
     /**
-     * @type boolean
+     * @description Строка \'1\' или \'0\'
+     * @type string
     */
-    is_cup?: (boolean | null) | undefined;
+    is_cup?: (string | null) | undefined;
     /**
-     * @type boolean
+     * @description Уровень лиги
+     * @type string
     */
-    has_groups?: (boolean | null) | undefined;
+    tier?: (string | null) | undefined;
     /**
-     * @type boolean
+     * @description Строка \'1\' или \'0\'
+     * @type string
     */
-    active?: (boolean | null) | undefined;
+    has_groups?: (string | null) | undefined;
     /**
-     * @type boolean
+     * @description Строка \'1\' или \'0\'
+     * @type string
     */
-    national_teams_only?: (boolean | null) | undefined;
+    active?: (string | null) | undefined;
     /**
-     * @type object | undefined
+     * @description Строка \'1\' или \'0\'
+     * @type string
     */
-    country?: Country | undefined;
+    national_teams_only?: (string | null) | undefined;
+    /**
+     * @description Массив стран (в отличие от единичного объекта country)
+     * @type array | undefined
+    */
+    countries?: Country[] | undefined;
     /**
      * @type array | undefined
     */

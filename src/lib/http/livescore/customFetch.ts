@@ -23,7 +23,12 @@ export function createCustomFetch({
   fetchImpl = fetch,
 }: CreateFetchOptions = {}) {
   return async function customFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-    const url = new URL(typeof input === 'string' ? input : input.toString(), baseUrl)
+    // Нормализуем базовый URL и путь, чтобы сохранять сегмент "/api-client"
+    const base = new URL(baseUrl.endsWith('/') ? baseUrl : baseUrl + '/')
+    let path = typeof input === 'string' ? input : input.toString()
+    if (path.startsWith('/')) path = path.slice(1)
+
+    const url = new URL(path, base)
 
     const params = new URLSearchParams(url.search)
 

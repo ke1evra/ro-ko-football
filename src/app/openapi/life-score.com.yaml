@@ -1,995 +1,1750 @@
 openapi: 3.0.3
 info:
-  title: Live-Score API (Professional) — неофициальная OpenAPI-спецификация
+  title: Live Score API (Футбольный API)
   version: "1.0.0"
   description: |
-    Полностью локализованная (RU) OpenAPI 3.0 схема для тарифного плана **Professional** Live-Score API.
-    **Авторизация**: используйте query-параметры `key` и `secret` (оба обязательны).
-    **Локализация**: многие эндпоинты принимают `lang=ru` для русских названий (переводы команд/соревнований/стран/федераций).
-    **Ограничения**: это неофициальная спецификация, составленная на основе открытых материалов и типового формата.
+    OpenAPI-спецификация для футбольного Live Score API (тариф Professional).  
+    Все запросы требуют аутентификации через `key` и `secret` (передаются как query-параметры).  
+    Данные доступны в формате JSON; поддерживается параметр `lang` для локализации названий (если разрешено тарифом):contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}.  
+    
+    **Примечание по тарифам:** спецификация охватывает функции тарифа Professional (включая live-матчи, расписание, события, статистику, результаты, коэффициенты и др.). Некоторые функции, недоступные в Professional (например, трансляции комментариев или переводы имён игроков), в спецификации не описаны.
+
 servers:
-  - url: https://live-score-api.com/api-client
   - url: https://livescore-api.com/api-client
+
 tags:
   - name: Matches
-    description: Матчи (live, история)
+    description: Live-матчи и завершённые матчи (история)
   - name: Fixtures
     description: Запланированные матчи (расписание)
   - name: Events
-    description: События матча (голы, карточки, замены и т.п.)
+    description: События матча (голы, карточки, замены и т.д.)
   - name: Lineups & Stats
-    description: Составы и статистика матча
-  - name: Odds
-    description: Коэффициенты (предматчевые и лайв)
+    description: Составы команд и статистика матча
   - name: Tables
-    description: Турнирные таблицы и бомбардиры
+    description: Турнирные таблицы и рекорды (бомбардиры, дисциплина)
   - name: Catalogs
-    description: Справочники (страны, соревнования, федерации, сезоны, команды)
-  - name: Translations
-    description: Переводы (RU и др. локали)
+    description: Справочные списки (страны, соревнования, команды, сезоны, федерации)
   - name: Utility
-    description: Проверка ключа/секрета, флаги стран
-security:
-  - apiKey: []
-    apiSecret: []
+    description: Вспомогательные утилиты (проверка ключа, флаги стран)
+
 components:
   securitySchemes:
-    apiKey:
+    KeyAuth:
       type: apiKey
       in: query
       name: key
-      description: API ключ
-    apiSecret:
+      description: Уникальный API-ключ пользователя
+    SecretAuth:
       type: apiKey
       in: query
       name: secret
-      description: API секрет
+      description: Секретный ключ API (пароль)
   parameters:
     Lang:
       name: lang
       in: query
-      description: ISO 639-1 код языка для перевода (например, `ru`)
-      schema: { type: string, example: ru }
+      schema:
+        type: string
+        description: ISO 639-1 код языка для локализации данных (например, `ru` для русского):contentReference[oaicite:2]{index=2}:contentReference[oaicite:3]{index=3}
+        example: ru
     Page:
       name: page
       in: query
-      description: Номер страницы (по умолчанию 1)
-      schema: { type: integer, minimum: 1, example: 1 }
+      schema:
+        type: integer
+        minimum: 1
+        description: Номер страницы для постраничной навигации (при наличии более 30 элементов в ответе)
+        example: 2
     Size:
       name: size
       in: query
-      description: Размер страницы (по умолчанию 30, максимум 100)
-      schema: { type: integer, minimum: 1, maximum: 100, example: 30 }
-    Date:
-      name: date
-      in: query
-      description: Конкретная дата (YYYY-MM-DD)
-      schema: { type: string, format: date, example: "2025-08-22" }
-    From:
-      name: from
-      in: query
-      description: Начальная дата диапазона (YYYY-MM-DD)
-      schema: { type: string, format: date, example: "2025-08-01" }
-    To:
-      name: to
-      in: query
-      description: Конечная дата диапазона (YYYY-MM-DD)
-      schema: { type: string, format: date, example: "2025-08-31" }
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        description: Количество элементов на страницу (если поддерживается эндпоинтом; по умолчанию 30)
+        example: 30
     CompetitionId:
       name: competition_id
       in: query
-      description: ID соревнования (или несколько через запятую)
       schema:
-        oneOf:
-          - type: integer
-          - type: string
-        example: "227,67"
+        type: string
+        description: ID соревнования (или несколько ID через запятую) для фильтрации результатов:contentReference[oaicite:4]{index=4}
+        example: "4"
     CountryId:
       name: country_id
       in: query
-      description: ID страны
-      schema: { type: integer, example: 2 }
+      schema:
+        type: integer
+        description: ID страны для фильтрации результатов (например, получать данные только по соревнованиям или матчам в заданной стране):contentReference[oaicite:5]{index=5}
+        example: 2
     FederationId:
       name: federation_id
       in: query
-      description: ID федерации
-      schema: { type: integer, example: 5 }
+      schema:
+        type: integer
+        description: ID футбольной федерации для фильтрации списка стран или соревнований (например, 1 для FIFA):contentReference[oaicite:6]{index=6}:contentReference[oaicite:7]{index=7}
+        example: 1
     TeamId:
       name: team_id
       in: query
-      description: ID команды
-      schema: { type: integer, example: 1456 }
+      schema:
+        type: integer
+        description: ID команды для фильтрации результатов (например, получать только матчи с участием указанной команды):contentReference[oaicite:8]{index=8}:contentReference[oaicite:9]{index=9}
+        example: 19
     FixtureId:
       name: fixture_id
       in: query
-      description: ID фикстуры (запланированного матча)
-      schema: { type: integer, example: 1580503 }
+      schema:
+        type: integer
+        description: ID запланированного матча (fixture). Можно указать, чтобы получить конкретный live-матч по соответствующему fixture_id:contentReference[oaicite:10]{index=10}. В истории также поле `fixture_id` связывает матч с запланированным ранее событием:contentReference[oaicite:11]{index=11}.
+        example: 1657338
     MatchId:
       name: match_id
       in: query
-      description: ID матча (live/история)
       required: true
-      schema: { type: integer, example: 483252 }
-    EventMatchId:
-      name: id
+      schema:
+        type: integer
+        description: ID матча. Используется в эндпоинтах статистики и составов для указания конкретного матча (live или завершённого):contentReference[oaicite:12]{index=12}:contentReference[oaicite:13]{index=13}.
+        example: 483252
+    H2HTeam1:
+      name: team1_id
       in: query
-      description: ID матча для событий
       required: true
-      schema: { type: integer, example: 483252 }
+      schema:
+        type: integer
+        description: ID первой команды для сравнения (Head2Head)
+        example: 6581
+    H2HTeam2:
+      name: team2_id
+      in: query
+      required: true
+      schema:
+        type: integer
+        description: ID второй команды для сравнения (Head2Head)
+        example: 202
+    Date:
+      name: date
+      in: query
+      schema:
+        type: string
+        format: date
+        description: Конкретная дата для фильтрации (формат YYYY-MM-DD) – возвращает данные (матчи) за указанную дату:contentReference[oaicite:14]{index=14}. Специальное значение `today` означает текущий день:contentReference[oaicite:15]{index=15}.
+        example: "2025-09-10"
+    FromDate:
+      name: from
+      in: query
+      schema:
+        type: string
+        format: date
+        description: Начало диапазона дат для фильтрации истории/расписания матчей. Используется вместе с параметром `to`.
+        example: "2025-01-01"
+    ToDate:
+      name: to
+      in: query
+      schema:
+        type: string
+        format: date
+        description: Конец диапазона дат для фильтрации истории/расписания матчей (включительно). Если не указан при использовании `from`, считается равным `from`.
+        example: "2025-01-31"
     Number:
       name: number
       in: query
-      description: Кол-во последних матчей команды (1..30)
-      required: true
-      schema: { type: integer, minimum: 1, maximum: 30, example: 5 }
+      schema:
+        type: integer
+        description: Количество последних матчей команды, которое нужно получить (для эндпоинта последних матчей команды)
+        example: 5
+
   schemas:
-    ApiError:
-      type: object
-      properties:
-        success: { type: boolean, example: false }
-        error: { type: string, example: "Invalid API key or secret" }
-    Pagination:
-      type: object
-      properties:
-        page: { type: integer, example: 1 }
-        size: { type: integer, example: 30 }
-        total_pages: { type: integer, example: 10 }
-        total_items: { type: integer, example: 300 }
     Country:
       type: object
       properties:
-        id: { type: integer }
-        name: { type: string }
-        code: { type: string, nullable: true, description: "ISO/FIFA код страны (если доступно)" }
-        is_real: { type: boolean, description: "Реальная (true) или условная/регион (false)" }
-        flag: { type: string, nullable: true, description: "Имя файла PNG флага или URL (в зависимости от реализации)" }
+        id:
+          type: integer
+          description: Уникальный ID страны
+          example: 71
+        name:
+          type: string
+          description: Название страны
+          example: "Australia"
+        is_real:
+          type: boolean
+          description: Флаг реальной страны (true, если страна реально существует, false – например, для условных объединений вроде «World» или континентов):contentReference[oaicite:16]{index=16}
+          example: true
+        fifa_code:
+          type: string
+          nullable: true
+          description: Код FIFA (если есть):contentReference[oaicite:17]{index=17}
+          example: "AUS"
+        uefa_code:
+          type: string
+          nullable: true
+          description: Код UEFA (если есть)
+          example: ""
+        flag:
+          type: string
+          nullable: true
+          description: Название файла флага страны (PNG) на CDN. Например, `AUS.png`. Для получения самого изображения используется отдельный эндпоинт флагов:contentReference[oaicite:18]{index=18}:contentReference[oaicite:19]{index=19}.
+          example: "AUS.png"
+        federation:
+          type: object
+          nullable: true
+          description: Объект федерации, к которой относится страна (если применимо; для реальных стран указывается соответствующая конфедерация, например UEFA). Содержит поля `id` и `name` федерации:contentReference[oaicite:20]{index=20}.
+          properties:
+            id:
+              type: integer
+              description: ID федерации
+              example: 3
+            name:
+              type: string
+              description: Название федерации
+              example: "CAF"
+        national_team:
+          type: object
+          nullable: true
+          description: Объект национальной сборной этой страны (если информация доступна и страна реальная). Содержит сведения о национальной команде:contentReference[oaicite:21]{index=21}:contentReference[oaicite:22]{index=22}.
+          properties:
+            id:
+              type: integer
+              description: ID команды (национальной сборной)
+              example: 1440
+            name:
+              type: string
+              description: Название национальной команды
+              example: "Australia"
+            stadium:
+              type: string
+              description: Название домашнего стадиона сборной (если есть данные)
+              example: "Stadium Australia"
+            location:
+              type: string
+              description: Локация (город/стадион) национальной команды (если есть данные)
+              example: "Sydney"
+
     Federation:
       type: object
       properties:
-        id: { type: integer }
-        name: { type: string }
-    SeasonRef:
-      type: object
-      properties:
-        id: { type: integer }
-        name: { type: string, example: "2025/26" }
-        start: { type: string, format: date }
-        end: { type: string, format: date }
+        id:
+          type: integer
+          description: ID футбольной федерации (конфедерации), например 1 для FIFA
+          example: 1
+        name:
+          type: string
+          description: Название федерации
+          example: "FIFA"
+
     Competition:
       type: object
       properties:
-        id: { type: integer }
-        name: { type: string }
-        is_league: { type: boolean, nullable: true }
-        is_cup: { type: boolean, nullable: true }
-        has_groups: { type: boolean, nullable: true }
-        active: { type: boolean, nullable: true }
-        national_teams_only: { type: boolean, nullable: true }
-        country: { $ref: '#/components/schemas/Country' }
+        id:
+          type: integer
+          description: Уникальный ID соревнования (лиги или кубка)
+          example: 67
+        name:
+          type: string
+          description: Название соревнования
+          example: "Hyundai A-League"
+        is_league:
+          type: boolean
+          description: Признак лиги (true, если это лиговый турнир, false для кубка):contentReference[oaicite:23]{index=23}
+          example: true
+        is_cup:
+          type: boolean
+          description: Признак кубкового турнира (обратен is_league: true для кубков, false для лиг):contentReference[oaicite:24]{index=24}
+          example: false
+        tier:
+          type: integer
+          description: Уровень (дивизион) соревнования. Например, 1 – высший дивизион страны, 2 – второй и т.д. Международные турниры могут иметь tier = 0.
+          example: 1
+        has_groups:
+          type: boolean
+          description: Имеет ли турнир групповой этап (true, если соревнование разбито на группы):contentReference[oaicite:25]{index=25}
+          example: true
+        active:
+          type: boolean
+          description: Активно ли соревнование (true – поддерживается в текущем сезоне; false – данные есть лишь в архиве):contentReference[oaicite:26]{index=26}
+          example: true
+        national_teams_only:
+          type: boolean
+          description: Флаг, обозначающий, что в турнире участвуют только национальные сборные (true для турниров сборных, false для клубных):contentReference[oaicite:27]{index=27}
+          example: false
+        countries:
+          type: array
+          description: Список стран, к которым относится соревнование (может быть пустым для международных турниров):contentReference[oaicite:28]{index=28}
+          items:
+            $ref: '#/components/schemas/Country'
         federations:
           type: array
-          items: { $ref: '#/components/schemas/Federation' }
-        season: { $ref: '#/components/schemas/SeasonRef' }
+          description: Список федераций, к которым относится соревнование (например, UEFA для Лиги Чемпионов; может быть пустым для национальных лиг):contentReference[oaicite:29]{index=29}:contentReference[oaicite:30]{index=30}
+          items:
+            $ref: '#/components/schemas/Federation'
+        season:
+          type: object
+          nullable: true
+          description: Текущий сезон соревнования (последний на момент запроса). Содержит идентификатор и временные рамки сезона:contentReference[oaicite:31]{index=31}:contentReference[oaicite:32]{index=32}.
+          properties:
+            id:
+              type: integer
+              description: ID сезона
+              example: 13
+            name:
+              type: string
+              description: Название сезона (например, "2021/2022" или "2023")
+              example: "2021/2022"
+            start:
+              type: string
+              format: date
+              description: Дата начала сезона (календарная)
+              example: "2021-07-01"
+            end:
+              type: string
+              format: date
+              description: Дата окончания сезона
+              example: "2022-06-30"
+
     Team:
       type: object
       properties:
-        id: { type: integer }
-        name: { type: string }
-        short_code: { type: string, nullable: true }
-        country_id: { type: integer, nullable: true }
-        country: { $ref: '#/components/schemas/Country' }
-        logo: { type: string, format: uri, nullable: true, description: "URL логотипа (если доступно)" }
-        stadium: { type: string, nullable: true }
-    Score:
-      type: object
-      properties:
-        score: { type: string, nullable: true, example: "2 - 1" }
-        ht_score: { type: string, nullable: true, example: "1 - 0" }
-        ft_score: { type: string, nullable: true, example: "2 - 1" }
-        et_score: { type: string, nullable: true, example: "2 - 2" }
-        ps_score: { type: string, nullable: true, example: "4 - 2" }
-    OddsOneXTwo:
-      type: object
-      properties:
-        "1": { type: number, nullable: true }
-        "X": { type: number, nullable: true }
-        "2": { type: number, nullable: true }
-    Odds:
-      type: object
-      properties:
-        pre:
-          $ref: '#/components/schemas/OddsOneXTwo'
-        live:
-          $ref: '#/components/schemas/OddsOneXTwo'
-    Outcomes:
-      type: object
-      properties:
-        half_time: { type: string, nullable: true }
-        full_time: { type: string, nullable: true }
-        extra_time: { type: string, nullable: true }
-        penalty_shootout: { type: string, nullable: true }
+        id:
+          type: integer
+          description: Уникальный ID команды
+          example: 202
+        name:
+          type: string
+          description: Название команды
+          example: "Wellington Phoenix"
+        country_id:
+          type: integer
+          nullable: true
+          description: ID страны, к которой привязана команда (для клубов):contentReference[oaicite:33]{index=33}
+          example: 71
+        country:
+          $ref: '#/components/schemas/Country'
+        stadium:
+          type: string
+          nullable: true
+          description: Название стадиона (домашнего поля) команды (если есть данные)
+          example: "Westpac Stadium"
+        logo:
+          type: string
+          format: uri
+          nullable: true
+          description: URL логотипа команды (PNG изображение на CDN)
+          example: "https://cdn.live-score-api.com/teams/004d52954bd4936cc14e30b4511073ab.png"
+
     Match:
       type: object
-      description: Универсальная модель матча (live/история)
+      description: Модель матча (live или завершённого)
       properties:
-        id: { type: integer }
-        fixture_id: { type: integer, nullable: true, description: "ID связанной фикстуры (если есть)" }
-        competition: { $ref: '#/components/schemas/Competition' }
-        date: { type: string, format: date }
-        time: { type: string, example: "18:30" }
-        status: { type: string, example: "IN PLAY" }
-        round: { type: string, nullable: true }
-        group_id: { type: integer, nullable: true }
-        home: { $ref: '#/components/schemas/Team' }
-        away: { $ref: '#/components/schemas/Team' }
-        scores: { $ref: '#/components/schemas/Score' }
-        time_elapsed: { type: string, nullable: true, example: "43" }
-        location: { type: string, nullable: true }
-        odds: { $ref: '#/components/schemas/Odds' }
-        outcomes: { $ref: '#/components/schemas/Outcomes' }
+        id:
+          type: integer
+          description: ID матча (для live или завершённого; отличается от fixture_id):contentReference[oaicite:34]{index=34}
+          example: 483252
+        fixture_id:
+          type: integer
+          nullable: true
+          description: ID соответствующего запланированного матча (fixture) для этого матча. Может быть 0 или null, если матч не был в календаре (добавлен непосредственно перед началом):contentReference[oaicite:35]{index=35}
+          example: 1657338
+        date:
+          type: string
+          format: date
+          description: Дата проведения матча (UTC)
+          example: "2025-02-03"
+        time:
+          type: string
+          description: Время начала матча (UTC)
+          example: "08:00"
+        added:
+          type: string
+          format: date-time
+          description: Дата и время добавления матча в live-ленту (UTC):contentReference[oaicite:36]{index=36}
+          example: "2023-12-18 07:45:06"
+        last_changed:
+          type: string
+          format: date-time
+          description: Дата и время последнего обновления данных матча (UTC):contentReference[oaicite:37]{index=37}
+          example: "2023-12-18 08:42:53"
+        status:
+          type: string
+          description: Текущий статус матча (например, NOT STARTED, IN PLAY, HALF TIME BREAK, ADDED TIME, FINISHED, INSUFFICIENT DATA):contentReference[oaicite:38]{index=38}
+          example: "IN PLAY"
+        time_status:
+          type: string
+          nullable: true
+          description: Отображение текущего игрового времени или стадии: число минут (идущая минута) либо специальные значения: `HT` (перерыв), `FT` (конец 90 минут), `AET` (после доп. времени), `AP` (после пенальти):contentReference[oaicite:39]{index=39}
+          example: "43"
+        home:
+          $ref: '#/components/schemas/Team'
+        away:
+          $ref: '#/components/schemas/Team'
+        competition:
+          $ref: '#/components/schemas/Competition'
+        country:
+          $ref: '#/components/schemas/Country'
+        federation:
+          $ref: '#/components/schemas/Federation'
+        location:
+          type: string
+          nullable: true
+          description: Место проведения матча (стадион, город или страна):contentReference[oaicite:40]{index=40}
+          example: "Campbelltown Stadium"
+        scores:
+          type: object
+          description: Объект с текущими счетами по ходу матча и итогами по периодам (для live и завершённых матчей):contentReference[oaicite:41]{index=41}.
+          properties:
+            score:
+              type: string
+              description: Текущий счёт матча (формат `число - число`)
+              example: "0 - 1"
+            ht_score:
+              type: string
+              description: Счёт после первого тайма (полувремени)
+              example: "2 - 0"
+            ft_score:
+              type: string
+              description: Счёт после второго тайма (основного времени)
+              example: "2 - 2"
+            et_score:
+              type: string
+              description: Счёт после дополнительного времени (если было)
+              example: "3 - 3"
+            ps_score:
+              type: string
+              description: Счёт после серии пенальти (если была)
+              example: "4 - 2"
+        outcomes:
+          type: object
+          description: Объект с исходами матча по результатам основных этапов (`1`, `X`, `2` для первой команды, ничьи или второй команды):contentReference[oaicite:42]{index=42}.
+          properties:
+            half_time:
+              type: string
+              nullable: true
+              description: Исход после первого тайма (`1`, `X` или `2` либо null если недоступно)
+            full_time:
+              type: string
+              nullable: true
+              description: Исход после основного времени (`1`, `X` или `2`)
+            extra_time:
+              type: string
+              nullable: true
+              description: Исход после доп. времени (`1`, `X` или `2`, для кубковых матчей)
+            penalty_shootout:
+              type: string
+              nullable: true
+              description: Исход после серии пенальти (`1` или `2`, ничья не применяется)
+        odds:
+          type: object
+          description: Объект с коэффициентами ставок на матч (прематчевые и live):contentReference[oaicite:43]{index=43}.
+          properties:
+            pre:
+              type: object
+              description: Коэффициенты перед началом матча (прематч) – для исходов 1, X, 2.
+              properties:
+                "1": { type: number, description: "Коэффициент на победу первой (домашней) команды до матча" }
+                "X": { type: number, description: "Коэффициент на ничью до матча" }
+                "2": { type: number, description: "Коэффициент на победу второй (гостевой) команды до матча" }
+              example:
+                "1": 2.0
+                "X": 3.85
+                "2": 3.45
+            live:
+              type: object
+              description: Текущие live-коэффициенты (в режиме реального времени) для исходов 1, X, 2.
+              properties:
+                "1": { type: number, nullable: true, description: "Live-коэффициент на победу первой команды" }
+                "X": { type: number, nullable: true, description: "Live-коэффициент на ничью" }
+                "2": { type: number, nullable: true, description: "Live-коэффициент на победу второй команды" }
+              example:
+                "1": 5.6
+                "X": 3.55
+                "2": 1.61
         urls:
           type: object
+          description: Связанные ссылки на подробные данные по матчу (эндпоинты внутри данного API):contentReference[oaicite:44]{index=44}. Поля:
           properties:
-            events: { type: string, format: uri, nullable: true }
-            statistics: { type: string, format: uri, nullable: true }
-            lineups: { type: string, format: uri, nullable: true }
-            head2head: { type: string, format: uri, nullable: true }
+            events:
+              type: string
+              description: URL для получения событий матча (голы, карточки и пр.):contentReference[oaicite:45]{index=45}
+              example: "https://livescore-api.com/api-client/scores/events.json?id=483252"
+            statistics:
+              type: string
+              description: URL для получения статистики матча:contentReference[oaicite:46]{index=46}
+              example: "https://livescore-api.com/api-client/matches/stats.json?match_id=483252"
+            lineups:
+              type: string
+              description: URL для получения стартовых составов матча:contentReference[oaicite:47]{index=47}
+              example: "https://livescore-api.com/api-client/matches/lineups.json?match_id=483252"
+            head2head:
+              type: string
+              description: URL для получения сравнения (H2H) двух команд, играющих в матче:contentReference[oaicite:48]{index=48}
+              example: "https://livescore-api.com/api-client/teams/head2head.json?team1_id=6581&team2_id=202"
+
     Fixture:
       type: object
+      description: Модель запланированного матча (fixture)
       properties:
-        id: { type: integer }
-        competition: { $ref: '#/components/schemas/Competition' }
-        date: { type: string, format: date }
-        time: { type: string, example: "18:30" }
-        location: { type: string, nullable: true }
-        round: { type: string, nullable: true }
-        group_id: { type: integer, nullable: true }
-        home: { $ref: '#/components/schemas/Team' }
-        away: { $ref: '#/components/schemas/Team' }
-        odds: { $ref: '#/components/schemas/Odds' }
+        id:
+          type: integer
+          description: ID запланированного матча (постоянный идентификатор, отличающийся от будущего match_id):contentReference[oaicite:49]{index=49}
+          example: 1578384
+        date:
+          type: string
+          format: date
+          description: Дата, на которую назначен матч:contentReference[oaicite:50]{index=50}
+          example: "2025-05-15"
+        time:
+          type: string
+          description: Время начала матча (UTC):contentReference[oaicite:51]{index=51}
+          example: "16:00:00"
+        home:
+          $ref: '#/components/schemas/Team'
+        away:
+          $ref: '#/components/schemas/Team'
+        competition:
+          $ref: '#/components/schemas/Competition'
+        country:
+          $ref: '#/components/schemas/Country'
+        federation:
+          $ref: '#/components/schemas/Federation'
+        location:
+          type: string
+          nullable: true
+          description: Место проведения (стадион или город) запланированного матча:contentReference[oaicite:52]{index=52}
+          example: "Torino"
+        round:
+          type: string
+          description: Тур или стадия, в рамках которых запланирован матч. Может быть числом (номер тура) или кодом стадии (например, QF, SF для четверть-/полуфинала):contentReference[oaicite:53]{index=53}:contentReference[oaicite:54]{index=54}
+          example: "25"
+        group_id:
+          type: integer
+          nullable: true
+          description: ID группы, в которой состоится матч (для турниров с группами). 0 или null, если матч не привязан к группе:contentReference[oaicite:55]{index=55}
+          example: 1714
+        odds:
+          type: object
+          description: Объект коэффициентов ставок, аналогичный полю `odds` в модели матча. Для запланированных матчей, как правило, заполнены только прематчевые коэффициенты, live-коэффициенты будут null до начала игры:contentReference[oaicite:56]{index=56}:contentReference[oaicite:57]{index=57}.
+          properties:
+            pre:
+              type: object
+              properties:
+                "1": { type: number }
+                "X": { type: number }
+                "2": { type: number }
+            live:
+              type: object
+              properties:
+                "1": { type: number, nullable: true }
+                "X": { type: number, nullable: true }
+                "2": { type: number, nullable: true }
+          example:
+            pre: { "1": 1.62, "X": 3.6, "2": 5.5 }
+            live: { "1": null, "X": null, "2": null }
+
     Event:
       type: object
+      description: Событие матча (гол, карточка, замена и т.д.):contentReference[oaicite:58]{index=58}
       properties:
-        time: { type: integer, nullable: true }
-        added_time: { type: integer, nullable: true }
-        type: { type: string, example: "GOAL" }
-        is_home: { type: boolean }
-        is_away: { type: boolean }
-        player: { type: string, nullable: true }
-        player_id: { type: integer, nullable: true }
-        assist: { type: string, nullable: true }
-        assist_id: { type: integer, nullable: true }
-        detail: { type: string, nullable: true, description: "Например, Penalty, Missed Penalty" }
-        result: { type: string, nullable: true, description: "Счет после события" }
-        sort: { type: integer }
-        label: { type: string, example: "Goal" }
-    LineupPlayer:
-      type: object
-      properties:
-        player_id: { type: integer, nullable: true }
-        player_name: { type: string }
-        number: { type: integer, nullable: true }
-        position: { type: string, nullable: true, example: "DF" }
-        captain: { type: boolean, nullable: true }
+        id:
+          type: integer
+          description: Уникальный ID события
+          example: 310426483
+        time:
+          type: integer
+          description: Минута матча, когда произошло событие:contentReference[oaicite:59]{index=59}
+          example: 23
+        event:
+          type: string
+          description: Тип события (кодовое обозначение):contentReference[oaicite:60]{index=60}:contentReference[oaicite:61]{index=61}
+          example: "GOAL"
+        label:
+          type: string
+          description: Человекочитаемое название события (на английском или на языке `lang`, если запрошен перевод):contentReference[oaicite:62]{index=62}
+          example: "Goal"
+        is_home:
+          type: boolean
+          description: Признак события, относящегося к домашней команде (true, если событие связано с home-командой):contentReference[oaicite:63]{index=63}
+          example: true
+        is_away:
+          type: boolean
+          description: Признак события, относящегося к гостевой команде (true для away-команды):contentReference[oaicite:64]{index=64}
+          example: false
+        player:
+          type: object
+          nullable: true
+          description: Основной игрок, связанный с событием (например, автор гола или получивший карточку):contentReference[oaicite:65]{index=65}
+          properties:
+            id:
+              type: integer
+              description: ID игрока
+              example: 2170
+            name:
+              type: string
+              description: Имя игрока
+              example: "Lionel Messi"
+        info:
+          type: object
+          nullable: true
+          description: Дополнительный игрок, связанный с событием (например, ассистент гола или заменённый игрок):contentReference[oaicite:66]{index=66}
+          properties:
+            id:
+              type: integer
+              description: ID второго игрока
+              example: 3257
+            name:
+              type: string
+              description: Имя второго игрока
+              example: "Alexis MacAllister"
+        sort:
+          type: integer
+          description: Порядковый номер события в хронологии матча (начиная с 0; если два события в одну минуту, используется sort для упорядочения):contentReference[oaicite:67]{index=67}
+          example: 0
+
     Lineup:
       type: object
+      description: Состав команды на матч (стартовый состав и запасные)
       properties:
-        team_id: { type: integer }
-        team_name: { type: string }
-        formation: { type: string, nullable: true, example: "4-2-3-1" }
-        coach: { type: string, nullable: true }
-        starting:
+        starting_lineup:
           type: array
-          items: { $ref: '#/components/schemas/LineupPlayer' }
+          description: Список основных (стартовых) игроков команды
+          items:
+            type: object
+            properties:
+              id: { type: integer, description: "ID игрока" }
+              name: { type: string, description: "Имя игрока" }
+              number: { type: integer, description: "Номер на футболке" }
+              position: { type: string, description: "Амплуа/позиция игрока (например, G, D, M, F)" }
         substitutes:
           type: array
-          items: { $ref: '#/components/schemas/LineupPlayer' }
-    TeamStats:
-      type: object
-      properties:
-        possession: { type: number, nullable: true, example: 54 }
-        shots_total: { type: integer, nullable: true }
-        shots_on_target: { type: integer, nullable: true }
-        shots_off_target: { type: integer, nullable: true }
-        corners: { type: integer, nullable: true }
-        offsides: { type: integer, nullable: true }
-        fouls: { type: integer, nullable: true }
-        yellow_cards: { type: integer, nullable: true }
-        red_cards: { type: integer, nullable: true }
-        passes_total: { type: integer, nullable: true }
-        passes_accuracy: { type: number, nullable: true }
+          description: Список запасных игроков команды
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              name: { type: string }
+              number: { type: integer }
+              position: { type: string }
+        coach:
+          type: object
+          nullable: true
+          description: Тренер команды (если известен)
+          properties:
+            id: { type: integer }
+            name: { type: string }
+
     MatchStats:
       type: object
+      description: Статистика матча: ключи объекта – наименования статистических показателей, значения – строки вида `"Дома:Гости"` (либо `null`, если данные недоступны):contentReference[oaicite:68]{index=68}:contentReference[oaicite:69]{index=69}.
       properties:
-        match_id: { type: integer }
-        home: { $ref: '#/components/schemas/TeamStats' }
-        away: { $ref: '#/components/schemas/TeamStats' }
+        attacks:
+          type: string
+          description: Количество атак (home:away):contentReference[oaicite:70]{index=70}
+          example: "82:91"
+        dangerous_attacks:
+          type: string
+          description: Количество опасных атак (home:away):contentReference[oaicite:71]{index=71}
+          example: "33:56"
+        possession:
+          type: string
+          description: Владение мячом в процентах (home:away, сумма = 100%):contentReference[oaicite:72]{index=72}
+          example: "48:52"
+        shots_on_target:
+          type: string
+          description: Удары в створ ворот (home:away):contentReference[oaicite:73]{index=73}
+          example: "5:3"
+        shots_off_target:
+          type: string
+          description: Удары мимо ворот (home:away):contentReference[oaicite:74]{index=74}
+          example: "4:8"
+        shots_blocked:
+          type: string
+          description: Заблокированные удары (home:away):contentReference[oaicite:75]{index=75}
+          example: "3:8"
+        attempts_on_goal:
+          type: string
+          description: Все попытки удара по воротам (home:away), сумма ударов в створ и мимо:contentReference[oaicite:76]{index=76}
+          example: "9:11"
+        corners:
+          type: string
+          description: Угловые удары (home:away):contentReference[oaicite:77]{index=77}
+          example: "4:13"
+        offsides:
+          type: string
+          description: Офсайды (положения «вне игры») (home:away):contentReference[oaicite:78]{index=78}
+          example: "3:5"
+        yellow_cards:
+          type: string
+          description: Жёлтые карточки (home:away):contentReference[oaicite:79]{index=79}
+          example: "0:1"
+        red_cards:
+          type: string
+          description: Красные карточки (home:away):contentReference[oaicite:80]{index=80}
+          example: "0:0"
+        substitutions:
+          type: string
+          description: Проведённые замены (home:away):contentReference[oaicite:81]{index=81}
+          example: "3:1"
+        fouls:
+          type: string
+          description: Нарушения правил (фолы) (home:away):contentReference[oaicite:82]{index=82}
+          example: "10:5"
+        free_kicks:
+          type: string
+          description: Штрафные удары (home:away):contentReference[oaicite:83]{index=83}
+          example: "10:13"
+        goal_kicks:
+          type: string
+          description: Удары от ворот (home:away):contentReference[oaicite:84]{index=84}
+          example: "11:6"
+        throw_ins:
+          type: string
+          description: Вбрасывания (ауты) (home:away):contentReference[oaicite:85]{index=85}
+          example: "21:18"
+        saves:
+          type: string
+          description: Сэйвы вратаря (home:away):contentReference[oaicite:86]{index=86}
+          example: "2:2"
+        treatments:
+          type: string
+          description: Оказания медицинской помощи на поле (home:away):contentReference[oaicite:87]{index=87}
+          example: "1:0"
+        penalties:
+          type: string
+          description: Пенальти (назначенные) (home:away):contentReference[oaicite:88]{index=88}
+          example: "0:0"
+
     TableRow:
       type: object
+      description: Строка таблицы (позиция команды в турнирной таблице)
       properties:
-        competition_id: { type: integer, nullable: true }
-        group_id: { type: integer, nullable: true }
-        group_name: { type: string, nullable: true }
-        team_id: { type: integer }
-        team_name: { type: string }
-        rank: { type: integer }
-        matches: { type: integer }
-        won: { type: integer }
-        drawn: { type: integer }
-        lost: { type: integer }
-        goals_scored: { type: integer }
-        goals_conceded: { type: integer }
-        goal_diff: { type: integer }
-        points: { type: integer }
+        rank:
+          type: integer
+          description: Место (позиция) команды в таблице
+          example: 1
+        team_id:
+          type: integer
+          description: ID команды
+          example: 18
+        team_name:
+          type: string
+          description: Название команды
+          example: "Arsenal"
+        matches:
+          type: integer
+          description: Количество сыгранных матчей
+          example: 7
+        won:
+          type: integer
+          description: Выигрыши (количество побед)
+          example: 6
+        drawn:
+          type: integer
+          description: Ничьи (количество)
+          example: 0
+        lost:
+          type: integer
+          description: Поражения (количество)
+          example: 1
+        goals_for:
+          type: integer
+          description: Забитые голы
+          example: 17
+        goals_against:
+          type: integer
+          description: Пропущенные голы
+          example: 7
+        goal_diff:
+          type: integer
+          description: Разница голов (забитые минус пропущенные)
+          example: 10
+        points:
+          type: integer
+          description: Очки
+          example: 18
         form:
-          type: array
-          items: { type: string, example: "W" }
+          type: string
           nullable: true
-          description: "Последние результаты (например, ['W','D','L','W','W','D'])"
-    TableResponse:
+          description: Последние результаты команды (серия из ~5 символов: W - победа, D - ничья, L - поражение) при запросе с `include_form=1`:contentReference[oaicite:89]{index=89}
+          example: "WWLLWW"
+
+    TopScorerEntry:
       type: object
+      description: Запись о бомбардире (игроке) в списке лучших бомбардиров.
       properties:
-        success: { type: boolean, example: true }
-        data:
+        player:
           type: object
+          description: Объект игрока (лучшего бомбардира)
           properties:
-            competition: { $ref: '#/components/schemas/Competition' }
-            season: { $ref: '#/components/schemas/SeasonRef' }
-            standings:
-              type: array
-              description: "Таблица (список строк). Если лига с группами — возможны несколько групп через group_id/group_name."
-              items: { $ref: '#/components/schemas/TableRow' }
-    LiveMatchesResponse:
-      type: object
-      properties:
-        success: { type: boolean, example: true }
-        data:
+            id: { type: integer, description: "ID игрока" }
+            name: { type: string, description: "Имя игрока" }
+        team:
           type: object
+          description: Объект команды, за которую выступает игрок
           properties:
-            matches:
-              type: array
-              items: { $ref: '#/components/schemas/Match' }
-            pagination: { $ref: '#/components/schemas/Pagination' }
-    HistoryMatchesResponse:
+            id: { type: integer, description: "ID команды" }
+            name: { type: string, description: "Название команды" }
+            stadium: { type: string, nullable: true, description: "Стадион команды (если применимо)" }
+            country_id: { type: integer, description: "ID страны команды" }
+        goals:
+          type: integer
+          description: Количество голов, забитых игроком в сезоне
+          example: 20
+        assists:
+          type: integer
+          description: Количество результативных передач игрока
+          example: 5
+        played:
+          type: integer
+          description: Количество матчей, в которых игрок участвовал
+          example: 14
+
+    TopCardEntry:
       type: object
+      description: Запись о наиболее "дисциплинарно наказанном" игроке (карточки).
       properties:
-        success: { type: boolean, example: true }
-        data:
+        player:
           type: object
+          description: Объект игрока
           properties:
-            matches:
-              type: array
-              items: { $ref: '#/components/schemas/Match' }
-            pagination: { $ref: '#/components/schemas/Pagination' }
-    FixturesResponse:
-      type: object
-      properties:
-        success: { type: boolean, example: true }
-        data:
+            id: { type: integer }
+            name: { type: string }
+        team:
           type: object
+          description: Объект команды игрока
           properties:
-            fixtures:
-              type: array
-              items: { $ref: '#/components/schemas/Fixture' }
-            next_page: { type: string, nullable: true }
-            prev_page: { type: string, nullable: true }
-    EventsResponse:
+            id: { type: integer }
+            name: { type: string }
+            stadium: { type: string, nullable: true }
+            country_id: { type: integer }
+            logo: { type: string, nullable: true }
+        yellow_cards:
+          type: integer
+          description: Количество жёлтых карточек, полученных игроком
+          example: 1
+        red_cards:
+          type: integer
+          description: Количество красных карточек, полученных игроком
+          example: 0
+        played:
+          type: integer
+          description: Количество матчей, в которых игрок участвовал
+          example: 1
+
+    SquadPlayer:
       type: object
+      description: Игрок в заявке команды на соревнование (предварительный состав на турнир):contentReference[oaicite:90]{index=90}:contentReference[oaicite:91]{index=91}
       properties:
-        success: { type: boolean, example: true }
-        data:
-          type: object
-          properties:
-            match: { $ref: '#/components/schemas/Match' }
-            events:
-              type: array
-              items: { $ref: '#/components/schemas/Event' }
-    LineupsResponse:
-      type: object
-      properties:
-        success: { type: boolean, example: true }
-        data:
-          type: object
-          properties:
-            match_id: { type: integer }
-            home: { $ref: '#/components/schemas/Lineup' }
-            away: { $ref: '#/components/schemas/Lineup' }
-    StatsResponse:
-      type: object
-      properties:
-        success: { type: boolean, example: true }
-        data: { $ref: '#/components/schemas/MatchStats' }
-    TeamsResponse:
-      type: object
-      properties:
-        success: { type: boolean, example: true }
-        data:
-          type: object
-          properties:
-            teams:
-              type: array
-              items: { $ref: '#/components/schemas/Team' }
-            pagination: { $ref: '#/components/schemas/Pagination' }
-    CompetitionsResponse:
-      type: object
-      properties:
-        success: { type: boolean, example: true }
-        data:
-          type: object
-          properties:
-            competitions:
-              type: array
-              items: { $ref: '#/components/schemas/Competition' }
-            pagination: { $ref: '#/components/schemas/Pagination' }
-    CountriesResponse:
-      type: object
-      properties:
-        success: { type: boolean, example: true }
-        data:
-          type: object
-          properties:
-            countries:
-              type: array
-              items: { $ref: '#/components/schemas/Country' }
-            pagination: { $ref: '#/components/schemas/Pagination' }
-    FederationsResponse:
-      type: object
-      properties:
-        success: { type: boolean, example: true }
-        data:
-          type: object
-          properties:
-            federations:
-              type: array
-              items: { $ref: '#/components/schemas/Federation' }
-    SeasonsResponse:
-      type: object
-      properties:
-        success: { type: boolean, example: true }
-        data:
-          type: object
-          properties:
-            seasons:
-              type: array
-              items: { $ref: '#/components/schemas/SeasonRef' }
-    TopScorersResponse:
-      type: object
-      properties:
-        success: { type: boolean, example: true }
-        data:
-          type: object
-          properties:
-            competition: { $ref: '#/components/schemas/Competition' }
-            topscorers:
-              type: array
-              items:
-                type: object
-                properties:
-                  goals: { type: integer }
-                  assists: { type: integer, nullable: true }
-                  played: { type: integer }
-                  team: { $ref: '#/components/schemas/Team' }
-                  player:
-                    type: object
-                    properties:
-                      id: { type: integer }
-                      name: { type: string }
-    VerifyResponse:
-      type: object
-      properties:
-        success: { type: boolean, example: true }
-        data:
-          type: object
-          properties:
-            plan: { type: string, example: "professional" }
-            endpoints_left: { type: integer, example: 50000 }
-    LastMatchesResponse:
-      type: object
-      properties:
-        success: { type: boolean, example: true }
-        data:
-          type: array
-          items:
+        id:
+          type: integer
+          description: ID игрока
+          example: 201
+        name:
+          type: string
+          description: Имя игрока
+          example: "Ante Rebic"
+        shirt_number:
+          type: integer
+          description: Номер игрока в заявке (на футболке на турнире):contentReference[oaicite:92]{index=92}
+          example: 18
+        position:
+          type: string
+          description: Амплуа игрока (GK – вратарь, DF – защитник, MF – полузащитник, FW – нападающий):contentReference[oaicite:93]{index=93}
+          example: "FW"
+
+  # Обёртки ответов
+  responses:
+    ApiError:
+      description: Ошибка запроса
+      content:
+        application/json:
+          schema:
             type: object
             properties:
-              id: { type: integer }
-              date: { type: string, format: date }
-              home_name: { type: string }
-              away_name: { type: string }
-              score: { type: string, example: "2 - 0" }
-              ht_score: { type: string, example: "1 - 0" }
-              ft_score: { type: string, example: "2 - 0" }
-              et_score: { type: string, nullable: true }
-              home_id: { type: integer }
-              away_id: { type: integer }
-              competition_id: { type: integer }
-              location: { type: string, nullable: true }
-              scheduled: { type: string, nullable: true }
-              competition: { $ref: '#/components/schemas/Competition' }
-              outcomes: { $ref: '#/components/schemas/Outcomes' }
-    OddsResponse:
-      type: object
-      properties:
-        success: { type: boolean, example: true }
-        data:
-          type: array
-          items:
-            type: object
-            properties:
-              match_id: { type: integer }
-              competition_id: { type: integer }
-              date: { type: string, format: date }
-              time: { type: string, example: "18:30" }
-              home_id: { type: integer }
-              away_id: { type: integer }
-              odds: { $ref: '#/components/schemas/OddsOneXTwo' }
-    TranslationsResponse:
-      type: object
-      properties:
-        success: { type: boolean, example: true }
-        data:
-          type: array
-          items:
-            type: object
-            properties:
-              id: { type: integer }
-              name_en: { type: string }
-              name_localized: { type: string, description: "Название на языке `lang`" }
+              success: { type: boolean, example: false }
+              error: { type: string, example: "You must provide an API key. You must use a GET parameter 'key'" }
+
+security:
+  - KeyAuth: []
+    SecretAuth: []
 
 paths:
-  /matches/live.json:
-    get:
-      tags: [Matches]
-      summary: Live-матчи (текущие и недавно завершённые)
-      description: Возвращает список текущих live-матчей и недавно завершённых.
-      parameters:
-        - $ref: '#/components/parameters/Lang'
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/CompetitionId'
-        - $ref: '#/components/parameters/CountryId'
-        - $ref: '#/components/parameters/TeamId'
-        - $ref: '#/components/parameters/FixtureId'
-      responses:
-        '200':
-          description: Список live-матчей
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/LiveMatchesResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /matches/history.json:
-    get:
-      tags: [Matches]
-      summary: История матчей (завершённые)
-      description: Возвращает матчи за дату или диапазон дат.
-      parameters:
-        - $ref: '#/components/parameters/Lang'
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/CompetitionId'
-        - $ref: '#/components/parameters/CountryId'
-        - $ref: '#/components/parameters/TeamId'
-        - $ref: '#/components/parameters/From'
-        - $ref: '#/components/parameters/To'
-        - $ref: '#/components/parameters/Date'
-      responses:
-        '200':
-          description: Список завершённых матчей
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/HistoryMatchesResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /fixtures/matches.json:
-    get:
-      tags: [Fixtures]
-      summary: Предстоящие матчи (расписание)
-      description: Возвращает будущие игры (fixtures) по дате/диапазону, турнирам, странам, командам.
-      parameters:
-        - $ref: '#/components/parameters/Lang'
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/Size'
-        - $ref: '#/components/parameters/CompetitionId'
-        - $ref: '#/components/parameters/CountryId'
-        - $ref: '#/components/parameters/TeamId'
-        - $ref: '#/components/parameters/From'
-        - $ref: '#/components/parameters/To'
-        - $ref: '#/components/parameters/Date'
-      responses:
-        '200':
-          description: Список фикстур
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/FixturesResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /matches/events.json:
-    get:
-      tags: [Events]
-      summary: События матча
-      parameters:
-        - $ref: '#/components/parameters/EventMatchId'
-        - $ref: '#/components/parameters/Lang'
-      responses:
-        '200':
-          description: События матча
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/EventsResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Матч не найден, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /matches/lineups.json:
-    get:
-      tags: [Lineups & Stats]
-      summary: Стартовые составы матча
-      parameters:
-        - $ref: '#/components/parameters/MatchId'
-        - $ref: '#/components/parameters/Lang'
-      responses:
-        '200':
-          description: Составы
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/LineupsResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Матч не найден, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /matches/stats.json:
-    get:
-      tags: [Lineups & Stats]
-      summary: Статистика матча
-      parameters:
-        - $ref: '#/components/parameters/MatchId'
-      responses:
-        '200':
-          description: Статистика матча (home/away)
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/StatsResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Матч не найден, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /odds/pre.json:
-    get:
-      tags: [Odds]
-      summary: Предматчевые коэффициенты (1X2)
-      parameters:
-        - $ref: '#/components/parameters/CompetitionId'
-        - $ref: '#/components/parameters/Date'
-      responses:
-        '200':
-          description: Коэффициенты до матча
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/OddsResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /odds/live.json:
-    get:
-      tags: [Odds]
-      summary: Лайв-коэффициенты (1X2)
-      parameters:
-        - $ref: '#/components/parameters/CompetitionId'
-      responses:
-        '200':
-          description: Коэффициенты во время матча
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/OddsResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /tables/standings.json:
-    get:
-      tags: [Tables]
-      summary: Турнирная таблица (Standings)
-      parameters:
-        - $ref: '#/components/parameters/CompetitionId'
-        - $ref: '#/components/parameters/Lang'
-        - name: season
-          in: query
-          description: ID сезона (по умолчанию текущий)
-          schema: { type: integer, example: 2025 }
-        - name: group
-          in: query
-          description: Имя группы (если лига с группами)
-          schema: { type: string, example: "A" }
-        - name: include_form
-          in: query
-          description: Включить форму последних игр (0/1)
-          schema: { type: integer, enum: [0,1], example: 1 }
-      responses:
-        '200':
-          description: Турнирная таблица
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/TableResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Соревнование не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /competitions/topscorers.json:
-    get:
-      tags: [Tables]
-      summary: Лучшие бомбардиры соревнования
-      parameters:
-        - $ref: '#/components/parameters/Lang'
-        - name: competition_id
-          in: query
-          required: true
-          description: ID соревнования
-          schema: { type: integer, example: 227 }
-      responses:
-        '200':
-          description: Топ бомбардиров
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/TopScorersResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Соревнование не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /teams/list.json:
-    get:
-      tags: [Catalogs]
-      summary: Список команд
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/Size'
-        - $ref: '#/components/parameters/Lang'
-        - $ref: '#/components/parameters/CountryId'
-        - $ref: '#/components/parameters/FederationId'
-      responses:
-        '200':
-          description: Команды
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/TeamsResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /competitions/list.json:
-    get:
-      tags: [Catalogs]
-      summary: Список соревнований
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/Size'
-        - $ref: '#/components/parameters/Lang'
-        - $ref: '#/components/parameters/CountryId'
-        - $ref: '#/components/parameters/FederationId'
-      responses:
-        '200':
-          description: Соревнования
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/CompetitionsResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /countries/list.json:
-    get:
-      tags: [Catalogs]
-      summary: Список стран
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/Size'
-      responses:
-        '200':
-          description: Страны
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/CountriesResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /federations/list.json:
-    get:
-      tags: [Catalogs]
-      summary: Список федераций
-      responses:
-        '200':
-          description: Федераций
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/FederationsResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /seasons/list.json:
-    get:
-      tags: [Catalogs]
-      summary: Список сезонов
-      responses:
-        '200':
-          description: Сезоны
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/SeasonsResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /teams/lastmatches.json:
-    get:
-      tags: [Catalogs]
-      summary: Последние матчи команды
-      parameters:
-        - $ref: '#/components/parameters/TeamId'
-        - $ref: '#/components/parameters/Number'
-      responses:
-        '200':
-          description: Последние матчи
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/LastMatchesResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Команда не найдена, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /teams/head2head.json:
-    get:
-      tags: [Lineups & Stats]
-      summary: Очные встречи (H2H) двух команд
-      parameters:
-        - name: team1_id
-          in: query
-          required: true
-          schema: { type: integer, example: 211 }
-          description: ID первой команды
-        - name: team2_id
-          in: query
-          required: true
-          schema: { type: integer, example: 208 }
-          description: ID второй команды
-      responses:
-        '200':
-          description: Последние матчи команд и между собой
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success: { type: boolean, example: true }
-                  data:
-                    type: object
-                    properties:
-                      team1_last6:
-                        type: array
-                        items: { $ref: '#/components/schemas/Match' }
-                      team2_last6:
-                        type: array
-                        items: { $ref: '#/components/schemas/Match' }
-                      h2h_last6:
-                        type: array
-                        items: { $ref: '#/components/schemas/Match' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Одна из команд не найдена, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /translations/teams.json:
-    get:
-      tags: [Translations]
-      summary: Переводы команд
-      parameters:
-        - $ref: '#/components/parameters/Lang'
-        - $ref: '#/components/parameters/CountryId'
-        - $ref: '#/components/parameters/CompetitionId'
-      responses:
-        '200':
-          description: Переводы (команды)
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/TranslationsResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
-  /translations/competitions.json:
-    get:
-      tags: [Translations]
-      summary: Переводы соревнований
-      parameters:
-        - $ref: '#/components/parameters/Lang'
-        - $ref: '#/components/parameters/CountryId'
-        - $ref: '#/components/parameters/FederationId'
-      responses:
-        '200':
-          description: Переводы (соревнования)
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/TranslationsResponse' }
-
-  /translations/countries.json:
-    get:
-      tags: [Translations]
-      summary: Переводы стран
-      parameters:
-        - $ref: '#/components/parameters/Lang'
-      responses:
-        '200':
-          description: Переводы (страны)
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/TranslationsResponse' }
-
-  /translations/federations.json:
-    get:
-      tags: [Translations]
-      summary: Переводы федераций
-      parameters:
-        - $ref: '#/components/parameters/Lang'
-      responses:
-        '200':
-          description: Переводы (федерации)
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/TranslationsResponse' }
-
-  /countries/flag.json:
-    get:
-      tags: [Utility]
-      summary: Флаг национальной команды (PNG)
-      parameters:
-        - name: team_id
-          in: query
-          required: true
-          description: ID национальной команды
-          schema: { type: integer, example: 1456 }
-      responses:
-        '200':
-          description: PNG-файл флага
-          content:
-            image/png:
-              schema:
-                type: string
-                format: binary
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '404': { description: Не найдено, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-
   /auth/verify.json:
     get:
       tags: [Utility]
       summary: Проверка API-ключа и секрета
-      responses:
-        '200':
-          description: Ключ действителен
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/VerifyResponse' }
-        '400': { description: Некорректный запрос, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '401': { description: Неавторизовано, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
-        '500': { description: Внутренняя ошибка, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+      description: |
+        Проверяет валидность предоставленных ключа API (`key`) и секрета (`secret`). Если пара корректна, возвращает сообщение об успешной верификации.  
+        **Пример запроса:** `GET /auth/verify.json?key=YOUR_KEY&secret=YOUR_SECRET`  
+        **Пример ответа (успех):**  
+        ```json
+        {
+          "success": true,
+          "data": {
+            "message": "Your API key and API secret are working correctly"
+          }
+        }
+        ```
+  :contentReference[oaicite:94]{index=94}
+  При ошибке аутентификации возвращается стандартное сообщение об ошибке (например, "Invalid API key or secret") и код 401.
+responses:
+  '200':
+    description: Запрос выполнен – ключ и секрет валидны (возвращается подтверждающее сообщение)
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, example: true }
+            data:
+              type: object
+              properties:
+                message: { type: string, example: "Your API key and API secret are working correctly" }
+  '400':
+    $ref: '#/components/responses/ApiError'
+  '401':
+    description: Неверный ключ API или секрет (не авторизовано)
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, example: false }
+            error: { type: string, example: "Invalid API key or secret" }
+  '404':
+    description: Эндпоинт не найден
+  '500':
+    description: Внутренняя ошибка сервера
+
+/matches/live.json:
+  get:
+    tags: [Matches]
+    summary: Live-матчи (текущие в игре)
+    description: |
+      Возвращает список футбольных матчей, которые **идут в данный момент** (лайвскор). Матчи появляются за ~15 минут до начала (со статусом `NOT STARTED`) и остаются в фиде примерно до 1-3 часов после окончания (со статусом `FINISHED`):contentReference[oaicite:95]{index=95}:contentReference[oaicite:96]{index=96}.  
+      Поддерживается фильтрация по стране, соревнованию или команде, а также выбор конкретного матча по `fixture_id`. Без фильтров возвращаются все текущие лайв-матчи:contentReference[oaicite:97]{index=97}.  
+      **Параметры фильтрации:**  
+      - `competition_id` – ID или список ID соревнований (через запятую) для ограничение выборки матчей определённых турниров:contentReference[oaicite:98]{index=98}.  
+      - `country_id` – ID страны для вывода матчей, проходящих только в этой стране:contentReference[oaicite:99]{index=99}.  
+      - `team_id` – ID команды для вывода только матчей с участием этой команды:contentReference[oaicite:100]{index=100}.  
+      - `fixture_id` – ID запланированного матча для получения его лайв-статуса (если матч уже начался):contentReference[oaicite:101]{index=101}.  
+      - `lang` – код языка для перевода названий команд, турниров и пр. (опционально):contentReference[oaicite:102]{index=102}.  
+      **Пример запроса без фильтров:**  
+      `GET /matches/live.json?key=YOUR_KEY&secret=YOUR_SECRET`  
+      **Пример запроса (лайв-матчи серии A Италии):**  
+      `GET /matches/live.json?competition_id=4&key=YOUR_KEY&secret=YOUR_SECRET`:contentReference[oaicite:103]{index=103}
+    parameters:
+      - $ref: '#/components/parameters/Lang'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/CompetitionId'
+      - $ref: '#/components/parameters/CountryId'
+      - $ref: '#/components/parameters/TeamId'
+      - $ref: '#/components/parameters/FixtureId'
+    responses:
+      '200':
+        description: OK – список текущих матчей получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    match:
+                      type: array
+                      description: Список объектов матчей (все поля матча, включая команды, счёт и т.п.)
+                      items:
+                        $ref: '#/components/schemas/Match'
+        links:
+          GetMatchEvents:
+            description: Ссылка для получения событий конкретного матча
+            operationId: getMatchEvents
+            parameters:
+              id: "$response.body#/data/match/0/id"
+          GetMatchStatistics:
+            description: Ссылка для получения статистики конкретного матча
+            operationId: getMatchStatistics
+            parameters:
+              match_id: "$response.body#/data/match/0/id"
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/matches/history.json:
+  get:
+    tags: [Matches]
+    summary: История матчей (завершённые матчи)
+    description: |
+      Возвращает список **завершённых** матчей (история результатов) по указанным критериям. Обязателен фильтр по дате или диапазону дат, либо другим параметрам; иначе может вернуться ошибка или пустой результат.  
+      **Параметры фильтрации:**  
+      - Можно указать конкретную дату через параметр `date` (например, `date=2025-09-01`) для получения матчей, завершившихся в этот день:contentReference[oaicite:104]{index=104}.  
+      - Либо указать диапазон через `from` и `to` (например, `from=2025-08-01&to=2025-08-31`) для получения истории за период. Если указан только `from`, без `to`, вернутся матчи от даты `from` за один день:contentReference[oaicite:105]{index=105}.  
+      - Также доступны фильтры `competition_id`, `country_id` и `team_id` для ограничения выборки по турнирам, странам или командам, соответственно:contentReference[oaicite:106]{index=106}:contentReference[oaicite:107]{index=107}.  
+      **Пример запроса (матчи 15 мая 2018 года):**  
+      `GET /matches/history.json?date=2018-05-15&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/Lang'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/CompetitionId'
+      - $ref: '#/components/parameters/CountryId'
+      - $ref: '#/components/parameters/TeamId'
+      - $ref: '#/components/parameters/Date'
+      - $ref: '#/components/parameters/FromDate'
+      - $ref: '#/components/parameters/ToDate'
+    responses:
+      '200':
+        description: OK – список завершённых матчей получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    match:
+                      type: array
+                      description: Список матчей (завершённых) с подробной информацией
+                      items:
+                        $ref: '#/components/schemas/Match'
+                    next_page:
+                      type: string
+                      nullable: true
+                      description: URL для следующей страницы результатов (если есть следующая страница)
+                      example: "https://livescore-api.com/api-client/scores/history.json?key=...&secret=...&page=2"
+                    prev_page:
+                      type: string
+                      nullable: true
+                      description: URL для предыдущей страницы результатов (если есть)
+                      example: null
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/fixtures/matches.json:
+  get:
+    tags: [Fixtures]
+    summary: Запланированные матчи (расписание)
+    description: |
+      Возвращает список **будущих запланированных матчей** (fixtures). По умолчанию возвращаются матчи на ближайшие даты; желательно указывать параметры фильтрации по дате или турниру для управления объёмом данных:contentReference[oaicite:108]{index=108}.  
+      **Особенности:**  
+      - В ответе возвращается не более 30 матчей на страницу (`page`), если матчей больше – будет указана `next_page` ссылка для следующей страницы:contentReference[oaicite:109]{index=109}:contentReference[oaicite:110]{index=110}.  
+      - Поле `id` в объекте fixture – постоянный идентификатор запланированного матча. После начала матча ему будет соответствовать другой `match_id` (live/история), но связь сохраняется через поле `fixture_id` в live/history данных:contentReference[oaicite:111]{index=111}.  
+      - Можно фильтровать по `date` (конкретный день, или специальное значение `today` для сегодняшних матчей):contentReference[oaicite:112]{index=112}, по диапазону `from`-`to`, по `competition_id` (матчи конкретного турнира), по `team_id` (матчи конкретной команды), по `country_id` (матчи в указанной стране).  
+      **Пример запроса (все матчи на сегодня):**  
+      `GET /fixtures/matches.json?date=today&key=YOUR_KEY&secret=YOUR_SECRET`:contentReference[oaicite:113]{index=113}
+    parameters:
+      - $ref: '#/components/parameters/Lang'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - $ref: '#/components/parameters/CompetitionId'
+      - $ref: '#/components/parameters/CountryId'
+      - $ref: '#/components/parameters/TeamId'
+      - $ref: '#/components/parameters/Date'
+      - $ref: '#/components/parameters/FromDate'
+      - $ref: '#/components/parameters/ToDate'
+    responses:
+      '200':
+        description: OK – список запланированных матчей получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    fixtures:
+                      type: array
+                      description: Список запланированных матчей (fixtures)
+                      items:
+                        $ref: '#/components/schemas/Fixture'
+                    next_page:
+                      type: string
+                      nullable: true
+                      description: Ссылка (URL) на следующую страницу результатов (если есть следующая)
+                      example: "https://livescore-api.com/api-client/fixtures/matches.json?key=...&secret=...&page=2"
+                    prev_page:
+                      type: string
+                      nullable: true
+                      description: Ссылка на предыдущую страницу (если есть)
+                      example: null
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/scores/events.json:
+  get:
+    tags: [Events]
+    summary: События матча (голы, карточки, замены)
+    description: |
+      Возвращает хронологию событий для указанного матча (как текущего live, так и завершённого):contentReference[oaicite:114]{index=114}. В начале матча список событий будет пустым, по мере развития игры события появляются в ответе в порядке их наступления:contentReference[oaicite:115]{index=115}.  
+      **Параметры:** необходим `id` матча (`match_id` из live или history) для получения событий этого матча. Также можно указать `lang` для перевода названий событий и имён игроков (если поддерживается тарифом):contentReference[oaicite:116]{index=116}.  
+      **Пример запроса (события матча с id=385735):**  
+      `GET /scores/events.json?id=385735&key=YOUR_KEY&secret=YOUR_SECRET`:contentReference[oaicite:117]{index=117}
+    parameters:
+      - name: id
+        in: query
+        required: true
+        schema:
+          type: integer
+        description: ID матча, для которого запрашиваются события (поле `id` из live или history данных):contentReference[oaicite:118]{index=118}
+        example: 385735
+      - $ref: '#/components/parameters/Lang'
+    responses:
+      '200':
+        description: OK – события матча получены
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    match:
+                      type: object
+                      description: Общая информация о матче (идентификатор, дата, счёт и т.п.)
+                      properties:
+                        id: { type: integer, example: 385735 }
+                        date: { type: string, example: "2022-12-18" }
+                        time: { type: string, example: "AP", description: "Статус времени матча (например, AP – после пенальти)" }
+                        status: { type: string, example: "FINISHED" }
+                        added: { type: string, example: "2022-12-18 14:45:12" }
+                        last_changed: { type: string, example: "2022-12-18 18:54:06" }
+                        location: { type: string, example: "Lusail Stadium, Lusail" }
+                        fixture_id: { type: string, example: "1581460" }
+                        scheduled: { type: string, example: "15:00" }
+                        odds:
+                          type: object
+                          properties:
+                            pre: { type: object }
+                            live: { type: object }
+                        outcomes:
+                          type: object
+                          properties:
+                            half_time: { type: string }
+                            full_time: { type: string }
+                            extra_time: { type: string }
+                            penalty_shootout: { type: string }
+                        scores:
+                          type: object
+                          properties:
+                            score: { type: string, example: "3 - 3" }
+                            ht_score: { type: string, example: "2 - 0" }
+                            ft_score: { type: string, example: "2 - 2" }
+                            et_score: { type: string, example: "3 - 3" }
+                            ps_score: { type: string, example: "4 - 2" }
+                        home:
+                          $ref: '#/components/schemas/Team'
+                        away:
+                          $ref: '#/components/schemas/Team'
+                        competition:
+                          $ref: '#/components/schemas/Competition'
+                        country:
+                          $ref: '#/components/schemas/Country'
+                        federation:
+                          $ref: '#/components/schemas/Federation'
+                    event:
+                      type: array
+                      description: Список событий матча (каждый элемент – объект события с типом, игроками и проч.):contentReference[oaicite:119]{index=119}:contentReference[oaicite:120]{index=120}
+                      items:
+                        $ref: '#/components/schemas/Event'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт или матч не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/matches/lineups.json:
+  get:
+    tags: [Lineups & Stats]
+    summary: Стартовые составы команды (матча)
+    description: |
+      Возвращает стартовые составы и список запасных для обеих команд указанного матча. Эндпоинт доступен для начавшихся или завершённых матчей (для запланированных матчей, которые ещё не начались, данных может не быть):contentReference[oaicite:121]{index=121}.  
+      **Параметры:** требуется `match_id` – ID матча (live или из истории):contentReference[oaicite:122]{index=122}. Можно указать `lang` для перевода имён игроков (при наличии поддержки).  
+      **Пример запроса:**  
+      `GET /matches/lineups.json?match_id=483252&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/MatchId'
+      - $ref: '#/components/parameters/Lang'
+    responses:
+      '200':
+        description: OK – составы получены
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    match_id: { type: integer, example: 483252 }
+                    home:
+                      $ref: '#/components/schemas/Lineup'
+                    away:
+                      $ref: '#/components/schemas/Lineup'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Матч не найден или составы недоступны
+      '500':
+        description: Внутренняя ошибка сервера
+
+/matches/stats.json:
+  get:
+    tags: [Lineups & Stats]
+    summary: Статистика матча
+    description: |
+      Возвращает основные статистические показатели указанного матча (для обеих команд):contentReference[oaicite:123]{index=123}. Матч должен быть уже начат или завершён; для предстоящих матчей статистика недоступна:contentReference[oaicite:124]{index=124}.  
+      **Замечание:** не для всех матчей доступны абсолютно все виды статистики – для некоторых менее крупных соревнований некоторые поля могут быть `null` или отсутствовать вовсе:contentReference[oaicite:125]{index=125}.  
+      В возвращаемом объекте статистики ключами являются названия метрик (на англ.), а значениями – строка формата `"домашние:гости"` (например, `"shots_on_target": "5:3"`), либо null, если данные отсутствуют:contentReference[oaicite:126]{index=126}.  
+      **Пример запроса:**  
+      `GET /matches/stats.json?match_id=172252&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/MatchId'
+    responses:
+      '200':
+        description: OK – статистика матча получена
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  $ref: '#/components/schemas/MatchStats'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Матч не найден или статистика недоступна
+      '500':
+        description: Внутренняя ошибка сервера
+
+/teams/head2head.json:
+  get:
+    tags: [Matches]
+    summary: Сравнение двух команд (H2H)
+    description: |
+      Предоставляет сравнительную статистику двух команд на основе их последних встреч друг с другом и, возможно, последних игр вообще. Позволяет оценить форму команд перед их очным матчем:contentReference[oaicite:127]{index=127}.  
+      **Параметры:** необходимо указать `team1_id` и `team2_id` – ID двух команд для сравнения.  
+      **Пример запроса:**  
+      `GET /teams/head2head.json?team1_id=6581&team2_id=202&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/H2HTeam1'
+      - $ref: '#/components/parameters/H2HTeam2'
+    responses:
+      '200':
+        description: OK – данные H2H получены
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  description: Объект с результатами сравнения (состав и формат данных зависит от реализации API)
+                  properties:
+                    last_matches_between:
+                      type: array
+                      description: Последние матчи между двумя командами
+                      items:
+                        $ref: '#/components/schemas/Match'
+                    team1_last_matches:
+                      type: array
+                      description: Последние матчи команды 1
+                      items:
+                        $ref: '#/components/schemas/Match'
+                    team2_last_matches:
+                      type: array
+                      description: Последние матчи команды 2
+                      items:
+                        $ref: '#/components/schemas/Match'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Одна из команд не найдена
+      '500':
+        description: Внутренняя ошибка сервера
+
+/teams/matches.json:
+  get:
+    tags: [Matches]
+    summary: Последние матчи команды
+    description: |
+      Возвращает несколько последних матчей (завершённых или live) указанной команды. Например, можно получить последние N результатов команды для отображения её текущей формы.  
+      **Параметры:** `team_id` – ID команды, `number` – сколько последних матчей вернуть (например, 5 или 10).  
+      **Пример запроса (последние 7 матчей команды с ID=46):**  
+      `GET /teams/matches.json?team_id=46&number=7&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/TeamId'
+      - $ref: '#/components/parameters/Number'
+    responses:
+      '200':
+        description: OK – последние матчи команды получены
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    team:
+                      $ref: '#/components/schemas/Team'
+                    last_matches:
+                      type: array
+                      description: Список последних матчей команды
+                      items:
+                        $ref: '#/components/schemas/Match'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Команда не найдена
+      '500':
+        description: Внутренняя ошибка сервера
+
+/competitions/list.json:
+  get:
+    tags: [Catalogs]
+    summary: Список соревнований (лиг и кубков)
+    description: |
+      Возвращает список всех соревнований (лиг, кубков), поддерживаемых API, с их основными данными. Можно фильтровать список по стране или федерации:contentReference[oaicite:128]{index=128}.  
+      **Параметры фильтрации:**  
+      - `country_id`: если указан, возвращаются соревнования только этой страны:contentReference[oaicite:129]{index=129} (при одновременном указании federation_id и country_id – приоритет у country_id:contentReference[oaicite:130]{index=130}).  
+      - `federation_id`: если указан, возвращаются соревнования, относящиеся к данной международной федерации (например, все турниры под эгидой UEFA):contentReference[oaicite:131]{index=131}.  
+      - Поддерживаются параметры пагинации `page` и `size`. По умолчанию может возвращаться первая страница результатов.  
+      **Пример запроса (соревнования по стране с ID=1):**  
+      `GET /competitions/list.json?country_id=1&key=YOUR_KEY&secret=YOUR_SECRET`:contentReference[oaicite:132]{index=132}
+    parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - $ref: '#/components/parameters/Lang'
+      - $ref: '#/components/parameters/CountryId'
+      - $ref: '#/components/parameters/FederationId'
+    responses:
+      '200':
+        description: OK – список соревнований получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    competition:
+                      type: array
+                      description: Список соревнований
+                      items:
+                        $ref: '#/components/schemas/Competition'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/countries/list.json:
+  get:
+    tags: [Catalogs]
+    summary: Список стран
+    description: |
+      Возвращает список всех стран, поддерживаемых в данных API (страны, к которым привязаны соревнования и команды):contentReference[oaicite:133]{index=133}. Можно отфильтровать по федерации через параметр `federation_id`:contentReference[oaicite:134]{index=134}.  
+      Например, `federation_id=3` вернёт страны, относящиеся к конфедерации CAF (Африка):contentReference[oaicite:135]{index=135}.  
+      По каждой стране предоставляется информация: идентификатор, название, принадлежность к федерации, флаг (имя файла), признак реальная/условная, ссылка на списки лиг и live-матчей в данной стране и т.д.:contentReference[oaicite:136]{index=136}:contentReference[oaicite:137]{index=137}.
+    parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - $ref: '#/components/parameters/FederationId'
+    responses:
+      '200':
+        description: OK – список стран получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    country:
+                      type: array
+                      description: Список стран
+                      items:
+                        $ref: '#/components/schemas/Country'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/federations/list.json:
+  get:
+    tags: [Catalogs]
+    summary: Список федераций
+    description: |
+      Возвращает список всех футбольных федераций (конфедераций), информация о которых используется в API. Примеры федераций: FIFA (ид=1), UEFA (2), CONMEBOL (6) и т.д.  
+      В общем случае фильтры не требуются (список небольшой и содержит основные конфедерации). Данные по федерациям могут использоваться для фильтрации стран и соревнований.
+    responses:
+      '200':
+        description: OK – список федераций получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    federation:
+                      type: array
+                      description: Список федераций
+                      items:
+                        $ref: '#/components/schemas/Federation'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/teams/list.json:
+  get:
+    tags: [Catalogs]
+    summary: Список команд
+    description: |
+      Возвращает список команд (клубов и сборных) с основной информацией (ID, название, страна, логотип):contentReference[oaicite:138]{index=138}:contentReference[oaicite:139]{index=139}. Можно отфильтровать по стране (`country_id`) или федерации (`federation_id`), чтобы получить команды определённой страны или принадлежащие странам указанной конфедерации.  
+      **Примечание:** размер списка команд может быть велик, поэтому поддерживаются пагинация (`page`) и размер выборки (`size`). Также поле `lang` может использоваться для перевода названий команд, если доступно.
+    parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - $ref: '#/components/parameters/Lang'
+      - $ref: '#/components/parameters/CountryId'
+      - $ref: '#/components/parameters/FederationId'
+    responses:
+      '200':
+        description: OK – список команд получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    team:
+                      type: array
+                      description: Список команд
+                      items:
+                        $ref: '#/components/schemas/Team'
+                    pagination:
+                      type: object
+                      properties:
+                        page: { type: integer, example: 1 }
+                        size: { type: integer, example: 30 }
+                        total_pages: { type: integer, example: 100 }
+                        total_items: { type: integer, example: 3000 }
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/seasons/list.json:
+  get:
+    tags: [Catalogs]
+    summary: Список сезонов
+    description: |
+      Возвращает список сезонов, известных системе (например, 2020, 2021/2022 и т.п.), с указанием их идентификаторов. Эти идентификаторы сезонов используются в других методах (например, для запроса турнирной таблицы конкретного сезона или статистики). В большинстве случаев этот эндпоинт используется для справки, так как актуальные сезоны возвращаются в данных соревнований.
+    responses:
+      '200':
+        description: OK – список сезонов получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    season:
+                      type: array
+                      description: Список сезонов
+                      items:
+                        type: object
+                        properties:
+                          id: { type: integer, example: 26 }
+                          name: { type: string, example: "2023/2024" }
+                          start: { type: string, format: date, example: "2023-07-01" }
+                          end: { type: string, format: date, example: "2024-06-30" }
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/tables/standings.json:
+  get:
+    tags: [Tables]
+    summary: Турнирная таблица соревнования (Standings)
+    description: |
+      Возвращает турнирную таблицу (позиции команд) для указанного соревнования и сезона. По умолчанию возвращаются текущие standings для активного сезона соревнования:contentReference[oaicite:140]{index=140}. Для соревнований с группами можно указать конкретную группу или групповой этап.  
+      **Параметры:**  
+      - `competition_id` (обязательный) – ID соревнования, для которого запрашивается турнирная таблица:contentReference[oaicite:141]{index=141}.  
+      - `season` (опциональный) – ID сезона. Если не указан, берётся текущий сезон соревнования:contentReference[oaicite:142]{index=142}:contentReference[oaicite:143]{index=143}.  
+      - `group` или `group_id` (опционально) – можно указать имя группы (например, A, B, C) либо ID группы, чтобы получить таблицу только этой группы (для турниров с группами, например Лига Чемпионов):contentReference[oaicite:144]{index=144}. Если не указано, для многогрупповых турниров может вернуться совокупная таблица или таблица первой группы.  
+      - `include_form` (опциональный, 0/1) – если =1, в ответе для каждой команды будет добавлен массив/строка формы (W/D/L результаты последних матчей):contentReference[oaicite:145]{index=145}.  
+      - `lang` – код языка для локализации названий команд (если доступно):contentReference[oaicite:146]{index=146}.  
+      **Пример запроса (таблица АПЛ, сезон по умолчанию):**  
+      `GET /tables/standings.json?competition_id=2&key=YOUR_KEY&secret=YOUR_SECRET`:contentReference[oaicite:147]{index=147}
+    parameters:
+      - $ref: '#/components/parameters/CompetitionId'
+      - name: season
+        in: query
+        schema:
+          type: integer
+        description: ID сезона, для которого нужна таблица (если не текущий)
+        example: 14
+      - name: group
+        in: query
+        schema:
+          type: string
+        description: Имя группы, если нужно standings конкретной группы (для много-групповых соревнований, напр. "A")
+        example: "A"
+      - name: group_id
+        in: query
+        schema:
+          type: integer
+        description: ID группы, если известен и нужен standings конкретной группы
+        example: 1938
+      - name: include_form
+        in: query
+        schema:
+          type: integer
+          enum: [0, 1]
+        description: Если =1, в ответ включается форма команд за последние 5-6 матчей (последовательность W/D/L):contentReference[oaicite:148]{index=148}
+        example: 1
+      - $ref: '#/components/parameters/Lang'
+    responses:
+      '200':
+        description: OK – таблица получена
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    competition:
+                      $ref: '#/components/schemas/Competition'
+                    table:
+                      type: array
+                      description: Таблица позиций команд
+                      items:
+                        $ref: '#/components/schemas/TableRow'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Соревнование не найдено
+      '500':
+        description: Внутренняя ошибка сервера
+
+/competitions/topscorers.json:
+  get:
+    tags: [Tables]
+    summary: Топ бомбардиры соревнования
+    description: |
+      Возвращает список лучших бомбардиров (до 20 игроков) текущего сезона указанного соревнования:contentReference[oaicite:149]{index=149}. Данные обновляются по мере развития сезона. Если новый сезон ещё не начался или только начался, список может быть пустым или содержать мало данных:contentReference[oaicite:150]{index=150}.  
+      В дополнение к списку игроков, в ответ включается информация о самом соревновании, сезоне, а также о текущем выпуске (edition) турнира:contentReference[oaicite:151]{index=151}:contentReference[oaicite:152]{index=152}. 
+      **Параметры:**  
+      - `competition_id` (обязательный) – ID соревнования, для которого нужны лучшие бомбардиры:contentReference[oaicite:153]{index=153}.  
+      - `lang` (опциональный) – код языка для локализации имён игроков, команд, названия соревнования (при поддержке перевода):contentReference[oaicite:154]{index=154}.  
+      **Пример запроса (бомбардиры Bundesliga, id=1):**  
+      `GET /competitions/topscorers.json?competition_id=1&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/CompetitionId'
+      - $ref: '#/components/parameters/Lang'
+    responses:
+      '200':
+        description: OK – список лучших бомбардиров получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    competition:
+                      $ref: '#/components/schemas/Competition'
+                    edition:
+                      type: object
+                      description: Объект выпуска соревнования (текущая «редакция» турнира, может включать id выпуска и is_current)
+                      properties:
+                        id: { type: integer, example: 1640 }
+                        season_id: { type: integer, example: 26 }
+                        is_current: { type: boolean, example: true }
+                    season:
+                      type: object
+                      description: Объект сезона соревнования
+                      properties:
+                        id: { type: integer, example: 26 }
+                        name: { type: string, example: "2023/2024" }
+                        start: { type: string, format: date, example: "2023-07-01" }
+                        end: { type: string, format: date, example: "2024-06-30" }
+                    topscorers:
+                      type: array
+                      description: Список топ-бомбардиров
+                      items:
+                        $ref: '#/components/schemas/TopScorerEntry'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Соревнование не найдено
+      '500':
+        description: Внутренняя ошибка сервера
+
+/competitions/topcards.json:
+  get:
+    tags: [Tables]
+    summary: Антирекорд по карточкам (дисциплинарный рейтинг)
+    description: |
+      Возвращает список игроков, получивших наибольшее число карточек (жёлтых/красных) в указанном международном турнире:contentReference[oaicite:155]{index=155}:contentReference[oaicite:156]{index=156}. *Примечание:* данный эндпоинт работает **только для крупных международных турниров сборных** (ЧМ, ЧЕ, Копа Америка, Кубок Азии, Кубок Африки):contentReference[oaicite:157]{index=157}.  
+      В ответе перечислены футболисты с указанием числа жёлтых и красных карточек. В остальном структура аналогична списку бомбардиров (competition, edition, season):contentReference[oaicite:158]{index=158}, однако поля `goals` и `assists` заменены на `yellow_cards` и `red_cards` соответственно:contentReference[oaicite:159]{index=159}.  
+      **Параметры:**  
+      - `competition_id` (обязательный) – ID турнира (только ID перечисленных международных турниров):contentReference[oaicite:160]{index=160}.  
+      - `lang` (опционально) – код языка для перевода названий, аналогично другим методам.  
+      **Пример запроса (дисциплинарный рейтинг ЧМ 2022, id=362):**  
+      `GET /competitions/topcards.json?competition_id=362&key=YOUR_KEY&secret=YOUR_SECRET`:contentReference[oaicite:161]{index=161}
+    parameters:
+      - $ref: '#/components/parameters/CompetitionId'
+      - $ref: '#/components/parameters/Lang'
+    responses:
+      '200':
+        description: OK – дисциплинарный список получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    competition:
+                      $ref: '#/components/schemas/Competition'
+                    edition:
+                      type: object
+                      properties:
+                        id: { type: integer, example: 683 }
+                        season_id: { type: integer, example: 11 }
+                        is_current: { type: boolean, example: true }
+                    season:
+                      type: object
+                      properties:
+                        id: { type: integer, example: 11 }
+                        name: { type: string, example: "2022" }
+                        start: { type: string, format: date, example: "2022-01-01" }
+                        end: { type: string, format: date, example: "2022-12-31" }
+                    topcards:
+                      type: array
+                      description: Список игроков и их карточки
+                      items:
+                        $ref: '#/components/schemas/TopCardEntry'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Соревнование не найдено или не поддерживается данным методом
+      '500':
+        description: Внутренняя ошибка сервера
+
+/countries/flag.png:
+  get:
+    tags: [Utility]
+    summary: Флаг страны (изображение)
+    description: |
+      Возвращает изображение флага запрошенной страны в формате PNG. Необходим идентификатор страны или ID национальной команды.  
+      **Примечание:** Каждый вызов этого метода учитывается как отдельный запрос API, поэтому рекомендуется кэшировать полученные флаги на стороне клиента:contentReference[oaicite:162]{index=162}. Все флаги имеют фиксированную высоту ~240px, ширина зависит от пропорций флага:contentReference[oaicite:163]{index=163}.  
+      **Параметры:** укажите либо `country_id` страны, либо `team_id` национальной сборной (оба варианта приводят к одному и тому же флагу, если команда является национальной сборной указанной страны):contentReference[oaicite:164]{index=164}:contentReference[oaicite:165]{index=165}.  
+      **Пример запроса (флаг Австралии):**  
+      `GET /countries/flag.png?country_id=71&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/CountryId'
+      - $ref: '#/components/parameters/TeamId'
+    responses:
+      '200':
+        description: OK – возвращено изображение флага (PNG)
+        content:
+          image/png:
+            schema:
+              type: string
+              format: binary
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Флаг для данной страны/команды не найден
+      '500':
+        description: Внутренняя ошибка сервера

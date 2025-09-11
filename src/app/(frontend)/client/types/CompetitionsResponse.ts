@@ -17,9 +17,10 @@ export type CompetitionsResponse = {
     */
     data?: {
         /**
+         * @description Массив соревнований (в API называется \'competition\', не \'competitions\')
          * @type array | undefined
         */
-        competitions?: Competition[] | undefined;
+        competition?: Competition[] | undefined;
         /**
          * @type object | undefined
         */
