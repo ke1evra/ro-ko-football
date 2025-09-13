@@ -4,8 +4,9 @@ import { customFetch } from '@/lib/http/livescore/customFetch'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { FlagImage } from '@/components/FlagImage'
-import { TeamFlagImage } from '@/components/TeamFlagImage'
+
 import { CountryFlagImage } from '@/components/CountryFlagImage'
+import ApiTestPanel from '@/components/ApiTestPanel'
 
 export const revalidate = 60
 
@@ -370,6 +371,11 @@ export default async function Home() {
             </div>
           </section>
         )}
+        {/* API тест-панель */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Тестирование API</h2>
+          <ApiTestPanel />
+        </section>
       </Container>
     </Section>
   )
