@@ -5,7 +5,7 @@ info:
   description: |
     OpenAPI-спецификация для футбольного Live Score API (тариф Professional).  
     Все запросы требуют аутентификации через `key` и `secret` (передаются как query-параметры).  
-    Данные доступны в формате JSON; поддерживается параметр `lang` для локализации названий (если разрешено тарифом):contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}.  
+    Данные доступны в формате JSON; поддерживается параметр `lang` для локализации названий (если разрешено тарифом).  
     
     **Примечание по тарифам:** спецификация охватывает функции тарифа Professional (включая live-матчи, расписание, события, статистику, результаты, коэффициенты и др.). Некоторые функции, недоступные в Professional (например, трансляции комментариев или переводы имён игроков), в спецификации не описаны.
 
@@ -46,7 +46,7 @@ components:
       in: query
       schema:
         type: string
-        description: ISO 639-1 код языка для локализации данных (например, `ru` для русского):contentReference[oaicite:2]{index=2}:contentReference[oaicite:3]{index=3}
+        description: ISO 639-1 код языка для локализации данных (например, `ru` для русского)
         example: ru
     Page:
       name: page
@@ -70,35 +70,35 @@ components:
       in: query
       schema:
         type: string
-        description: ID соревнования (или несколько ID через запятую) для фильтрации результатов:contentReference[oaicite:4]{index=4}
+        description: ID соревнования (или несколько ID через запятую) для фильтрации результатов
         example: "4"
     CountryId:
       name: country_id
       in: query
       schema:
         type: integer
-        description: ID страны для фильтрации результатов (например, получать данные только по соревнованиям или матчам в заданной стране):contentReference[oaicite:5]{index=5}
+        description: ID страны для фильтрации результатов (например, получать данные только по соревнованиям или матчам в заданной стране)
         example: 2
     FederationId:
       name: federation_id
       in: query
       schema:
         type: integer
-        description: ID футбольной федерации для фильтрации списка стран или соревнований (например, 1 для FIFA):contentReference[oaicite:6]{index=6}:contentReference[oaicite:7]{index=7}
+        description: ID футбольной федерации для фильтрации списка стран или соревнований (например, 1 для FIFA)
         example: 1
     TeamId:
       name: team_id
       in: query
       schema:
         type: integer
-        description: ID команды для фильтрации результатов (например, получать только матчи с участием указанной команды):contentReference[oaicite:8]{index=8}:contentReference[oaicite:9]{index=9}
+        description: ID команды для фильтрации результатов (например, получать только матчи с участием указанной команды)
         example: 19
     FixtureId:
       name: fixture_id
       in: query
       schema:
         type: integer
-        description: ID запланированного матча (fixture). Можно указать, чтобы получить конкретный live-матч по соответствующему fixture_id:contentReference[oaicite:10]{index=10}. В истории также поле `fixture_id` связывает матч с запланированным ранее событием:contentReference[oaicite:11]{index=11}.
+        description: ID запланированного матча (fixture). Можно указать, чтобы получить конкретный live-матч по соответствующему fixture_id. В истории также поле `fixture_id` связывает матч с запланированным ранее событием.
         example: 1657338
     MatchId:
       name: match_id
@@ -106,7 +106,7 @@ components:
       required: true
       schema:
         type: integer
-        description: ID матча. Используется в эндпоинтах статистики и составов для указания конкретного матча (live или завершённого):contentReference[oaicite:12]{index=12}:contentReference[oaicite:13]{index=13}.
+        description: ID матча. Используется в эндпоинтах статистики и составов для указания конкретного матча (live или завершённого).
         example: 483252
     H2HTeam1:
       name: team1_id
@@ -130,7 +130,7 @@ components:
       schema:
         type: string
         format: date
-        description: Конкретная дата для фильтрации (формат YYYY-MM-DD) – возвращает данные (матчи) за указанную дату:contentReference[oaicite:14]{index=14}. Специальное значение `today` означает текущий день:contentReference[oaicite:15]{index=15}.
+        description: Конкретная дата для фильтрации (формат YYYY-MM-DD) – возвращает данные (матчи) за указанную дату. Специальное значение `today` означает текущий день.
         example: "2025-09-10"
     FromDate:
       name: from
@@ -170,12 +170,12 @@ components:
           example: "Australia"
         is_real:
           type: boolean
-          description: Флаг реальной страны (true, если страна реально существует, false – например, для условных объединений вроде «World» или континентов):contentReference[oaicite:16]{index=16}
+          description: Флаг реальной страны (true, если страна реально существует, false – например, для условных объединений вроде «World» или континентов)
           example: true
         fifa_code:
           type: string
           nullable: true
-          description: Код FIFA (если есть):contentReference[oaicite:17]{index=17}
+          description: Код FIFA (если есть)
           example: "AUS"
         uefa_code:
           type: string
@@ -185,12 +185,12 @@ components:
         flag:
           type: string
           nullable: true
-          description: Название файла флага страны (PNG) на CDN. Например, `AUS.png`. Для получения самого изображения используется отдельный эндпоинт флагов:contentReference[oaicite:18]{index=18}:contentReference[oaicite:19]{index=19}.
+          description: Название файла флага страны (PNG) на CDN. Например, `AUS.png`. Для получения самого изображения используется отдельный эндпоинт флагов.
           example: "AUS.png"
         federation:
           type: object
           nullable: true
-          description: Объект федерации, к которой относится страна (если применимо; для реальных стран указывается соответствующая конфедерация, например UEFA). Содержит поля `id` и `name` федерации:contentReference[oaicite:20]{index=20}.
+          description: Объект федерации, к которой относится страна (если применимо; для реальных стран указывается соответствующая конфедерация, например UEFA). Содержит поля `id` и `name` федерации.
           properties:
             id:
               type: integer
@@ -203,7 +203,7 @@ components:
         national_team:
           type: object
           nullable: true
-          description: Объект национальной сборной этой страны (если информация доступна и страна реальная). Содержит сведения о национальной команде:contentReference[oaicite:21]{index=21}:contentReference[oaicite:22]{index=22}.
+          description: Объект национальной сборной этой страны (если информация доступна и страна реальная). Содержит сведения о национальной команде.
           properties:
             id:
               type: integer
@@ -247,11 +247,11 @@ components:
           example: "Hyundai A-League"
         is_league:
           type: boolean
-          description: Признак лиги (true, если это лиговый турнир, false для кубка):contentReference[oaicite:23]{index=23}
+          description: Признак лиги (true, если это лиговый турнир, false для кубка)
           example: true
         is_cup:
           type: boolean
-          description: Признак кубкового турнира (обратен is_league: true для кубков, false для лиг):contentReference[oaicite:24]{index=24}
+          description: "Признак кубкового турнира (обратен is_league: true для кубков, false для лиг)"
           example: false
         tier:
           type: integer
@@ -259,30 +259,30 @@ components:
           example: 1
         has_groups:
           type: boolean
-          description: Имеет ли турнир групповой этап (true, если соревнование разбито на группы):contentReference[oaicite:25]{index=25}
+          description: Имеет ли турнир групповой этап (true, если соревнование разбито на группы)
           example: true
         active:
           type: boolean
-          description: Активно ли соревнование (true – поддерживается в текущем сезоне; false – данные есть лишь в архиве):contentReference[oaicite:26]{index=26}
+          description: Активно ли соревнование (true – поддерживается в текущем сезоне; false – данные есть лишь в архиве)
           example: true
         national_teams_only:
           type: boolean
-          description: Флаг, обозначающий, что в турнире участвуют только национальные сборные (true для турниров сборных, false для клубных):contentReference[oaicite:27]{index=27}
+          description: Флаг, обозначающий, что в турнире участвуют только национальные сборные (true для турниров сборных, false для клубных)
           example: false
         countries:
           type: array
-          description: Список стран, к которым относится соревнование (может быть пустым для международных турниров):contentReference[oaicite:28]{index=28}
+          description: Список стран, к которым относится соревнование (может быть пустым для международных турниров)
           items:
             $ref: '#/components/schemas/Country'
         federations:
           type: array
-          description: Список федераций, к которым относится соревнование (например, UEFA для Лиги Чемпионов; может быть пустым для национальных лиг):contentReference[oaicite:29]{index=29}:contentReference[oaicite:30]{index=30}
+          description: Список федераций, к которым относится соревнование (например, UEFA для Лиги Чемпионов; может быть пустым для национальных лиг)
           items:
             $ref: '#/components/schemas/Federation'
         season:
           type: object
           nullable: true
-          description: Текущий сезон соревнования (последний на момент запроса). Содержит идентификатор и временные рамки сезона:contentReference[oaicite:31]{index=31}:contentReference[oaicite:32]{index=32}.
+          description: Текущий сезон соревнования (последний на момент запроса). Содержит идентификатор и временные рамки сезона.
           properties:
             id:
               type: integer
@@ -317,7 +317,7 @@ components:
         country_id:
           type: integer
           nullable: true
-          description: ID страны, к которой привязана команда (для клубов):contentReference[oaicite:33]{index=33}
+          description: ID страны, к которой привязана команда (для клубов)
           example: 71
         country:
           $ref: '#/components/schemas/Country'
@@ -339,12 +339,12 @@ components:
       properties:
         id:
           type: integer
-          description: ID матча (для live или завершённого; отличается от fixture_id):contentReference[oaicite:34]{index=34}
+          description: ID матча (для live или завершённого; отличается от fixture_id)
           example: 483252
         fixture_id:
           type: integer
           nullable: true
-          description: ID соответствующего запланированного матча (fixture) для этого матча. Может быть 0 или null, если матч не был в календаре (добавлен непосредственно перед началом):contentReference[oaicite:35]{index=35}
+          description: ID соответствующего запланированного матча (fixture) для этого матча. Может быть 0 или null, если матч не был в календаре (добавлен непосредственно перед началом)
           example: 1657338
         date:
           type: string
@@ -358,21 +358,21 @@ components:
         added:
           type: string
           format: date-time
-          description: Дата и время добавления матча в live-ленту (UTC):contentReference[oaicite:36]{index=36}
+          description: Дата и время добавления матча в live-ленту (UTC)
           example: "2023-12-18 07:45:06"
         last_changed:
           type: string
           format: date-time
-          description: Дата и время последнего обновления данных матча (UTC):contentReference[oaicite:37]{index=37}
+          description: Дата и время последнего обновления данных матча (UTC)
           example: "2023-12-18 08:42:53"
         status:
           type: string
-          description: Текущий статус матча (например, NOT STARTED, IN PLAY, HALF TIME BREAK, ADDED TIME, FINISHED, INSUFFICIENT DATA):contentReference[oaicite:38]{index=38}
+          description: Текущий статус матча (например, NOT STARTED, IN PLAY, HALF TIME BREAK, ADDED TIME, FINISHED, INSUFFICIENT DATA)
           example: "IN PLAY"
         time_status:
           type: string
           nullable: true
-          description: Отображение текущего игрового времени или стадии: число минут (идущая минута) либо специальные значения: `HT` (перерыв), `FT` (конец 90 минут), `AET` (после доп. времени), `AP` (после пенальти):contentReference[oaicite:39]{index=39}
+          description: "Отображение текущего игрового времени или стадии: число минут (идущая минута) либо специальные значения: `HT` (перерыв), `FT` (конец 90 минут), `AET` (после доп. времени), `AP` (после пенальти)"
           example: "43"
         home:
           $ref: '#/components/schemas/Team'
@@ -387,11 +387,11 @@ components:
         location:
           type: string
           nullable: true
-          description: Место проведения матча (стадион, город или страна):contentReference[oaicite:40]{index=40}
+          description: Место проведения матча (стадион, город или страна)
           example: "Campbelltown Stadium"
         scores:
           type: object
-          description: Объект с текущими счетами по ходу матча и итогами по периодам (для live и завершённых матчей):contentReference[oaicite:41]{index=41}.
+          description: Объект с текущими счетами по ходу матча и итогами по периодам (для live и завершённых матчей).
           properties:
             score:
               type: string
@@ -415,7 +415,7 @@ components:
               example: "4 - 2"
         outcomes:
           type: object
-          description: Объект с исходами матча по результатам основных этапов (`1`, `X`, `2` для первой команды, ничьи или второй команды):contentReference[oaicite:42]{index=42}.
+          description: Объект с исходами матча по результатам основных этапов (`1`, `X`, `2` для первой команды, ничьи или второй команды).
           properties:
             half_time:
               type: string
@@ -435,7 +435,7 @@ components:
               description: Исход после серии пенальти (`1` или `2`, ничья не применяется)
         odds:
           type: object
-          description: Объект с коэффициентами ставок на матч (прематчевые и live):contentReference[oaicite:43]{index=43}.
+          description: Объект с коэффициентами ставок на матч (прематчевые и live).
           properties:
             pre:
               type: object
@@ -461,23 +461,23 @@ components:
                 "2": 1.61
         urls:
           type: object
-          description: Связанные ссылки на подробные данные по матчу (эндпоинты внутри данного API):contentReference[oaicite:44]{index=44}. Поля:
+          description: "Связанные ссылки на подробные данные по матчу (эндпоинты внутри данного API). Поля:"
           properties:
             events:
               type: string
-              description: URL для получения событий матча (голы, карточки и пр.):contentReference[oaicite:45]{index=45}
+              description: URL для получения событий матча (голы, карточки и пр.)
               example: "https://livescore-api.com/api-client/scores/events.json?id=483252"
             statistics:
               type: string
-              description: URL для получения статистики матча:contentReference[oaicite:46]{index=46}
+              description: URL для получения статистики матча
               example: "https://livescore-api.com/api-client/matches/stats.json?match_id=483252"
             lineups:
               type: string
-              description: URL для получения стартовых составов матча:contentReference[oaicite:47]{index=47}
+              description: URL для получения стартовых составов матча
               example: "https://livescore-api.com/api-client/matches/lineups.json?match_id=483252"
             head2head:
               type: string
-              description: URL для получения сравнения (H2H) двух команд, играющих в матче:contentReference[oaicite:48]{index=48}
+              description: URL для получения сравнения (H2H) двух команд, играющих в матче
               example: "https://livescore-api.com/api-client/teams/head2head.json?team1_id=6581&team2_id=202"
 
     Fixture:
@@ -486,16 +486,16 @@ components:
       properties:
         id:
           type: integer
-          description: ID запланированного матча (постоянный идентификатор, отличающийся от будущего match_id):contentReference[oaicite:49]{index=49}
+          description: ID запланированного матча (постоянный идентификатор, отличающийся от будущего match_id)
           example: 1578384
         date:
           type: string
           format: date
-          description: Дата, на которую назначен матч:contentReference[oaicite:50]{index=50}
+          description: Дата, на которую назначен матч
           example: "2025-05-15"
         time:
           type: string
-          description: Время начала матча (UTC):contentReference[oaicite:51]{index=51}
+          description: Время начала матча (UTC)
           example: "16:00:00"
         home:
           $ref: '#/components/schemas/Team'
@@ -510,20 +510,20 @@ components:
         location:
           type: string
           nullable: true
-          description: Место проведения (стадион или город) запланированного матча:contentReference[oaicite:52]{index=52}
+          description: Место проведения (стадион или город) запланированного матча
           example: "Torino"
         round:
           type: string
-          description: Тур или стадия, в рамках которых запланирован матч. Может быть числом (номер тура) или кодом стадии (например, QF, SF для четверть-/полуфинала):contentReference[oaicite:53]{index=53}:contentReference[oaicite:54]{index=54}
+          description: Тур или стадия, в рамках которых запланирован матч. Может быть числом (номер тура) или кодом стадии (например, QF, SF для четверть-/полуфинала)
           example: "25"
         group_id:
           type: integer
           nullable: true
-          description: ID группы, в которой состоится матч (для турниров с группами). 0 или null, если матч не привязан к группе:contentReference[oaicite:55]{index=55}
+          description: ID группы, в которой состоится матч (для турниров с группами). 0 или null, если матч не привязан к группе
           example: 1714
         odds:
           type: object
-          description: Объект коэффициентов ставок, аналогичный полю `odds` в модели матча. Для запланированных матчей, как правило, заполнены только прематчевые коэффициенты, live-коэффициенты будут null до начала игры:contentReference[oaicite:56]{index=56}:contentReference[oaicite:57]{index=57}.
+          description: Объект коэффициентов ставок, аналогичный полю `odds` в модели матча. Для запланированных матчей, как правило, заполнены только прематчевые коэффициенты, live-коэффициенты будут null до начала игры.
           properties:
             pre:
               type: object
@@ -543,7 +543,7 @@ components:
 
     Event:
       type: object
-      description: Событие матча (гол, карточка, замена и т.д.):contentReference[oaicite:58]{index=58}
+      description: Событие матча (гол, карточка, замена и т.д.)
       properties:
         id:
           type: integer
@@ -551,28 +551,28 @@ components:
           example: 310426483
         time:
           type: integer
-          description: Минута матча, когда произошло событие:contentReference[oaicite:59]{index=59}
+          description: Минута матча, когда произошло событие
           example: 23
         event:
           type: string
-          description: Тип события (кодовое обозначение):contentReference[oaicite:60]{index=60}:contentReference[oaicite:61]{index=61}
+          description: Тип события (кодовое обозначение)
           example: "GOAL"
         label:
           type: string
-          description: Человекочитаемое название события (на английском или на языке `lang`, если запрошен перевод):contentReference[oaicite:62]{index=62}
+          description: Человекочитаемое название события (на английском или на языке `lang`, если запрошен перевод)
           example: "Goal"
         is_home:
           type: boolean
-          description: Признак события, относящегося к домашней команде (true, если событие связано с home-командой):contentReference[oaicite:63]{index=63}
+          description: Признак события, относящегося к домашней команде (true, если событие связано с home-командой)
           example: true
         is_away:
           type: boolean
-          description: Признак события, относящегося к гостевой команде (true для away-команды):contentReference[oaicite:64]{index=64}
+          description: Признак события, относящегося к гостевой команде (true для away-команды)
           example: false
         player:
           type: object
           nullable: true
-          description: Основной игрок, связанный с событием (например, автор гола или получивший карточку):contentReference[oaicite:65]{index=65}
+          description: Основной игрок, связанный с событием (например, автор гола или получивший карточку)
           properties:
             id:
               type: integer
@@ -585,7 +585,7 @@ components:
         info:
           type: object
           nullable: true
-          description: Дополнительный игрок, связанный с событием (например, ассистент гола или заменённый игрок):contentReference[oaicite:66]{index=66}
+          description: Дополнительный игрок, связанный с событием (например, ассистент гола или заменённый игрок)
           properties:
             id:
               type: integer
@@ -597,7 +597,7 @@ components:
               example: "Alexis MacAllister"
         sort:
           type: integer
-          description: Порядковый номер события в хронологии матча (начиная с 0; если два события в одну минуту, используется sort для упорядочения):contentReference[oaicite:67]{index=67}
+          description: Порядковый номер события в хронологии матча (начиная с 0; если два события в одну минуту, используется sort для упорядочения)
           example: 0
 
     Lineup:
@@ -634,83 +634,83 @@ components:
 
     MatchStats:
       type: object
-      description: Статистика матча: ключи объекта – наименования статистических показателей, значения – строки вида `"Дома:Гости"` (либо `null`, если данные недоступны):contentReference[oaicite:68]{index=68}:contentReference[oaicite:69]{index=69}.
+      description: "Статистика матча: ключи объекта – наименования статистических показателей, значения – строки вида `\"Дома:Гости\"` (либо `null`, если данные недоступны)."
       properties:
         attacks:
           type: string
-          description: Количество атак (home:away):contentReference[oaicite:70]{index=70}
+          description: Количество атак (home:away)
           example: "82:91"
         dangerous_attacks:
           type: string
-          description: Количество опасных атак (home:away):contentReference[oaicite:71]{index=71}
+          description: Количество опасных атак (home:away)
           example: "33:56"
         possession:
           type: string
-          description: Владение мячом в процентах (home:away, сумма = 100%):contentReference[oaicite:72]{index=72}
+          description: Владение мячом в процентах (home:away, сумма = 100%)
           example: "48:52"
         shots_on_target:
           type: string
-          description: Удары в створ ворот (home:away):contentReference[oaicite:73]{index=73}
+          description: Удары в створ ворот (home:away)
           example: "5:3"
         shots_off_target:
           type: string
-          description: Удары мимо ворот (home:away):contentReference[oaicite:74]{index=74}
+          description: Удары мимо ворот (home:away)
           example: "4:8"
         shots_blocked:
           type: string
-          description: Заблокированные удары (home:away):contentReference[oaicite:75]{index=75}
+          description: Заблокированные удары (home:away)
           example: "3:8"
         attempts_on_goal:
           type: string
-          description: Все попытки удара по воротам (home:away), сумма ударов в створ и мимо:contentReference[oaicite:76]{index=76}
+          description: Все попытки удара по воротам (home:away), сумма ударов в створ и мимо
           example: "9:11"
         corners:
           type: string
-          description: Угловые удары (home:away):contentReference[oaicite:77]{index=77}
+          description: Угловые удары (home:away)
           example: "4:13"
         offsides:
           type: string
-          description: Офсайды (положения «вне игры») (home:away):contentReference[oaicite:78]{index=78}
+          description: Офсайды (положения «вне игры») (home:away)
           example: "3:5"
         yellow_cards:
           type: string
-          description: Жёлтые карточки (home:away):contentReference[oaicite:79]{index=79}
+          description: Жёлтые карточки (home:away)
           example: "0:1"
         red_cards:
           type: string
-          description: Красные карточки (home:away):contentReference[oaicite:80]{index=80}
+          description: Красные карточки (home:away)
           example: "0:0"
         substitutions:
           type: string
-          description: Проведённые замены (home:away):contentReference[oaicite:81]{index=81}
+          description: Проведённые замены (home:away)
           example: "3:1"
         fouls:
           type: string
-          description: Нарушения правил (фолы) (home:away):contentReference[oaicite:82]{index=82}
+          description: Нарушения правил (фолы) (home:away)
           example: "10:5"
         free_kicks:
           type: string
-          description: Штрафные удары (home:away):contentReference[oaicite:83]{index=83}
+          description: Штрафные удары (home:away)
           example: "10:13"
         goal_kicks:
           type: string
-          description: Удары от ворот (home:away):contentReference[oaicite:84]{index=84}
+          description: Удары от ворот (home:away)
           example: "11:6"
         throw_ins:
           type: string
-          description: Вбрасывания (ауты) (home:away):contentReference[oaicite:85]{index=85}
+          description: Вбрасывания (ауты) (home:away)
           example: "21:18"
         saves:
           type: string
-          description: Сэйвы вратаря (home:away):contentReference[oaicite:86]{index=86}
+          description: Сэйвы вратаря (home:away)
           example: "2:2"
         treatments:
           type: string
-          description: Оказания медицинской помощи на поле (home:away):contentReference[oaicite:87]{index=87}
+          description: Оказания медицинской помощи на поле (home:away)
           example: "1:0"
         penalties:
           type: string
-          description: Пенальти (назначенные) (home:away):contentReference[oaicite:88]{index=88}
+          description: Пенальти (назначенные) (home:away)
           example: "0:0"
 
     TableRow:
@@ -764,7 +764,7 @@ components:
         form:
           type: string
           nullable: true
-          description: Последние результаты команды (серия из ~5 символов: W - победа, D - ничья, L - поражение) при запросе с `include_form=1`:contentReference[oaicite:89]{index=89}
+          description: "Последние результаты команды (серия из ~5 символов: W - победа, D - ничья, L - поражение) при запросе с include_form=1"
           example: "WWLLWW"
 
     TopScorerEntry:
@@ -832,7 +832,7 @@ components:
 
     SquadPlayer:
       type: object
-      description: Игрок в заявке команды на соревнование (предварительный состав на турнир):contentReference[oaicite:90]{index=90}:contentReference[oaicite:91]{index=91}
+      description: Игрок в заявке команды на соревнование (предварительный состав на турнир)
       properties:
         id:
           type: integer
@@ -844,11 +844,11 @@ components:
           example: "Ante Rebic"
         shirt_number:
           type: integer
-          description: Номер игрока в заявке (на футболке на турнире):contentReference[oaicite:92]{index=92}
+          description: Номер игрока в заявке (на футболке на турнире)
           example: 18
         position:
           type: string
-          description: Амплуа игрока (GK – вратарь, DF – защитник, MF – полузащитник, FW – нападающий):contentReference[oaicite:93]{index=93}
+          description: Амплуа игрока (GK – вратарь, DF – защитник, MF – полузащитник, FW – нападающий)
           example: "FW"
 
   # Обёртки ответов
@@ -884,54 +884,54 @@ paths:
           }
         }
         ```
-  :contentReference[oaicite:94]{index=94}
-  При ошибке аутентификации возвращается стандартное сообщение об ошибке (например, "Invalid API key or secret") и код 401.
-responses:
-  '200':
-    description: Запрос выполнен – ключ и секрет валидны (возвращается подтверждающее сообщение)
-    content:
-      application/json:
-        schema:
-          type: object
-          properties:
-            success: { type: boolean, example: true }
-            data:
-              type: object
-              properties:
-                message: { type: string, example: "Your API key and API secret are working correctly" }
-  '400':
-    $ref: '#/components/responses/ApiError'
-  '401':
-    description: Неверный ключ API или секрет (не авторизовано)
-    content:
-      application/json:
-        schema:
-          type: object
-          properties:
-            success: { type: boolean, example: false }
-            error: { type: string, example: "Invalid API key or secret" }
-  '404':
-    description: Эндпоинт не найден
-  '500':
-    description: Внутренняя ошибка сервера
+        
+        При ошибке аутентификации возвращается стандартное сообщение об ошибке (например, "Invalid API key or secret") и код 401.
+      responses:
+        '200':
+          description: Запрос выполнен – ключ и секрет валидны (возвращается подтверждающее сообщение)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      message: { type: string, example: "Your API key and API secret are working correctly" }
+        '400':
+          $ref: '#/components/responses/ApiError'
+        '401':
+          description: Неверный ключ API или секрет (не авторизовано)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: false }
+                  error: { type: string, example: "Invalid API key or secret" }
+        '404':
+          description: Эндпоинт не найден
+        '500':
+          description: Внутренняя ошибка сервера
 
 /matches/live.json:
   get:
     tags: [Matches]
     summary: Live-матчи (текущие в игре)
     description: |
-      Возвращает список футбольных матчей, которые **идут в данный момент** (лайвскор). Матчи появляются за ~15 минут до начала (со статусом `NOT STARTED`) и остаются в фиде примерно до 1-3 часов после окончания (со статусом `FINISHED`):contentReference[oaicite:95]{index=95}:contentReference[oaicite:96]{index=96}.  
-      Поддерживается фильтрация по стране, соревнованию или команде, а также выбор конкретного матча по `fixture_id`. Без фильтров возвращаются все текущие лайв-матчи:contentReference[oaicite:97]{index=97}.  
+      Возвращает список футбольных матчей, которые **идут в данный момент** (лайвскор). Матчи появляются за ~15 минут до начала (со статусом `NOT STARTED`) и остаются в фиде примерно до 1-3 часов после окончания (со статусом `FINISHED`).  
+      Поддерживается фильтрация по стране, соревнованию или команде, а также выбор конкретного матча по `fixture_id`. Без фильтров возвращаются все текущие лайв-матчи.  
       **Параметры фильтрации:**  
-      - `competition_id` – ID или список ID соревнований (через запятую) для ограничение выборки матчей определённых турниров:contentReference[oaicite:98]{index=98}.  
-      - `country_id` – ID страны для вывода матчей, проходящих только в этой стране:contentReference[oaicite:99]{index=99}.  
-      - `team_id` – ID команды для вывода только матчей с участием этой команды:contentReference[oaicite:100]{index=100}.  
-      - `fixture_id` – ID запланированного матча для получения его лайв-статуса (если матч уже начался):contentReference[oaicite:101]{index=101}.  
-      - `lang` – код языка для перевода названий команд, турниров и пр. (опционально):contentReference[oaicite:102]{index=102}.  
+      - `competition_id` – ID или список ID соревнований (через запятую) для ограничение выборки матчей определённых турниров.  
+      - `country_id` – ID страны для вывода матчей, проходящих только в этой стране.  
+      - `team_id` – ID команды для вывода только матчей с участием этой команды.  
+      - `fixture_id` – ID запланированного матча для получения его лайв-статуса (если матч уже начался).  
+      - `lang` – код языка для перевода названий команд, турниров и пр. (опционально).  
       **Пример запроса без фильтров:**  
       `GET /matches/live.json?key=YOUR_KEY&secret=YOUR_SECRET`  
       **Пример запроса (лайв-матчи серии A Италии):**  
-      `GET /matches/live.json?competition_id=4&key=YOUR_KEY&secret=YOUR_SECRET`:contentReference[oaicite:103]{index=103}
+      `GET /matches/live.json?competition_id=4&key=YOUR_KEY&secret=YOUR_SECRET`
     parameters:
       - $ref: '#/components/parameters/Lang'
       - $ref: '#/components/parameters/Page'
@@ -983,9 +983,9 @@ responses:
     description: |
       Возвращает список **завершённых** матчей (история результатов) по указанным критериям. Обязателен фильтр по дате или диапазону дат, либо другим параметрам; иначе может вернуться ошибка или пустой результат.  
       **Параметры фильтрации:**  
-      - Можно указать конкретную дату через параметр `date` (например, `date=2025-09-01`) для получения матчей, завершившихся в этот день:contentReference[oaicite:104]{index=104}.  
-      - Либо указать диапазон через `from` и `to` (например, `from=2025-08-01&to=2025-08-31`) для получения истории за период. Если указан только `from`, без `to`, вернутся матчи от даты `from` за один день:contentReference[oaicite:105]{index=105}.  
-      - Также доступны фильтры `competition_id`, `country_id` и `team_id` для ограничения выборки по турнирам, странам или командам, соответственно:contentReference[oaicite:106]{index=106}:contentReference[oaicite:107]{index=107}.  
+      - Можно указать конкретную дату через параметр `date` (например, `date=2025-09-01`) для получения матчей, завершившихся в этот день.  
+      - Либо указать диапазон через `from` и `to` (например, `from=2025-08-01&to=2025-08-31`) для получения истории за период. Если указан только `from`, без `to`, вернутся матчи от даты `from` за один день.  
+      - Также доступны фильтры `competition_id`, `country_id` и `team_id` для ограничения выборки по турнирам, странам или командам, соответственно.  
       **Пример запроса (матчи 15 мая 2018 года):**  
       `GET /matches/history.json?date=2018-05-15&key=YOUR_KEY&secret=YOUR_SECRET`
     parameters:
@@ -1038,13 +1038,13 @@ responses:
     tags: [Fixtures]
     summary: Запланированные матчи (расписание)
     description: |
-      Возвращает список **будущих запланированных матчей** (fixtures). По умолчанию возвращаются матчи на ближайшие даты; желательно указывать параметры фильтрации по дате или турниру для управления объёмом данных:contentReference[oaicite:108]{index=108}.  
+      Возвращает список **будущих запланированных матчей** (fixtures). По умолчанию возвращаются матчи на ближайшие даты; желательно указывать параметры фильтрации по дате или турниру для управления объёмом данных.  
       **Особенности:**  
-      - В ответе возвращается не более 30 матчей на страницу (`page`), если матчей больше – будет указана `next_page` ссылка для следующей страницы:contentReference[oaicite:109]{index=109}:contentReference[oaicite:110]{index=110}.  
-      - Поле `id` в объекте fixture – постоянный идентификатор запланированного матча. После начала матча ему будет соответствовать другой `match_id` (live/история), но связь сохраняется через поле `fixture_id` в live/history данных:contentReference[oaicite:111]{index=111}.  
-      - Можно фильтровать по `date` (конкретный день, или специальное значение `today` для сегодняшних матчей):contentReference[oaicite:112]{index=112}, по диапазону `from`-`to`, по `competition_id` (матчи конкретного турнира), по `team_id` (матчи конкретной команды), по `country_id` (матчи в указанной стране).  
+      - В ответе возвращается не более 30 матчей на страницу (`page`), если матчей больше – будет указана `next_page` ссылка для следующей страницы.  
+      - Поле `id` в объекте fixture – постоянный идентификатор запланированного матча. После начала матча ему будет соответствовать другой `match_id` (live/история), но связь сохраняется через поле `fixture_id` в live/history данных.  
+      - Можно фильтровать по `date` (конкретный день, или специальное значение `today` для сегодняшних матчей), по диапазону `from`-`to`, по `competition_id` (матчи конкретного турнира), по `team_id` (матчи конкретной команды), по `country_id` (матчи в указанной стране).  
       **Пример запроса (все матчи на сегодня):**  
-      `GET /fixtures/matches.json?date=today&key=YOUR_KEY&secret=YOUR_SECRET`:contentReference[oaicite:113]{index=113}
+      `GET /fixtures/matches.json?date=today&key=YOUR_KEY&secret=YOUR_SECRET`
     parameters:
       - $ref: '#/components/parameters/Lang'
       - $ref: '#/components/parameters/Page'
@@ -1096,17 +1096,17 @@ responses:
     tags: [Events]
     summary: События матча (голы, карточки, замены)
     description: |
-      Возвращает хронологию событий для указанного матча (как текущего live, так и завершённого):contentReference[oaicite:114]{index=114}. В начале матча список событий будет пустым, по мере развития игры события появляются в ответе в порядке их наступления:contentReference[oaicite:115]{index=115}.  
-      **Параметры:** необходим `id` матча (`match_id` из live или history) для получения событий этого матча. Также можно указать `lang` для перевода названий событий и имён игроков (если поддерживается тарифом):contentReference[oaicite:116]{index=116}.  
+      Возвращает хронологию событий для указанного матча (как текущего live, так и завершённого). В начале матча список событий будет пустым, по мере развития игры события появляются в ответе в порядке их наступления.  
+      **Параметры:** необходим `id` матча (`match_id` из live или history) для получения событий этого матча. Также можно указать `lang` для перевода названий событий и имён игроков (если поддерживается тарифом).  
       **Пример запроса (события матча с id=385735):**  
-      `GET /scores/events.json?id=385735&key=YOUR_KEY&secret=YOUR_SECRET`:contentReference[oaicite:117]{index=117}
+      `GET /scores/events.json?id=385735&key=YOUR_KEY&secret=YOUR_SECRET`
     parameters:
       - name: id
         in: query
         required: true
         schema:
           type: integer
-        description: ID матча, для которого запрашиваются события (поле `id` из live или history данных):contentReference[oaicite:118]{index=118}
+        description: ID матча, для которого запрашиваются события (поле `id` из live или history данных)
         example: 385735
       - $ref: '#/components/parameters/Lang'
     responses:
@@ -1166,7 +1166,7 @@ responses:
                           $ref: '#/components/schemas/Federation'
                     event:
                       type: array
-                      description: Список событий матча (каждый элемент – объект события с типом, игроками и проч.):contentReference[oaicite:119]{index=119}:contentReference[oaicite:120]{index=120}
+                      description: Список событий матча (каждый элемент – объект события с типом, игроками и проч.)
                       items:
                         $ref: '#/components/schemas/Event'
       '400':
@@ -1183,8 +1183,8 @@ responses:
     tags: [Lineups & Stats]
     summary: Стартовые составы команды (матча)
     description: |
-      Возвращает стартовые составы и список запасных для обеих команд указанного матча. Эндпоинт доступен для начавшихся или завершённых матчей (для запланированных матчей, которые ещё не начались, данных может не быть):contentReference[oaicite:121]{index=121}.  
-      **Параметры:** требуется `match_id` – ID матча (live или из истории):contentReference[oaicite:122]{index=122}. Можно указать `lang` для перевода имён игроков (при наличии поддержки).  
+      Возвращает стартовые составы и список запасных для обеих команд указанного матча. Эндпоинт доступен для начавшихся или завершённых матчей (для запланированных матчей, которые ещё не начались, данных может не быть).  
+      **Параметры:** требуется `match_id` – ID матча (live или из истории). Можно указать `lang` для перевода имён игроков (при наличии поддержки).  
       **Пример запроса:**  
       `GET /matches/lineups.json?match_id=483252&key=YOUR_KEY&secret=YOUR_SECRET`
     parameters:
@@ -1221,9 +1221,9 @@ responses:
     tags: [Lineups & Stats]
     summary: Статистика матча
     description: |
-      Возвращает основные статистические показатели указанного матча (для обеих команд):contentReference[oaicite:123]{index=123}. Матч должен быть уже начат или завершён; для предстоящих матчей статистика недоступна:contentReference[oaicite:124]{index=124}.  
-      **Замечание:** не для всех матчей доступны абсолютно все виды статистики – для некоторых менее крупных соревнований некоторые поля могут быть `null` или отсутствовать вовсе:contentReference[oaicite:125]{index=125}.  
-      В возвращаемом объекте статистики ключами являются названия метрик (на англ.), а значениями – строка формата `"домашние:гости"` (например, `"shots_on_target": "5:3"`), либо null, если данные отсутствуют:contentReference[oaicite:126]{index=126}.  
+      Возвращает основные статистические показатели указанного матча (для обеих команд). Матч должен быть уже начат или завершён; для предстоящих матчей статистика недоступна.  
+      **Замечание:** не для всех матчей доступны абсолютно все виды статистики – для некоторых менее крупных соревнований некоторые поля могут быть `null` или отсутствовать вовсе.  
+      В возвращаемом объекте статистики ключами являются названия метрик (на англ.), а значениями – строка формата `"домашние:гости"` (например, `"shots_on_target": "5:3"`), либо null, если данные отсутствуют.  
       **Пример запроса:**  
       `GET /matches/stats.json?match_id=172252&key=YOUR_KEY&secret=YOUR_SECRET`
     parameters:
@@ -1253,7 +1253,7 @@ responses:
     tags: [Matches]
     summary: Сравнение двух команд (H2H)
     description: |
-      Предоставляет сравнительную статистику двух команд на основе их последних встреч друг с другом и, возможно, последних игр вообще. Позволяет оценить форму команд перед их очным матчем:contentReference[oaicite:127]{index=127}.  
+      Предоставляет сравнительную статистику двух команд на основе их последних встреч друг с другом и, возможно, последних игр вообще. Позволяет оценить форму команд перед их очным матчем.  
       **Параметры:** необходимо указать `team1_id` и `team2_id` – ID двух команд для сравнения.  
       **Пример запроса:**  
       `GET /teams/head2head.json?team1_id=6581&team2_id=202&key=YOUR_KEY&secret=YOUR_SECRET`
@@ -1342,13 +1342,13 @@ responses:
     tags: [Catalogs]
     summary: Список соревнований (лиг и кубков)
     description: |
-      Возвращает список всех соревнований (лиг, кубков), поддерживаемых API, с их основными данными. Можно фильтровать список по стране или федерации:contentReference[oaicite:128]{index=128}.  
+      Возвращает список всех соревнований (лиг, кубков), поддерживаемых API, с их основными данными. Можно фильтровать список по стране или федерации.  
       **Параметры фильтрации:**  
-      - `country_id`: если указан, возвращаются соревнования только этой страны:contentReference[oaicite:129]{index=129} (при одновременном указании federation_id и country_id – приоритет у country_id:contentReference[oaicite:130]{index=130}).  
-      - `federation_id`: если указан, возвращаются соревнования, относящиеся к данной международной федерации (например, все турниры под эгидой UEFA):contentReference[oaicite:131]{index=131}.  
+      - `country_id`: если указан, возвращаются соревнования только этой страны (при одновременном указании federation_id и country_id – приоритет у country_id).  
+      - `federation_id`: если указан, возвращаются соревнования, относящиеся к данной международной федерации (например, все турниры под эгидой UEFA).  
       - Поддерживаются параметры пагинации `page` и `size`. По умолчанию может возвращаться первая страница результатов.  
       **Пример запроса (соревнования по стране с ID=1):**  
-      `GET /competitions/list.json?country_id=1&key=YOUR_KEY&secret=YOUR_SECRET`:contentReference[oaicite:132]{index=132}
+      `GET /competitions/list.json?country_id=1&key=YOUR_KEY&secret=YOUR_SECRET`
     parameters:
       - $ref: '#/components/parameters/Page'
       - $ref: '#/components/parameters/Size'
@@ -1386,9 +1386,9 @@ responses:
     tags: [Catalogs]
     summary: Список стран
     description: |
-      Возвращает список всех стран, поддерживаемых в данных API (страны, к которым привязаны соревнования и команды):contentReference[oaicite:133]{index=133}. Можно отфильтровать по федерации через параметр `federation_id`:contentReference[oaicite:134]{index=134}.  
-      Например, `federation_id=3` вернёт страны, относящиеся к конфедерации CAF (Африка):contentReference[oaicite:135]{index=135}.  
-      По каждой стране предоставляется информация: идентификатор, название, принадлежность к федерации, флаг (имя файла), признак реальная/условная, ссылка на списки лиг и live-матчей в данной стране и т.д.:contentReference[oaicite:136]{index=136}:contentReference[oaicite:137]{index=137}.
+      Возвращает список всех стран, поддерживаемых в данных API (страны, к которым привязаны соревнования и команды). Можно отфильтровать по федерации через параметр `federation_id`.  
+      Например, `federation_id=3` вернёт страны, относящиеся к конфедерации CAF (Африка).  
+      По каждой стране предоставляется информация: идентификатор, название, принадлежность к федерации, флаг (имя файла), признак реальная/условная, ссылка на списки лиг и live-матчей в данной стране и т.д..
     parameters:
       - $ref: '#/components/parameters/Page'
       - $ref: '#/components/parameters/Size'
@@ -1438,11 +1438,24 @@ responses:
                 data:
                   type: object
                   properties:
-                    federation:
-                      type: array
-                      description: Список федераций
-                      items:
-                        $ref: '#/components/schemas/Federation'
+                    success: { type: boolean, example: true }
+                    data:
+                      type: object
+                      properties:
+                        federation:
+                          type: array
+                          description: Список федераций
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                description: ID федерации (может быть строкой)
+                                example: "4"
+                              name:
+                                type: string
+                                description: Название федерации
+                                example: "AFC"
       '400':
         $ref: '#/components/responses/ApiError'
       '401':
@@ -1457,7 +1470,7 @@ responses:
     tags: [Catalogs]
     summary: Список команд
     description: |
-      Возвращает список команд (клубов и сборных) с основной информацией (ID, название, страна, логотип):contentReference[oaicite:138]{index=138}:contentReference[oaicite:139]{index=139}. Можно отфильтровать по стране (`country_id`) или федерации (`federation_id`), чтобы получить команды определённой страны или принадлежащие странам указанной конфедерации.  
+      Возвращает список команд (клубов и сборных) с основной информацией (ID, название, страна, логотип). Можно отфильтровать по стране (`country_id`) или федерации (`federation_id`), чтобы получить команды определённой страны или принадлежащие странам указанной конфедерации.  
       **Примечание:** размер списка команд может быть велик, поэтому поддерживаются пагинация (`page`) и размер выборки (`size`). Также поле `lang` может использоваться для перевода названий команд, если доступно.
     parameters:
       - $ref: '#/components/parameters/Page'
@@ -1540,15 +1553,15 @@ responses:
     tags: [Tables]
     summary: Турнирная таблица соревнования (Standings)
     description: |
-      Возвращает турнирную таблицу (позиции команд) для указанного соревнования и сезона. По умолчанию возвращаются текущие standings для активного сезона соревнования:contentReference[oaicite:140]{index=140}. Для соревнований с группами можно указать конкретную группу или групповой этап.  
+      Возвращает турнирную таблицу (позиции команд) для указанного соревнования и сезона. По умолчанию возвращаются текущие standings для активного сезона соревнования. Для соревнований с группами можно указать конкретную группу или групповой этап.  
       **Параметры:**  
-      - `competition_id` (обязательный) – ID соревнования, для которого запрашивается турнирная таблица:contentReference[oaicite:141]{index=141}.  
-      - `season` (опциональный) – ID сезона. Если не указан, берётся текущий сезон соревнования:contentReference[oaicite:142]{index=142}:contentReference[oaicite:143]{index=143}.  
-      - `group` или `group_id` (опционально) – можно указать имя группы (например, A, B, C) либо ID группы, чтобы получить таблицу только этой группы (для турниров с группами, например Лига Чемпионов):contentReference[oaicite:144]{index=144}. Если не указано, для многогрупповых турниров может вернуться совокупная таблица или таблица первой группы.  
-      - `include_form` (опциональный, 0/1) – если =1, в ответе для каждой команды будет добавлен массив/строка формы (W/D/L результаты последних матчей):contentReference[oaicite:145]{index=145}.  
-      - `lang` – код языка для локализации названий команд (если доступно):contentReference[oaicite:146]{index=146}.  
+      - `competition_id` (обязательный) – ID соревнования, для которого запрашивается турнирная таблица.  
+      - `season` (опциональный) – ID сезона. Если не указан, берётся текущий сезон соревнования.  
+      - `group` или `group_id` (опционально) – можно указать имя группы (например, A, B, C) либо ID группы, чтобы получить таблицу только этой группы (для турниров с группами, например Лига Чемпионов). Если не указано, для многогрупповых турниров может вернуться совокупная таблица или таблица первой группы.  
+      - `include_form` (опциональный, 0/1) – если =1, в ответе для каждой команды будет добавлен массив/строка формы (W/D/L результаты последних матчей).  
+      - `lang` – код языка для локализации названий команд (если доступно).  
       **Пример запроса (таблица АПЛ, сезон по умолчанию):**  
-      `GET /tables/standings.json?competition_id=2&key=YOUR_KEY&secret=YOUR_SECRET`:contentReference[oaicite:147]{index=147}
+      `GET /tables/standings.json?competition_id=2&key=YOUR_KEY&secret=YOUR_SECRET`
     parameters:
       - $ref: '#/components/parameters/CompetitionId'
       - name: season
@@ -1574,7 +1587,7 @@ responses:
         schema:
           type: integer
           enum: [0, 1]
-        description: Если =1, в ответ включается форма команд за последние 5-6 матчей (последовательность W/D/L):contentReference[oaicite:148]{index=148}
+        description: Если =1, в ответ включается форма команд за последние 5-6 матчей (последовательность W/D/L)
         example: 1
       - $ref: '#/components/parameters/Lang'
     responses:
@@ -1610,11 +1623,11 @@ responses:
     tags: [Tables]
     summary: Топ бомбардиры соревнования
     description: |
-      Возвращает список лучших бомбардиров (до 20 игроков) текущего сезона указанного соревнования:contentReference[oaicite:149]{index=149}. Данные обновляются по мере развития сезона. Если новый сезон ещё не начался или только начался, список может быть пустым или содержать мало данных:contentReference[oaicite:150]{index=150}.  
-      В дополнение к списку игроков, в ответ включается информация о самом соревновании, сезоне, а также о текущем выпуске (edition) турнира:contentReference[oaicite:151]{index=151}:contentReference[oaicite:152]{index=152}. 
+      Возвращает список лучших бомбардиров (до 20 игроков) текущего сезона указанного соревнования. Данные обновляются по мере развития сезона. Если новый сезон ещё не начался или только начался, список может быть пустым или содержать мало данных.  
+      В дополнение к списку игроков, в ответ включается информация о самом соревновании, сезоне, а также о текущем выпуске (edition) турнира. 
       **Параметры:**  
-      - `competition_id` (обязательный) – ID соревнования, для которого нужны лучшие бомбардиры:contentReference[oaicite:153]{index=153}.  
-      - `lang` (опциональный) – код языка для локализации имён игроков, команд, названия соревнования (при поддержке перевода):contentReference[oaicite:154]{index=154}.  
+      - `competition_id` (обязательный) – ID соревнования, для которого нужны лучшие бомбардиры.  
+      - `lang` (опциональный) – код языка для локализации имён игроков, команд, названия соревнования (при поддержке перевода).  
       **Пример запроса (бомбардиры Bundesliga, id=1):**  
       `GET /competitions/topscorers.json?competition_id=1&key=YOUR_KEY&secret=YOUR_SECRET`
     parameters:
@@ -1668,13 +1681,13 @@ responses:
     tags: [Tables]
     summary: Антирекорд по карточкам (дисциплинарный рейтинг)
     description: |
-      Возвращает список игроков, получивших наибольшее число карточек (жёлтых/красных) в указанном международном турнире:contentReference[oaicite:155]{index=155}:contentReference[oaicite:156]{index=156}. *Примечание:* данный эндпоинт работает **только для крупных международных турниров сборных** (ЧМ, ЧЕ, Копа Америка, Кубок Азии, Кубок Африки):contentReference[oaicite:157]{index=157}.  
-      В ответе перечислены футболисты с указанием числа жёлтых и красных карточек. В остальном структура аналогична списку бомбардиров (competition, edition, season):contentReference[oaicite:158]{index=158}, однако поля `goals` и `assists` заменены на `yellow_cards` и `red_cards` соответственно:contentReference[oaicite:159]{index=159}.  
+      Возвращает список игроков, получивших наибольшее число карточек (жёлтых/красных) в указанном международном турнире. *Примечание:* данный эндпоинт работает **только для крупных международных турниров сборных** (ЧМ, ЧЕ, Копа Америка, Кубок Азии, Кубок Африки).  
+      В ответе перечислены футболисты с указанием числа жёлтых и красных карточек. В остальном структура аналогична списку бомбардиров (competition, edition, season), однако поля `goals` и `assists` заменены на `yellow_cards` и `red_cards` соответственно.  
       **Параметры:**  
-      - `competition_id` (обязательный) – ID турнира (только ID перечисленных международных турниров):contentReference[oaicite:160]{index=160}.  
+      - `competition_id` (обязательный) – ID турнира (только ID перечисленных международных турниров).  
       - `lang` (опционально) – код языка для перевода названий, аналогично другим методам.  
       **Пример запроса (дисциплинарный рейтинг ЧМ 2022, id=362):**  
-      `GET /competitions/topcards.json?competition_id=362&key=YOUR_KEY&secret=YOUR_SECRET`:contentReference[oaicite:161]{index=161}
+      `GET /competitions/topcards.json?competition_id=362&key=YOUR_KEY&secret=YOUR_SECRET`
     parameters:
       - $ref: '#/components/parameters/CompetitionId'
       - $ref: '#/components/parameters/Lang'
@@ -1725,8 +1738,8 @@ responses:
     summary: Флаг страны (изображение)
     description: |
       Возвращает изображение флага запрошенной страны в формате PNG. Необходим идентификатор страны или ID национальной команды.  
-      **Примечание:** Каждый вызов этого метода учитывается как отдельный запрос API, поэтому рекомендуется кэшировать полученные флаги на стороне клиента:contentReference[oaicite:162]{index=162}. Все флаги имеют фиксированную высоту ~240px, ширина зависит от пропорций флага:contentReference[oaicite:163]{index=163}.  
-      **Параметры:** укажите либо `country_id` страны, либо `team_id` национальной сборной (оба варианта приводят к одному и тому же флагу, если команда является национальной сборной указанной страны):contentReference[oaicite:164]{index=164}:contentReference[oaicite:165]{index=165}.  
+      **Примечание:** Каждый вызов этого метода учитывается как отдельный запрос API, поэтому рекомендуется кэшировать полученные флаги на стороне клиента. Все флаги имеют фиксированную высоту ~240px, ширина зависит от пропорций флага.  
+      **Параметры:** укажите либо `country_id` страны, либо `team_id` национальной сборной (оба варианта приводят к одному и тому же флагу, если команда является национальной сборной указанной страны).  
       **Пример запроса (флаг Австралии):**  
       `GET /countries/flag.png?country_id=71&key=YOUR_KEY&secret=YOUR_SECRET`
     parameters:

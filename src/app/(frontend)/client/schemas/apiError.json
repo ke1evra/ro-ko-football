@@ -1,1 +1,1 @@
-{"type":"object","properties":{"success":{"type":"boolean","example":false},"error":{"type":"string","example":"Invalid API key or secret"}},"x-readme-ref-name":"ApiError"}
+{"type":"object","properties":{"success":{"type":"boolean","example":false},"error":{"type":"string","example":"You must provide an API key. You must use a GET parameter 'key'"}}}

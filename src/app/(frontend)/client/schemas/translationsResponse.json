@@ -1,1 +1,0 @@
-{"type":"object","properties":{"success":{"type":"boolean","example":true},"data":{"type":"array","items":{"type":"object","properties":{"id":{"type":"integer"},"name_en":{"type":"string"},"name_localized":{"type":"string","description":"Название на языке `lang`"}}}}},"x-readme-ref-name":"TranslationsResponse"}

@@ -241,22 +241,34 @@ export default async function Home() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
+              href="/federations"
+              className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-accent"
+            >
+              🌍 Федерации
+            </Link>
+            <Link
+              href="/countries"
+              className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-accent"
+            >
+              🏴 Страны
+            </Link>
+            <Link
               href="/leagues"
               className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-accent"
             >
-              Все лиги
+              🏆 Все лиги
             </Link>
             <Link
               href="/posts"
               className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-accent"
             >
-              Посты сообщества
+              📝 Посты сообщества
             </Link>
             <Link
               href="/profile"
               className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-accent"
             >
-              Мой профиль
+              👤 Мой профиль
             </Link>
           </div>
         </header>

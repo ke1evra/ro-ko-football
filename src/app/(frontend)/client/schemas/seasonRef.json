@@ -1,1 +1,0 @@
-{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string","example":"2025/26"},"start":{"type":"string","format":"date"},"end":{"type":"string","format":"date"}},"x-readme-ref-name":"SeasonRef"}

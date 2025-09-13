@@ -1,14 +1,346 @@
 import { Container, Section } from '@/components/ds'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { ArrowLeft, AlertCircle, Calendar, Trophy } from 'lucide-react'
+import Link from 'next/link'
+import { executeApiMethod } from '../../api-test/api-actions'
+import { CountryFlagImage } from '@/components/CountryFlagImage'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 
-export default function LeaguePlaceholderPage() {
-  // Пустышка маршрута под итерацию 3
+export const revalidate = 300 // 5 минут
+
+interface LeaguePageProps {
+  params: {
+    leagueId: string
+  }
+}
+
+interface Season {
+  id: number
+  name: string
+  year?: number
+  is_current?: boolean
+}
+
+interface League {
+  id: number
+  name: string
+  country?: {
+    id: number
+    name: string
+    flag?: string
+  }
+}
+
+async function getLeagueInfo(leagueId: string): Promise<League | null> {
+  try {
+    // Получаем информацию о лиге из списка всех лиг
+    const result = await executeApiMethod({
+      method: 'getCompetitionsListJson',
+      params: {
+        size: 100,
+        lang: 'ru',
+      },
+    })
+
+    if (!result.success || !result.data) {
+      return null
+    }
+
+    const competitions = result.data.data || result.data.competitions || result.data
+    if (!Array.isArray(competitions)) {
+      return null
+    }
+
+    const league = competitions.find((comp: any) => comp.id === parseInt(leagueId))
+    if (!league) {
+      return null
+    }
+
+    return {
+      id: league.id,
+      name: league.name || 'Неизвестная лига',
+      country: league.countries && league.countries.length > 0 ? {
+        id: league.countries[0].id,
+        name: league.countries[0].name,
+        flag: league.countries[0].flag,
+      } : undefined,
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки информации о лиге:', error)
+    return null
+  }
+}
+
+async function getLeagueSeasons(leagueId: string): Promise<Season[]> {
+  try {
+    const result = await executeApiMethod({
+      method: 'getSeasonsListJson',
+      params: {},
+    })
+
+    if (!result.success || !result.data) {
+      return []
+    }
+
+    // Извлекаем сезоны из ответа API
+    const seasons = result.data.data || result.data.seasons || result.data
+    
+    if (Array.isArray(seasons)) {
+      // Фильтруем сезоны по лиге (если API поддерживает это)
+      // Иначе возвращаем все сезоны
+      return seasons
+        .map((season: any) => ({
+          id: season.id,
+          name: season.name || `Сезон ${season.year || season.id}`,
+          year: season.year,
+          is_current: season.is_current || false,
+        }))
+        .sort((a: Season, b: Season) => {
+          // Сортируем: текущий сезон первым, затем по году (новые первыми)
+          if (a.is_current && !b.is_current) return -1
+          if (!a.is_current && b.is_current) return 1
+          return (b.year || 0) - (a.year || 0)
+        })
+    }
+
+    return []
+  } catch (error) {
+    console.error('Ошибка загрузки сезонов:', error)
+    return []
+  }
+}
+
+export default async function LeaguePage({ params }: LeaguePageProps) {
+  const leagueId = params.leagueId
+  
+  const [league, seasons] = await Promise.all([
+    getLeagueInfo(leagueId),
+    getLeagueSeasons(leagueId),
+  ])
+
+  if (!league) {
+    return (
+      <Section>
+        <Container className="space-y-6">
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Лига не найдена. Проверьте правильность ссылки.
+            </AlertDescription>
+          </Alert>
+          
+          <Link href="/leagues">
+            <Button variant="outline">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              К списку лиг
+            </Button>
+          </Link>
+        </Container>
+      </Section>
+    )
+  }
+
+  const breadcrumbItems = league.country 
+    ? [
+        { label: 'Лиги', href: '/leagues' },
+        { label: league.country.name, href: `/leagues?country=${league.country.id}` },
+        { label: league.name }
+      ]
+    : [
+        { label: 'Лиги', href: '/leagues' },
+        { label: league.name }
+      ]
+
   return (
     <Section>
-      <Container>
-        <h1 className="text-2xl font-semibold">Лига</h1>
-        <p className="text-muted-foreground">
-          Страница лиги будет реализована в следующей итерации.
-        </p>
+      <Container className="space-y-6">
+        <Breadcrumbs items={breadcrumbItems} className="mb-4" />
+        
+        <header>
+          <div className="flex items-center gap-4 mb-4">
+            <Link href="/leagues">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                К лигам
+              </Button>
+            </Link>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            {league.country && (
+              <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+                <CountryFlagImage
+                  countryId={league.country.id}
+                  countryName={league.country.name}
+                  size="large"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">{league.name}</h1>
+              {league.country && (
+                <p className="text-muted-foreground text-lg">
+                  {league.country.name}
+                </p>
+              )}
+            </div>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Основная информация */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Сезоны
+                </CardTitle>
+                <CardDescription>
+                  Выберите сезон для просмотра турнирной таблицы и статистики
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {seasons.length === 0 ? (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Сезоны не найдены для этой лиги.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {seasons.map((season) => (
+                      <Link
+                        key={season.id}
+                        href={`/leagues/${leagueId}/seasons/${season.id}`}
+                        className="block"
+                      >
+                        <Card className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h3 className="font-medium">{season.name}</h3>
+                                {season.year && (
+                                  <p className="text-sm text-muted-foreground">
+                                    {season.year}
+                                  </p>
+                                )}
+                              </div>
+                              {season.is_current && (
+                                <Badge variant="default">
+                                  Текущий
+                                </Badge>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Боковая панель */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5" />
+                  Быстрые ссылки
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Link
+                  href={`/leagues/${leagueId}/teams`}
+                  className="block p-3 rounded-lg border hover:bg-accent transition-colors"
+                >
+                  <div className="font-medium">Команды</div>
+                  <div className="text-sm text-muted-foreground">
+                    Все команды лиги
+                  </div>
+                </Link>
+                
+                <Link
+                  href={`/leagues/${leagueId}/matches`}
+                  className="block p-3 rounded-lg border hover:bg-accent transition-colors"
+                >
+                  <div className="font-medium">Матчи</div>
+                  <div className="text-sm text-muted-foreground">
+                    Расписание и результаты
+                  </div>
+                </Link>
+                
+                <Link
+                  href={`/leagues/${leagueId}/topscorers`}
+                  className="block p-3 rounded-lg border hover:bg-accent transition-colors"
+                >
+                  <div className="font-medium">Бомбардиры</div>
+                  <div className="text-sm text-muted-foreground">
+                    Лучшие снайперы
+                  </div>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {league.country && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Страна</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Link
+                    href={`/leagues?country=${league.country.id}`}
+                    className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded bg-muted flex items-center justify-center overflow-hidden">
+                      <CountryFlagImage
+                        countryId={league.country.id}
+                        countryName={league.country.name}
+                        size="medium"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <div className="font-medium">{league.country.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        Другие лиги страны
+                      </div>
+                    </div>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-8 p-4 bg-muted/50 rounded-lg">
+          <h3 className="font-medium mb-2">Навигация по сайту</h3>
+          <div className="flex flex-wrap gap-2 text-sm">
+            <Link href="/federations" className="text-primary hover:underline">
+              Федерации
+            </Link>
+            <span className="text-muted-foreground">•</span>
+            <Link href="/countries" className="text-primary hover:underline">
+              Страны
+            </Link>
+            <span className="text-muted-foreground">•</span>
+            <Link href="/leagues" className="text-primary hover:underline">
+              Лиги
+            </Link>
+            <span className="text-muted-foreground">•</span>
+            <Link href="/api-test" className="text-primary hover:underline">
+              Тестирование API
+            </Link>
+          </div>
+        </div>
       </Container>
     </Section>
   )

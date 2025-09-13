@@ -1,1 +1,0 @@
-{"type":"object","properties":{"score":{"type":"string","nullable":true,"example":"2 - 1"},"ht_score":{"type":"string","nullable":true,"example":"1 - 0"},"ft_score":{"type":"string","nullable":true,"example":"2 - 1"},"et_score":{"type":"string","nullable":true,"example":"2 - 2"},"ps_score":{"type":"string","nullable":true,"example":"4 - 2"}},"x-readme-ref-name":"Score"}

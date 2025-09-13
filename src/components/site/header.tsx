@@ -34,22 +34,34 @@ export const Header = () => {
           NEWS BETS
         </Link>
         <nav className="hidden md:flex items-center justify-center flex-1 mx-8">
-          <div className="flex items-center gap-8 text-base font-medium">
+          <div className="flex items-center gap-6 text-base font-medium">
             <Link
               href="/posts"
-              className="text-xl uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
+              className="text-lg uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
             >
               Посты
             </Link>
             <Link
+              href="/federations"
+              className="text-lg uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
+            >
+              Федерации
+            </Link>
+            <Link
+              href="/countries"
+              className="text-lg uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
+            >
+              Страны
+            </Link>
+            <Link
               href="/leagues"
-              className="text-xl uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
+              className="text-lg uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
             >
               Лиги
             </Link>
             <Link
               href="/ui-demo"
-              className="text-xl uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
+              className="text-lg uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
             >
               UI Демо
             </Link>

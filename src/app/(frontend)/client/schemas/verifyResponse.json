@@ -1,1 +1,0 @@
-{"type":"object","properties":{"success":{"type":"boolean","example":true},"data":{"type":"object","properties":{"plan":{"type":"string","example":"professional"},"endpoints_left":{"type":"integer","example":50000}}}},"x-readme-ref-name":"VerifyResponse"}

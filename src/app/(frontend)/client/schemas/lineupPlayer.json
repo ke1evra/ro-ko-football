@@ -1,1 +1,0 @@
-{"type":"object","properties":{"player_id":{"type":"integer","nullable":true},"player_name":{"type":"string"},"number":{"type":"integer","nullable":true},"position":{"type":"string","nullable":true,"example":"DF"},"captain":{"type":"boolean","nullable":true}},"x-readme-ref-name":"LineupPlayer"}
