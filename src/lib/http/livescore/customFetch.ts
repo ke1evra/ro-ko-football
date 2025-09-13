@@ -7,6 +7,20 @@
 
 export type FetchLike = typeof fetch
 
+export type RequestConfig = RequestInit & {
+  params?: Record<string, any>
+  next?: {
+    revalidate?: number | false
+    tags?: string[]
+  }
+}
+
+export type ResponseErrorConfig<T = unknown> = {
+  status: number
+  statusText: string
+  data: T
+}
+
 export type CreateFetchOptions = {
   baseUrl?: string
   apiKey?: string
@@ -22,36 +36,70 @@ export function createCustomFetch({
   defaultLang = 'ru',
   fetchImpl = fetch,
 }: CreateFetchOptions = {}) {
-  return async function customFetch(
-    input: RequestInfo | URL,
-    init?: RequestInit,
-  ): Promise<Response> {
-    // Нормализуем базовый URL и путь, чтобы сохранять сегмент "/api-client"
+  // Возвращаем функцию, совместимую с kubb
+  return async function customFetch(config: any): Promise<any> {
+    const { method = 'GET', url: configUrl = '', params, ...restConfig } = config
+    
+    // Нормализуем базовый URL и путь
     const base = new URL(baseUrl.endsWith('/') ? baseUrl : baseUrl + '/')
-    let path = typeof input === 'string' ? input : input.toString()
-    if (path.startsWith('/')) path = path.slice(1)
-
-    const url = new URL(path, base)
-
-    const params = new URLSearchParams(url.search)
-
-    // Добавляем авторизацию и локаль только если заданы ключи (серверное исполнение)
-    if (apiKey) params.set('key', apiKey)
-    if (apiSecret) params.set('secret', apiSecret)
-    if (defaultLang && !params.has('lang')) params.set('lang', defaultLang)
-
-    url.search = params.toString()
-
-    const nextInit: RequestInit = {
-      ...init,
+    let path = configUrl.startsWith('/') ? configUrl.slice(1) : configUrl
+    
+    const fullUrl = new URL(path, base)
+    
+    // Добавляем query параметры
+    const searchParams = new URLSearchParams(fullUrl.search)
+    
+    // Добавляем авторизацию и локаль
+    if (apiKey) searchParams.set('key', apiKey)
+    if (apiSecret) searchParams.set('secret', apiSecret)
+    if (defaultLang && !searchParams.has('lang')) searchParams.set('lang', defaultLang)
+    
+    // Добавляем параметры из config.params
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.set(key, String(value))
+        }
+      })
+    }
+    
+    fullUrl.search = searchParams.toString()
+    
+    const init: RequestInit = {
+      method,
+      ...restConfig,
       headers: {
         accept: 'application/json',
-        ...(init?.headers || {}),
+        ...(restConfig.headers || {}),
       },
     }
 
-    return fetchImpl(url.toString(), nextInit)
+    const response = await fetchImpl(fullUrl.toString(), init)
+    
+    let data: any
+    try {
+      data = await response.json()
+    } catch {
+      data = {}
+    }
+
+    if (!response.ok) {
+      throw {
+        status: response.status,
+        statusText: response.statusText,
+        data,
+      }
+    }
+
+    return {
+      data,
+      status: response.status,
+      statusText: response.statusText,
+    }
   }
 }
 
 export const customFetch = createCustomFetch()
+
+// Default export для kubb
+export default customFetch

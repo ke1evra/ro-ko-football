@@ -1,75 +1,36 @@
 import { Container, Section } from '@/components/ds'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Globe } from 'lucide-react'
 import Link from 'next/link'
-import { customFetch } from '@/lib/http/livescore/customFetch'
+import { getFederationsListJson } from '@/app/(frontend)/client/clients/CatalogsService'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const revalidate = 300 // 5 минут
 
 interface Federation {
-  id: number
+  id: string
   name: string
-  code?: string
-}
-
-function extractFederations(raw: unknown): Federation[] {
-  const pickArrays = (obj: unknown): unknown[] => {
-    const arrs: unknown[] = []
-    if (Array.isArray(obj)) arrs.push(obj)
-    if (obj && typeof obj === 'object') {
-      const o = obj as Record<string, unknown>
-      if (Array.isArray(o.federations)) arrs.push(o.federations)
-      if (o.data && typeof o.data === 'object') {
-        const d = o.data as Record<string, unknown>
-        if (Array.isArray(d.federations)) arrs.push(d.federations)
-        if (Array.isArray(d.data)) arrs.push(d.data)
-        if (d.data && typeof d.data === 'object') {
-          const dd = d.data as Record<string, unknown>
-          if (Array.isArray(dd.federations)) arrs.push(dd.federations)
-        }
-      }
-    }
-    return arrs
-  }
-
-  const candidates = pickArrays(raw)
-  for (const arr of candidates) {
-    if (Array.isArray(arr)) {
-      const mapped: Federation[] = arr
-        .map((item: unknown) => {
-          const fed = item as any
-          const id = typeof fed.id === 'number' ? fed.id : undefined
-          const name = typeof fed.name === 'string' ? fed.name : undefined
-          const code = typeof fed.code === 'string' ? fed.code : undefined
-
-          if (!id || !name) return null
-          return { id, name, code }
-        })
-        .filter((v): v is Federation => Boolean(v))
-
-      if (mapped.length) return mapped
-    }
-  }
-  return []
 }
 
 async function getFederations(): Promise<Federation[]> {
   try {
-    const res = await customFetch('federations/list.json', {
+    const response = await getFederationsListJson({
       next: { revalidate: 300 },
-    } as RequestInit)
+    })
     
-    let raw: unknown
-    try {
-      raw = await res.json()
-    } catch {
-      raw = null
-    }
+    // Извлекаем федерации из структуры data.data.federation
+    const federations = response.data?.data?.federation || []
     
-    return extractFederations(raw)
+    return federations
+      .map((fed) => {
+        if (!fed.id || !fed.name) return null
+        return {
+          id: fed.id,
+          name: fed.name,
+        }
+      })
+      .filter((fed): fed is Federation => Boolean(fed))
   } catch (error) {
     console.error('Ошибка загрузки федераций:', error)
     return []
@@ -121,11 +82,6 @@ export default async function FederationsPage() {
                         <CardTitle className="text-lg truncate">
                           {federation.name}
                         </CardTitle>
-                        {federation.code && (
-                          <Badge variant="outline" className="mt-1">
-                            {federation.code}
-                          </Badge>
-                        )}
                       </div>
                     </div>
                   </CardHeader>

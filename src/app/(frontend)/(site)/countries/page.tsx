@@ -5,7 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, Flag, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import { customFetch } from '@/lib/http/livescore/customFetch'
+import { getCountriesListJson, getFederationsListJson } from '@/app/(frontend)/client/clients/CatalogsService'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
@@ -14,8 +14,9 @@ export const revalidate = 300 // 5 минут
 interface Country {
   id: number
   name: string
-  flag?: string
-  code?: string
+  flag?: string | null
+  fifa_code?: string | null
+  uefa_code?: string | null
 }
 
 interface CountriesPageProps {
@@ -25,130 +26,46 @@ interface CountriesPageProps {
   }
 }
 
-function extractCountries(raw: unknown): Country[] {
-  const pickArrays = (obj: unknown): unknown[] => {
-    const arrs: unknown[] = []
-    if (Array.isArray(obj)) arrs.push(obj)
-    if (obj && typeof obj === 'object') {
-      const o = obj as Record<string, unknown>
-      if (Array.isArray(o.countries)) arrs.push(o.countries)
-      if (o.data && typeof o.data === 'object') {
-        const d = o.data as Record<string, unknown>
-        if (Array.isArray(d.countries)) arrs.push(d.countries)
-        if (Array.isArray(d.data)) arrs.push(d.data)
-        if (d.data && typeof d.data === 'object') {
-          const dd = d.data as Record<string, unknown>
-          if (Array.isArray(dd.countries)) arrs.push(dd.countries)
-        }
-      }
-    }
-    return arrs
-  }
-
-  const candidates = pickArrays(raw)
-  for (const arr of candidates) {
-    if (Array.isArray(arr)) {
-      const mapped: Country[] = arr
-        .map((item: unknown) => {
-          const country = item as any
-          const id = typeof country.id === 'number' ? country.id : undefined
-          const name = typeof country.name === 'string' ? country.name : undefined
-          const flag = typeof country.flag === 'string' ? country.flag : undefined
-          const code = typeof country.code === 'string' ? country.code : undefined
-
-          if (!id || !name) return null
-          return { id, name, flag, code }
-        })
-        .filter((v): v is Country => Boolean(v))
-
-      if (mapped.length) return mapped
-    }
-  }
-  return []
-}
-
-function extractFederations(raw: unknown): Array<{ id: number; name: string }> {
-  const pickArrays = (obj: unknown): unknown[] => {
-    const arrs: unknown[] = []
-    if (Array.isArray(obj)) arrs.push(obj)
-    if (obj && typeof obj === 'object') {
-      const o = obj as Record<string, unknown>
-      if (Array.isArray(o.federations)) arrs.push(o.federations)
-      if (o.data && typeof o.data === 'object') {
-        const d = o.data as Record<string, unknown>
-        if (Array.isArray(d.federations)) arrs.push(d.federations)
-        if (Array.isArray(d.data)) arrs.push(d.data)
-      }
-    }
-    return arrs
-  }
-
-  const candidates = pickArrays(raw)
-  for (const arr of candidates) {
-    if (Array.isArray(arr)) {
-      const mapped = arr
-        .map((item: unknown) => {
-          const fed = item as any
-          const id = typeof fed.id === 'number' ? fed.id : undefined
-          const name = typeof fed.name === 'string' ? fed.name : undefined
-          if (!id || !name) return null
-          return { id, name }
-        })
-        .filter((item): item is { id: number; name: string } => Boolean(item))
-
-      if (mapped.length) return mapped
-    }
-  }
-  return []
-}
-
 async function getCountries(federationId?: string, page = 1): Promise<{
   countries: Country[]
   hasMore: boolean
   federationName?: string
 }> {
   try {
-    // Строим URL с параметрами
-    const url = new URL('countries/list.json', 'https://example.com')
-    url.searchParams.set('page', page.toString())
-    url.searchParams.set('size', '20')
-    url.searchParams.set('lang', 'ru')
-    
-    if (federationId) {
-      url.searchParams.set('federation_id', federationId)
+    // Получаем страны
+    const params = {
+      page,
+      size: 20,
+      ...(federationId && { federation_id: parseInt(federationId) }),
     }
 
-    const pathWithQuery = url.pathname + url.search
-    const res = await customFetch(pathWithQuery, {
+    const response = await getCountriesListJson(params, {
       next: { revalidate: 300 },
-    } as RequestInit)
+    })
     
-    let raw: unknown
-    try {
-      raw = await res.json()
-    } catch {
-      raw = null
-    }
-    
-    const countries = extractCountries(raw)
+    const countries = (response.data?.country || [])
+      .map((country) => {
+        if (!country.id || !country.name) return null
+        return {
+          id: country.id,
+          name: country.name,
+          flag: country.flag,
+          fifa_code: country.fifa_code,
+          uefa_code: country.uefa_code,
+        }
+      })
+      .filter((country): country is Country => Boolean(country))
 
     // Получаем название федерации если указан ID
     let federationName
     if (federationId) {
       try {
-        const fedRes = await customFetch('federations/list.json', {
+        const fedResponse = await getFederationsListJson({
           next: { revalidate: 300 },
-        } as RequestInit)
+        })
         
-        let fedRaw: unknown
-        try {
-          fedRaw = await fedRes.json()
-        } catch {
-          fedRaw = null
-        }
-        
-        const federations = extractFederations(fedRaw)
-        const federation = federations.find((f) => f.id === parseInt(federationId))
+        const federations = fedResponse.data?.data?.federation || []
+        const federation = federations.find((f) => f.id === federationId)
         federationName = federation?.name
       } catch (error) {
         console.error('Ошибка загрузки названия федерации:', error)
@@ -242,9 +159,9 @@ export default async function CountriesPage({ searchParams }: CountriesPageProps
                           <CardTitle className="text-base truncate">
                             {country.name}
                           </CardTitle>
-                          {country.code && (
+                          {(country.fifa_code || country.uefa_code) && (
                             <Badge variant="outline" className="mt-1 text-xs">
-                              {country.code}
+                              {country.fifa_code || country.uefa_code}
                             </Badge>
                           )}
                         </div>
