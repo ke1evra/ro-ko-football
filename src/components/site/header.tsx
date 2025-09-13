@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { LogIn, LogOut, User as UserIcon, BarChart2 } from 'lucide-react'
 
+import { Container } from '@/components/ds'
+
 export const Header = () => {
   const { user, isLoading, logout } = useAuth()
   const router = useRouter()
@@ -33,7 +35,7 @@ export const Header = () => {
 
   return (
     <header className="bg-background border-b sticky top-0 z-50">
-      <div className="container mx-auto flex justify-between items-center p-4">
+      <Container className="flex justify-between items-center py-4">
         <Link href="/" className="text-2xl font-bold flex items-center gap-2">
           <BarChart2 className="h-6 w-6 text-primary" />
           NEWS BETS
@@ -118,7 +120,7 @@ export const Header = () => {
             </Button>
           )}
         </div>
-      </div>
+      </Container>
     </header>
   )
 }
