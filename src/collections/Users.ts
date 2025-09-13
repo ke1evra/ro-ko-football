@@ -41,7 +41,7 @@ export const Users: CollectionConfig = {
       type: 'text',
       label: 'Username',
       unique: true,
-      required: true,
+      required: false,
       admin: { description: 'Уникальный идентификатор для публичного профиля' },
     },
     {

@@ -8,8 +8,8 @@ import { CommentsTree } from './post-comments-tree'
 
 export const dynamic = 'force-dynamic'
 
-export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
+export default async function PostPage({ params }: { params: { slug: string } }) {
+  const { slug } = params
   const payload = await getPayload({ config: await configPromise })
 
   const { docs } = await payload.find({
@@ -59,8 +59,8 @@ export async function generateStaticParams() {
   return []
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const { slug } = params
   const payload = await getPayload({ config: await configPromise })
   const { docs } = await payload.find({
     collection: 'posts',

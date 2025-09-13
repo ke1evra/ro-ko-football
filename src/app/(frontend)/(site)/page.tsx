@@ -288,7 +288,7 @@ export default async function Home() {
                 >
                   <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden">
                     <CountryFlagImage
-                      countryCode={c.country?.flag}
+                      countryId={c.country?.id}
                       countryName={c.country?.name}
                       size="large"
                       className="w-full h-full object-cover"
@@ -299,7 +299,7 @@ export default async function Home() {
                     {c.country?.name ? (
                       <div className="text-xs text-muted-foreground truncate flex items-center gap-1">
                         <CountryFlagImage
-                          countryCode={c.country.flag}
+                          countryId={c.country.id}
                           countryName={c.country.name}
                           size="small"
                           className="h-3 w-3 rounded-sm object-cover"

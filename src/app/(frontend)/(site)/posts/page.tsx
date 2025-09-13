@@ -2,6 +2,7 @@ import { Container, Section } from '@/components/ds'
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { getUser } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,10 +11,9 @@ const PAGE_SIZE = 10
 export default async function PostsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>
+  searchParams: { page?: string }
 }) {
-  const params = await searchParams
-  const page = Math.max(parseInt(params?.page || '1', 10) || 1, 1)
+  const page = Math.max(parseInt(searchParams?.page || '1', 10) || 1, 1)
 
   const payload = await getPayload({ config: await configPromise })
   const result = await payload.find({
@@ -24,30 +24,64 @@ export default async function PostsPage({
     depth: 1,
   })
 
+  const user = await getUser()
+
   return (
     <Section>
       <Container className="space-y-6">
-        <h1 className="text-2xl font-semibold">Посты</h1>
-
-        <div className="grid gap-4">
-          {result.docs.map((post: any) => (
-            <article key={post.id} className="border rounded-md p-4">
-              <h2 className="text-lg font-medium">
-                <Link href={`/posts/${post.slug}`} className="hover:underline">
-                  {post.title}
-                </Link>
-              </h2>
-              <div className="text-sm text-muted-foreground">
-                {new Date(post.createdAt).toLocaleDateString('ru-RU')} · {post?.author?.email}
-              </div>
-              {post.content && (
-                <p className="mt-2 text-sm text-muted-foreground line-clamp-3">
-                  {String(post.content).slice(0, 220)}
-                </p>
-              )}
-            </article>
-          ))}
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">Посты</h1>
+          {user ? (
+            <Link
+              href="/posts/new"
+              className="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-accent"
+            >
+              Новый пост
+            </Link>
+          ) : (
+            <Link href="/login" className="text-sm text-primary underline">
+              Войти
+            </Link>
+          )}
         </div>
+
+        {result.docs.length === 0 ? (
+          <div className="text-sm text-muted-foreground">
+            Постов пока нет.{' '}
+            {user ? (
+              <Link href="/posts/new" className="underline">
+                Создать первый пост
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="underline">
+                  Войдите
+                </Link>{' '}
+                чтобы создать первый пост
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {result.docs.map((post: any) => (
+              <article key={post.id} className="border rounded-md p-4">
+                <h2 className="text-lg font-medium">
+                  <Link href={`/posts/${post.slug}`} className="hover:underline">
+                    {post.title}
+                  </Link>
+                </h2>
+                <div className="text-sm text-muted-foreground">
+                  {new Date(post.createdAt).toLocaleDateString('ru-RU')} · {post?.author?.email}
+                </div>
+                {post.content && (
+                  <p className="mt-2 text-sm text-muted-foreground line-clamp-3">
+                    {String(post.content).slice(0, 220)}
+                  </p>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
 
         <Pagination current={page} totalPages={result.totalPages} />
       </Container>

@@ -225,7 +225,7 @@ export async function registerUser({ email, password }: RegisterParams): Promise
       const verificationToken = randomBytes(32).toString('hex')
       const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
-      // Create the user
+      // Create the user (username необязателен)
       await payload.create({
         collection: 'users',
         data: {

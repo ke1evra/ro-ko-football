@@ -129,7 +129,7 @@ export interface User {
   /**
    * Уникальный идентификатор для публичного профиля
    */
-  username: string;
+  username?: string | null;
   name?: string | null;
   bio?: string | null;
   avatar?: (number | null) | Media;

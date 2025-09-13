@@ -4,15 +4,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { getUser } from '@/lib/auth'
 
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\u0400-\u04FF\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .slice(0, 160)
-}
+// slug теперь генерируется на стороне Payload (см. коллекцию Posts)
 
 export async function createPostAction({ title, content }: { title: string; content: string }) {
   const user = await getUser()
@@ -25,7 +17,6 @@ export async function createPostAction({ title, content }: { title: string; cont
       collection: 'posts',
       data: {
         title,
-        slug: slugify(title),
         content,
         author: user.id,
         publishedAt: new Date().toISOString(),

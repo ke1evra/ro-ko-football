@@ -1,12 +1,26 @@
 import type { CollectionConfig } from 'payload'
 import type { PayloadRequest } from 'payload'
 
-// Простая утилита для генерации slug из заголовка
-function slugify(input: string): string {
+// Транслитерация (минимум для кириллицы) и нормализация в slug
+function transliterate(input: string): string {
+  const map: Record<string, string> = {
+    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y',
+    к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f',
+    х: 'h', ц: 'c', ч: 'ch', ш: 'sh', щ: 'sch', ь: '', ы: 'y', ъ: '', э: 'e', ю: 'yu', я: 'ya',
+  }
   return input
     .toLowerCase()
+    .split('')
+    .map((ch) => map[ch] ?? ch)
+    .join('')
+}
+
+function slugify(input: string): string {
+  return transliterate(input)
+    .normalize('NFD')
+    .replace(/\p{Diacritic}+/gu, '')
     .trim()
-    .replace(/[^a-z0-9\u0400-\u04FF\s-]/g, '') // латиница + кириллица, цифры, пробелы и тире
+    .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
 }
@@ -74,7 +88,7 @@ export const Posts: CollectionConfig = {
   ],
   hooks: {
     beforeValidate: [
-      async ({ data, req }) => {
+      async ({ data, req, operation, originalDoc }) => {
         if (!data) return data
 
         // Проставляем автора автоматически, если не админ и поле не задано
@@ -82,9 +96,36 @@ export const Posts: CollectionConfig = {
           data.author = req.user.id
         }
 
-        // Генерация slug при отсутствии
-        if (data.title && !data.slug) {
-          data.slug = slugify(data.title)
+        // Генерация и уникализация slug: при создании и при изменении title
+        const titleChanged = Boolean(data.title && data.title !== (originalDoc as any)?.title)
+        if ((operation === 'create' && data.title) || titleChanged) {
+          const base = slugify(String(data.title))
+          let candidate = base.slice(0, 160)
+
+          const payload = req.payload
+          const existing = await payload.find({
+            collection: 'posts',
+            where: { slug: { like: `${base}%` } },
+            limit: 200,
+            depth: 0,
+          })
+          const taken = new Set((existing.docs as any[]).map((d) => d.slug))
+
+          // Если текущий документ уже имеет такой же slug (редактирование без реального конфликта) — оставляем
+          if (!taken.has(candidate) || (originalDoc && (originalDoc as any).slug === candidate)) {
+            data.slug = candidate
+          } else {
+            let i = 2
+            while (i < 10000) {
+              const next = `${base}-${i}`.slice(0, 160)
+              if (!taken.has(next)) {
+                candidate = next
+                break
+              }
+              i += 1
+            }
+            data.slug = candidate
+          }
         }
 
         // Страхуемся от слишком длинных slug
