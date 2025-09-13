@@ -7,7 +7,11 @@ export const dynamic = 'force-dynamic'
 
 const PAGE_SIZE = 10
 
-export default async function PostsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+export default async function PostsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
   const params = await searchParams
   const page = Math.max(parseInt(params?.page || '1', 10) || 1, 1)
 
@@ -51,8 +55,6 @@ export default async function PostsPage({ searchParams }: { searchParams: Promis
   )
 }
 
-
-
 function Pagination({ current, totalPages }: { current: number; totalPages: number }) {
   if (totalPages <= 1) return null
   const prev = current > 1 ? current - 1 : null
@@ -61,7 +63,9 @@ function Pagination({ current, totalPages }: { current: number; totalPages: numb
     <nav className="flex items-center justify-between">
       <div>
         {prev ? (
-          <Link className="underline" href={`/posts?page=${prev}`}>← Новее</Link>
+          <Link className="underline" href={`/posts?page=${prev}`}>
+            ← Новее
+          </Link>
         ) : (
           <span className="text-muted-foreground">← Новее</span>
         )}
@@ -71,7 +75,9 @@ function Pagination({ current, totalPages }: { current: number; totalPages: numb
       </div>
       <div>
         {next ? (
-          <Link className="underline" href={`/posts?page=${next}`}>Старее →</Link>
+          <Link className="underline" href={`/posts?page=${next}`}>
+            Старее →
+          </Link>
         ) : (
           <span className="text-muted-foreground">Старее →</span>
         )}

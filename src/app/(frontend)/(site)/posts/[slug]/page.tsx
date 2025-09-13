@@ -62,7 +62,11 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const payload = await getPayload({ config: await configPromise })
-  const { docs } = await payload.find({ collection: 'posts', where: { slug: { equals: slug } }, limit: 1 })
+  const { docs } = await payload.find({
+    collection: 'posts',
+    where: { slug: { equals: slug } },
+    limit: 1,
+  })
   const post = docs[0]
   return {
     title: post ? `${post.title} — Пост` : 'Пост',

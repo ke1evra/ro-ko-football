@@ -21,11 +21,11 @@ export default async function FixturesWidget({ league, season, date }: FixturesW
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/fixtures/${league}/${season}${date ? `?date=${date}` : ''}`,
       {
-        next: { 
+        next: {
           revalidate: 120, // 2 минуты
-          tags: [`fixtures:${league}:${season}`]
-        }
-      }
+          tags: [`fixtures:${league}:${season}`],
+        },
+      },
     )
 
     if (!response.ok) {
@@ -38,7 +38,7 @@ export default async function FixturesWidget({ league, season, date }: FixturesW
     if (!data.fixtures || data.fixtures.length === 0) {
       // Проверяем, есть ли ошибка в ответе
       const hasError = 'error' in data && data.error
-      
+
       return (
         <div className="text-center py-8 text-muted-foreground">
           <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -70,47 +70,43 @@ export default async function FixturesWidget({ league, season, date }: FixturesW
               {data.fixtures.length} {getMatchesWord(data.fixtures.length)}
             </span>
           </div>
-          {date && (
-            <Badge variant="outline">
-              {new Date(date).toLocaleDateString('ru-RU')}
-            </Badge>
-          )}
+          {date && <Badge variant="outline">{new Date(date).toLocaleDateString('ru-RU')}</Badge>}
         </div>
 
         {/* Группированные матчи по дням */}
         <div className="space-y-4">
-          {Object.entries(groupedFixtures).slice(0, 7).map(([dateKey, fixtures]) => (
-            <div key={dateKey}>
-              {/* Заголовок дня */}
-              <div className="flex items-center gap-2 mb-2">
-                <h4 className="text-sm font-medium">
-                  {formatDateHeader(dateKey)}
-                </h4>
-                <div className="flex-1 h-px bg-border"></div>
-                <Badge variant="secondary" className="text-xs">
-                  {fixtures.length}
-                </Badge>
-              </div>
+          {Object.entries(groupedFixtures)
+            .slice(0, 7)
+            .map(([dateKey, fixtures]) => (
+              <div key={dateKey}>
+                {/* Заголовок дня */}
+                <div className="flex items-center gap-2 mb-2">
+                  <h4 className="text-sm font-medium">{formatDateHeader(dateKey)}</h4>
+                  <div className="flex-1 h-px bg-border"></div>
+                  <Badge variant="secondary" className="text-xs">
+                    {fixtures.length}
+                  </Badge>
+                </div>
 
-              {/* Матчи дня */}
-              <div className="space-y-2">
-                {fixtures.slice(0, 3).map((fixture) => (
-                  <FixtureCard key={fixture.id} fixture={fixture} />
-                ))}
-                
-                {fixtures.length > 3 && (
-                  <div className="text-center">
-                    <Link 
-                      href={`/fixtures?date=${dateKey}&league=${league}`}
-                      className="text-xs text-primary hover:underline"
-                    >
-                      Ещё {fixtures.length - 3} {getMatchesWord(fixtures.length - 3)}
-                    </Link>
-                  </div>
-                )}
+                {/* Матчи дня */}
+                <div className="space-y-2">
+                  {fixtures.slice(0, 3).map((fixture) => (
+                    <FixtureCard key={fixture.id} fixture={fixture} />
+                  ))}
+
+                  {fixtures.length > 3 && (
+                    <div className="text-center">
+                      <Link
+                        href={`/fixtures?date=${dateKey}&league=${league}`}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Ещё {fixtures.length - 3} {getMatchesWord(fixtures.length - 3)}
+                      </Link>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
 
         {/* Время последнего обновления */}
@@ -120,7 +116,7 @@ export default async function FixturesWidget({ league, season, date }: FixturesW
 
         {/* Ссылка на все матчи */}
         <div className="text-center">
-          <Link 
+          <Link
             href={`/fixtures?league=${league}&season=${season}`}
             className="text-sm text-primary hover:underline"
           >
@@ -131,7 +127,7 @@ export default async function FixturesWidget({ league, season, date }: FixturesW
     )
   } catch (error) {
     console.error('Error loading fixtures:', error)
-    
+
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
@@ -158,7 +154,7 @@ function FixtureCard({ fixture }: { fixture: any }) {
       {/* Время и соревнование */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <Badge variant={isToday ? "default" : isTomorrow ? "secondary" : "outline"}>
+          <Badge variant={isToday ? 'default' : isTomorrow ? 'secondary' : 'outline'}>
             {fixture.time}
           </Badge>
           {fixture.competition && (
@@ -171,13 +167,9 @@ function FixtureCard({ fixture }: { fixture: any }) {
 
       {/* Команды */}
       <div className="space-y-1 mb-2">
-        <div className="text-sm font-medium truncate">
-          {fixture.homeTeam.name}
-        </div>
+        <div className="text-sm font-medium truncate">{fixture.homeTeam.name}</div>
         <div className="text-xs text-muted-foreground">vs</div>
-        <div className="text-sm font-medium truncate">
-          {fixture.awayTeam.name}
-        </div>
+        <div className="text-sm font-medium truncate">{fixture.awayTeam.name}</div>
       </div>
 
       {/* Дополнительная информация */}
@@ -190,17 +182,12 @@ function FixtureCard({ fixture }: { fixture: any }) {
 
       {/* Ссылка на детали */}
       <div className="flex items-center justify-between">
-        <Link 
-          href={`/fixtures/${fixture.id}`}
-          className="text-xs text-primary hover:underline"
-        >
+        <Link href={`/fixtures/${fixture.id}`} className="text-xs text-primary hover:underline">
           Подробнее →
         </Link>
-        
+
         {/* Время до матча */}
-        <span className="text-xs text-muted-foreground">
-          {getTimeUntilMatch(matchDateTime)}
-        </span>
+        <span className="text-xs text-muted-foreground">{getTimeUntilMatch(matchDateTime)}</span>
       </div>
     </div>
   )
@@ -208,14 +195,17 @@ function FixtureCard({ fixture }: { fixture: any }) {
 
 // Вспомогательные функции
 function groupFixturesByDate(fixtures: any[]) {
-  return fixtures.reduce((groups, fixture) => {
-    const date = fixture.date
-    if (!groups[date]) {
-      groups[date] = []
-    }
-    groups[date].push(fixture)
-    return groups
-  }, {} as Record<string, any[]>)
+  return fixtures.reduce(
+    (groups, fixture) => {
+      const date = fixture.date
+      if (!groups[date]) {
+        groups[date] = []
+      }
+      groups[date].push(fixture)
+      return groups
+    },
+    {} as Record<string, any[]>,
+  )
 }
 
 function formatDateHeader(dateString: string): string {
@@ -229,10 +219,10 @@ function formatDateHeader(dateString: string): string {
   } else if (dateString === tomorrow.toISOString().split('T')[0]) {
     return 'Завтра'
   } else {
-    return date.toLocaleDateString('ru-RU', { 
-      weekday: 'short', 
-      day: 'numeric', 
-      month: 'short' 
+    return date.toLocaleDateString('ru-RU', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
     })
   }
 }
@@ -251,12 +241,12 @@ function isDateTomorrow(dateString: string): boolean {
 function getTimeUntilMatch(matchDate: Date): string {
   const now = new Date()
   const diffMs = matchDate.getTime() - now.getTime()
-  
+
   if (diffMs < 0) return 'Прошёл'
-  
+
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
   const diffDays = Math.floor(diffHours / 24)
-  
+
   if (diffDays > 0) {
     return `через ${diffDays} ${diffDays === 1 ? 'день' : diffDays < 5 ? 'дня' : 'дней'}`
   } else if (diffHours > 0) {

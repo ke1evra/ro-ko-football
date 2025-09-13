@@ -10,7 +10,9 @@ export type NavProps = React.PropsWithChildren<{
 }>
 
 export function Section({ className, children }: BaseProps) {
-  return <section className={['py-8 md:py-12', className].filter(Boolean).join(' ')}>{children}</section>
+  return (
+    <section className={['py-8 md:py-12', className].filter(Boolean).join(' ')}>{children}</section>
+  )
 }
 
 export function Container({ className, children }: BaseProps) {
@@ -24,7 +26,9 @@ export function Container({ className, children }: BaseProps) {
 export function Nav({ className, containerClassName, children }: NavProps) {
   return (
     <nav className={className}>
-      <Container className={['py-4', containerClassName].filter(Boolean).join(' ')}>{children}</Container>
+      <Container className={['py-4', containerClassName].filter(Boolean).join(' ')}>
+        {children}
+      </Container>
     </nav>
   )
 }

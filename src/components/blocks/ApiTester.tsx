@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
 import * as Client from '@/app/(frontend)/client'
@@ -6,7 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
@@ -20,8 +26,27 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 // Map of operation -> known query param names
 const operationParams: Record<string, string[]> = {
   getMatchesLiveJson: ['lang', 'page', 'competition_id', 'country_id', 'team_id', 'fixture_id'],
-  getMatchesHistoryJson: ['lang', 'page', 'competition_id', 'country_id', 'team_id', 'date', 'from', 'to'],
-  getFixturesMatchesJson: ['lang', 'page', 'size', 'competition_id', 'country_id', 'team_id', 'date', 'from', 'to'],
+  getMatchesHistoryJson: [
+    'lang',
+    'page',
+    'competition_id',
+    'country_id',
+    'team_id',
+    'date',
+    'from',
+    'to',
+  ],
+  getFixturesMatchesJson: [
+    'lang',
+    'page',
+    'size',
+    'competition_id',
+    'country_id',
+    'team_id',
+    'date',
+    'from',
+    'to',
+  ],
   getScoresEventsJson: ['id', 'lang'],
   getMatchesLineupsJson: ['match_id', 'lang'],
   getMatchesStatsJson: ['match_id'],
@@ -33,7 +58,9 @@ const operationParams: Record<string, string[]> = {
 }
 
 function isCallableExport(k: string, v: unknown): v is (...args: any[]) => Promise<any> {
-  return typeof v === 'function' && k.startsWith('get') && !k.endsWith('Url') && !k.endsWith('Service')
+  return (
+    typeof v === 'function' && k.startsWith('get') && !k.endsWith('Url') && !k.endsWith('Service')
+  )
 }
 
 const allMethods = Object.entries(Client)
@@ -95,7 +122,12 @@ export default function ApiTester() {
       try {
         const urlHelperName = `get${selected}Url`
         const urlHelper = (Client as any)[urlHelperName]
-        const base = typeof window !== 'undefined' ? (window.localStorage.getItem('LIVESCORE_API_BASE') || process.env.NEXT_PUBLIC_LIVESCORE_API_BASE || 'https://livescore-api.com/api-client') : ''
+        const base =
+          typeof window !== 'undefined'
+            ? window.localStorage.getItem('LIVESCORE_API_BASE') ||
+              process.env.NEXT_PUBLIC_LIVESCORE_API_BASE ||
+              'https://livescore-api.com/api-client'
+            : ''
         if (typeof urlHelper === 'function') {
           const info = urlHelper() as { url: string }
           const usp = new URLSearchParams()
@@ -103,8 +135,12 @@ export default function ApiTester() {
             if (v != null && v !== '') usp.set(k, String(v))
           })
           // auth params are added by runtime, but include them in preview if present
-          const key = typeof window !== 'undefined' ? window.localStorage.getItem('LIVESCORE_KEY') || '' : ''
-          const secret = typeof window !== 'undefined' ? window.localStorage.getItem('LIVESCORE_SECRET') || '' : ''
+          const key =
+            typeof window !== 'undefined' ? window.localStorage.getItem('LIVESCORE_KEY') || '' : ''
+          const secret =
+            typeof window !== 'undefined'
+              ? window.localStorage.getItem('LIVESCORE_SECRET') || ''
+              : ''
           if (key) usp.set('key', key)
           if (secret) usp.set('secret', secret)
           if (!usp.has('lang')) usp.set('lang', 'ru')
@@ -161,7 +197,9 @@ export default function ApiTester() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div className="space-y-2">
-                <Label htmlFor="api-base" className="text-xs">API Base URL</Label>
+                <Label htmlFor="api-base" className="text-xs">
+                  API Base URL
+                </Label>
                 <Input
                   id="api-base"
                   placeholder="LIVESCORE_API_BASE (optional)"
@@ -170,7 +208,9 @@ export default function ApiTester() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="api-key" className="text-xs">API Key</Label>
+                <Label htmlFor="api-key" className="text-xs">
+                  API Key
+                </Label>
                 <Input
                   id="api-key"
                   placeholder="LIVESCORE_KEY"
@@ -179,7 +219,9 @@ export default function ApiTester() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="api-secret" className="text-xs">API Secret</Label>
+                <Label htmlFor="api-secret" className="text-xs">
+                  API Secret
+                </Label>
                 <Input
                   id="api-secret"
                   placeholder="LIVESCORE_SECRET"
@@ -196,11 +238,16 @@ export default function ApiTester() {
               <Button size="sm" variant="outline" onClick={clearCreds}>
                 Очистить
               </Button>
-              {saved && <Badge variant="secondary" className="text-green-600">Сохранено</Badge>}
+              {saved && (
+                <Badge variant="secondary" className="text-green-600">
+                  Сохранено
+                </Badge>
+              )}
             </div>
             <Alert>
               <AlertDescription className="text-xs">
-                Также можно использовать переменные окружения: NEXT_PUBLIC_LIVESCORE_API_BASE, NEXT_PUBLIC_LIVESCORE_KEY, NEXT_PUBLIC_LIVESCORE_SECRET
+                Также можно использовать переменные окружения: NEXT_PUBLIC_LIVESCORE_API_BASE,
+                NEXT_PUBLIC_LIVESCORE_KEY, NEXT_PUBLIC_LIVESCORE_SECRET
               </AlertDescription>
             </Alert>
           </CardContent>
@@ -256,11 +303,7 @@ export default function ApiTester() {
                   ))}
                 </div>
               )}
-              <Button
-                onClick={call}
-                disabled={loading}
-                className="w-full sm:w-auto"
-              >
+              <Button onClick={call} disabled={loading} className="w-full sm:w-auto">
                 {loading ? 'Выполняю…' : 'Выполнить запрос'}
               </Button>
             </div>
@@ -289,9 +332,7 @@ export default function ApiTester() {
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-96 w-full rounded-md border">
-                <pre className="p-3 text-xs">
-                  {JSON.stringify(result, null, 2)}
-                </pre>
+                <pre className="p-3 text-xs">{JSON.stringify(result, null, 2)}</pre>
               </ScrollArea>
             </CardContent>
           </Card>

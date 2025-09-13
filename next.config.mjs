@@ -5,6 +5,20 @@ const nextConfig = {
   // Your Next.js config here
   output: 'standalone', // Required for Docker deployment
 
+  // Allow external images for flags and other assets
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+      },
+    ],
+  },
+
   // Security headers
   async headers() {
     return [

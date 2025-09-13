@@ -22,7 +22,10 @@ export function createCustomFetch({
   defaultLang = 'ru',
   fetchImpl = fetch,
 }: CreateFetchOptions = {}) {
-  return async function customFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  return async function customFetch(
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ): Promise<Response> {
     // Нормализуем базовый URL и путь, чтобы сохранять сегмент "/api-client"
     const base = new URL(baseUrl.endsWith('/') ? baseUrl : baseUrl + '/')
     let path = typeof input === 'string' ? input : input.toString()

@@ -69,13 +69,15 @@ export const Comments: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeValidate: [async ({ data, req }) => {
-      if (!data) return data
-      if (!isAdmin(req!) && req?.user && !data.author) {
-        data.author = req.user.id
-      }
-      return data
-    }],
+    beforeValidate: [
+      async ({ data, req }) => {
+        if (!data) return data
+        if (!isAdmin(req!) && req?.user && !data.author) {
+          data.author = req.user.id
+        }
+        return data
+      },
+    ],
   },
   timestamps: true,
 }

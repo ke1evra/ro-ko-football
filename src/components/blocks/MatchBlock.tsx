@@ -63,10 +63,16 @@ export default function MatchBlock({ match }: MatchBlockProps) {
           {/* Team A */}
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
-              <AvatarFallback className={`text-base font-extrabold ${colorClass(aName)}`}>{getInitials(aName)}</AvatarFallback>
+              <AvatarFallback className={`text-base font-extrabold ${colorClass(aName)}`}>
+                {getInitials(aName)}
+              </AvatarFallback>
             </Avatar>
             <div>
-              <p className={`text-lg font-semibold ${aLeading ? 'text-foreground' : 'text-muted-foreground'}`}>{aName}</p>
+              <p
+                className={`text-lg font-semibold ${aLeading ? 'text-foreground' : 'text-muted-foreground'}`}
+              >
+                {aName}
+              </p>
               {isFinished && (
                 <p className="text-xs text-muted-foreground">
                   {aLeading ? 'Победитель' : aScore === bScore ? 'Ничья' : ''}
@@ -83,7 +89,11 @@ export default function MatchBlock({ match }: MatchBlockProps) {
           {/* Team B */}
           <div className="flex items-center gap-3 justify-end">
             <div className="text-right">
-              <p className={`text-lg font-semibold ${bLeading ? 'text-foreground' : 'text-muted-foreground'}`}>{bName}</p>
+              <p
+                className={`text-lg font-semibold ${bLeading ? 'text-foreground' : 'text-muted-foreground'}`}
+              >
+                {bName}
+              </p>
               {isFinished && (
                 <p className="text-xs text-muted-foreground">
                   {bLeading ? 'Победитель' : aScore === bScore ? 'Ничья' : ''}
@@ -91,14 +101,14 @@ export default function MatchBlock({ match }: MatchBlockProps) {
               )}
             </div>
             <Avatar className="h-12 w-12">
-              <AvatarFallback className={`text-base font-extrabold ${colorClass(bName)}`}>{getInitials(bName)}</AvatarFallback>
+              <AvatarFallback className={`text-base font-extrabold ${colorClass(bName)}`}>
+                {getInitials(bName)}
+              </AvatarFallback>
             </Avatar>
           </div>
         </div>
       </CardContent>
-      <CardFooter className="justify-center text-sm text-muted-foreground">
-        Матч-анонс
-      </CardFooter>
+      <CardFooter className="justify-center text-sm text-muted-foreground">Матч-анонс</CardFooter>
     </Card>
   )
 }

@@ -12,6 +12,7 @@
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "generate:api": "cross-env NODE_OPTIONS=--no-deprecation kubb",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint --fix && pnpm run format",
+    "lint:global": "eslint . --fix",
     "format": "prettier --cache --ignore-unknown --log-level warn --write .",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start"

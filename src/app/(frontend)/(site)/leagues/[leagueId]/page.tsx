@@ -6,7 +6,9 @@ export default function LeaguePlaceholderPage() {
     <Section>
       <Container>
         <h1 className="text-2xl font-semibold">Лига</h1>
-        <p className="text-muted-foreground">Страница лиги будет реализована в следующей итерации.</p>
+        <p className="text-muted-foreground">
+          Страница лиги будет реализована в следующей итерации.
+        </p>
       </Container>
     </Section>
   )

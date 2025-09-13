@@ -8,7 +8,14 @@ import config from '@/payload.config'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { AlertCircle, BarChart3 } from 'lucide-react'
 
 interface CompetitionStandingsTableProps {
@@ -16,9 +23,9 @@ interface CompetitionStandingsTableProps {
   season?: string
 }
 
-export default async function CompetitionStandingsTable({ 
-  competitionId, 
-  season = '2024-25' 
+export default async function CompetitionStandingsTable({
+  competitionId,
+  season = '2024-25',
 }: CompetitionStandingsTableProps) {
   try {
     const payload = await getPayload({ config })
@@ -30,8 +37,8 @@ export default async function CompetitionStandingsTable({
         and: [
           { competition: { equals: competitionId } },
           { season: { equals: season } },
-          { isActive: { equals: true } }
-        ]
+          { isActive: { equals: true } },
+        ],
       },
       limit: 1,
       sort: '-lastUpdated',
@@ -56,9 +63,7 @@ export default async function CompetitionStandingsTable({
       return (
         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Данные турнирной таблицы отсутствуют.
-          </AlertDescription>
+          <AlertDescription>Данные турнирной таблицы отсутствуют.</AlertDescription>
         </Alert>
       )
     }
@@ -75,7 +80,7 @@ export default async function CompetitionStandingsTable({
             <Badge variant="outline" className="text-xs">
               Обновлено: {new Date(standingsDoc.lastUpdated).toLocaleDateString('ru-RU')}
             </Badge>
-            <Badge 
+            <Badge
               variant={standingsDoc.syncStatus === 'synced' ? 'default' : 'secondary'}
               className="text-xs"
             >
@@ -103,9 +108,7 @@ export default async function CompetitionStandingsTable({
             <TableBody>
               {rows.map((row, index) => (
                 <TableRow key={`${row.teamId}-${index}`}>
-                  <TableCell className="font-medium text-center">
-                    {row.rank}
-                  </TableCell>
+                  <TableCell className="font-medium text-center">{row.rank}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{row.teamName}</span>
@@ -120,9 +123,7 @@ export default async function CompetitionStandingsTable({
                       {row.goalsFor}:{row.goalsAgainst}
                     </span>
                   </TableCell>
-                  <TableCell className="text-center font-bold">
-                    {row.points}
-                  </TableCell>
+                  <TableCell className="text-center font-bold">{row.points}</TableCell>
                   <TableCell className="text-center">
                     {row.form ? (
                       <div className="flex gap-1 justify-center">
@@ -130,11 +131,11 @@ export default async function CompetitionStandingsTable({
                           <div
                             key={i}
                             className={`w-5 h-5 rounded-full text-xs flex items-center justify-center text-white font-bold ${
-                              result === 'W' 
-                                ? 'bg-green-500' 
-                                : result === 'D' 
-                                ? 'bg-yellow-500' 
-                                : 'bg-red-500'
+                              result === 'W'
+                                ? 'bg-green-500'
+                                : result === 'D'
+                                  ? 'bg-yellow-500'
+                                  : 'bg-red-500'
                             }`}
                           >
                             {result}
@@ -164,7 +165,7 @@ export default async function CompetitionStandingsTable({
     )
   } catch (error) {
     console.error('Error loading competition standings:', error)
-    
+
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />

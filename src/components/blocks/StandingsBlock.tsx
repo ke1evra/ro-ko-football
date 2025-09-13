@@ -1,6 +1,13 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 
 interface TeamRow {
@@ -24,7 +31,7 @@ export default function StandingsBlock({ teams }: { teams?: TeamRow[] }) {
     losses: t.losses ?? 0,
     goalsFor: t.goalsFor ?? 0,
     goalsAgainst: t.goalsAgainst ?? 0,
-    points: t.points ?? ((t.wins ?? 0) * 3 + (t.draws ?? 0)),
+    points: t.points ?? (t.wins ?? 0) * 3 + (t.draws ?? 0),
   }))
 
   if (rows.length === 0) return null
@@ -61,7 +68,10 @@ export default function StandingsBlock({ teams }: { teams?: TeamRow[] }) {
                   <TableCell className="text-right">{t.wins}</TableCell>
                   <TableCell className="text-right">{t.draws}</TableCell>
                   <TableCell className="text-right">{t.losses}</TableCell>
-                  <TableCell className="text-right">{t.goalsFor}-{t.goalsAgainst} ({gd >= 0 ? '+' : ''}{gd})</TableCell>
+                  <TableCell className="text-right">
+                    {t.goalsFor}-{t.goalsAgainst} ({gd >= 0 ? '+' : ''}
+                    {gd})
+                  </TableCell>
                   <TableCell className="text-right">
                     <Badge variant="secondary">{t.points}</Badge>
                   </TableCell>

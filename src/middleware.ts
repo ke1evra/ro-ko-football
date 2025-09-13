@@ -4,7 +4,6 @@ import type { NextRequest } from 'next/server'
 // Define protected routes that require authentication
 const PROTECTED_ROUTES = ['/dashboard']
 
-
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const token = request.cookies.get('payload-token')?.value
@@ -16,8 +15,6 @@ export async function middleware(request: NextRequest) {
     url.searchParams.set('from', pathname)
     return NextResponse.redirect(url)
   }
-
-
 
   return NextResponse.next()
 }

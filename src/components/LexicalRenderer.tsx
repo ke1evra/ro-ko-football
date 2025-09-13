@@ -61,26 +61,20 @@ const getBlockClass = (node: LexicalNode): string => {
     case 'quote':
       return 'border-l-4 border-muted pl-4 italic text-muted-foreground mb-4'
     case 'list': {
-      return node.listType === 'number'
-        ? 'list-decimal mb-2 pl-6'
-        : 'list-disc mb-2 pl-6'
+      return node.listType === 'number' ? 'list-decimal mb-2 pl-6' : 'list-disc mb-2 pl-6'
     }
     case 'listitem': {
       const classList = ['mb-1']
       if (typeof node.checked === 'boolean') {
         classList.push('-ml-6')
       }
-      if (
-        (node.children || [])
-          .map((child: any) => child?.type)
-          .includes('list')
-      ) {
+      if ((node.children || []).map((child: any) => child?.type).includes('list')) {
         classList.push('marker:text-transparent')
       }
       return classList.join(' ')
     }
     case 'heading':
-      const headingNode = node as SerializedHeadingNode;
+      const headingNode = node as SerializedHeadingNode
       switch (headingNode.tag) {
         case 'h1':
           return 'text-2xl font-bold mb-2'
@@ -101,7 +95,9 @@ const getBlockClass = (node: LexicalNode): string => {
 function headingIdFor(node: LexicalNode, rootNodes: LexicalNode[]): string | undefined {
   const tag = (node as SerializedHeadingNode)?.tag
   if (typeof tag === 'string' && /^h[1-6]$/i.test(tag)) {
-    const headings = rootNodes.filter((elem: any) => typeof elem?.tag === 'string' && /^h[1-6]$/i.test(elem.tag))
+    const headings = rootNodes.filter(
+      (elem: any) => typeof elem?.tag === 'string' && /^h[1-6]$/i.test(elem.tag),
+    )
     const findIndex = headings.findIndex((item: any) => {
       const a = (item?.children?.[0] as any)?.text
       const b = (node?.children?.[0] as any)?.text
@@ -124,12 +120,20 @@ function renderLexicalTextNode(node: SerializedTextNode): React.ReactNode {
   return element
 }
 
-export default function LexicalRenderer({ content, nodes, rootNodes }: { content?: any, nodes?: LexicalNode[], rootNodes?: LexicalNode[] }) {
-  const effectiveNodes = nodes || content?.root?.children;
-  const effectiveRootNodes = rootNodes || effectiveNodes;
+export default function LexicalRenderer({
+  content,
+  nodes,
+  rootNodes,
+}: {
+  content?: any
+  nodes?: LexicalNode[]
+  rootNodes?: LexicalNode[]
+}) {
+  const effectiveNodes = nodes || content?.root?.children
+  const effectiveRootNodes = rootNodes || effectiveNodes
 
   if (!effectiveNodes) {
-    return null;
+    return null
   }
 
   return (
@@ -152,7 +156,9 @@ export default function LexicalRenderer({ content, nodes, rootNodes }: { content
               target={newTab}
               rel={newTab ? 'noopener noreferrer' : undefined}
             >
-              {hasChildren(node) && <LexicalRenderer nodes={node.children} rootNodes={effectiveRootNodes} />}
+              {hasChildren(node) && (
+                <LexicalRenderer nodes={node.children} rootNodes={effectiveRootNodes} />
+              )}
             </a>
           )
         }
@@ -168,7 +174,9 @@ export default function LexicalRenderer({ content, nodes, rootNodes }: { content
               target="_blank"
               rel="noopener noreferrer"
             >
-              {hasChildren(node) && <LexicalRenderer nodes={node.children} rootNodes={effectiveRootNodes} />}
+              {hasChildren(node) && (
+                <LexicalRenderer nodes={node.children} rootNodes={effectiveRootNodes} />
+              )}
             </a>
           )
         }
@@ -196,7 +204,16 @@ export default function LexicalRenderer({ content, nodes, rootNodes }: { content
           if (typeof node.value === 'object' && 'url' in node.value) {
             const src = (node.value as any).url as string
             const alt = ((node.value as any).alt as string) || ''
-            return <img key={index} src={src} alt={alt} title={alt} className="my-4 max-w-full max-h-48" loading="lazy" />
+            return (
+              <img
+                key={index}
+                src={src}
+                alt={alt}
+                title={alt}
+                className="my-4 max-w-full max-h-48"
+                loading="lazy"
+              />
+            )
           }
         }
 
@@ -213,7 +230,9 @@ export default function LexicalRenderer({ content, nodes, rootNodes }: { content
                 )}
               </span>
               <span className="align-middle">
-                {hasChildren(node) && <LexicalRenderer nodes={node.children} rootNodes={effectiveRootNodes} />}
+                {hasChildren(node) && (
+                  <LexicalRenderer nodes={node.children} rootNodes={effectiveRootNodes} />
+                )}
               </span>
             </li>
           )
@@ -230,7 +249,9 @@ export default function LexicalRenderer({ content, nodes, rootNodes }: { content
         const className = getBlockClass(node)
         return (
           <Tag key={index} id={id} className={className}>
-            {hasChildren(node) && <LexicalRenderer nodes={node.children} rootNodes={effectiveRootNodes} />}
+            {hasChildren(node) && (
+              <LexicalRenderer nodes={node.children} rootNodes={effectiveRootNodes} />
+            )}
           </Tag>
         )
       })}

@@ -5,19 +5,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Trophy, 
-  Globe, 
-  Search, 
+import {
+  Trophy,
+  Globe,
+  Search,
   Filter,
   MapPin,
   Calendar,
   Users,
   BarChart3,
   ExternalLink,
-  Loader2
+  Loader2,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -90,50 +96,69 @@ export default function LeaguesDashboard() {
     }
   }
 
-  const filteredCompetitions = competitions.filter(competition => {
-    const matchesSearch = competition.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         competition.shortName?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCompetitions = competitions.filter((competition) => {
+    const matchesSearch =
+      competition.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      competition.shortName?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCountry = selectedCountry === 'all' || competition.country?.id === selectedCountry
     const matchesType = selectedType === 'all' || competition.type === selectedType
-    
+
     return matchesSearch && matchesCountry && matchesType
   })
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'league': return 'Лига'
-      case 'cup': return 'Кубок'
-      case 'international': return 'Международный'
-      case 'friendly': return 'Товарищеские'
-      default: return type
+      case 'league':
+        return 'Лига'
+      case 'cup':
+        return 'Кубок'
+      case 'international':
+        return 'Международный'
+      case 'friendly':
+        return 'Товарищеские'
+      default:
+        return type
     }
   }
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'league': return '🏅'
-      case 'cup': return '🏆'
-      case 'international': return '🌍'
-      case 'friendly': return '🤝'
-      default: return '⚽'
+      case 'league':
+        return '🏅'
+      case 'cup':
+        return '🏆'
+      case 'international':
+        return '🌍'
+      case 'friendly':
+        return '🤝'
+      default:
+        return '⚽'
     }
   }
 
   const getSyncStatusColor = (status: string) => {
     switch (status) {
-      case 'synced': return 'text-green-600 border-green-600'
-      case 'pending': return 'text-yellow-600 border-yellow-600'
-      case 'error': return 'text-red-600 border-red-600'
-      default: return ''
+      case 'synced':
+        return 'text-green-600 border-green-600'
+      case 'pending':
+        return 'text-yellow-600 border-yellow-600'
+      case 'error':
+        return 'text-red-600 border-red-600'
+      default:
+        return ''
     }
   }
 
   const getSyncStatusLabel = (status: string) => {
     switch (status) {
-      case 'synced': return 'Синхронизировано'
-      case 'pending': return 'Ожидает'
-      case 'error': return 'Ошибка'
-      default: return status
+      case 'synced':
+        return 'Синхронизировано'
+      case 'pending':
+        return 'Ожидает'
+      case 'error':
+        return 'Ошибка'
+      default:
+        return status
     }
   }
 
@@ -183,20 +208,21 @@ export default function LeaguesDashboard() {
                 <Globe className="h-5 w-5" />
                 Страны
               </CardTitle>
-              <CardDescription>
-                Список стран с количеством соревнований
-              </CardDescription>
+              <CardDescription>Список стран с количеством соревнований</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {countries.map((country) => (
-                  <Card key={country.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                  <Card
+                    key={country.id}
+                    className="hover:shadow-md transition-shadow cursor-pointer"
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           {country.flag?.url ? (
-                            <img 
-                              src={country.flag.url} 
+                            <img
+                              src={country.flag.url}
                               alt={`Флаг ${country.name}`}
                               className="w-6 h-4 object-cover rounded"
                             />
@@ -207,9 +233,7 @@ export default function LeaguesDashboard() {
                           )}
                           <span className="font-medium">{country.name}</span>
                         </div>
-                        <Badge variant="secondary">
-                          {country.competitionsCount || 0}
-                        </Badge>
+                        <Badge variant="secondary">{country.competitionsCount || 0}</Badge>
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {country.competitionsCount || 0} соревнований
@@ -285,8 +309,8 @@ export default function LeaguesDashboard() {
                           Активно
                         </Badge>
                       )}
-                      <Badge 
-                        variant="outline" 
+                      <Badge
+                        variant="outline"
                         className={getSyncStatusColor(competition.syncStatus)}
                       >
                         {getSyncStatusLabel(competition.syncStatus)}
@@ -308,7 +332,7 @@ export default function LeaguesDashboard() {
                     </CardDescription>
                   )}
                 </CardHeader>
-                
+
                 <CardContent className="space-y-3">
                   {competition.season && (
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -316,7 +340,7 @@ export default function LeaguesDashboard() {
                       <span>Сезон: {competition.season}</span>
                     </div>
                   )}
-                  
+
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1">
@@ -329,23 +353,22 @@ export default function LeaguesDashboard() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {competition.lastSyncedAt && (
                     <div className="text-xs text-muted-foreground">
-                      Обновлено: {new Date(competition.lastSyncedAt).toLocaleDateString('ru-RU', {
+                      Обновлено:{' '}
+                      {new Date(competition.lastSyncedAt).toLocaleDateString('ru-RU', {
                         day: '2-digit',
                         month: '2-digit',
                         year: 'numeric',
                         hour: '2-digit',
-                        minute: '2-digit'
+                        minute: '2-digit',
                       })}
                     </div>
                   )}
-                  
+
                   <div className="flex items-center justify-between pt-2">
-                    <div className="text-xs text-muted-foreground">
-                      ID: {competition.ext?.lsa}
-                    </div>
+                    <div className="text-xs text-muted-foreground">ID: {competition.ext?.lsa}</div>
                     <Link href={`/competitions/${competition.id}`}>
                       <Button variant="ghost" size="sm" className="h-8 px-2">
                         <ExternalLink className="h-3 w-3 mr-1" />

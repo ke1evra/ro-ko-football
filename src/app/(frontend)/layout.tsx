@@ -5,7 +5,7 @@ import { Geist_Mono as FontMono } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme/theme-provider'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
-import { AuthProvider } from './AuthContext';
+import { AuthProvider } from './AuthContext'
 
 import { cn } from '@/lib/utils'
 
@@ -52,9 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            {children}
-          </AuthProvider>
+          <AuthProvider>{children}</AuthProvider>
           <Toaster richColors expand={true} closeButton />
         </ThemeProvider>
         <Analytics />

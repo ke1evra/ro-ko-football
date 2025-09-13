@@ -4,7 +4,15 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { getUser } from '@/lib/auth'
 
-export async function createCommentAction({ postId, content, parentId }: { postId: string; content: string; parentId?: string }) {
+export async function createCommentAction({
+  postId,
+  content,
+  parentId,
+}: {
+  postId: string
+  content: string
+  parentId?: string
+}) {
   const user = await getUser()
   if (!user) {
     return { success: false, error: 'Необходима авторизация' }
@@ -22,7 +30,12 @@ export async function createCommentAction({ postId, content, parentId }: { postI
     // Получаем документ с наполненными связями (author, post, counters)
     let fresh: any = created
     try {
-      fresh = await payload.findByID({ collection: 'comments', id: (created as any).id, depth: 1, user })
+      fresh = await payload.findByID({
+        collection: 'comments',
+        id: (created as any).id,
+        depth: 1,
+        user,
+      })
     } catch {}
 
     return { success: true, comment: fresh }
@@ -32,7 +45,13 @@ export async function createCommentAction({ postId, content, parentId }: { postI
   }
 }
 
-export async function voteCommentAction({ commentId, value }: { commentId: string; value: -1 | 1 | 0 }) {
+export async function voteCommentAction({
+  commentId,
+  value,
+}: {
+  commentId: string
+  value: -1 | 1 | 0
+}) {
   const user = await getUser()
   if (!user) return { success: false, error: 'Необходима авторизация' }
 
@@ -62,7 +81,11 @@ export async function voteCommentAction({ commentId, value }: { commentId: strin
       }
     } else {
       // Не существует — создаём
-      await payload.create({ collection: 'commentVotes', data: { comment: commentId, value }, user })
+      await payload.create({
+        collection: 'commentVotes',
+        data: { comment: commentId, value },
+        user,
+      })
     }
 
     // Вернём свежие счётчики комментария
@@ -70,7 +93,11 @@ export async function voteCommentAction({ commentId, value }: { commentId: strin
 
     return {
       success: true,
-      counters: { upvotes: (updated as any).upvotes || 0, downvotes: (updated as any).downvotes || 0, score: (updated as any).score || 0 },
+      counters: {
+        upvotes: (updated as any).upvotes || 0,
+        downvotes: (updated as any).downvotes || 0,
+        score: (updated as any).score || 0,
+      },
     }
   } catch (e) {
     console.error(e)

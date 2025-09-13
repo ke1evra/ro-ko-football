@@ -13,20 +13,20 @@ interface CompetitionLiveMatchesProps {
   competitionName: string
 }
 
-export default async function CompetitionLiveMatches({ 
-  competitionExtId, 
-  competitionName 
+export default async function CompetitionLiveMatches({
+  competitionExtId,
+  competitionName,
 }: CompetitionLiveMatchesProps) {
   try {
     // Получаем все live-матчи и фильтруем по соревнованию
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/live/all`,
       {
-        next: { 
+        next: {
           revalidate: 60, // 1 минута для live данных
-          tags: [`live-matches:${competitionExtId}`]
-        }
-      }
+          tags: [`live-matches:${competitionExtId}`],
+        },
+      },
     )
 
     if (!response.ok) {
@@ -34,19 +34,17 @@ export default async function CompetitionLiveMatches({
     }
 
     const data = await response.json()
-    
+
     // Фильтруем матчи по ID соревнования
-    const competitionMatches = data.matches?.filter((match: any) => 
-      match.competition?.id.toString() === competitionExtId
-    ) || []
+    const competitionMatches =
+      data.matches?.filter((match: any) => match.competition?.id.toString() === competitionExtId) ||
+      []
 
     if (competitionMatches.length === 0) {
       return (
         <Alert>
           <Clock className="h-4 w-4" />
-          <AlertDescription>
-            Сейчас нет live-матчей в {competitionName}
-          </AlertDescription>
+          <AlertDescription>Сейчас нет live-матчей в {competitionName}</AlertDescription>
         </Alert>
       )
     }
@@ -63,9 +61,7 @@ export default async function CompetitionLiveMatches({
                     <Clock className="w-3 h-3 mr-1" />
                     LIVE
                   </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    {match.time || 'В игре'}
-                  </span>
+                  <span className="text-sm text-muted-foreground">{match.time || 'В игре'}</span>
                 </div>
 
                 {/* Команды и счет */}
@@ -83,8 +79,9 @@ export default async function CompetitionLiveMatches({
                 {/* Дополнительная информация */}
                 {match.venue && (
                   <div className="text-xs text-muted-foreground">
-                    📍 {typeof match.venue === 'string' 
-                      ? match.venue 
+                    📍{' '}
+                    {typeof match.venue === 'string'
+                      ? match.venue
                       : [match.venue?.name, match.venue?.city].filter(Boolean).join(', ')}
                   </div>
                 )}
@@ -92,7 +89,7 @@ export default async function CompetitionLiveMatches({
             </CardContent>
           </Card>
         ))}
-        
+
         <div className="text-xs text-muted-foreground text-center">
           Обновлено: {new Date().toLocaleTimeString('ru-RU')}
         </div>
@@ -100,7 +97,7 @@ export default async function CompetitionLiveMatches({
     )
   } catch (error) {
     console.error('Error loading live matches:', error)
-    
+
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />

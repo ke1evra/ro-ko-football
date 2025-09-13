@@ -15,17 +15,22 @@ interface StandingsTableProps {
   round?: string
 }
 
-export default async function StandingsTable({ league, season, view = 'all', round }: StandingsTableProps) {
+export default async function StandingsTable({
+  league,
+  season,
+  view = 'all',
+  round,
+}: StandingsTableProps) {
   try {
     // Получаем начальные данные турнирной таблицы
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/standings/${league}/${season}?view=${view}${round ? `&round=${round}` : ''}`,
       {
-        next: { 
+        next: {
           revalidate: 30, // 30 секунд для серверного кэша
-          tags: [`standings:${league}:${season}`]
-        }
-      }
+          tags: [`standings:${league}:${season}`],
+        },
+      },
     )
 
     if (!response.ok) {
@@ -46,7 +51,7 @@ export default async function StandingsTable({ league, season, view = 'all', rou
     )
   } catch (error) {
     console.error('Error loading standings:', error)
-    
+
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />

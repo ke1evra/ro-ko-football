@@ -1,35 +1,35 @@
-import React from 'react';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { CalendarIcon, UserIcon } from 'lucide-react';
-import Image from 'next/image';
+import React from 'react'
+import Link from 'next/link'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { CalendarIcon, UserIcon } from 'lucide-react'
+import Image from 'next/image'
 
 interface ArticleItem {
-  id: string;
-  title: string;
-  author?: string;
-  published?: string;
+  id: string
+  title: string
+  author?: string
+  published?: string
   image?: {
-    url: string;
-    alt?: string;
-  };
+    url: string
+    alt?: string
+  }
 }
 
 interface ArticlesWidgetProps {
-  articles: ArticleItem[];
+  articles: ArticleItem[]
 }
 
 const ArticlesWidget: React.FC<ArticlesWidgetProps> = ({ articles }) => {
   const formatDate = (dateString?: string) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', { 
-      day: '2-digit', 
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    return date.toLocaleDateString('ru-RU', {
+      day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
-    });
-  };
+      year: 'numeric',
+    })
+  }
 
   return (
     <Card>
@@ -78,19 +78,17 @@ const ArticlesWidget: React.FC<ArticlesWidgetProps> = ({ articles }) => {
                 </Link>
               </article>
             ))}
-            
+
             <div className="pt-2">
               <Button asChild variant="outline" className="w-full">
-                <Link href="/articles">
-                  Посмотреть все статьи
-                </Link>
+                <Link href="/articles">Посмотреть все статьи</Link>
               </Button>
             </div>
           </>
         )}
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default ArticlesWidget;
+export default ArticlesWidget

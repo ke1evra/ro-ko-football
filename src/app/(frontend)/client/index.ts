@@ -1,93 +1,345 @@
-export type { ApiError } from "./types/ApiError.ts";
-export type { Competition } from "./types/Competition.ts";
-export type { CompetitionsResponse } from "./types/CompetitionsResponse.ts";
-export type { CountriesResponse } from "./types/CountriesResponse.ts";
-export type { Country } from "./types/Country.ts";
-export type { Event } from "./types/Event.ts";
-export type { EventsResponse } from "./types/EventsResponse.ts";
-export type { Federation } from "./types/Federation.ts";
-export type { FederationsResponse } from "./types/FederationsResponse.ts";
-export type { Fixture } from "./types/Fixture.ts";
-export type { FixturesResponse } from "./types/FixturesResponse.ts";
-export type { GetAuthVerifyJson200, GetAuthVerifyJson400, GetAuthVerifyJson401, GetAuthVerifyJson500, GetAuthVerifyJsonQueryResponse, GetAuthVerifyJsonQuery } from "./types/GetAuthVerifyJson.ts";
-export type { GetCompetitionsListJsonQueryParams, GetCompetitionsListJson200, GetCompetitionsListJson400, GetCompetitionsListJson401, GetCompetitionsListJson404, GetCompetitionsListJson500, GetCompetitionsListJsonQueryResponse, GetCompetitionsListJsonQuery } from "./types/GetCompetitionsListJson.ts";
-export type { GetCompetitionsTopscorersJsonQueryParams, GetCompetitionsTopscorersJson200, GetCompetitionsTopscorersJson400, GetCompetitionsTopscorersJson401, GetCompetitionsTopscorersJson404, GetCompetitionsTopscorersJson500, GetCompetitionsTopscorersJsonQueryResponse, GetCompetitionsTopscorersJsonQuery } from "./types/GetCompetitionsTopscorersJson.ts";
-export type { GetCountriesFlagJsonQueryParams, GetCountriesFlagJson200, GetCountriesFlagJson400, GetCountriesFlagJson401, GetCountriesFlagJson404, GetCountriesFlagJsonQueryResponse, GetCountriesFlagJsonQuery } from "./types/GetCountriesFlagJson.ts";
-export type { GetCountriesListJsonQueryParams, GetCountriesListJson200, GetCountriesListJson400, GetCountriesListJson401, GetCountriesListJson404, GetCountriesListJson500, GetCountriesListJsonQueryResponse, GetCountriesListJsonQuery } from "./types/GetCountriesListJson.ts";
-export type { GetFederationsListJson200, GetFederationsListJson400, GetFederationsListJson401, GetFederationsListJson404, GetFederationsListJson500, GetFederationsListJsonQueryResponse, GetFederationsListJsonQuery } from "./types/GetFederationsListJson.ts";
-export type { GetFixturesMatchesJsonQueryParams, GetFixturesMatchesJson200, GetFixturesMatchesJson400, GetFixturesMatchesJson401, GetFixturesMatchesJson404, GetFixturesMatchesJson500, GetFixturesMatchesJsonQueryResponse, GetFixturesMatchesJsonQuery } from "./types/GetFixturesMatchesJson.ts";
-export type { GetMatchesEventsJsonQueryParams, GetMatchesEventsJson200, GetMatchesEventsJson400, GetMatchesEventsJson401, GetMatchesEventsJson404, GetMatchesEventsJson500, GetMatchesEventsJsonQueryResponse, GetMatchesEventsJsonQuery } from "./types/GetMatchesEventsJson.ts";
-export type { GetMatchesHistoryJsonQueryParams, GetMatchesHistoryJson200, GetMatchesHistoryJson400, GetMatchesHistoryJson401, GetMatchesHistoryJson404, GetMatchesHistoryJson500, GetMatchesHistoryJsonQueryResponse, GetMatchesHistoryJsonQuery } from "./types/GetMatchesHistoryJson.ts";
-export type { GetMatchesLineupsJsonQueryParams, GetMatchesLineupsJson200, GetMatchesLineupsJson400, GetMatchesLineupsJson401, GetMatchesLineupsJson404, GetMatchesLineupsJson500, GetMatchesLineupsJsonQueryResponse, GetMatchesLineupsJsonQuery } from "./types/GetMatchesLineupsJson.ts";
-export type { GetMatchesLiveJsonQueryParams, GetMatchesLiveJson200, GetMatchesLiveJson400, GetMatchesLiveJson401, GetMatchesLiveJson404, GetMatchesLiveJson500, GetMatchesLiveJsonQueryResponse, GetMatchesLiveJsonQuery } from "./types/GetMatchesLiveJson.ts";
-export type { GetMatchesStatsJsonQueryParams, GetMatchesStatsJson200, GetMatchesStatsJson400, GetMatchesStatsJson401, GetMatchesStatsJson404, GetMatchesStatsJson500, GetMatchesStatsJsonQueryResponse, GetMatchesStatsJsonQuery } from "./types/GetMatchesStatsJson.ts";
-export type { GetOddsLiveJsonQueryParams, GetOddsLiveJson200, GetOddsLiveJson400, GetOddsLiveJson401, GetOddsLiveJson404, GetOddsLiveJson500, GetOddsLiveJsonQueryResponse, GetOddsLiveJsonQuery } from "./types/GetOddsLiveJson.ts";
-export type { GetOddsPreJsonQueryParams, GetOddsPreJson200, GetOddsPreJson400, GetOddsPreJson401, GetOddsPreJson404, GetOddsPreJson500, GetOddsPreJsonQueryResponse, GetOddsPreJsonQuery } from "./types/GetOddsPreJson.ts";
-export type { GetSeasonsListJson200, GetSeasonsListJson400, GetSeasonsListJson401, GetSeasonsListJson404, GetSeasonsListJson500, GetSeasonsListJsonQueryResponse, GetSeasonsListJsonQuery } from "./types/GetSeasonsListJson.ts";
-export type { GetTablesStandingsJsonQueryParamsIncludeFormEnum, GetTablesStandingsJsonQueryParams, GetTablesStandingsJson200, GetTablesStandingsJson400, GetTablesStandingsJson401, GetTablesStandingsJson404, GetTablesStandingsJson500, GetTablesStandingsJsonQueryResponse, GetTablesStandingsJsonQuery } from "./types/GetTablesStandingsJson.ts";
-export type { GetTeamsHead2HeadJsonQueryParams, GetTeamsHead2HeadJson200, GetTeamsHead2HeadJson400, GetTeamsHead2HeadJson401, GetTeamsHead2HeadJson404, GetTeamsHead2HeadJson500, GetTeamsHead2HeadJsonQueryResponse, GetTeamsHead2HeadJsonQuery } from "./types/GetTeamsHead2HeadJson.ts";
-export type { GetTeamsLastmatchesJsonQueryParams, GetTeamsLastmatchesJson200, GetTeamsLastmatchesJson400, GetTeamsLastmatchesJson401, GetTeamsLastmatchesJson404, GetTeamsLastmatchesJson500, GetTeamsLastmatchesJsonQueryResponse, GetTeamsLastmatchesJsonQuery } from "./types/GetTeamsLastmatchesJson.ts";
-export type { GetTeamsListJsonQueryParams, GetTeamsListJson200, GetTeamsListJson400, GetTeamsListJson401, GetTeamsListJson404, GetTeamsListJson500, GetTeamsListJsonQueryResponse, GetTeamsListJsonQuery } from "./types/GetTeamsListJson.ts";
-export type { GetTranslationsCompetitionsJsonQueryParams, GetTranslationsCompetitionsJson200, GetTranslationsCompetitionsJsonQueryResponse, GetTranslationsCompetitionsJsonQuery } from "./types/GetTranslationsCompetitionsJson.ts";
-export type { GetTranslationsCountriesJsonQueryParams, GetTranslationsCountriesJson200, GetTranslationsCountriesJsonQueryResponse, GetTranslationsCountriesJsonQuery } from "./types/GetTranslationsCountriesJson.ts";
-export type { GetTranslationsFederationsJsonQueryParams, GetTranslationsFederationsJson200, GetTranslationsFederationsJsonQueryResponse, GetTranslationsFederationsJsonQuery } from "./types/GetTranslationsFederationsJson.ts";
-export type { GetTranslationsTeamsJsonQueryParams, GetTranslationsTeamsJson200, GetTranslationsTeamsJson400, GetTranslationsTeamsJson401, GetTranslationsTeamsJsonQueryResponse, GetTranslationsTeamsJsonQuery } from "./types/GetTranslationsTeamsJson.ts";
-export type { HistoryMatchesResponse } from "./types/HistoryMatchesResponse.ts";
-export type { LastMatchesResponse } from "./types/LastMatchesResponse.ts";
-export type { Lineup } from "./types/Lineup.ts";
-export type { LineupPlayer } from "./types/LineupPlayer.ts";
-export type { LineupsResponse } from "./types/LineupsResponse.ts";
-export type { LiveMatchesResponse } from "./types/LiveMatchesResponse.ts";
-export type { Match } from "./types/Match.ts";
-export type { MatchStats } from "./types/MatchStats.ts";
-export type { Odds } from "./types/Odds.ts";
-export type { OddsOneXTwo } from "./types/OddsOneXTwo.ts";
-export type { OddsResponse } from "./types/OddsResponse.ts";
-export type { Outcomes } from "./types/Outcomes.ts";
-export type { Pagination } from "./types/Pagination.ts";
-export type { Score } from "./types/Score.ts";
-export type { SeasonRef } from "./types/SeasonRef.ts";
-export type { SeasonsResponse } from "./types/SeasonsResponse.ts";
-export type { StatsResponse } from "./types/StatsResponse.ts";
-export type { TableResponse } from "./types/TableResponse.ts";
-export type { TableRow } from "./types/TableRow.ts";
-export type { Team } from "./types/Team.ts";
-export type { TeamsResponse } from "./types/TeamsResponse.ts";
-export type { TeamStats } from "./types/TeamStats.ts";
-export type { TopScorersResponse } from "./types/TopScorersResponse.ts";
-export type { TranslationsResponse } from "./types/TranslationsResponse.ts";
-export type { VerifyResponse } from "./types/VerifyResponse.ts";
-export { catalogsService } from "./clients/CatalogsService/catalogsService.ts";
-export { getGetCompetitionsListJsonUrl, getCompetitionsListJson } from "./clients/CatalogsService/getCompetitionsListJson.ts";
-export { getGetCountriesListJsonUrl, getCountriesListJson } from "./clients/CatalogsService/getCountriesListJson.ts";
-export { getGetFederationsListJsonUrl, getFederationsListJson } from "./clients/CatalogsService/getFederationsListJson.ts";
-export { getGetSeasonsListJsonUrl, getSeasonsListJson } from "./clients/CatalogsService/getSeasonsListJson.ts";
-export { getGetTeamsLastmatchesJsonUrl, getTeamsLastmatchesJson } from "./clients/CatalogsService/getTeamsLastmatchesJson.ts";
-export { getGetTeamsListJsonUrl, getTeamsListJson } from "./clients/CatalogsService/getTeamsListJson.ts";
-export { eventsService } from "./clients/EventsService/eventsService.ts";
-export { getGetMatchesEventsJsonUrl, getMatchesEventsJson } from "./clients/EventsService/getMatchesEventsJson.ts";
-export { fixturesService } from "./clients/FixturesService/fixturesService.ts";
-export { getGetFixturesMatchesJsonUrl, getFixturesMatchesJson } from "./clients/FixturesService/getFixturesMatchesJson.ts";
-export { getGetMatchesLineupsJsonUrl, getMatchesLineupsJson } from "./clients/Lineups&StatsService/getMatchesLineupsJson.ts";
-export { getGetMatchesStatsJsonUrl, getMatchesStatsJson } from "./clients/Lineups&StatsService/getMatchesStatsJson.ts";
-export { getGetTeamsHead2HeadJsonUrl, getTeamsHead2HeadJson } from "./clients/Lineups&StatsService/getTeamsHead2HeadJson.ts";
-export { lineupsStatsService } from "./clients/Lineups&StatsService/lineupsStatsService.ts";
-export { getGetMatchesHistoryJsonUrl, getMatchesHistoryJson } from "./clients/MatchesService/getMatchesHistoryJson.ts";
-export { getGetMatchesLiveJsonUrl, getMatchesLiveJson } from "./clients/MatchesService/getMatchesLiveJson.ts";
-export { matchesService } from "./clients/MatchesService/matchesService.ts";
-export { getGetOddsLiveJsonUrl, getOddsLiveJson } from "./clients/OddsService/getOddsLiveJson.ts";
-export { getGetOddsPreJsonUrl, getOddsPreJson } from "./clients/OddsService/getOddsPreJson.ts";
-export { oddsService } from "./clients/OddsService/oddsService.ts";
-export { operations } from "./clients/operations.ts";
-export { getGetCompetitionsTopscorersJsonUrl, getCompetitionsTopscorersJson } from "./clients/TablesService/getCompetitionsTopscorersJson.ts";
-export { getGetTablesStandingsJsonUrl, getTablesStandingsJson } from "./clients/TablesService/getTablesStandingsJson.ts";
-export { tablesService } from "./clients/TablesService/tablesService.ts";
-export { getGetTranslationsCompetitionsJsonUrl, getTranslationsCompetitionsJson } from "./clients/TranslationsService/getTranslationsCompetitionsJson.ts";
-export { getGetTranslationsCountriesJsonUrl, getTranslationsCountriesJson } from "./clients/TranslationsService/getTranslationsCountriesJson.ts";
-export { getGetTranslationsFederationsJsonUrl, getTranslationsFederationsJson } from "./clients/TranslationsService/getTranslationsFederationsJson.ts";
-export { getGetTranslationsTeamsJsonUrl, getTranslationsTeamsJson } from "./clients/TranslationsService/getTranslationsTeamsJson.ts";
-export { translationsService } from "./clients/TranslationsService/translationsService.ts";
-export { getGetAuthVerifyJsonUrl, getAuthVerifyJson } from "./clients/UtilityService/getAuthVerifyJson.ts";
-export { getGetCountriesFlagJsonUrl, getCountriesFlagJson } from "./clients/UtilityService/getCountriesFlagJson.ts";
-export { utilityService } from "./clients/UtilityService/utilityService.ts";
-export { getTablesStandingsJsonQueryParamsIncludeFormEnum } from "./types/GetTablesStandingsJson.ts";
+export type { ApiError } from './types/ApiError.ts'
+export type { Competition } from './types/Competition.ts'
+export type { CompetitionsResponse } from './types/CompetitionsResponse.ts'
+export type { CountriesResponse } from './types/CountriesResponse.ts'
+export type { Country } from './types/Country.ts'
+export type { Event } from './types/Event.ts'
+export type { EventsResponse } from './types/EventsResponse.ts'
+export type { Federation } from './types/Federation.ts'
+export type { FederationsResponse } from './types/FederationsResponse.ts'
+export type { Fixture } from './types/Fixture.ts'
+export type { FixturesResponse } from './types/FixturesResponse.ts'
+export type {
+  GetAuthVerifyJson200,
+  GetAuthVerifyJson400,
+  GetAuthVerifyJson401,
+  GetAuthVerifyJson500,
+  GetAuthVerifyJsonQueryResponse,
+  GetAuthVerifyJsonQuery,
+} from './types/GetAuthVerifyJson.ts'
+export type {
+  GetCompetitionsListJsonQueryParams,
+  GetCompetitionsListJson200,
+  GetCompetitionsListJson400,
+  GetCompetitionsListJson401,
+  GetCompetitionsListJson404,
+  GetCompetitionsListJson500,
+  GetCompetitionsListJsonQueryResponse,
+  GetCompetitionsListJsonQuery,
+} from './types/GetCompetitionsListJson.ts'
+export type {
+  GetCompetitionsTopscorersJsonQueryParams,
+  GetCompetitionsTopscorersJson200,
+  GetCompetitionsTopscorersJson400,
+  GetCompetitionsTopscorersJson401,
+  GetCompetitionsTopscorersJson404,
+  GetCompetitionsTopscorersJson500,
+  GetCompetitionsTopscorersJsonQueryResponse,
+  GetCompetitionsTopscorersJsonQuery,
+} from './types/GetCompetitionsTopscorersJson.ts'
+export type {
+  GetCountriesFlagJsonQueryParams,
+  GetCountriesFlagJson200,
+  GetCountriesFlagJson400,
+  GetCountriesFlagJson401,
+  GetCountriesFlagJson404,
+  GetCountriesFlagJsonQueryResponse,
+  GetCountriesFlagJsonQuery,
+} from './types/GetCountriesFlagJson.ts'
+export type {
+  GetCountriesListJsonQueryParams,
+  GetCountriesListJson200,
+  GetCountriesListJson400,
+  GetCountriesListJson401,
+  GetCountriesListJson404,
+  GetCountriesListJson500,
+  GetCountriesListJsonQueryResponse,
+  GetCountriesListJsonQuery,
+} from './types/GetCountriesListJson.ts'
+export type {
+  GetFederationsListJson200,
+  GetFederationsListJson400,
+  GetFederationsListJson401,
+  GetFederationsListJson404,
+  GetFederationsListJson500,
+  GetFederationsListJsonQueryResponse,
+  GetFederationsListJsonQuery,
+} from './types/GetFederationsListJson.ts'
+export type {
+  GetFixturesMatchesJsonQueryParams,
+  GetFixturesMatchesJson200,
+  GetFixturesMatchesJson400,
+  GetFixturesMatchesJson401,
+  GetFixturesMatchesJson404,
+  GetFixturesMatchesJson500,
+  GetFixturesMatchesJsonQueryResponse,
+  GetFixturesMatchesJsonQuery,
+} from './types/GetFixturesMatchesJson.ts'
+export type {
+  GetMatchesEventsJsonQueryParams,
+  GetMatchesEventsJson200,
+  GetMatchesEventsJson400,
+  GetMatchesEventsJson401,
+  GetMatchesEventsJson404,
+  GetMatchesEventsJson500,
+  GetMatchesEventsJsonQueryResponse,
+  GetMatchesEventsJsonQuery,
+} from './types/GetMatchesEventsJson.ts'
+export type {
+  GetMatchesHistoryJsonQueryParams,
+  GetMatchesHistoryJson200,
+  GetMatchesHistoryJson400,
+  GetMatchesHistoryJson401,
+  GetMatchesHistoryJson404,
+  GetMatchesHistoryJson500,
+  GetMatchesHistoryJsonQueryResponse,
+  GetMatchesHistoryJsonQuery,
+} from './types/GetMatchesHistoryJson.ts'
+export type {
+  GetMatchesLineupsJsonQueryParams,
+  GetMatchesLineupsJson200,
+  GetMatchesLineupsJson400,
+  GetMatchesLineupsJson401,
+  GetMatchesLineupsJson404,
+  GetMatchesLineupsJson500,
+  GetMatchesLineupsJsonQueryResponse,
+  GetMatchesLineupsJsonQuery,
+} from './types/GetMatchesLineupsJson.ts'
+export type {
+  GetMatchesLiveJsonQueryParams,
+  GetMatchesLiveJson200,
+  GetMatchesLiveJson400,
+  GetMatchesLiveJson401,
+  GetMatchesLiveJson404,
+  GetMatchesLiveJson500,
+  GetMatchesLiveJsonQueryResponse,
+  GetMatchesLiveJsonQuery,
+} from './types/GetMatchesLiveJson.ts'
+export type {
+  GetMatchesStatsJsonQueryParams,
+  GetMatchesStatsJson200,
+  GetMatchesStatsJson400,
+  GetMatchesStatsJson401,
+  GetMatchesStatsJson404,
+  GetMatchesStatsJson500,
+  GetMatchesStatsJsonQueryResponse,
+  GetMatchesStatsJsonQuery,
+} from './types/GetMatchesStatsJson.ts'
+export type {
+  GetOddsLiveJsonQueryParams,
+  GetOddsLiveJson200,
+  GetOddsLiveJson400,
+  GetOddsLiveJson401,
+  GetOddsLiveJson404,
+  GetOddsLiveJson500,
+  GetOddsLiveJsonQueryResponse,
+  GetOddsLiveJsonQuery,
+} from './types/GetOddsLiveJson.ts'
+export type {
+  GetOddsPreJsonQueryParams,
+  GetOddsPreJson200,
+  GetOddsPreJson400,
+  GetOddsPreJson401,
+  GetOddsPreJson404,
+  GetOddsPreJson500,
+  GetOddsPreJsonQueryResponse,
+  GetOddsPreJsonQuery,
+} from './types/GetOddsPreJson.ts'
+export type {
+  GetSeasonsListJson200,
+  GetSeasonsListJson400,
+  GetSeasonsListJson401,
+  GetSeasonsListJson404,
+  GetSeasonsListJson500,
+  GetSeasonsListJsonQueryResponse,
+  GetSeasonsListJsonQuery,
+} from './types/GetSeasonsListJson.ts'
+export type {
+  GetTablesStandingsJsonQueryParamsIncludeFormEnum,
+  GetTablesStandingsJsonQueryParams,
+  GetTablesStandingsJson200,
+  GetTablesStandingsJson400,
+  GetTablesStandingsJson401,
+  GetTablesStandingsJson404,
+  GetTablesStandingsJson500,
+  GetTablesStandingsJsonQueryResponse,
+  GetTablesStandingsJsonQuery,
+} from './types/GetTablesStandingsJson.ts'
+export type {
+  GetTeamsHead2HeadJsonQueryParams,
+  GetTeamsHead2HeadJson200,
+  GetTeamsHead2HeadJson400,
+  GetTeamsHead2HeadJson401,
+  GetTeamsHead2HeadJson404,
+  GetTeamsHead2HeadJson500,
+  GetTeamsHead2HeadJsonQueryResponse,
+  GetTeamsHead2HeadJsonQuery,
+} from './types/GetTeamsHead2HeadJson.ts'
+export type {
+  GetTeamsLastmatchesJsonQueryParams,
+  GetTeamsLastmatchesJson200,
+  GetTeamsLastmatchesJson400,
+  GetTeamsLastmatchesJson401,
+  GetTeamsLastmatchesJson404,
+  GetTeamsLastmatchesJson500,
+  GetTeamsLastmatchesJsonQueryResponse,
+  GetTeamsLastmatchesJsonQuery,
+} from './types/GetTeamsLastmatchesJson.ts'
+export type {
+  GetTeamsListJsonQueryParams,
+  GetTeamsListJson200,
+  GetTeamsListJson400,
+  GetTeamsListJson401,
+  GetTeamsListJson404,
+  GetTeamsListJson500,
+  GetTeamsListJsonQueryResponse,
+  GetTeamsListJsonQuery,
+} from './types/GetTeamsListJson.ts'
+export type {
+  GetTranslationsCompetitionsJsonQueryParams,
+  GetTranslationsCompetitionsJson200,
+  GetTranslationsCompetitionsJsonQueryResponse,
+  GetTranslationsCompetitionsJsonQuery,
+} from './types/GetTranslationsCompetitionsJson.ts'
+export type {
+  GetTranslationsCountriesJsonQueryParams,
+  GetTranslationsCountriesJson200,
+  GetTranslationsCountriesJsonQueryResponse,
+  GetTranslationsCountriesJsonQuery,
+} from './types/GetTranslationsCountriesJson.ts'
+export type {
+  GetTranslationsFederationsJsonQueryParams,
+  GetTranslationsFederationsJson200,
+  GetTranslationsFederationsJsonQueryResponse,
+  GetTranslationsFederationsJsonQuery,
+} from './types/GetTranslationsFederationsJson.ts'
+export type {
+  GetTranslationsTeamsJsonQueryParams,
+  GetTranslationsTeamsJson200,
+  GetTranslationsTeamsJson400,
+  GetTranslationsTeamsJson401,
+  GetTranslationsTeamsJsonQueryResponse,
+  GetTranslationsTeamsJsonQuery,
+} from './types/GetTranslationsTeamsJson.ts'
+export type { HistoryMatchesResponse } from './types/HistoryMatchesResponse.ts'
+export type { LastMatchesResponse } from './types/LastMatchesResponse.ts'
+export type { Lineup } from './types/Lineup.ts'
+export type { LineupPlayer } from './types/LineupPlayer.ts'
+export type { LineupsResponse } from './types/LineupsResponse.ts'
+export type { LiveMatchesResponse } from './types/LiveMatchesResponse.ts'
+export type { Match } from './types/Match.ts'
+export type { MatchStats } from './types/MatchStats.ts'
+export type { Odds } from './types/Odds.ts'
+export type { OddsOneXTwo } from './types/OddsOneXTwo.ts'
+export type { OddsResponse } from './types/OddsResponse.ts'
+export type { Outcomes } from './types/Outcomes.ts'
+export type { Pagination } from './types/Pagination.ts'
+export type { Score } from './types/Score.ts'
+export type { SeasonRef } from './types/SeasonRef.ts'
+export type { SeasonsResponse } from './types/SeasonsResponse.ts'
+export type { StatsResponse } from './types/StatsResponse.ts'
+export type { TableResponse } from './types/TableResponse.ts'
+export type { TableRow } from './types/TableRow.ts'
+export type { Team } from './types/Team.ts'
+export type { TeamsResponse } from './types/TeamsResponse.ts'
+export type { TeamStats } from './types/TeamStats.ts'
+export type { TopScorersResponse } from './types/TopScorersResponse.ts'
+export type { TranslationsResponse } from './types/TranslationsResponse.ts'
+export type { VerifyResponse } from './types/VerifyResponse.ts'
+export { catalogsService } from './clients/CatalogsService/catalogsService.ts'
+export {
+  getGetCompetitionsListJsonUrl,
+  getCompetitionsListJson,
+} from './clients/CatalogsService/getCompetitionsListJson.ts'
+export {
+  getGetCountriesListJsonUrl,
+  getCountriesListJson,
+} from './clients/CatalogsService/getCountriesListJson.ts'
+export {
+  getGetFederationsListJsonUrl,
+  getFederationsListJson,
+} from './clients/CatalogsService/getFederationsListJson.ts'
+export {
+  getGetSeasonsListJsonUrl,
+  getSeasonsListJson,
+} from './clients/CatalogsService/getSeasonsListJson.ts'
+export {
+  getGetTeamsLastmatchesJsonUrl,
+  getTeamsLastmatchesJson,
+} from './clients/CatalogsService/getTeamsLastmatchesJson.ts'
+export {
+  getGetTeamsListJsonUrl,
+  getTeamsListJson,
+} from './clients/CatalogsService/getTeamsListJson.ts'
+export { eventsService } from './clients/EventsService/eventsService.ts'
+export {
+  getGetMatchesEventsJsonUrl,
+  getMatchesEventsJson,
+} from './clients/EventsService/getMatchesEventsJson.ts'
+export { fixturesService } from './clients/FixturesService/fixturesService.ts'
+export {
+  getGetFixturesMatchesJsonUrl,
+  getFixturesMatchesJson,
+} from './clients/FixturesService/getFixturesMatchesJson.ts'
+export {
+  getGetMatchesLineupsJsonUrl,
+  getMatchesLineupsJson,
+} from './clients/Lineups&StatsService/getMatchesLineupsJson.ts'
+export {
+  getGetMatchesStatsJsonUrl,
+  getMatchesStatsJson,
+} from './clients/Lineups&StatsService/getMatchesStatsJson.ts'
+export {
+  getGetTeamsHead2HeadJsonUrl,
+  getTeamsHead2HeadJson,
+} from './clients/Lineups&StatsService/getTeamsHead2HeadJson.ts'
+export { lineupsStatsService } from './clients/Lineups&StatsService/lineupsStatsService.ts'
+export {
+  getGetMatchesHistoryJsonUrl,
+  getMatchesHistoryJson,
+} from './clients/MatchesService/getMatchesHistoryJson.ts'
+export {
+  getGetMatchesLiveJsonUrl,
+  getMatchesLiveJson,
+} from './clients/MatchesService/getMatchesLiveJson.ts'
+export { matchesService } from './clients/MatchesService/matchesService.ts'
+export { getGetOddsLiveJsonUrl, getOddsLiveJson } from './clients/OddsService/getOddsLiveJson.ts'
+export { getGetOddsPreJsonUrl, getOddsPreJson } from './clients/OddsService/getOddsPreJson.ts'
+export { oddsService } from './clients/OddsService/oddsService.ts'
+export { operations } from './clients/operations.ts'
+export {
+  getGetCompetitionsTopscorersJsonUrl,
+  getCompetitionsTopscorersJson,
+} from './clients/TablesService/getCompetitionsTopscorersJson.ts'
+export {
+  getGetTablesStandingsJsonUrl,
+  getTablesStandingsJson,
+} from './clients/TablesService/getTablesStandingsJson.ts'
+export { tablesService } from './clients/TablesService/tablesService.ts'
+export {
+  getGetTranslationsCompetitionsJsonUrl,
+  getTranslationsCompetitionsJson,
+} from './clients/TranslationsService/getTranslationsCompetitionsJson.ts'
+export {
+  getGetTranslationsCountriesJsonUrl,
+  getTranslationsCountriesJson,
+} from './clients/TranslationsService/getTranslationsCountriesJson.ts'
+export {
+  getGetTranslationsFederationsJsonUrl,
+  getTranslationsFederationsJson,
+} from './clients/TranslationsService/getTranslationsFederationsJson.ts'
+export {
+  getGetTranslationsTeamsJsonUrl,
+  getTranslationsTeamsJson,
+} from './clients/TranslationsService/getTranslationsTeamsJson.ts'
+export { translationsService } from './clients/TranslationsService/translationsService.ts'
+export {
+  getGetAuthVerifyJsonUrl,
+  getAuthVerifyJson,
+} from './clients/UtilityService/getAuthVerifyJson.ts'
+export {
+  getGetCountriesFlagJsonUrl,
+  getCountriesFlagJson,
+} from './clients/UtilityService/getCountriesFlagJson.ts'
+export { utilityService } from './clients/UtilityService/utilityService.ts'
+export { getTablesStandingsJsonQueryParamsIncludeFormEnum } from './types/GetTablesStandingsJson.ts'

@@ -7,12 +7,12 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { RefreshCw, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
@@ -28,10 +28,10 @@ export default function RefreshButton({ league, season }: RefreshButtonProps) {
 
   const handleRefresh = async (type: 'all' | 'standings' | 'live' | 'fixtures') => {
     setIsLoading(true)
-    
+
     try {
       let result
-      
+
       switch (type) {
         case 'all':
           result = await revalidateLeague(league, season)
@@ -64,10 +64,10 @@ export default function RefreshButton({ league, season }: RefreshButtonProps) {
 
   const handleRefreshAllLive = async () => {
     setIsLoading(true)
-    
+
     try {
       const result = await revalidateAllLive()
-      
+
       if (result.success) {
         toast.success(result.message)
       } else {
@@ -91,43 +91,28 @@ export default function RefreshButton({ league, season }: RefreshButtonProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem 
-          onClick={() => handleRefresh('all')}
-          disabled={isLoading}
-        >
+        <DropdownMenuItem onClick={() => handleRefresh('all')} disabled={isLoading}>
           <RefreshCw className="h-4 w-4 mr-2" />
           Все данные
         </DropdownMenuItem>
-        
+
         <DropdownMenuSeparator />
-        
-        <DropdownMenuItem 
-          onClick={() => handleRefresh('standings')}
-          disabled={isLoading}
-        >
+
+        <DropdownMenuItem onClick={() => handleRefresh('standings')} disabled={isLoading}>
           Турнирная таблица
         </DropdownMenuItem>
-        
-        <DropdownMenuItem 
-          onClick={() => handleRefresh('live')}
-          disabled={isLoading}
-        >
+
+        <DropdownMenuItem onClick={() => handleRefresh('live')} disabled={isLoading}>
           Live-матчи
         </DropdownMenuItem>
-        
-        <DropdownMenuItem 
-          onClick={() => handleRefresh('fixtures')}
-          disabled={isLoading}
-        >
+
+        <DropdownMenuItem onClick={() => handleRefresh('fixtures')} disabled={isLoading}>
           Ближайшие матчи
         </DropdownMenuItem>
-        
+
         <DropdownMenuSeparator />
-        
-        <DropdownMenuItem 
-          onClick={handleRefreshAllLive}
-          disabled={isLoading}
-        >
+
+        <DropdownMenuItem onClick={handleRefreshAllLive} disabled={isLoading}>
           Все live-данные
         </DropdownMenuItem>
       </DropdownMenuContent>

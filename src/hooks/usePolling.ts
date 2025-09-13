@@ -10,33 +10,30 @@ interface UsePollingOptions {
   immediate?: boolean // Выполнить сразу при монтировании
 }
 
-export function usePolling<T>(
-  fetchFn: () => Promise<T>,
-  options: UsePollingOptions = {}
-) {
+export function usePolling<T>(fetchFn: () => Promise<T>, options: UsePollingOptions = {}) {
   const {
     interval = 60000, // 1 минута по умолчанию
     enabled = true,
-    immediate = true
+    immediate = true,
   } = options
 
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  
+
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const mountedRef = useRef(true)
 
   const fetchData = async () => {
     if (!mountedRef.current) return
-    
+
     try {
       setLoading(true)
       setError(null)
-      
+
       const result = await fetchFn()
-      
+
       if (mountedRef.current) {
         setData(result)
         setLastUpdated(new Date())
@@ -56,7 +53,7 @@ export function usePolling<T>(
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
     }
-    
+
     intervalRef.current = setInterval(fetchData, interval)
   }
 
@@ -73,11 +70,11 @@ export function usePolling<T>(
 
   useEffect(() => {
     mountedRef.current = true
-    
+
     if (immediate) {
       fetchData()
     }
-    
+
     if (enabled) {
       startPolling()
     }
@@ -101,6 +98,6 @@ export function usePolling<T>(
     lastUpdated,
     refresh,
     startPolling,
-    stopPolling
+    stopPolling,
   }
 }

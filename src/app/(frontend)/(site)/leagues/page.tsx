@@ -35,18 +35,21 @@ function extractCompetitions(raw: any): Competition[] {
   if (Array.isArray(raw?.data?.competitions)) candidates.push(raw.data.competitions)
   if (Array.isArray(raw?.data?.competition)) candidates.push(raw.data.competition)
   if (Array.isArray(raw?.data?.data?.competitions)) candidates.push(raw.data.data.competitions)
-  
+
   for (const arr of candidates) {
     if (Array.isArray(arr)) {
       // Преобразуем данные под ожидаемый формат
       return arr.map((item: any) => ({
         ...item,
         // Добавляем вычисляемое поле country из массива countries для совместимости
-        country: item.countries && item.countries.length > 0 ? {
-          id: Number(item.countries[0].id),
-          name: item.countries[0].name,
-          flag: item.countries[0].flag
-        } : null
+        country:
+          item.countries && item.countries.length > 0
+            ? {
+                id: Number(item.countries[0].id),
+                name: item.countries[0].name,
+                flag: item.countries[0].flag,
+              }
+            : null,
       })) as Competition[]
     }
   }

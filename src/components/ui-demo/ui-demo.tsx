@@ -196,10 +196,9 @@ import {
   Bell,
   Star,
   Shield,
-  Goal,
   Flag,
 } from 'lucide-react'
-import { format, addDays, isToday, isTomorrow, parseISO } from 'date-fns'
+import { format, isToday, isTomorrow } from 'date-fns'
 import { ru } from 'date-fns/locale'
 
 const teams = [
@@ -1105,13 +1104,5 @@ export function UIDemo() {
 }
 
 // Helpers
-export function FilterDot() {
-  return (
-    <span className="relative inline-flex items-center gap-2">
-      Фильтры
-      <span className="absolute -right-2 -top-1 inline-flex h-2 w-2 rounded-full bg-primary" />
-    </span>
-  )
-}
 
 export default UIDemo

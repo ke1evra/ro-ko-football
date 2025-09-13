@@ -11,10 +11,18 @@ export const Users: CollectionConfig = {
   slug: 'users',
   admin: {
     useAsTitle: 'email',
+    defaultColumns: ['email', 'username', 'name', 'role', 'rating'],
   },
   auth: true,
   access: {
     admin: isAdmin,
+    read: () => true,
+    update: ({ req, id }) => {
+      const user = req.user as User | null
+      if (!user) return false
+      // Админ может менять любого, пользователь — только себя
+      return user.role === 'admin' || user.id === id
+    },
   },
   fields: [
     {
@@ -26,6 +34,59 @@ export const Users: CollectionConfig = {
       ],
       required: true,
       defaultValue: 'user',
+      admin: { position: 'sidebar' },
+    },
+    {
+      name: 'username',
+      type: 'text',
+      label: 'Username',
+      unique: true,
+      required: true,
+      admin: { description: 'Уникальный идентификатор для публичного профиля' },
+    },
+    {
+      name: 'name',
+      type: 'text',
+      label: 'Имя',
+    },
+    {
+      name: 'bio',
+      type: 'textarea',
+      label: 'О себе',
+      admin: { placeholder: 'Короткая информация о себе' },
+    },
+    {
+      name: 'avatar',
+      type: 'relationship',
+      relationTo: 'media',
+      required: false,
+      label: 'Аватар (Media)',
+    },
+    {
+      name: 'avatarUrl',
+      type: 'text',
+      label: 'Аватар (внешний URL)',
+      admin: { description: 'Если нет загруженного медиа, можно указать внешний URL' },
+    },
+    {
+      type: 'group',
+      name: 'links',
+      label: 'Ссылки',
+      fields: [
+        { name: 'website', type: 'text', label: 'Сайт' },
+        { name: 'twitter', type: 'text', label: 'X/Twitter' },
+        { name: 'github', type: 'text', label: 'GitHub' },
+      ],
+    },
+    {
+      name: 'rating',
+      type: 'number',
+      defaultValue: 0,
+      label: 'Рейтинг',
+      admin: { position: 'sidebar', description: 'Редактирует только админ' },
+      access: {
+        update: ({ req }) => isAdmin({ req }),
+      },
     },
     {
       name: 'emailVerified',
@@ -33,6 +94,7 @@ export const Users: CollectionConfig = {
       defaultValue: false,
       admin: {
         description: 'Has the user verified their email address',
+        position: 'sidebar',
       },
     },
     {
@@ -63,12 +125,5 @@ export const Users: CollectionConfig = {
         hidden: true,
       },
     },
-    // If you want to add a username field, uncomment the following lines
-    // {
-    //   name: 'username',
-    //   type: 'text',
-    //   required: true,
-    //   unique: true,
-    // },
   ],
 }

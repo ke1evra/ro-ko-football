@@ -8,7 +8,7 @@
 import { revalidateTag, revalidatePath } from 'next/cache'
 
 // Типы для revalidation
-export type RevalidateTarget = 
+export type RevalidateTarget =
   | { type: 'standings'; league: string; season: string }
   | { type: 'live'; league: string }
   | { type: 'fixtures'; league: string; season: string }
@@ -17,7 +17,9 @@ export type RevalidateTarget =
 /**
  * Обновляет кэш для конкретного ресурса
  */
-export async function revalidateResource(target: RevalidateTarget): Promise<{ success: boolean; message: string }> {
+export async function revalidateResource(
+  target: RevalidateTarget,
+): Promise<{ success: boolean; message: string }> {
   try {
     switch (target.type) {
       case 'standings':
@@ -26,7 +28,7 @@ export async function revalidateResource(target: RevalidateTarget): Promise<{ su
         revalidatePath(`/api/standings/${target.league}/${target.season}`)
         return {
           success: true,
-          message: `Турнирная таблица ${target.league} ${target.season} обновлена`
+          message: `Турнирная таблица ${target.league} ${target.season} обновлена`,
         }
 
       case 'live':
@@ -35,7 +37,7 @@ export async function revalidateResource(target: RevalidateTarget): Promise<{ su
         revalidatePath(`/api/live/${target.league}`)
         return {
           success: true,
-          message: `Live-матчи ${target.league} обновлены`
+          message: `Live-матчи ${target.league} обновлены`,
         }
 
       case 'fixtures':
@@ -44,7 +46,7 @@ export async function revalidateResource(target: RevalidateTarget): Promise<{ su
         revalidatePath(`/api/fixtures/${target.league}/${target.season}`)
         return {
           success: true,
-          message: `Ближайшие матчи ${target.league} ${target.season} обновлены`
+          message: `Ближайшие матчи ${target.league} ${target.season} обновлены`,
         }
 
       case 'page':
@@ -52,20 +54,20 @@ export async function revalidateResource(target: RevalidateTarget): Promise<{ su
         revalidatePath(target.path)
         return {
           success: true,
-          message: `Страница ${target.path} обновлена`
+          message: `Страница ${target.path} обновлена`,
         }
 
       default:
         return {
           success: false,
-          message: 'Неизвестный тип ресурса для обновления'
+          message: 'Неизвестный тип ресурса для обновления',
         }
     }
   } catch (error) {
     console.error('Revalidation error:', error)
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Ошибка при обновлении кэша'
+      message: error instanceof Error ? error.message : 'Ошибка при обновлении кэша',
     }
   }
 }
@@ -73,7 +75,10 @@ export async function revalidateResource(target: RevalidateTarget): Promise<{ su
 /**
  * Обновляет все данные для лиги/сезона
  */
-export async function revalidateLeague(league: string, season: string): Promise<{ success: boolean; message: string }> {
+export async function revalidateLeague(
+  league: string,
+  season: string,
+): Promise<{ success: boolean; message: string }> {
   try {
     // Обновляем все связанные ресурсы
     await Promise.all([
@@ -85,13 +90,13 @@ export async function revalidateLeague(league: string, season: string): Promise<
 
     return {
       success: true,
-      message: `Все данные для ${league} ${season} обновлены`
+      message: `Все данные для ${league} ${season} обновлены`,
     }
   } catch (error) {
     console.error('League revalidation error:', error)
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Ошибка при обновлении данных лиги'
+      message: error instanceof Error ? error.message : 'Ошибка при обновлении данных лиги',
     }
   }
 }
@@ -102,20 +107,18 @@ export async function revalidateLeague(league: string, season: string): Promise<
 export async function revalidateAllLive(): Promise<{ success: boolean; message: string }> {
   try {
     const leagues = ['premier-league', 'la-liga', 'bundesliga', 'serie-a', 'ligue-1', 'all']
-    
-    await Promise.all(
-      leagues.map(league => revalidateResource({ type: 'live', league }))
-    )
+
+    await Promise.all(leagues.map((league) => revalidateResource({ type: 'live', league })))
 
     return {
       success: true,
-      message: 'Все live-данные обновлены'
+      message: 'Все live-данные обновлены',
     }
   } catch (error) {
     console.error('All live revalidation error:', error)
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Ошибка при обновлении live-данных'
+      message: error instanceof Error ? error.message : 'Ошибка при обновлении live-данных',
     }
   }
 }

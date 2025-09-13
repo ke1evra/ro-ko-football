@@ -32,7 +32,11 @@ const MatchBlock: React.FC<MatchBlockProps> = ({ match }) => {
       case 'scheduled':
         return <Badge variant="secondary">Запланирован</Badge>
       case 'live':
-        return <Badge variant="default" className="bg-green-500">В прямом эфире</Badge>
+        return (
+          <Badge variant="default" className="bg-green-500">
+            В прямом эфире
+          </Badge>
+        )
       case 'finished':
         return <Badge variant="outline">Завершён</Badge>
       default:
@@ -51,18 +55,25 @@ const MatchBlock: React.FC<MatchBlockProps> = ({ match }) => {
       <CardContent>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            {match.homeTeam.logo && <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="w-8 h-8" />}
+            {match.homeTeam.logo && (
+              <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="w-8 h-8" />
+            )}
             <span className="font-bold">{match.homeTeam.name}</span>
           </div>
           <div className="text-xl font-bold">{score}</div>
           <div className="flex items-center space-x-2">
             <span className="font-bold">{match.awayTeam.name}</span>
-            {match.awayTeam.logo && <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="w-8 h-8" />}
+            {match.awayTeam.logo && (
+              <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="w-8 h-8" />
+            )}
           </div>
         </div>
         <div className="mt-4 flex items-center text-muted-foreground text-sm">
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {new Date(match.date).toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' })}
+          {new Date(match.date).toLocaleString('ru-RU', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+          })}
         </div>
       </CardContent>
     </Card>

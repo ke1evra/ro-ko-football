@@ -127,6 +127,26 @@ export interface User {
   id: number;
   role: 'admin' | 'user';
   /**
+   * Уникальный идентификатор для публичного профиля
+   */
+  username: string;
+  name?: string | null;
+  bio?: string | null;
+  avatar?: (number | null) | Media;
+  /**
+   * Если нет загруженного медиа, можно указать внешний URL
+   */
+  avatarUrl?: string | null;
+  links?: {
+    website?: string | null;
+    twitter?: string | null;
+    github?: string | null;
+  };
+  /**
+   * Редактирует только админ
+   */
+  rating?: number | null;
+  /**
    * Has the user verified their email address
    */
   emailVerified?: boolean | null;
@@ -298,6 +318,19 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   role?: T;
+  username?: T;
+  name?: T;
+  bio?: T;
+  avatar?: T;
+  avatarUrl?: T;
+  links?:
+    | T
+    | {
+        website?: T;
+        twitter?: T;
+        github?: T;
+      };
+  rating?: T;
   emailVerified?: T;
   emailVerificationToken?: T;
   emailVerificationExpires?: T;

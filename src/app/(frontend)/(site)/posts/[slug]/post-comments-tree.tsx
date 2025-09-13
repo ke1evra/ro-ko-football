@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useMemo, useState, useTransition } from 'react'
 import { format } from 'date-fns'
@@ -44,7 +44,10 @@ export function CommentsTree({ postId, comments }: { postId: string; comments: C
 
   const tree = useMemo(() => buildTree(local), [local])
 
-  function updateCounters(id: string, counters: { upvotes: number; downvotes: number; score: number }) {
+  function updateCounters(
+    id: string,
+    counters: { upvotes: number; downvotes: number; score: number },
+  ) {
     setLocal((prev) => prev.map((c) => (c.id === id ? { ...c, ...counters } : c)))
   }
 
@@ -133,7 +136,10 @@ function CommentNode({
 }: {
   node: any
   onReplySuccess: (newComment: Comment) => void
-  onVoteSuccess: (id: string, counters: { upvotes: number; downvotes: number; score: number }) => void
+  onVoteSuccess: (
+    id: string,
+    counters: { upvotes: number; downvotes: number; score: number },
+  ) => void
   startTransition: ReturnType<typeof useTransition>[1]
   pending: boolean
 }) {
@@ -142,7 +148,8 @@ function CommentNode({
   return (
     <div className="border rounded-md p-3">
       <div className="text-sm text-muted-foreground mb-1">
-        {(node?.author?.email as string) || 'Аноним'} · {format(new Date(node.createdAt), 'd MMM yyyy, HH:mm', { locale: ru })}
+        {(node?.author?.email as string) || 'Аноним'} ·{' '}
+        {format(new Date(node.createdAt), 'd MMM yyyy, HH:mm', { locale: ru })}
       </div>
       <div className="text-sm mb-2">{node.content}</div>
       <div className="flex items-center gap-3">

@@ -23,18 +23,20 @@ function getInitials(name?: string) {
 
 export const PlayerBlock = (props: PlayerBlockProps) => {
   // Распаковка из relationship, если передан player из payload
-  const p = props.player && typeof props.player === 'object' ? (props.player as PlayerType) : undefined
+  const p =
+    props.player && typeof props.player === 'object' ? (props.player as PlayerType) : undefined
 
   const name = p?.name ?? props.name ?? 'Player Name'
   const teamName = p?.team && typeof p.team === 'object' ? p.team.name : props.teamName
-  const photoUrl = p?.photo && typeof p.photo === 'object' ? p.photo.url ?? undefined : props.photoUrl
+  const photoUrl =
+    p?.photo && typeof p.photo === 'object' ? (p.photo.url ?? undefined) : props.photoUrl
 
   const statsFromRel = p?.stats
     ? {
-        'Голы': p.stats.goals ?? 0,
-        'Ассисты': p.stats.assists ?? 0,
-        'ЖК': p.stats.yellowCards ?? 0,
-        'КК': p.stats.redCards ?? 0,
+        Голы: p.stats.goals ?? 0,
+        Ассисты: p.stats.assists ?? 0,
+        ЖК: p.stats.yellowCards ?? 0,
+        КК: p.stats.redCards ?? 0,
       }
     : undefined
 
@@ -44,12 +46,8 @@ export const PlayerBlock = (props: PlayerBlockProps) => {
     <Card className="my-4 p-4">
       <div className="flex gap-4 items-center">
         <Avatar className="h-16 w-16">
-          {photoUrl ? (
-            <AvatarImage src={photoUrl} alt={name} />
-          ) : null}
-          <AvatarFallback className="text-base font-bold">
-            {getInitials(name)}
-          </AvatarFallback>
+          {photoUrl ? <AvatarImage src={photoUrl} alt={name} /> : null}
+          <AvatarFallback className="text-base font-bold">{getInitials(name)}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
           <div className="text-xl font-bold">{name}</div>

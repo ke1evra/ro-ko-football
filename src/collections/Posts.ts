@@ -73,26 +73,28 @@ export const Posts: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeValidate: [async ({ data, req }) => {
-      if (!data) return data
+    beforeValidate: [
+      async ({ data, req }) => {
+        if (!data) return data
 
-      // Проставляем автора автоматически, если не админ и поле не задано
-      if (!isAdmin(req!) && req?.user && !data.author) {
-        data.author = req.user.id
-      }
+        // Проставляем автора автоматически, если не админ и поле не задано
+        if (!isAdmin(req!) && req?.user && !data.author) {
+          data.author = req.user.id
+        }
 
-      // Генерация slug при отсутствии
-      if (data.title && !data.slug) {
-        data.slug = slugify(data.title)
-      }
+        // Генерация slug при отсутствии
+        if (data.title && !data.slug) {
+          data.slug = slugify(data.title)
+        }
 
-      // Страхуемся от слишком длинных slug
-      if (data.slug && typeof data.slug === 'string') {
-        data.slug = data.slug.slice(0, 160)
-      }
+        // Страхуемся от слишком длинных slug
+        if (data.slug && typeof data.slug === 'string') {
+          data.slug = data.slug.slice(0, 160)
+        }
 
-      return data
-    }],
+        return data
+      },
+    ],
   },
   timestamps: true,
 }

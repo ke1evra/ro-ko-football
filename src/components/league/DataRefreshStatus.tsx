@@ -27,7 +27,7 @@ export default function DataRefreshStatus({
   view = 'all',
   round,
   initialData,
-  onDataUpdate
+  onDataUpdate,
 }: DataRefreshStatusProps) {
   const [nextRefresh, setNextRefresh] = useState<number>(60)
   const lastFetchTimeRef = useRef<Date>(new Date())
@@ -36,25 +36,19 @@ export default function DataRefreshStatus({
   const fetchStandings = async (): Promise<StandingsResponse> => {
     const url = `/api/standings/${league}/${season}?view=${view}${round ? `&round=${round}` : ''}`
     const response = await fetch(url, { cache: 'no-store' })
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch standings: ${response.status}`)
     }
-    
+
     return response.json()
   }
 
   // Используем хук поллинга
-  const {
-    data,
-    loading,
-    error,
-    lastUpdated,
-    refresh
-  } = usePolling(fetchStandings, {
+  const { data, loading, error, lastUpdated, refresh } = usePolling(fetchStandings, {
     interval: 60000, // 1 минута
     enabled: true,
-    immediate: false // Не загружаем сразу, так как у нас есть initialData
+    immediate: false, // Не загружаем сразу, так как у нас есть initialData
   })
 
   // Обновляем родительский компонент при получении новых данных
@@ -128,15 +122,16 @@ export default function DataRefreshStatus({
     <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border">
       <div className="flex items-center gap-3">
         {getStatusBadge()}
-        
+
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Clock className="h-4 w-4" />
           <span>
             {displayLastUpdated ? (
               <>
-                Обновлено: {displayLastUpdated.toLocaleTimeString('ru-RU', { 
-                  hour: '2-digit', 
-                  minute: '2-digit'
+                Обновлено:{' '}
+                {displayLastUpdated.toLocaleTimeString('ru-RU', {
+                  hour: '2-digit',
+                  minute: '2-digit',
                 })}
               </>
             ) : (
@@ -158,7 +153,7 @@ export default function DataRefreshStatus({
             {currentData.source === 'database' ? 'БД' : 'Live'}
           </Badge>
         )}
-        
+
         <Button
           variant="outline"
           size="sm"

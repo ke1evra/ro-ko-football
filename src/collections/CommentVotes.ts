@@ -56,17 +56,14 @@ export const CommentVotes: CollectionConfig = {
         if (!isAdmin(req!) && req?.user && !data.user) {
           data.user = req.user.id
         }
-        
+
         // Защита: один голос на комментарий от пользователя (только при создании)
         if (operation === 'create' && req?.user && data.comment) {
           const payload = req.payload
           const existing = await payload.find({
             collection: 'commentVotes',
             where: {
-              and: [
-                { comment: { equals: data.comment } },
-                { user: { equals: req.user.id } },
-              ],
+              and: [{ comment: { equals: data.comment } }, { user: { equals: req.user.id } }],
             },
             limit: 1,
           })

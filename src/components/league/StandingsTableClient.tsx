@@ -7,7 +7,14 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -23,12 +30,12 @@ interface StandingsTableClientProps {
   initialData: StandingsResponse
 }
 
-export default function StandingsTableClient({ 
-  league, 
-  season, 
-  view = 'all', 
+export default function StandingsTableClient({
+  league,
+  season,
+  view = 'all',
   round,
-  initialData 
+  initialData,
 }: StandingsTableClientProps) {
   const [data, setData] = useState<StandingsResponse>(initialData)
 
@@ -50,7 +57,7 @@ export default function StandingsTableClient({
 
       {/* Переключатели All/Home/Away */}
       <ViewToggle league={league} season={season} currentView={view} round={round} />
-      
+
       {/* Информация об источнике данных */}
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
@@ -59,9 +66,7 @@ export default function StandingsTableClient({
           </Badge>
           <span>Данные от: {new Date(data.lastUpdated).toLocaleString('ru-RU')}</span>
         </div>
-        {round && (
-          <Badge variant="outline">Тур {round}</Badge>
-        )}
+        {round && <Badge variant="outline">Тур {round}</Badge>}
       </div>
 
       {/* Таблица */}
@@ -88,9 +93,9 @@ export default function StandingsTableClient({
                   <div className="flex items-center gap-2">
                     <span className={getPositionColor(team.rank)}>{team.rank}</span>
                     {index > 0 && (
-                      <PositionTrend 
-                        current={team.rank} 
-                        previous={data.standings[index - 1]?.rank} 
+                      <PositionTrend
+                        current={team.rank}
+                        previous={data.standings[index - 1]?.rank}
                       />
                     )}
                   </div>
@@ -109,7 +114,8 @@ export default function StandingsTableClient({
                 </TableCell>
                 <TableCell className="text-center">
                   <span className={team.goalDiff >= 0 ? 'text-green-600' : 'text-red-600'}>
-                    {team.goalDiff > 0 ? '+' : ''}{team.goalDiff}
+                    {team.goalDiff > 0 ? '+' : ''}
+                    {team.goalDiff}
                   </span>
                 </TableCell>
                 <TableCell className="text-center font-bold">{team.points}</TableCell>
@@ -148,7 +154,12 @@ export default function StandingsTableClient({
 }
 
 // Компонент переключателей
-function ViewToggle({ league, season, currentView, round }: {
+function ViewToggle({
+  league,
+  season,
+  currentView,
+  round,
+}: {
   league: string
   season: string
   currentView: string
@@ -160,19 +171,13 @@ function ViewToggle({ league, season, currentView, round }: {
   return (
     <ToggleGroup type="single" value={currentView} className="justify-start">
       <ToggleGroupItem value="all" asChild>
-        <Link href={`${baseUrl}?view=all${roundParam}`}>
-          Общая
-        </Link>
+        <Link href={`${baseUrl}?view=all${roundParam}`}>Общая</Link>
       </ToggleGroupItem>
       <ToggleGroupItem value="home" asChild>
-        <Link href={`${baseUrl}?view=home${roundParam}`}>
-          Дома
-        </Link>
+        <Link href={`${baseUrl}?view=home${roundParam}`}>Дома</Link>
       </ToggleGroupItem>
       <ToggleGroupItem value="away" asChild>
-        <Link href={`${baseUrl}?view=away${roundParam}`}>
-          В гостях
-        </Link>
+        <Link href={`${baseUrl}?view=away${roundParam}`}>В гостях</Link>
       </ToggleGroupItem>
     </ToggleGroup>
   )
@@ -180,26 +185,32 @@ function ViewToggle({ league, season, currentView, round }: {
 
 // Компонент индикатора формы команды
 function FormIndicator({ form }: { form: string }) {
-  if (!form || typeof form !== "string") {
+  if (!form || typeof form !== 'string') {
     return <span className="text-muted-foreground text-xs">—</span>
   }
-  
-  const results = form.slice(-5).split("").filter(r => ["W", "D", "L"].includes(r)) // Последние 5 результатов
-  
+
+  const results = form
+    .slice(-5)
+    .split('')
+    .filter((r) => ['W', 'D', 'L'].includes(r)) // Последние 5 результатов
+
   if (results.length === 0) {
     return <span className="text-muted-foreground text-xs">—</span>
   }
-  
+
   return (
     <div className="flex gap-1">
       {results.map((result, index) => (
         <div
           key={index}
           className={`w-5 h-5 rounded-full text-xs flex items-center justify-center text-white font-medium ${
-            result === "W" ? "bg-green-500" :
-            result === "D" ? "bg-yellow-500" :
-            result === "L" ? "bg-red-500" :
-            "bg-gray-400"
+            result === 'W'
+              ? 'bg-green-500'
+              : result === 'D'
+                ? 'bg-yellow-500'
+                : result === 'L'
+                  ? 'bg-red-500'
+                  : 'bg-gray-400'
           }`}
         >
           {result}
@@ -212,7 +223,7 @@ function FormIndicator({ form }: { form: string }) {
 // Компонент тренда позиции
 function PositionTrend({ current, previous }: { current: number; previous?: number }) {
   if (!previous) return null
-  
+
   if (current < previous) {
     return <TrendingUp className="h-3 w-3 text-green-500" />
   } else if (current > previous) {

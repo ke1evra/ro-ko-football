@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { LogIn, LogOut, User as UserIcon, BarChart2, Trophy } from 'lucide-react'
+import { LogIn, LogOut, User as UserIcon, BarChart2 } from 'lucide-react'
 
 export const Header = () => {
   const { user, isLoading, logout } = useAuth()
@@ -68,7 +68,22 @@ export const Header = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.avatar?.url} alt={user.name || 'Avatar'} />
+                    {(() => {
+                      const avatarRel: unknown = (user as unknown as { avatar?: unknown }).avatar
+                      const avatarUrlField: string | undefined = (
+                        user as unknown as {
+                          avatarUrl?: string
+                        }
+                      ).avatarUrl
+                      let src: string | undefined
+                      if (avatarRel && typeof avatarRel === 'object' && 'url' in avatarRel) {
+                        const possible = (avatarRel as { url?: unknown }).url
+                        src = typeof possible === 'string' ? possible : undefined
+                      } else {
+                        src = avatarUrlField
+                      }
+                      return <AvatarImage src={src} alt={user.name || 'Avatar'} />
+                    })()}
                     <AvatarFallback>{getInitials(user.name, user.email)}</AvatarFallback>
                   </Avatar>
                 </Button>

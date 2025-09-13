@@ -1,41 +1,41 @@
-import React from 'react';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { CalendarIcon } from 'lucide-react';
+import React from 'react'
+import Link from 'next/link'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { CalendarIcon } from 'lucide-react'
 
 interface NewsItem {
-  id: string;
-  title: string;
-  published?: string;
+  id: string
+  title: string
+  published?: string
   image?: {
-    url: string;
-    alt?: string;
-  };
+    url: string
+    alt?: string
+  }
 }
 
 interface NewsWidgetProps {
-  news: NewsItem[];
+  news: NewsItem[]
 }
 
 const NewsWidget: React.FC<NewsWidgetProps> = ({ news }) => {
   const formatDate = (dateString?: string) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', { 
-      day: '2-digit', 
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    return date.toLocaleDateString('ru-RU', {
+      day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
-    });
-  };
+      year: 'numeric',
+    })
+  }
 
   return (
     <Card className="h-fit">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center justify-between">
           Новости
-          <Link 
-            href="/news" 
+          <Link
+            href="/news"
             className="text-sm font-normal text-muted-foreground hover:text-primary transition-colors"
           >
             Все новости →
@@ -64,7 +64,7 @@ const NewsWidget: React.FC<NewsWidgetProps> = ({ news }) => {
         )}
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default NewsWidget;
+export default NewsWidget

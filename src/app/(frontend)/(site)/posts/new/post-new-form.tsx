@@ -44,7 +44,9 @@ export function NewPostForm() {
         />
       </div>
       <div>
-        <Button type="submit" disabled={pending}>Опубликовать</Button>
+        <Button type="submit" disabled={pending}>
+          Опубликовать
+        </Button>
       </div>
     </form>
   )

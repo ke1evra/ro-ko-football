@@ -7,7 +7,15 @@ import { createCommentAction } from './post-server-actions'
 import { toast } from 'sonner'
 import type { Comment } from './post-comments-tree'
 
-export function CommentForm({ postId, parentId, onSuccess }: { postId: string; parentId?: string; onSuccess?: (newComment?: Comment) => void }) {
+export function CommentForm({
+  postId,
+  parentId,
+  onSuccess,
+}: {
+  postId: string
+  parentId?: string
+  onSuccess?: (newComment?: Comment) => void
+}) {
   const [content, setContent] = useState('')
   const [pending, startTransition] = useTransition()
 
@@ -38,7 +46,9 @@ export function CommentForm({ postId, parentId, onSuccess }: { postId: string; p
         placeholder={parentId ? 'Ответить на комментарий...' : 'Написать комментарий...'}
       />
       <div>
-        <Button type="submit" disabled={pending}>Отправить</Button>
+        <Button type="submit" disabled={pending}>
+          Отправить
+        </Button>
       </div>
     </form>
   )

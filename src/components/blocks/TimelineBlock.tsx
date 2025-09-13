@@ -45,7 +45,7 @@ export default function TimelineBlock({ events }: { events?: EventItem[] }) {
       <CardContent className="space-y-3">
         {sorted.map((e, i) => (
           <div key={i} className="grid grid-cols-[80px_1fr_auto] items-center gap-3">
-            <div className="text-sm text-muted-foreground">{e.minute}'</div>
+            <div className="text-sm text-muted-foreground">{e.minute}&apos;</div>
             <div>
               <div className="font-medium">
                 {e.player || 'Игрок'} {e.team ? `(${e.team})` : ''}

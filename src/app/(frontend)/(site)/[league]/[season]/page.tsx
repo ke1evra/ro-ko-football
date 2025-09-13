@@ -17,36 +17,36 @@ import RefreshButton from '@/components/league/RefreshButton'
 
 // Конфигурация поддерживаемых лиг
 const LEAGUE_CONFIG: Record<string, { name: string; country: string; description: string }> = {
-  'premier-league': { 
-    name: 'Premier League', 
+  'premier-league': {
+    name: 'Premier League',
     country: 'Англия',
-    description: 'Английская Премьер-лига - самая популярная футбольная лига в мире'
+    description: 'Английская Премьер-лига - самая популярная футбольная лига в мире',
   },
-  'la-liga': { 
-    name: 'La Liga', 
+  'la-liga': {
+    name: 'La Liga',
     country: 'Испания',
-    description: 'Испанская Ла Лига - домашняя лига для Реал Мадрид и Барселоны'
+    description: 'Испанская Ла Лига - домашняя лига для Реал Мадрид и Барселоны',
   },
-  'bundesliga': { 
-    name: 'Bundesliga', 
+  bundesliga: {
+    name: 'Bundesliga',
     country: 'Германия',
-    description: 'Немецкая Бундеслига - известна своей атмосферой и молодыми талантами'
+    description: 'Немецкая Бундеслига - известна своей атмосферой и молодыми талантами',
   },
-  'serie-a': { 
-    name: 'Serie A', 
+  'serie-a': {
+    name: 'Serie A',
     country: 'Италия',
-    description: 'Итальянская Серия А - лига с богатой тактической традицией'
+    description: 'Итальянская Серия А - лига с богатой тактической традицией',
   },
-  'ligue-1': { 
-    name: 'Ligue 1', 
+  'ligue-1': {
+    name: 'Ligue 1',
     country: 'Франция',
-    description: 'Французская Лига 1 - развивающаяся лига с большим потенциалом'
+    description: 'Французская Лига 1 - развивающаяся лига с большим потенциалом',
   },
 }
 
 interface PageProps {
   params: Promise<{ league: string; season: string }>
-  searchParams: Promise<{ 
+  searchParams: Promise<{
     view?: 'all' | 'home' | 'away'
     round?: string
     date?: string
@@ -57,11 +57,11 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { league, season } = await params
   const leagueConfig = LEAGUE_CONFIG[league]
-  
+
   if (!leagueConfig) {
     return {
       title: 'Лига не найдена',
-      description: 'Запрашиваемая лига не поддерживается'
+      description: 'Запрашиваемая лига не поддерживается',
     }
   }
 
@@ -110,16 +110,14 @@ export default async function LeaguePage({ params, searchParams }: PageProps) {
             {leagueConfig.country} • Сезон {season}
           </p>
         </div>
-        
+
         <RefreshButton league={league} season={season} />
       </div>
 
       {/* Описание лиги */}
       <Card>
         <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground">
-            {leagueConfig.description}
-          </p>
+          <p className="text-sm text-muted-foreground">{leagueConfig.description}</p>
         </CardContent>
       </Card>
 
@@ -133,18 +131,11 @@ export default async function LeaguePage({ params, searchParams }: PageProps) {
                 <Trophy className="h-5 w-5" />
                 Турнирная таблица
               </CardTitle>
-              <CardDescription>
-                Актуальные позиции команд в {leagueConfig.name}
-              </CardDescription>
+              <CardDescription>Актуальные позиции команд в {leagueConfig.name}</CardDescription>
             </CardHeader>
             <CardContent>
               <Suspense fallback={<StandingsTableSkeleton />}>
-                <StandingsTable 
-                  league={league} 
-                  season={season} 
-                  view={view}
-                  round={round}
-                />
+                <StandingsTable league={league} season={season} view={view} round={round} />
               </Suspense>
             </CardContent>
           </Card>
@@ -159,9 +150,7 @@ export default async function LeaguePage({ params, searchParams }: PageProps) {
                 <Clock className="h-5 w-5 text-red-500" />
                 Live-матчи
               </CardTitle>
-              <CardDescription>
-                Матчи, которые идут прямо сейчас
-              </CardDescription>
+              <CardDescription>Матчи, которые идут прямо сейчас</CardDescription>
             </CardHeader>
             <CardContent>
               <Suspense fallback={<LiveMatchesSkeleton />}>
@@ -177,17 +166,11 @@ export default async function LeaguePage({ params, searchParams }: PageProps) {
                 <Calendar className="h-5 w-5 text-blue-500" />
                 Ближайшие матчи
               </CardTitle>
-              <CardDescription>
-                Предстоящие игры в ближайшие дни
-              </CardDescription>
+              <CardDescription>Предстоящие игры в ближайшие дни</CardDescription>
             </CardHeader>
             <CardContent>
               <Suspense fallback={<FixturesSkeleton />}>
-                <FixturesWidget 
-                  league={league} 
-                  season={season}
-                  date={date}
-                />
+                <FixturesWidget league={league} season={season} date={date} />
               </Suspense>
             </CardContent>
           </Card>
@@ -226,14 +209,14 @@ function StandingsTableSkeleton() {
           <Skeleton key={i} className="h-10 w-20" />
         ))}
       </div>
-      
+
       {/* Заголовок таблицы */}
       <div className="grid grid-cols-8 gap-4 py-2 border-b">
         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
           <Skeleton key={i} className="h-4" />
         ))}
       </div>
-      
+
       {/* Строки таблицы */}
       {Array.from({ length: 10 }).map((_, i) => (
         <div key={i} className="grid grid-cols-8 gap-4 py-3">

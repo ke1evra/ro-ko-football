@@ -19,11 +19,11 @@ export default async function LiveMatchesWidget({ league }: LiveMatchesWidgetPro
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/live/${league}`,
       {
-        next: { 
+        next: {
           revalidate: 90, // 90 секунд для live данных
-          tags: [`live:${league}`]
-        }
-      }
+          tags: [`live:${league}`],
+        },
+      },
     )
 
     if (!response.ok) {
@@ -36,7 +36,7 @@ export default async function LiveMatchesWidget({ league }: LiveMatchesWidgetPro
     if (!data.matches || data.matches.length === 0) {
       // Проверяем, есть ли ошибка в ответе
       const hasError = 'error' in data && data.error
-      
+
       return (
         <div className="text-center py-8 text-muted-foreground">
           <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -85,10 +85,7 @@ export default async function LiveMatchesWidget({ league }: LiveMatchesWidgetPro
         {/* Ссылка на все live-матчи, если их много */}
         {data.matches.length > 5 && (
           <div className="text-center pt-2">
-            <Link 
-              href="/live" 
-              className="text-sm text-primary hover:underline"
-            >
+            <Link href="/live" className="text-sm text-primary hover:underline">
               Смотреть все live-матчи ({data.matches.length})
             </Link>
           </div>
@@ -97,13 +94,11 @@ export default async function LiveMatchesWidget({ league }: LiveMatchesWidgetPro
     )
   } catch (error) {
     console.error('Error loading live matches:', error)
-    
+
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription className="text-sm">
-          Не удалось загрузить live-матчи
-        </AlertDescription>
+        <AlertDescription className="text-sm">Не удалось загрузить live-матчи</AlertDescription>
       </Alert>
     )
   }
@@ -120,40 +115,35 @@ function LiveMatchCard({ match }: { match: any }) {
       {/* Статус и время */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <Badge 
-            variant={isLive ? "destructive" : isHalftime ? "secondary" : "outline"}
-            className={isLive ? "animate-pulse" : ""}
+          <Badge
+            variant={isLive ? 'destructive' : isHalftime ? 'secondary' : 'outline'}
+            className={isLive ? 'animate-pulse' : ''}
           >
-            {isLive && match.minute ? `${match.minute}'` : 
-             isHalftime ? 'HT' :
-             isFinished ? 'FT' :
-             match.status}
+            {isLive && match.minute
+              ? `${match.minute}'`
+              : isHalftime
+                ? 'HT'
+                : isFinished
+                  ? 'FT'
+                  : match.status}
           </Badge>
           {match.competition && (
-            <span className="text-xs text-muted-foreground">
-              {match.competition.name}
-            </span>
+            <span className="text-xs text-muted-foreground">{match.competition.name}</span>
           )}
         </div>
-        <div className="text-xs text-muted-foreground">
-          {match.time}
-        </div>
+        <div className="text-xs text-muted-foreground">{match.time}</div>
       </div>
 
       {/* Команды и счет */}
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium truncate">
-            {match.homeTeam.name}
-          </span>
+          <span className="text-sm font-medium truncate">{match.homeTeam.name}</span>
           <span className="text-lg font-bold min-w-[2rem] text-center">
             {match.score.home ?? '-'}
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium truncate">
-            {match.awayTeam.name}
-          </span>
+          <span className="text-sm font-medium truncate">{match.awayTeam.name}</span>
           <span className="text-lg font-bold min-w-[2rem] text-center">
             {match.score.away ?? '-'}
           </span>
@@ -162,17 +152,12 @@ function LiveMatchCard({ match }: { match: any }) {
 
       {/* Дополнительная информация */}
       {match.venue?.name && (
-        <div className="text-xs text-muted-foreground mt-2 truncate">
-          📍 {match.venue.name}
-        </div>
+        <div className="text-xs text-muted-foreground mt-2 truncate">📍 {match.venue.name}</div>
       )}
 
       {/* Ссылка на детали матча */}
       <div className="mt-2">
-        <Link 
-          href={`/matches/${match.id}`}
-          className="text-xs text-primary hover:underline"
-        >
+        <Link href={`/matches/${match.id}`} className="text-xs text-primary hover:underline">
           Подробнее →
         </Link>
       </div>
