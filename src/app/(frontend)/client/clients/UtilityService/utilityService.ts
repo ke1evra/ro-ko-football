@@ -4,7 +4,8 @@
 */
 
 import { getAuthVerifyJson } from "./getAuthVerifyJson.ts";
+import { getCountriesFlagPng } from "./getCountriesFlagPng.ts";
 
 export function utilityService() {
-  return { getAuthVerifyJson }
+  return { getAuthVerifyJson, getCountriesFlagPng }
 }

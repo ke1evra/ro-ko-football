@@ -1,0 +1,128 @@
+Lang:
+  name: lang
+  in: query
+  schema:
+    type: string
+    description: ISO 639-1 код языка для локализации данных (например, `ru` для русского)
+    example: ru
+
+Page:
+  name: page
+  in: query
+  schema:
+    type: integer
+    minimum: 1
+    description: Номер страницы для постраничной навигации (при наличии более 30 элементов в ответе)
+    example: 2
+
+Size:
+  name: size
+  in: query
+  schema:
+    type: integer
+    minimum: 1
+    maximum: 100
+    description: Количество элементов на страницу (если поддерживается эндпоинтом; по умолчанию 30)
+    example: 30
+
+CompetitionId:
+  name: competition_id
+  in: query
+  schema:
+    type: string
+    description: ID соревнования (или несколько ID через запятую) для фильтрации результатов
+    example: "4"
+
+CountryId:
+  name: country_id
+  in: query
+  schema:
+    type: integer
+    description: ID страны для фильтрации результатов (например, получать данные только по соревнованиям или матчам в заданной стране)
+    example: 2
+
+FederationId:
+  name: federation_id
+  in: query
+  schema:
+    type: integer
+    description: ID футбольной федерации для фильтрации списка стран или соревнований (например, 1 для FIFA)
+    example: 1
+
+TeamId:
+  name: team_id
+  in: query
+  schema:
+    type: integer
+    description: ID команды для фильтрации результатов (например, получать только матчи с участием указанной команды)
+    example: 19
+
+FixtureId:
+  name: fixture_id
+  in: query
+  schema:
+    type: integer
+    description: ID запланированного матча (fixture). Можно указать, чтобы получить конкретный live-матч по соответствующему fixture_id. В истории также поле `fixture_id` связывает матч с запланированным ранее событием.
+    example: 1657338
+
+MatchId:
+  name: match_id
+  in: query
+  required: true
+  schema:
+    type: integer
+    description: ID матча. Используется в эндпоинтах статистики и составов для указания конкретного матча (live или завершённого).
+    example: 483252
+
+H2HTeam1:
+  name: team1_id
+  in: query
+  required: true
+  schema:
+    type: integer
+    description: ID первой команды для сравнения (Head2Head)
+    example: 6581
+
+H2HTeam2:
+  name: team2_id
+  in: query
+  required: true
+  schema:
+    type: integer
+    description: ID второй команды для сравнения (Head2Head)
+    example: 202
+
+Date:
+  name: date
+  in: query
+  schema:
+    type: string
+    format: date
+    description: Конкретная дата для фильтрации (формат YYYY-MM-DD) – возвращает данные (матчи) за указанную дату. Специальное значение `today` означает текущий день.
+    example: "2025-09-10"
+
+FromDate:
+  name: from
+  in: query
+  schema:
+    type: string
+    format: date
+    description: Начало диапазона дат для фильтрации истории/расписания матчей. Используется вместе с параметром `to`.
+    example: "2025-01-01"
+
+ToDate:
+  name: to
+  in: query
+  schema:
+    type: string
+    format: date
+    description: Конец диапазона дат для фильтрации истории/расписания матчей (включительно). Если не указан при использовании `from`, считается равным `from`.
+    example: "2025-01-31"
+
+Number:
+  name: number
+  in: query
+  schema:
+    type: integer
+    description: Количество последних матчей команды, которое нужно получить (для эндпоинта последних матчей команды)
+    example: 5

@@ -1,0 +1,183 @@
+/tables/standings.json:
+  get:
+    tags: [Tables]
+    summary: Турнирная таблица соревнования (Standings)
+    description: |
+      Возвращает турнирную таблицу (позиции команд) для указанного соревнования и сезона. По умолчанию возвращаются текущие standings для активного сезона соревнования. Для соревнований с группами можно указать конкретную группу или групповой этап.  
+      **Параметры:**  
+      - `competition_id` (обязательный) – ID соревнования, для которого запрашивается турнирная таблица.  
+      - `season` (опциональный) – ID сезона. Если не указан, берётся текущий сезон соревнования.  
+      - `group` или `group_id` (опционально) – можно указать имя группы (например, A, B, C) либо ID группы, чтобы получить таблицу только этой группы (для турниров с группами, например Лига Чемпионов). Если не указано, для многогрупповых турниров может вернуться совокупная таблица или таблица первой группы.  
+      - `include_form` (опциональный, 0/1) – если =1, в ответе для каждой команды будет добавлен массив/строка формы (W/D/L результаты последних матчей).  
+      - `lang` – код языка для локализации названий команд (если доступно).  
+      **Пример запроса (таблица АПЛ, сезон по умолчанию):**  
+      `GET /tables/standings.json?competition_id=2&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/CompetitionId'
+      - name: season
+        in: query
+        schema:
+          type: integer
+        description: ID сезона, для которого нужна таблица (если не текущий)
+        example: 14
+      - name: group
+        in: query
+        schema:
+          type: string
+        description: Имя группы, если нужно standings конкретной группы (для много-групповых соревнований, напр. "A")
+        example: "A"
+      - name: group_id
+        in: query
+        schema:
+          type: integer
+        description: ID группы, если известен и нужен standings конкретной группы
+        example: 1938
+      - name: include_form
+        in: query
+        schema:
+          type: integer
+          enum: [0, 1]
+        description: Если =1, в ответ включается форма команд за последние 5-6 матчей (последовательность W/D/L)
+        example: 1
+      - $ref: '#/components/parameters/Lang'
+    responses:
+      '200':
+        description: OK – таблица получена
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    competition:
+                      $ref: '#/components/schemas/Competition'
+                    table:
+                      type: array
+                      description: Таблица позиций команд
+                      items:
+                        $ref: '#/components/schemas/TableRow'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Соревнование не найдено
+      '500':
+        description: Внутренняя ошибка сервера
+
+/competitions/topscorers.json:
+  get:
+    tags: [Tables]
+    summary: Топ бомбардиры соревнования
+    description: |
+      Возвращает список лучших бомбардиров (до 20 игроков) текущего сезона указанного соревнования. Данные обновляются по мере развития сезона. Если новый сезон ещё не начался или только начался, список может быть пустым или содержать мало данных.  
+      В дополнение к списку игроков, в ответ включается информация о самом соревновании, сезоне, а также о текущем выпуске (edition) турнира. 
+      **Параметры:**  
+      - `competition_id` (обязательный) – ID соревнования, для которого нужны лучшие бомбардиры.  
+      - `lang` (опциональный) – код языка для локализации имён игроков, команд, названия соревнования (при поддержке перевода).  
+      **Пример запроса (бомбардиры Bundesliga, id=1):**  
+      `GET /competitions/topscorers.json?competition_id=1&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/CompetitionId'
+      - $ref: '#/components/parameters/Lang'
+    responses:
+      '200':
+        description: OK – список лучших бомбардиров получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    competition:
+                      $ref: '#/components/schemas/Competition'
+                    edition:
+                      type: object
+                      description: Объект выпуска соревнования (текущая «редакция» турнира, может включать id выпуска и is_current)
+                      properties:
+                        id: { type: integer, example: 1640 }
+                        season_id: { type: integer, example: 26 }
+                        is_current: { type: boolean, example: true }
+                    season:
+                      type: object
+                      description: Объект сезона соревнования
+                      properties:
+                        id: { type: integer, example: 26 }
+                        name: { type: string, example: "2023/2024" }
+                        start: { type: string, format: date, example: "2023-07-01" }
+                        end: { type: string, format: date, example: "2024-06-30" }
+                    topscorers:
+                      type: array
+                      description: Список топ-бомбардиров
+                      items:
+                        $ref: '#/components/schemas/TopScorerEntry'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Соревнование не найдено
+      '500':
+        description: Внутренняя ошибка сервера
+
+/competitions/topcards.json:
+  get:
+    tags: [Tables]
+    summary: Антирекорд по карточкам (дисциплинарный рейтинг)
+    description: |
+      Возвращает список игроков, получивших наибольшее число карточек (жёлтых/красных) в указанном международном турнире. *Примечание:* данный эндпоинт работает **только для крупных международных турниров сборных** (ЧМ, ЧЕ, Копа Америка, Кубок Азии, Кубок Африки).  
+      В ответе перечислены футболисты с указанием числа жёлтых и красных карточек. В остальном структура аналогична списку бомбардиров (competition, edition, season), однако поля `goals` и `assists` заменены на `yellow_cards` и `red_cards` соответственно.  
+      **Параметры:**  
+      - `competition_id` (обязательный) – ID турнира (только ID перечисленных международных турни��ов).  
+      - `lang` (опционально) – код языка для перевода названий, аналогично другим методам.  
+      **Пример запроса (дисциплинарный рейтинг ЧМ 2022, id=362):**  
+      `GET /competitions/topcards.json?competition_id=362&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/CompetitionId'
+      - $ref: '#/components/parameters/Lang'
+    responses:
+      '200':
+        description: OK – дисциплинарный список получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    competition:
+                      $ref: '#/components/schemas/Competition'
+                    edition:
+                      type: object
+                      properties:
+                        id: { type: integer, example: 683 }
+                        season_id: { type: integer, example: 11 }
+                        is_current: { type: boolean, example: true }
+                    season:
+                      type: object
+                      properties:
+                        id: { type: integer, example: 11 }
+                        name: { type: string, example: "2022" }
+                        start: { type: string, format: date, example: "2022-01-01" }
+                        end: { type: string, format: date, example: "2022-12-31" }
+                    topcards:
+                      type: array
+                      description: Список игроков и их карточки
+                      items:
+                        $ref: '#/components/schemas/TopCardEntry'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Соревнование не найдено или не поддерживается данным методом
+      '500':
+        description: Внутренняя ошибка сервера

@@ -1,0 +1,57 @@
+/fixtures/matches.json:
+  get:
+    tags: [Fixtures]
+    summary: Запланированные матчи (расписание)
+    description: |
+      Возвращает список **будущих запланированных матчей** (fixtures). По умолчанию возвращаются матчи на ближайшие даты; желательно указывать параметры фильтрации по дате или турниру для управления объёмом данных.  
+      **Особенности:**  
+      - В ответе возвращается не более 30 матчей на страницу (`page`), если матчей больше – будет указана `next_page` ссылка для следующей страницы.  
+      - Поле `id` в объекте fixture – постоянный идентификатор запланированного матча. После начала матча ему будет соответствовать другой `match_id` (live/история), но связь сохраняе��ся через поле `fixture_id` в live/history данных.  
+      - Можно фильтровать по `date` (конкретный день, или специальное значение `today` для сегодняшних матчей), по диапазону `from`-`to`, по `competition_id` (матчи конкретного турнира), по `team_id` (матчи конкретной команды), по `country_id` (матчи в указанной стране).  
+      **Пример запроса (все матчи на сегодня):**  
+      `GET /fixtures/matches.json?date=today&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/Lang'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - $ref: '#/components/parameters/CompetitionId'
+      - $ref: '#/components/parameters/CountryId'
+      - $ref: '#/components/parameters/TeamId'
+      - $ref: '#/components/parameters/Date'
+      - $ref: '#/components/parameters/FromDate'
+      - $ref: '#/components/parameters/ToDate'
+    responses:
+      '200':
+        description: OK – список запланированных матчей получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    fixtures:
+                      type: array
+                      description: Список запланированных матчей (fixtures)
+                      items:
+                        $ref: '#/components/schemas/Fixture'
+                    next_page:
+                      type: string
+                      nullable: true
+                      description: Ссылка (URL) на следующую страницу результатов (если есть следующая)
+                      example: "https://livescore-api.com/api-client/fixtures/matches.json?key=...&secret=...&page=2"
+                    prev_page:
+                      type: string
+                      nullable: true
+                      description: Ссылка на предыдущую страницу (если есть)
+                      example: null
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера

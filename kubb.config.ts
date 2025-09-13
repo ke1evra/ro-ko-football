@@ -7,7 +7,7 @@ export default defineConfig({
   root: '.',
   input: {
     // В этом проекте спецификация лежит в src/app/openapi
-    path: './src/app/openapi/life-score.com.yaml',
+    path: './src/app/openapi/base.yaml',
   },
   output: {
     // Кладём клиент и типы в фронтенд-область приложения

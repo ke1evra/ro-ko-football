@@ -1,0 +1,210 @@
+/competitions/list.json:
+  get:
+    tags: [Catalogs]
+    summary: Список соревнований (лиг и кубков)
+    description: |
+      Возвращает список всех соревнований (лиг, кубков), поддерживаемых API, с их основными данными. Можно фильтровать список по стране или федерации.  
+      **Параметры фильтрации:**  
+      - `country_id`: если указан, возвращаются соревнования только этой страны (при одновременном указании federation_id и country_id – приоритет у country_id).  
+      - `federation_id`: если указан, возвращаются соревнования, относящиеся к данной международной федерации (например, все турниры под эгидой UEFA).  
+      - Поддерживаются параметры пагинации `page` и `size`. По умолчанию может возвращаться первая страница результатов.  
+      **Пример запроса (соревнования по стране с ID=1):**  
+      `GET /competitions/list.json?country_id=1&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - $ref: '#/components/parameters/Lang'
+      - $ref: '#/components/parameters/CountryId'
+      - $ref: '#/components/parameters/FederationId'
+    responses:
+      '200':
+        description: OK – список соревнований получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    competition:
+                      type: array
+                      description: Список соревнований
+                      items:
+                        $ref: '#/components/schemas/Competition'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/countries/list.json:
+  get:
+    tags: [Catalogs]
+    summary: Список стран
+    description: |
+      Возвращает список всех стран, поддерживаемых в данных API (страны, к которым привязаны соревнования и команды). Можно отфильтровать по федерации через параметр `federation_id`.  
+      Например, `federation_id=3` вернёт страны, относящиеся к конфедерации CAF (Африка).  
+      По каждой стране предоставляется информация: идентификатор, название, принадлежность к федерации, флаг (имя файла), признак реальная/условная, ссылка на списки лиг и live-матчей в данной стране и т.д..
+    parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - $ref: '#/components/parameters/FederationId'
+    responses:
+      '200':
+        description: OK – список стран получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    country:
+                      type: array
+                      description: Список стран
+                      items:
+                        $ref: '#/components/schemas/Country'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/federations/list.json:
+  get:
+    tags: [Catalogs]
+    summary: Список федераций
+    description: |
+      Возвращает список всех футбольных федераций (конфедераций), информация о которых используется в API. Примеры федераций: FIFA (ид=1), UEFA (2), CONMEBOL (6) и т.д.  
+      В общем случае фильтры не требуются (список небольшой и содержит основные конфедерации). Данные по федерациям могут использоваться для фильтрации стран и соревнований.
+    responses:
+      '200':
+        description: OK – список федераций получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    success: { type: boolean, example: true }
+                    data:
+                      type: object
+                      properties:
+                        federation:
+                          type: array
+                          description: Список федераций
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                description: ID федерации (может быть строкой)
+                                example: "4"
+                              name:
+                                type: string
+                                description: Название федерации
+                                example: "AFC"
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/teams/list.json:
+  get:
+    tags: [Catalogs]
+    summary: Список команд
+    description: |
+      Возвращает список команд (клубов и сборных) с основной информацией (ID, название, страна, логотип). Можно отфильтровать по стране (`country_id`) или федерации (`federation_id`), чтобы получить команды определённой страны или принадлежащие странам указанной конфедерации.  
+      **Примечание:** размер списка команд может быть велик, поэтому поддерживаются пагинация (`page`) и размер выборки (`size`). Также поле `lang` может использоваться для перевода названий команд, если доступно.
+    parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - $ref: '#/components/parameters/Lang'
+      - $ref: '#/components/parameters/CountryId'
+      - $ref: '#/components/parameters/FederationId'
+    responses:
+      '200':
+        description: OK – список команд получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    team:
+                      type: array
+                      description: Список команд
+                      items:
+                        $ref: '#/components/schemas/Team'
+                    pagination:
+                      type: object
+                      properties:
+                        page: { type: integer, example: 1 }
+                        size: { type: integer, example: 30 }
+                        total_pages: { type: integer, example: 100 }
+                        total_items: { type: integer, example: 3000 }
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/seasons/list.json:
+  get:
+    tags: [Catalogs]
+    summary: Список сезонов
+    description: |
+      Возвращает список сезонов, известных системе (например, 2020, 2021/2022 и т.п.), с указанием их идентификаторов. Эти идентификаторы сезонов используются в других методах (например, для запроса турнирной таблицы конкретного сезона или статистики). В большинстве случаев этот эндпоинт используется для справки, так как актуальные сезоны возвращаются в данных соревнований.
+    responses:
+      '200':
+        description: OK – список сезонов получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    season:
+                      type: array
+                      description: Список сезонов
+                      items:
+                        type: object
+                        properties:
+                          id: { type: integer, example: 26 }
+                          name: { type: string, example: "2023/2024" }
+                          start: { type: string, format: date, example: "2023-07-01" }
+                          end: { type: string, format: date, example: "2024-06-30" }
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера

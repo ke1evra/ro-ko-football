@@ -1,0 +1,28 @@
+securitySchemes:
+  KeyAuth:
+    type: apiKey
+    in: query
+    name: key
+    description: Уникальный API-ключ пользователя
+  SecretAuth:
+    type: apiKey
+    in: query
+    name: secret
+    description: Секретный ключ API (пароль)
+
+parameters:
+  $ref: './parameters.yaml'
+
+schemas:
+  $ref: './schemas.yaml'
+
+responses:
+  ApiError:
+    description: Ошибка запроса
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            success: { type: boolean, example: false }
+            error: { type: string, example: "You must provide an API key. You must use a GET parameter 'key'" }

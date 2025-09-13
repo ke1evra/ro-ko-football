@@ -1,0 +1,116 @@
+openapi: 3.0.3
+info:
+  title: Live Score API (Футбольный API)
+  version: "1.0.0"
+  description: |
+    OpenAPI-спецификация для футбольного Live Score API (тариф Professional).  
+    Все запросы требуют аутентификации через `key` и `secret` (передаются как query-параметры).  
+    Данные доступны в формате JSON; поддерживается параметр `lang` для локализации названий (если разрешено тарифом).  
+    
+    **Примечание по тарифам:** спецификация охватывает функции тарифа Professional (включая live-матчи, расписание, события, статистику, результаты, коэффициенты и др.). Некоторые функции, недоступные в Professional (например, трансляции комментариев или переводы имён игроков), в спецификации не описаны.
+
+servers:
+  - url: https://livescore-api.com/api-client
+
+tags:
+  - name: Matches
+    description: Live-матчи и завершённые матчи (история)
+  - name: Fixtures
+    description: Запланированные матчи (расписание)
+  - name: Events
+    description: События матча (голы, карточки, замены и т.д.)
+  - name: Lineups & Stats
+    description: Составы команд и статистика матча
+  - name: Tables
+    description: Турнирные таблицы и рекорды (бомбардиры, дисциплина)
+  - name: Catalogs
+    description: Справочные списки (страны, соревнования, команды, сезоны, федерации)
+  - name: Utility
+    description: Вспомогательные утилиты (проверка ключа, флаги стран)
+
+security:
+  - KeyAuth: []
+    SecretAuth: []
+
+paths:
+  # Аутентификация
+  /auth/verify.json:
+    $ref: './paths/auth.yaml#/~1auth~1verify.json'
+  
+  # Матчи
+  /matches/live.json:
+    $ref: './paths/matches.yaml#/~1matches~1live.json'
+  /matches/history.json:
+    $ref: './paths/matches.yaml#/~1matches~1history.json'
+  /teams/head2head.json:
+    $ref: './paths/matches.yaml#/~1teams~1head2head.json'
+  /teams/matches.json:
+    $ref: './paths/matches.yaml#/~1teams~1matches.json'
+  
+  # Расписание
+  /fixtures/matches.json:
+    $ref: './paths/fixtures.yaml#/~1fixtures~1matches.json'
+  
+  # События
+  /scores/events.json:
+    $ref: './paths/events.yaml#/~1scores~1events.json'
+  
+  # Составы и статистика
+  /matches/lineups.json:
+    $ref: './paths/lineups-stats.yaml#/~1matches~1lineups.json'
+  /matches/stats.json:
+    $ref: './paths/lineups-stats.yaml#/~1matches~1stats.json'
+  
+  # Таблицы
+  /tables/standings.json:
+    $ref: './paths/tables.yaml#/~1tables~1standings.json'
+  /competitions/topscorers.json:
+    $ref: './paths/tables.yaml#/~1competitions~1topscorers.json'
+  /competitions/topcards.json:
+    $ref: './paths/tables.yaml#/~1competitions~1topcards.json'
+  
+  # Справочники
+  /competitions/list.json:
+    $ref: './paths/catalogs.yaml#/~1competitions~1list.json'
+  /countries/list.json:
+    $ref: './paths/catalogs.yaml#/~1countries~1list.json'
+  /federations/list.json:
+    $ref: './paths/catalogs.yaml#/~1federations~1list.json'
+  /teams/list.json:
+    $ref: './paths/catalogs.yaml#/~1teams~1list.json'
+  /seasons/list.json:
+    $ref: './paths/catalogs.yaml#/~1seasons~1list.json'
+  
+  # Утилиты
+  /countries/flag.png:
+    $ref: './paths/utility.yaml#/~1countries~1flag.png'
+
+components:
+  securitySchemes:
+    KeyAuth:
+      type: apiKey
+      in: query
+      name: key
+      description: Уникальный API-ключ пользователя
+    SecretAuth:
+      type: apiKey
+      in: query
+      name: secret
+      description: Секретный ключ API (пароль)
+  
+  parameters:
+    $ref: './components/parameters.yaml'
+  
+  schemas:
+    $ref: './components/schemas.yaml'
+  
+  responses:
+    ApiError:
+      description: Ошибка запроса
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success: { type: boolean, example: false }
+              error: { type: string, example: "You must provide an API key. You must use a GET parameter 'key'" }

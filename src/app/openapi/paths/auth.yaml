@@ -1,0 +1,46 @@
+/auth/verify.json:
+  get:
+    tags: [Utility]
+    summary: Проверка API-ключа и секрета
+    description: |
+      Проверяет валидность предоставленных ключа API (`key`) и секрета (`secret`). Если пара корректна, возвращает сообщение об успешной верификации.  
+      **Пример запроса:** `GET /auth/verify.json?key=YOUR_KEY&secret=YOUR_SECRET`  
+      **Пример ответа (успех):**  
+      ```json
+      {
+        "success": true,
+        "data": {
+          "message": "Your API key and API secret are working correctly"
+        }
+      }
+      ```
+      
+      При ошибке аутентификации возвращается стандартное сообщение об ошибке (например, "Invalid API key or secret") и код 401.
+    responses:
+      '200':
+        description: Запрос выполнен – ключ и секрет валидны (возвращается подтверждающее сообщение)
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    message: { type: string, example: "Your API key and API secret are working correctly" }
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неверный ключ API или секрет (не авторизовано)
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: false }
+                error: { type: string, example: "Invalid API key or secret" }
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера

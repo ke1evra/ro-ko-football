@@ -1,0 +1,206 @@
+/matches/live.json:
+  get:
+    tags: [Matches]
+    summary: Live-матчи (текущие в игре)
+    description: |
+      Возвращает список футбольных матчей, которые **идут в данный момент** (лайвскор). Матчи появляются за ~15 минут до начала (со статусом `NOT STARTED`) и остаются в фиде примерно до 1-3 часов после окончания (со статусом `FINISHED`).  
+      Поддерживается фильтрация по стране, соревнованию или команде, а также выбор конкретного матча по `fixture_id`. Без фильтров возвращаются все текущие лайв-матчи.  
+      **Параметры фильтрации:**  
+      - `competition_id` – ID или список ID соревнований (через запятую) для ограничение выборки матчей определённых турниров.  
+      - `country_id` – ID страны для вывода матчей, проходящих только в этой стране.  
+      - `team_id` – ID команды для вывода только матчей с участием этой команды.  
+      - `fixture_id` – ID запланированного матча для получения его лайв-статуса (если матч уже начался).  
+      - `lang` – код языка для перевода названий команд, турниров и пр. (опционально).  
+      **Пример запроса без фильтров:**  
+      `GET /matches/live.json?key=YOUR_KEY&secret=YOUR_SECRET`  
+      **Пример запроса (лайв-матчи серии A Италии):**  
+      `GET /matches/live.json?competition_id=4&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/Lang'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/CompetitionId'
+      - $ref: '#/components/parameters/CountryId'
+      - $ref: '#/components/parameters/TeamId'
+      - $ref: '#/components/parameters/FixtureId'
+    responses:
+      '200':
+        description: OK – список текущих матчей получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    match:
+                      type: array
+                      description: Список объектов матчей (все поля матча, включая команды, счёт и т.п.)
+                      items:
+                        $ref: '#/components/schemas/Match'
+        links:
+          GetMatchEvents:
+            description: Ссылка для получения событий конкретного матча
+            operationId: getMatchEvents
+            parameters:
+              id: "$response.body#/data/match/0/id"
+          GetMatchStatistics:
+            description: Ссылка для получения статистики конкретного матча
+            operationId: getMatchStatistics
+            parameters:
+              match_id: "$response.body#/data/match/0/id"
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/matches/history.json:
+  get:
+    tags: [Matches]
+    summary: История матчей (завершённые матчи)
+    description: |
+      Возвращает список **завершённых** матчей (история результатов) по указанным критериям. Обязателен фильтр по дате или диапазону дат, либо другим параметрам; иначе может вернуться ошибка или пустой результат.  
+      **Параметры фильтрации:**  
+      - Можно указать конкретную дату через параметр `date` (например, `date=2025-09-01`) для получения матчей, завершившихся в этот день.  
+      - Либо указать диапазон через `from` и `to` (например, `from=2025-08-01&to=2025-08-31`) для получения истории за период. Если указан только `from`, без `to`, вернутся матчи от даты `from` за один день.  
+      - Также доступны фильтры `competition_id`, `country_id` и `team_id` для ограничения выборки по турнирам, странам или командам, соответственно.  
+      **Пример запроса (матчи 15 мая 2018 года):**  
+      `GET /matches/history.json?date=2018-05-15&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/Lang'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/CompetitionId'
+      - $ref: '#/components/parameters/CountryId'
+      - $ref: '#/components/parameters/TeamId'
+      - $ref: '#/components/parameters/Date'
+      - $ref: '#/components/parameters/FromDate'
+      - $ref: '#/components/parameters/ToDate'
+    responses:
+      '200':
+        description: OK – список завершённых матчей получен
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    match:
+                      type: array
+                      description: Список матчей (завершённых) с подробной информацией
+                      items:
+                        $ref: '#/components/schemas/Match'
+                    next_page:
+                      type: string
+                      nullable: true
+                      description: URL для следующей с��раницы результатов (если есть следующая страница)
+                      example: "https://livescore-api.com/api-client/scores/history.json?key=...&secret=...&page=2"
+                    prev_page:
+                      type: string
+                      nullable: true
+                      description: URL для предыдущей страницы результатов (если есть)
+                      example: null
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт не найден
+      '500':
+        description: Внутренняя ошибка сервера
+
+/teams/head2head.json:
+  get:
+    tags: [Matches]
+    summary: Сравнение двух команд (H2H)
+    description: |
+      Предоставляет сравнительную статистику двух команд на основе их последних встреч друг с другом и, возможно, последних игр вообще. Позволяет оценить форму команд перед их очным матчем.  
+      **Параметры:** необходимо указать `team1_id` и `team2_id` – ID двух команд для сравнения.  
+      **Пример запроса:**  
+      `GET /teams/head2head.json?team1_id=6581&team2_id=202&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/H2HTeam1'
+      - $ref: '#/components/parameters/H2HTeam2'
+    responses:
+      '200':
+        description: OK – данные H2H получены
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  description: Объект с результатами сравнения (состав и формат данных зависит от реализации API)
+                  properties:
+                    last_matches_between:
+                      type: array
+                      description: Последние матчи между двумя командами
+                      items:
+                        $ref: '#/components/schemas/Match'
+                    team1_last_matches:
+                      type: array
+                      description: Последние матчи команды 1
+                      items:
+                        $ref: '#/components/schemas/Match'
+                    team2_last_matches:
+                      type: array
+                      description: Последние матчи команды 2
+                      items:
+                        $ref: '#/components/schemas/Match'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Одна из команд не найдена
+      '500':
+        description: Внутренняя ошибка сервера
+
+/teams/matches.json:
+  get:
+    tags: [Matches]
+    summary: Последние матчи команды
+    description: |
+      Возвращает несколько последних матчей (завершённых или live) указанной команды. Например, можно получить последние N результатов команды для отображения её текущей формы.  
+      **Параметры:** `team_id` – ID команды, `number` – сколько последних матчей вернуть (например, 5 или 10).  
+      **Пример запроса (последние 7 матчей команды с ID=46):**  
+      `GET /teams/matches.json?team_id=46&number=7&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/TeamId'
+      - $ref: '#/components/parameters/Number'
+    responses:
+      '200':
+        description: OK – последние матчи команды получены
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    team:
+                      $ref: '#/components/schemas/Team'
+                    last_matches:
+                      type: array
+                      description: Список последних матчей команды
+                      items:
+                        $ref: '#/components/schemas/Match'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Команда не найдена
+      '500':
+        description: Внутренняя ошибка сервера

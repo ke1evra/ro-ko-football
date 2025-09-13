@@ -1,0 +1,69 @@
+/matches/lineups.json:
+  get:
+    tags: [Lineups & Stats]
+    summary: Стартовые составы команды (матча)
+    description: |
+      Возвращает стартовые составы и список запасных для обеих команд указанного матча. Эндпоинт доступен для начавшихся или завершённых матчей (для запланированных матчей, которые ещё не начались, данных может не быть).  
+      **Параметры:** требуется `match_id` – ID матча (live или из истории). Можно указать `lang` для перевода имён игроков (при наличии поддержки).  
+      **Пример запроса:**  
+      `GET /matches/lineups.json?match_id=483252&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/MatchId'
+      - $ref: '#/components/parameters/Lang'
+    responses:
+      '200':
+        description: OK – составы получены
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    match_id: { type: integer, example: 483252 }
+                    home:
+                      $ref: '#/components/schemas/Lineup'
+                    away:
+                      $ref: '#/components/schemas/Lineup'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Матч не найден или составы недоступны
+      '500':
+        description: Внутренняя ошибка сервера
+
+/matches/stats.json:
+  get:
+    tags: [Lineups & Stats]
+    summary: Статистика матча
+    description: |
+      Возвращает основные статистические показатели указанного матча (для обеих команд). Матч должен быть уже начат или завершён; для предстоящих матчей статистика недоступна.  
+      **Замечание:** не для всех матчей доступны абсолютно все виды статистики – для некоторых менее крупных соревнований некоторые поля могут быть `null` или отсутствовать вовсе.  
+      В возвращаемом объекте статистики ключами являются названия метрик (на англ.), а значениями – строка формата `"домашние:гости"` (например, `"shots_on_target": "5:3"`), либо null, если данные отсутствуют.  
+      **Пример запроса:**  
+      `GET /matches/stats.json?match_id=172252&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/MatchId'
+    responses:
+      '200':
+        description: OK – статистика матча получена
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  $ref: '#/components/schemas/MatchStats'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Матч не найден или статистика недоступна
+      '500':
+        description: Внутренняя ошибка сервера

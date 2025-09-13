@@ -72,7 +72,7 @@ export type Event = {
         name?: string | undefined;
     } | null) | undefined;
     /**
-     * @description Порядковый номер события в хронологии матча (начиная с 0; если два события в одну минуту, используется sort для упорядочения)
+     * @description Порядковый номер события в хронологии матча (начиная с 0; если два события в одну минуту, используется sort д��я упорядочения)
      * @type integer | undefined
     */
     sort?: number | undefined;

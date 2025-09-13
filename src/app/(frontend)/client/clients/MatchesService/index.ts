@@ -1,0 +1,5 @@
+export { getGetMatchesHistoryJsonUrl, getMatchesHistoryJson } from "./getMatchesHistoryJson.ts";
+export { getGetMatchesLiveJsonUrl, getMatchesLiveJson } from "./getMatchesLiveJson.ts";
+export { getGetTeamsHead2HeadJsonUrl, getTeamsHead2HeadJson } from "./getTeamsHead2HeadJson.ts";
+export { getGetTeamsMatchesJsonUrl, getTeamsMatchesJson } from "./getTeamsMatchesJson.ts";
+export { matchesService } from "./matchesService.ts";

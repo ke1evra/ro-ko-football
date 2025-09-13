@@ -1,0 +1,86 @@
+/scores/events.json:
+  get:
+    tags: [Events]
+    summary: События матча (голы, карточки, замены)
+    description: |
+      Возвращает хронологию событий для указанного матча (как текущего live, так и завершённого). В начале матча список событий будет пустым, по мере развития игры события появляются в ответе в порядке их наступления.  
+      **Параметры:** необходим `id` матча (`match_id` из live или history) для получения событий этого матча. Также можно указать `lang` для перевода названий событий и имён игроков (если поддерживается тарифом).  
+      **Пример запроса (события матча с id=385735):**  
+      `GET /scores/events.json?id=385735&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - name: id
+        in: query
+        required: true
+        schema:
+          type: integer
+        description: ID матча, для которого запрашиваются события (поле `id` из live или history данных)
+        example: 385735
+      - $ref: '#/components/parameters/Lang'
+    responses:
+      '200':
+        description: OK – события матча получены
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    match:
+                      type: object
+                      description: Общая информация о матче (идентификатор, дата, счёт и т.п.)
+                      properties:
+                        id: { type: integer, example: 385735 }
+                        date: { type: string, example: "2022-12-18" }
+                        time: { type: string, example: "AP", description: "Статус времени матча (например, AP – после пенальти)" }
+                        status: { type: string, example: "FINISHED" }
+                        added: { type: string, example: "2022-12-18 14:45:12" }
+                        last_changed: { type: string, example: "2022-12-18 18:54:06" }
+                        location: { type: string, example: "Lusail Stadium, Lusail" }
+                        fixture_id: { type: string, example: "1581460" }
+                        scheduled: { type: string, example: "15:00" }
+                        odds:
+                          type: object
+                          properties:
+                            pre: { type: object }
+                            live: { type: object }
+                        outcomes:
+                          type: object
+                          properties:
+                            half_time: { type: string }
+                            full_time: { type: string }
+                            extra_time: { type: string }
+                            penalty_shootout: { type: string }
+                        scores:
+                          type: object
+                          properties:
+                            score: { type: string, example: "3 - 3" }
+                            ht_score: { type: string, example: "2 - 0" }
+                            ft_score: { type: string, example: "2 - 2" }
+                            et_score: { type: string, example: "3 - 3" }
+                            ps_score: { type: string, example: "4 - 2" }
+                        home:
+                          $ref: '#/components/schemas/Team'
+                        away:
+                          $ref: '#/components/schemas/Team'
+                        competition:
+                          $ref: '#/components/schemas/Competition'
+                        country:
+                          $ref: '#/components/schemas/Country'
+                        federation:
+                          $ref: '#/components/schemas/Federation'
+                    event:
+                      type: array
+                      description: Список событий матча (каждый элемент – объект события с типом, игроками и проч.)
+                      items:
+                        $ref: '#/components/schemas/Event'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Эндпоинт или матч не найден
+      '500':
+        description: Внутренняя ошибка сервера
