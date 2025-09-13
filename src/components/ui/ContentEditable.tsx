@@ -1,6 +1,10 @@
 'use client'
 
-import { ContentEditable } from '@lexical/react/LexicalContentEditable'
+// import { ContentEditable } from '@lexical/react/LexicalContentEditable'
+// Временная заглушка, пока не установим @lexical/react
+const ContentEditable = ({ className, ...props }: any) => (
+  <div className={className} contentEditable {...props} />
+)
 import * as React from 'react'
 
 const ContentEditableUI = React.forwardRef<

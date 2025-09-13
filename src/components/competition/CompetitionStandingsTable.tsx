@@ -30,7 +30,6 @@ export default async function CompetitionStandingsTable({
   try {
     const payload = await getPayload({ config })
 
-    // Получаем турнирные таблицы для этого соревнования
     const standings = await payload.find({
       collection: 'standings',
       where: {
@@ -127,7 +126,7 @@ export default async function CompetitionStandingsTable({
                   <TableCell className="text-center">
                     {row.form ? (
                       <div className="flex gap-1 justify-center">
-                        {row.form.split('').map((result, i) => (
+                        {row.form.split('').map((result: string, i: number) => (
                           <div
                             key={i}
                             className={`w-5 h-5 rounded-full text-xs flex items-center justify-center text-white font-bold ${

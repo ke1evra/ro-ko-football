@@ -3,10 +3,8 @@ import { Container, Section } from '@/components/ds'
 import { customFetch } from '@/lib/http/livescore/customFetch'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { FlagImage } from '@/components/FlagImage'
-
 import { CountryFlagImage } from '@/components/CountryFlagImage'
-import ApiTestPanel from '@/components/ApiTestPanel'
+import type { Post } from '@/payload-types'
 
 export const revalidate = 60
 
@@ -41,7 +39,7 @@ type RawCompetition = {
 
 type RawCountry = { id?: number | string; name?: string; flag?: string | null }
 
-type PostLite = { id: string | number; title: string; slug?: string; publishedAt?: string }
+type PostLite = Pick<Post, 'id' | 'title' | 'slug' | 'publishedAt'>
 
 function toNumber(value: unknown): number | undefined {
   if (typeof value === 'number') return value
@@ -213,20 +211,17 @@ async function getRecentPosts(limit = 5): Promise<PostLite[]> {
       limit,
     })
 
-    const safe: PostLite[] = docs
-      .map((p: unknown) => {
-        if (!p || typeof p !== 'object') return null
-        const o = p as Record<string, unknown>
-        const id = (o.id as string | number) ?? ''
-        const title = typeof o.title === 'string' ? o.title : ''
-        const slug = typeof o.slug === 'string' ? o.slug : undefined
-        const publishedAt = typeof o.publishedAt === 'string' ? o.publishedAt : undefined
-        if (!id || !title) return null
-        return { id, title, slug, publishedAt }
-      })
-      .filter((v): v is PostLite => Boolean(v))
-
-    return safe
+    // Используем нативные типы Payload
+    return docs
+      .filter((post): post is Post => Boolean(post.id && post.title))
+      .map(
+        (post): PostLite => ({
+          id: post.id,
+          title: post.title,
+          slug: post.slug || undefined,
+          publishedAt: post.publishedAt || undefined,
+        }),
+      )
   } catch {
     return []
   }
@@ -342,39 +337,6 @@ export default async function Home() {
               ))}
             </div>
           )}
-        </section>
-
-        {/* Отладочная информация в dev режиме */}
-        {process.env.NODE_ENV === 'development' && (
-          <section className="space-y-4">
-            <h2 className="text-lg font-semibold">Отладка флагов (dev only)</h2>
-            <div className="text-xs space-y-2">
-              {highlight.slice(0, 3).map((c) => (
-                <div key={c.id} className="border rounded p-2">
-                  <div>
-                    <strong>{c.name}</strong> ({c.country?.name})
-                  </div>
-                  <div>Flag URL: {c.country?.flag || 'нет'}</div>
-                  {c.country?.flag && (
-                    <div className="flex items-center gap-2 mt-1">
-                      <span>Тест:</span>
-                      <FlagImage
-                        src={c.country.flag}
-                        countryName={c.country.name}
-                        size="small"
-                        className="h-4 w-4 border"
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-        {/* API тест-панель */}
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Тестирование API</h2>
-          <ApiTestPanel />
         </section>
       </Container>
     </Section>

@@ -19,6 +19,16 @@ const nextConfig = {
     ],
   },
 
+  // Rewrites for media files
+  async rewrites() {
+    return [
+      {
+        source: '/media/:path*',
+        destination: '/api/media/:path*',
+      },
+    ]
+  },
+
   // Security headers
   async headers() {
     return [

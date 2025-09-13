@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { countryId: string } }
+  { params }: { params: Promise<{ countryId: string }> }
 ) {
   try {
-    const countryId = params.countryId
+    const { countryId } = await params
 
     if (!countryId || isNaN(Number(countryId))) {
       return NextResponse.json({ error: 'Invalid country ID' }, { status: 400 })

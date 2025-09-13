@@ -71,7 +71,17 @@ export async function getUser(): Promise<User | null> {
     const payload: Payload = await getPayload({ config: await configPromise })
 
     const { user } = await payload.auth({ headers })
-    return user || null
+    
+    if (!user) return null
+
+    // Загружаем полные данные пользователя с аватаром
+    const fullUser = await payload.findByID({
+      collection: 'users',
+      id: user.id,
+      depth: 2, // Загружаем связанные данн��е (аватар)
+    })
+
+    return fullUser || null
   } catch (error) {
     console.error('Error getting user:', error)
     return null

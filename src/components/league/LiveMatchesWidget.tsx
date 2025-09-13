@@ -33,7 +33,8 @@ export default async function LiveMatchesWidget({ league }: LiveMatchesWidgetPro
     const data: LiveMatchesResponse = await response.json()
 
     // Если нет live-матчей
-    if (!data.matches || data.matches.length === 0) {
+    const matches = Array.isArray(data.matches) ? data.matches : []
+    if (matches.length === 0) {
       // Проверяем, есть ли ошибка в ответе
       const hasError = 'error' in data && data.error
 
@@ -44,7 +45,7 @@ export default async function LiveMatchesWidget({ league }: LiveMatchesWidgetPro
             {hasError ? 'Сервис live-матчей временно недоступен' : 'Сейчас нет live-матчей'}
           </p>
           <p className="text-xs mt-1">
-            Обновлено: {new Date(data.lastUpdated).toLocaleTimeString('ru-RU')}
+            Обновлено: {data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString('ru-RU') : 'Неизвестно'}
           </p>
           {hasError && (
             <p className="text-xs mt-2 text-orange-600">
@@ -62,7 +63,7 @@ export default async function LiveMatchesWidget({ league }: LiveMatchesWidgetPro
           <div className="flex items-center gap-2">
             <Zap className="h-4 w-4 text-red-500" />
             <span className="text-sm font-medium">
-              {data.matches.length} {data.matches.length === 1 ? 'матч' : 'матчей'}
+              {matches.length} {matches.length === 1 ? 'матч' : 'матчей'}
             </span>
           </div>
           <Badge variant="destructive" className="animate-pulse">
@@ -72,21 +73,21 @@ export default async function LiveMatchesWidget({ league }: LiveMatchesWidgetPro
 
         {/* Список live-матчей */}
         <div className="space-y-2">
-          {data.matches.slice(0, 5).map((match) => (
+          {matches.slice(0, 5).map((match: any) => (
             <LiveMatchCard key={match.id} match={match} />
           ))}
         </div>
 
         {/* Время последнего обновления */}
         <div className="text-xs text-muted-foreground text-center pt-2 border-t">
-          Обновлено: {new Date(data.lastUpdated).toLocaleTimeString('ru-RU')}
+          Обновлено: {data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString('ru-RU') : 'Неизвестно'}
         </div>
 
         {/* Ссылка на все live-матчи, если их много */}
-        {data.matches.length > 5 && (
+        {matches.length > 5 && (
           <div className="text-center pt-2">
             <Link href="/live" className="text-sm text-primary hover:underline">
-              Смотреть все live-матчи ({data.matches.length})
+              Смотреть все live-матчи ({matches.length})
             </Link>
           </div>
         )}

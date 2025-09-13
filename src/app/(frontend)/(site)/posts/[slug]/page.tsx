@@ -5,6 +5,7 @@ import configPromise from '@payload-config'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { CommentsTree } from './post-comments-tree'
+import { UserAvatar } from '@/components/UserAvatar'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,11 +34,16 @@ export default async function PostPage({ params }: { params: { slug: string } })
   return (
     <Section>
       <Container className="space-y-6">
-        <header className="space-y-2">
+        <header className="space-y-4">
           <h1 className="text-2xl font-semibold">{post.title}</h1>
-          <div className="text-sm text-muted-foreground">
-            {format(new Date(post.createdAt), 'd MMMM yyyy', { locale: ru })}
-            {post?.author?.email ? ` · ${post.author.email}` : null}
+          <div className="flex items-center gap-3">
+            <UserAvatar user={post.author} size="md" />
+            <div className="flex flex-col">
+              <div className="text-sm font-medium">{post.author?.name || post.author?.email}</div>
+              <div className="text-xs text-muted-foreground">
+                {format(new Date(post.createdAt), 'd MMMM yyyy', { locale: ru })}
+              </div>
+            </div>
           </div>
         </header>
 

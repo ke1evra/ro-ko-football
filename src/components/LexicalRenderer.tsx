@@ -138,7 +138,7 @@ export default function LexicalRenderer({
 
   return (
     <>
-      {effectiveNodes.map((node, index) => {
+      {effectiveNodes.map((node: any, index: number) => {
         // text node
         if (node.type === 'text') {
           return <span key={index}>{renderLexicalTextNode(node)}</span>
@@ -245,7 +245,7 @@ export default function LexicalRenderer({
 
         // generic block rendering
         const Tag = resolveTag(node) as any
-        const id = headingIdFor(node, rootNodes)
+        const id = headingIdFor(node, effectiveRootNodes || [])
         const className = getBlockClass(node)
         return (
           <Tag key={index} id={id} className={className}>

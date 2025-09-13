@@ -41,11 +41,13 @@ export async function updateProfile(
 
   try {
     const payload = await getPayload({ config })
+    
     await payload.update({
       collection: 'users',
       id: authUser.id,
       data: allowed,
     })
+    
     return { success: true }
   } catch (e) {
     console.error('updateProfile error', e)

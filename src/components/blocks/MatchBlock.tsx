@@ -2,7 +2,9 @@ import React from 'react'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import type { Match as MatchType } from '@/payload-types'
+// import type { Match as MatchType } from '@/payload-types'
+// Временно используем any, пока не добавим Match в коллекции
+type MatchType = any
 
 interface MatchBlockProps {
   match?: string | MatchType

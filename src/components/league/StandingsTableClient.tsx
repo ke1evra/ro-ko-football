@@ -64,7 +64,7 @@ export default function StandingsTableClient({
           <Badge variant={data.source === 'live' ? 'default' : 'secondary'}>
             {data.source === 'live' ? 'Live' : data.source === 'database' ? 'БД' : 'Снапшот'}
           </Badge>
-          <span>Данные от: {new Date(data.lastUpdated).toLocaleString('ru-RU')}</span>
+          <span>Данные от: {data.lastUpdated ? new Date(data.lastUpdated).toLocaleString('ru-RU') : 'Неизвестно'}</span>
         </div>
         {round && <Badge variant="outline">Тур {round}</Badge>}
       </div>
@@ -87,7 +87,7 @@ export default function StandingsTableClient({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.standings.map((team, index) => (
+            {Array.isArray(data.standings) ? data.standings.map((team: any, index: number) => (
               <TableRow key={team.teamId} className="hover:bg-muted/50">
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
@@ -95,7 +95,7 @@ export default function StandingsTableClient({
                     {index > 0 && (
                       <PositionTrend
                         current={team.rank}
-                        previous={data.standings[index - 1]?.rank}
+                        previous={data.standings?.[index - 1]?.rank}
                       />
                     )}
                   </div>
@@ -127,7 +127,7 @@ export default function StandingsTableClient({
                   )}
                 </TableCell>
               </TableRow>
-            ))}
+            )) : null}
           </TableBody>
         </Table>
       </div>

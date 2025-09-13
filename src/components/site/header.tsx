@@ -4,7 +4,6 @@ import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/(frontend)/AuthContext' // Импортируем хук из AuthContext
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -15,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { LogIn, LogOut, User as UserIcon, BarChart2 } from 'lucide-react'
-
+import { UserAvatar } from '@/components/UserAvatar'
 import { Container } from '@/components/ds'
 
 export const Header = () => {
@@ -25,12 +24,6 @@ export const Header = () => {
   const handleLogout = () => {
     logout()
     router.push('/')
-  }
-
-  const getInitials = (name?: string, email?: string) => {
-    if (name) return name.slice(0, 2).toUpperCase()
-    if (email) return email.slice(0, 2).toUpperCase()
-    return 'U'
   }
 
   return (
@@ -69,25 +62,7 @@ export const Header = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar className="h-10 w-10">
-                    {(() => {
-                      const avatarRel: unknown = (user as unknown as { avatar?: unknown }).avatar
-                      const avatarUrlField: string | undefined = (
-                        user as unknown as {
-                          avatarUrl?: string
-                        }
-                      ).avatarUrl
-                      let src: string | undefined
-                      if (avatarRel && typeof avatarRel === 'object' && 'url' in avatarRel) {
-                        const possible = (avatarRel as { url?: unknown }).url
-                        src = typeof possible === 'string' ? possible : undefined
-                      } else {
-                        src = avatarUrlField
-                      }
-                      return <AvatarImage src={src} alt={user.name || 'Avatar'} />
-                    })()}
-                    <AvatarFallback>{getInitials(user.name, user.email)}</AvatarFallback>
-                  </Avatar>
+                  <UserAvatar user={user} size="lg" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>

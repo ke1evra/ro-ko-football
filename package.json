@@ -14,6 +14,7 @@
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint --fix && pnpm run format",
     "lint:global": "eslint . --fix",
     "format": "prettier --cache --ignore-unknown --log-level warn --write .",
+    "type-check": "tsc --noEmit --skipLibCheck --project tsconfig.typecheck.json",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start"
   },

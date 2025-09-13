@@ -2,7 +2,9 @@ import React from 'react'
 import { Card } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import type { Player as PlayerType } from '@/payload-types'
+// import type { Player as PlayerType } from '@/payload-types'
+// Временно используем any, пока не добавим Player в коллекции
+type PlayerType = any
 
 interface PlayerBlockProps {
   // Новый интерфейс из payload block: player — relationship на players

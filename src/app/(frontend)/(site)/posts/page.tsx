@@ -3,16 +3,13 @@ import Link from 'next/link'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { getUser } from '@/lib/auth'
+import { UserAvatar } from '@/components/UserAvatar'
 
 export const dynamic = 'force-dynamic'
 
 const PAGE_SIZE = 10
 
-export default async function PostsPage({
-  searchParams,
-}: {
-  searchParams: { page?: string }
-}) {
+export default async function PostsPage({ searchParams }: { searchParams: { page?: string } }) {
   const page = Math.max(parseInt(searchParams?.page || '1', 10) || 1, 1)
 
   const payload = await getPayload({ config: await configPromise })
@@ -21,7 +18,7 @@ export default async function PostsPage({
     limit: PAGE_SIZE,
     page,
     sort: '-createdAt',
-    depth: 1,
+    depth: 2, // Увеличиваем depth для загрузки аватаров пользователей
   })
 
   const user = await getUser()
@@ -63,23 +60,33 @@ export default async function PostsPage({
           </div>
         ) : (
           <div className="grid gap-4">
-            {result.docs.map((post: any) => (
-              <article key={post.id} className="border rounded-md p-4">
-                <h2 className="text-lg font-medium">
-                  <Link href={`/posts/${post.slug}`} className="hover:underline">
-                    {post.title}
-                  </Link>
-                </h2>
-                <div className="text-sm text-muted-foreground">
-                  {new Date(post.createdAt).toLocaleDateString('ru-RU')} · {post?.author?.email}
-                </div>
-                {post.content && (
-                  <p className="mt-2 text-sm text-muted-foreground line-clamp-3">
-                    {String(post.content).slice(0, 220)}
-                  </p>
-                )}
-              </article>
-            ))}
+            {result.docs.map((post) => {
+              const author = typeof post.author === 'object' ? post.author : null
+              return (
+                <article key={post.id} className="border rounded-md p-4">
+                  <div className="flex items-start gap-3">
+                    <UserAvatar user={author} size="md" />
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-lg font-medium">
+                        <Link href={`/posts/${post.slug}`} className="hover:underline">
+                          {post.title}
+                        </Link>
+                      </h2>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>{author?.name || author?.email}</span>
+                        <span>·</span>
+                        <span>{new Date(post.createdAt).toLocaleDateString('ru-RU')}</span>
+                      </div>
+                      {post.content && (
+                        <p className="mt-2 text-sm text-muted-foreground line-clamp-3">
+                          {String(post.content).slice(0, 220)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
           </div>
         )}
 

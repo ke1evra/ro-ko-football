@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null
   isLoading: boolean
   logout: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -16,20 +17,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = await getUser()
-        setUser(currentUser)
-      } catch (error) {
-        console.error('Failed to fetch user', error)
-        setUser(null)
-      } finally {
-        setIsLoading(false)
-      }
+  const fetchUser = async () => {
+    try {
+      const currentUser = await getUser()
+      setUser(currentUser)
+    } catch (error) {
+      console.error('Failed to fetch user', error)
+      setUser(null)
     }
+  }
 
-    fetchUser()
+  useEffect(() => {
+    const loadUser = async () => {
+      await fetchUser()
+      setIsLoading(false)
+    }
+    loadUser()
   }, [])
 
   const logout = async () => {
@@ -37,7 +40,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null)
   }
 
-  return <AuthContext.Provider value={{ user, isLoading, logout }}>{children}</AuthContext.Provider>
+  const refreshUser = async () => {
+    await fetchUser()
+  }
+
+  return <AuthContext.Provider value={{ user, isLoading, logout, refreshUser }}>{children}</AuthContext.Provider>
 }
 
 export const useAuth = () => {

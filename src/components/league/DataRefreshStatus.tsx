@@ -116,7 +116,7 @@ export default function DataRefreshStatus({
   }
 
   const currentData = data || initialData
-  const displayLastUpdated = lastUpdated || (currentData ? new Date(currentData.lastUpdated) : null)
+  const displayLastUpdated = lastUpdated || (currentData?.lastUpdated ? new Date(currentData.lastUpdated) : null)
 
   return (
     <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border">
