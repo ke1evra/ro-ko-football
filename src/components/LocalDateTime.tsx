@@ -44,9 +44,10 @@ function stripToDate(input: string): string {
 
 function ensureSeconds(t?: string): string | undefined {
   if (!t) return undefined
-  // Приводим HH:mm к HH:mm:00
+  // Поддерживаем HH:mm и HH:mm:ss, остальное игнорируем
   if (/^\d{2}:\d{2}$/.test(t)) return `${t}:00`
-  return t
+  if (/^\d{2}:\d{2}:\d{2}$/.test(t)) return t
+  return undefined
 }
 
 function toISO({
@@ -68,7 +69,16 @@ function toISO({
 
   if (!date) return null
 
-  const dateStr = typeof date === 'string' ? stripToDate(date) : stripToDate(date.toISOString())
+  let dateStr: string | null = null
+  if (typeof date === 'string') {
+    const trimmed = date.trim()
+    if (!trimmed) return null
+    dateStr = stripToDate(trimmed)
+  } else {
+    dateStr = stripToDate(date.toISOString())
+  }
+  if (!dateStr) return null
+
   const timeStr = ensureSeconds(time) || '00:00:00'
 
   // Если utc — дописываем Z, чтобы браузер преобразовал в локальную зону
@@ -97,6 +107,7 @@ export function LocalDateTime({
     if (!iso) return ''
 
     const dt = new Date(iso)
+    if (Number.isNaN(dt.getTime())) return ''
     const wantDate = showDate ?? true
     const wantTime = showTime ?? true
 

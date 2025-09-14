@@ -57,7 +57,7 @@ export default function WeekFixturesGrouped({ matches }: { matches: UpcomingMatc
       {dateKeys.slice(0, visibleDates).map((dateKey) => {
         const leagues = grouped.get(dateKey)!
         return (
-          <div key={dateKey} className="rounded-md border">
+          <div key={dateKey} className="rounded-md border overflow-hidden">
             <div className="flex items-center gap-2 px-3 py-2 border-b bg-accent/30 text-sm">
               <Calendar className="h-3 w-3" />
               <LocalDateTime date={dateKey} utc showTime={false} />
@@ -77,63 +77,49 @@ export default function WeekFixturesGrouped({ matches }: { matches: UpcomingMatc
                     </div>
                   </div>
 
-                  <div className="divide-y">
-                    {bucket.matches.map((m) => (
-                      <div key={m.id} className="px-3 py-2 text-sm flex flex-col gap-1 hover:bg-accent/20">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="inline-flex items-center gap-2 text-muted-foreground">
+                  <div className="p-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+                      {bucket.matches.map((m) => (
+                        <Link
+                          key={m.id}
+                          href={`/fixtures/${m.id}`}
+                          className="group rounded-md border p-3 hover:bg-accent transition-colors"
+                          aria-label={`${m.home_team.name} — ${m.away_team.name}`}
+                        >
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                             <Clock className="h-3 w-3" />
                             <LocalDateTime date={m.date} time={m.time} utc showDate={false} />
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="space-y-1">
+                            <div className="text-sm font-semibold truncate text-right">{m.home_team.name}</div>
+                            <div className="text-[11px] text-muted-foreground text-center">vs</div>
+                            <div className="text-sm font-semibold truncate text-left">{m.away_team.name}</div>
+                          </div>
+                          <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
                             {m.round ? (
-                              <Badge variant="secondary" className="text-2xs">Тур {m.round}</Badge>
+                              <Badge variant="secondary" className="text-[10px]">Тур {m.round}</Badge>
                             ) : null}
                             {m.group_id ? (
-                              <Badge variant="secondary" className="text-2xs">Группа {m.group_id}</Badge>
+                              <Badge variant="secondary" className="text-[10px]">Группа {m.group_id}</Badge>
+                            ) : null}
+                            {m.location ? (
+                              <span className="inline-flex items-center gap-1 truncate max-w-[140px]">
+                                <MapPin className="h-3 w-3" />
+                                <span className="truncate">{m.location}</span>
+                              </span>
+                            ) : null}
+                            {m.odds?.pre && (m.odds.pre['1'] || m.odds.pre.X || m.odds.pre['2']) ? (
+                              <span className="inline-flex items-center gap-1">
+                                Коэф:
+                                {m.odds.pre['1'] != null ? <span>1 {m.odds.pre['1']}</span> : null}
+                                {m.odds.pre.X != null ? <span>X {m.odds.pre.X}</span> : null}
+                                {m.odds.pre['2'] != null ? <span>2 {m.odds.pre['2']}</span> : null}
+                              </span>
                             ) : null}
                           </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 text-right truncate">
-                            <Link href={`/teams/${m.home_team.id}`} className="font-semibold hover:text-primary">
-                              {m.home_team.name}
-                            </Link>
-                          </div>
-                          <div className="px-2 py-0.5 bg-muted rounded text-xs text-muted-foreground">VS</div>
-                          <div className="flex-1 truncate">
-                            <Link href={`/teams/${m.away_team.id}`} className="font-semibold hover:text-primary">
-                              {m.away_team.name}
-                            </Link>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                          {m.location ? (
-                            <span className="inline-flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              <span className="truncate max-w-[240px]">{m.location}</span>
-                            </span>
-                          ) : null}
-
-                          {m.odds?.pre && (m.odds.pre['1'] || m.odds.pre.X || m.odds.pre['2']) ? (
-                            <span className="inline-flex items-center gap-1">
-                              Коэф:
-                              {m.odds.pre['1'] != null ? <span>1 {m.odds.pre['1']}</span> : null}
-                              {m.odds.pre.X != null ? <span>X {m.odds.pre.X}</span> : null}
-                              {m.odds.pre['2'] != null ? <span>2 {m.odds.pre['2']}</span> : null}
-                            </span>
-                          ) : null}
-
-                          {m.h2h ? (
-                            <a href={m.h2h} target="_blank" rel="noreferrer" className="text-primary hover:underline">
-                              H2H
-                            </a>
-                          ) : null}
-                        </div>
-                      </div>
-                    ))}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ))}
