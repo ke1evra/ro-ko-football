@@ -9,6 +9,7 @@ import { getCompetitionsListJson, getMatchesHistoryJson } from '@/app/(frontend)
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { YearSelector } from '@/components/YearSelector'
 import type { Metadata } from 'next'
+import { LocalDateTime } from '@/components/LocalDateTime'
 
 export const revalidate = 300 // 5 минут
 
@@ -180,7 +181,11 @@ async function getLeagueMatches(leagueId: string, year: string): Promise<Match[]
 
         return processedMatch
       })
-      .sort((a: Match, b: Match) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .sort(
+        (a: Match, b: Match) =>
+          new Date(`${b.date}T${b.time || '00:00'}Z`).getTime() -
+          new Date(`${a.date}T${a.time || '00:00'}Z`).getTime(),
+      )
 
     return processedMatches
   } catch (error) {
@@ -189,18 +194,7 @@ async function getLeagueMatches(leagueId: string, year: string): Promise<Match[]
   }
 }
 
-function formatDate(dateString: string): string {
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('ru-RU', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    })
-  } catch {
-    return dateString
-  }
-}
+
 
 function getStatusBadge(status: string) {
   switch (status.toLowerCase()) {
@@ -336,7 +330,7 @@ export default async function MatchesYearPage({ params }: MatchesYearPageProps) 
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Calendar className="h-5 w-5" />
-                      {formatDate(date)}
+                      <LocalDateTime date={date} utc showTime={false} />
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -349,7 +343,7 @@ export default async function MatchesYearPage({ params }: MatchesYearPageProps) 
                           <div className="flex items-center gap-4 flex-1">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Clock className="h-4 w-4" />
-                              {match.time}
+                              <LocalDateTime date={match.date} time={match.time} utc showDate={false} />
                             </div>
 
                             <div className="flex items-center gap-3 flex-1">

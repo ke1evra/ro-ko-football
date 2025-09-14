@@ -5,6 +5,11 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import type { Post } from '@/payload-types'
+import { getFixturesMatchesJson } from '@/app/(frontend)/client'
+import { Calendar, Clock, MapPin } from 'lucide-react'
+import { LocalDateTime } from '@/components/LocalDateTime'
+import { Badge } from '@/components/ui/badge'
+import WeekFixturesGrouped from '@/components/home/WeekFixturesGrouped'
 
 export const revalidate = 60
 
@@ -207,6 +212,99 @@ async function getHighlightedCompetitions(): Promise<Competition[]> {
   return highlight
 }
 
+interface UpcomingMatch {
+  id: number
+  date: string
+  time: string
+  home_team: { id: number; name: string }
+  away_team: { id: number; name: string }
+  competition?: { id: number; name: string }
+  location?: string | null
+  round?: string
+  group_id?: number | null
+  odds?: {
+    pre?: { '1'?: number; '2'?: number; X?: number }
+    live?: { '1'?: number | null; '2'?: number | null; X?: number | null }
+  }
+  h2h?: string
+}
+
+
+
+async function getUpcomingMatches(): Promise<UpcomingMatch[]> {
+  try {
+    const now = new Date()
+    const start = new Date(now.toISOString().split('T')[0])
+    const end = new Date(new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+
+
+
+    // Загружаем несколько страниц, чтобы покрыть неделю
+    const fixturesRaw: any[] = []
+    let page = 1
+    let hasNext = true
+    const maxPages = 5
+
+    while (hasNext && page <= maxPages) {
+      const resp = await getFixturesMatchesJson(
+        { from: start, to: end, size: 100, page },
+        { next: { revalidate: 60 } },
+      )
+      const chunk = (resp.data?.data?.fixtures || []) as Array<any>
+      fixturesRaw.push(...chunk)
+      const nextURL = resp.data?.data?.next_page as string | null | undefined
+      hasNext = Boolean(nextURL)
+      page += 1
+    }
+
+    const fixtures = fixturesRaw
+    
+
+
+    const mapped: UpcomingMatch[] = fixtures
+      .map((fx: any) => {
+        const homeTeam = fx.home?.name || fx.home_team?.name || fx.home_name || 'Команда дома'
+        const awayTeam = fx.away?.name || fx.away_team?.name || fx.away_name || 'Команда гостей'
+        
+        return {
+          id: Number(fx.id),
+          date: String(fx.date || ''),
+          time: String(fx.time || ''),
+          home_team: {
+            id: Number(fx.home?.id || fx.home_team?.id || fx.home_id || '0'),
+            name: homeTeam,
+          },
+          away_team: {
+            id: Number(fx.away?.id || fx.away_team?.id || fx.away_id || '0'),
+            name: awayTeam,
+          },
+          competition: fx.competition
+            ? { id: Number(fx.competition.id || '0'), name: fx.competition.name || '' }
+            : undefined,
+          location: typeof fx.location === 'string' ? fx.location : fx.venue?.name || null,
+          round: typeof fx.round === 'string' ? fx.round : fx.round != null ? String(fx.round) : undefined,
+          group_id: fx.group_id != null ? Number(fx.group_id) : null,
+          odds: fx.odds,
+          h2h: typeof fx.h2h === 'string' ? fx.h2h : undefined,
+        }
+      })
+      .filter((m: UpcomingMatch) => Boolean(m.id && m.date))
+
+
+
+    mapped.sort(
+      (a: UpcomingMatch, b: UpcomingMatch) =>
+        new Date(`${a.date}T${a.time || '00:00'}Z`).getTime() -
+        new Date(`${b.date}T${b.time || '00:00'}Z`).getTime(),
+    )
+
+    return mapped
+  } catch (error) {
+    console.error('[DEBUG] Ошибка загрузки матчей:', error)
+    return []
+  }
+}
+
 async function getRecentPosts(limit = 5): Promise<PostLite[]> {
   try {
     const payload = await getPayload({ config })
@@ -233,7 +331,11 @@ async function getRecentPosts(limit = 5): Promise<PostLite[]> {
 }
 
 export default async function Home() {
-  const [highlight, posts] = await Promise.all([getHighlightedCompetitions(), getRecentPosts(5)])
+  const [highlight, posts, upcoming] = await Promise.all([
+    getHighlightedCompetitions(),
+    getRecentPosts(5),
+    getUpcomingMatches(),
+  ])
 
   return (
     <Section>
@@ -323,6 +425,21 @@ export default async function Home() {
                 </Link>
               ))}
             </div>
+          )}
+        </section>
+
+        {/* Ближайшие матчи */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Матчи на неделю вперед</h2>
+            <Link href="/leagues" className="text-sm text-primary hover:underline">
+              К соревнованиям
+            </Link>
+          </div>
+          {upcoming.length === 0 ? (
+            <div className="text-sm text-muted-foreground">Нет ближайших матчей</div>
+          ) : (
+            <WeekFixturesGrouped matches={upcoming} />
           )}
         </section>
 

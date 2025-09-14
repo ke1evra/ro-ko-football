@@ -57,9 +57,22 @@ export function createCustomFetch({
     // Добавляем параметры из config.params
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          searchParams.set(key, String(value))
+        if (value === undefined || value === null) return
+
+        let formatted: string
+        if (value instanceof Date) {
+          // Нормализуем дату в формат YYYY-MM-DD
+          formatted = value.toISOString().split('T')[0]
+        } else if (Array.isArray(value)) {
+          // Поддержка массивов параметров: приводим элементы к строкам, даты — к YYYY-MM-DD
+          formatted = value
+            .map((v) => (v instanceof Date ? v.toISOString().split('T')[0] : String(v)))
+            .join(',')
+        } else {
+          formatted = String(value)
         }
+
+        searchParams.set(key, formatted)
       })
     }
 
