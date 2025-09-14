@@ -159,26 +159,6 @@ const API_METHODS: ApiMethod[] = [
     },
   },
   
-  // Odds Service
-  {
-    name: 'getOddsLiveJson',
-    description: 'Получить live коэффициенты',
-    category: 'Odds',
-    params: {
-      match_id: { type: 'number', required: true, description: 'ID матча' },
-      bookmaker_id: { type: 'number', description: 'ID букмекера' },
-    },
-  },
-  {
-    name: 'getOddsPreJson',
-    description: 'Получить предматчевые коэффициенты',
-    category: 'Odds',
-    params: {
-      match_id: { type: 'number', required: true, description: 'ID матча' },
-      bookmaker_id: { type: 'number', description: 'ID букмекера' },
-    },
-  },
-  
   // Tables Service
   {
     name: 'getCompetitionsTopscorersJson',
@@ -191,48 +171,23 @@ const API_METHODS: ApiMethod[] = [
     },
   },
   {
+    name: 'getCompetitionsTopcardsJson',
+    description: 'Получить игроков с наибольшим числом карточек',
+    category: 'Tables',
+    params: {
+      competition_id: { type: 'number', required: true, description: 'ID соревнования' },
+      season_id: { type: 'number', description: 'ID сезона' },
+      limit: { type: 'number', description: 'Лимит игроков', min: 1, max: 100 },
+    },
+  },
+  {
     name: 'getTablesStandingsJson',
-    description: 'Получить турнирную таб��ицу',
+    description: 'Получить турнирную таблицу',
     category: 'Tables',
     params: {
       competition_id: { type: 'number', required: true, description: 'ID соревнования' },
       season_id: { type: 'number', description: 'ID сезона' },
       include_form: { type: 'select', description: 'Включить форму команд', options: ['yes', 'no'] },
-    },
-  },
-  
-  // Translations Service
-  {
-    name: 'getTranslationsCompetitionsJson',
-    description: 'Получить переводы соревнований',
-    category: 'Translations',
-    params: {
-      lang: { type: 'string', required: true, description: 'Код языка (например, ru)' },
-    },
-  },
-  {
-    name: 'getTranslationsCountriesJson',
-    description: 'Получить переводы стран',
-    category: 'Translations',
-    params: {
-      lang: { type: 'string', required: true, description: 'Код языка (например, ru)' },
-    },
-  },
-  {
-    name: 'getTranslationsFederationsJson',
-    description: 'Получить переводы федераций',
-    category: 'Translations',
-    params: {
-      lang: { type: 'string', required: true, description: 'Код языка (например, ru)' },
-    },
-  },
-  {
-    name: 'getTranslationsTeamsJson',
-    description: 'Получить переводы команд',
-    category: 'Translations',
-    params: {
-      lang: { type: 'string', required: true, description: 'Код языка (например, ru)' },
-      team_id: { type: 'number', description: 'ID команды' },
     },
   },
   

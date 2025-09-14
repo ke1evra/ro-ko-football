@@ -1,6 +1,25 @@
 'use server'
 
-import { customFetch } from '@/lib/http/livescore/customFetch'
+import {
+  getCompetitionsListJson,
+  getCountriesListJson,
+  getFederationsListJson,
+  getSeasonsListJson,
+  getTeamsListJson,
+  getScoresEventsJson,
+  getFixturesMatchesJson,
+  getMatchesLineupsJson,
+  getMatchesStatsJson,
+  getTeamsHead2HeadJson,
+  getMatchesHistoryJson,
+  getMatchesLiveJson,
+  getTeamsMatchesJson,
+  getCompetitionsTopscorersJson,
+  getCompetitionsTopcardsJson,
+  getTablesStandingsJson,
+  getAuthVerifyJson,
+  getCountriesFlagPng,
+} from '@/app/(frontend)/client'
 
 export interface ApiTestParams {
   method: string
@@ -14,87 +33,103 @@ export interface ApiTestResult {
   duration: number
 }
 
-// Маппинг методов на их URL endpoints
-const METHOD_ENDPOINTS: Record<string, string> = {
-  // Catalogs Service
-  getCompetitionsListJson: 'competitions/list.json',
-  getCountriesListJson: 'countries/list.json',
-  getFederationsListJson: 'federations/list.json',
-  getSeasonsListJson: 'seasons/list.json',
-  getTeamsLastmatchesJson: 'teams/lastmatches.json',
-  getTeamsListJson: 'teams/list.json',
-  
-  // Events Service
-  getMatchesEventsJson: 'matches/events.json',
-  
-  // Fixtures Service
-  getFixturesMatchesJson: 'fixtures/matches.json',
-  
-  // Lineups & Stats Service
-  getMatchesLineupsJson: 'matches/lineups.json',
-  getMatchesStatsJson: 'matches/stats.json',
-  getTeamsHead2HeadJson: 'teams/head2head.json',
-  
-  // Matches Service
-  getMatchesHistoryJson: 'matches/history.json',
-  getMatchesLiveJson: 'matches/live.json',
-  
-  // Odds Service
-  getOddsLiveJson: 'odds/live.json',
-  getOddsPreJson: 'odds/pre.json',
-  
-  // Tables Service
-  getCompetitionsTopscorersJson: 'competitions/topscorers.json',
-  getTablesStandingsJson: 'tables/standings.json',
-  
-  // Translations Service
-  getTranslationsCompetitionsJson: 'translations/competitions.json',
-  getTranslationsCountriesJson: 'translations/countries.json',
-  getTranslationsFederationsJson: 'translations/federations.json',
-  getTranslationsTeamsJson: 'translations/teams.json',
-  
-  // Utility Service
-  getAuthVerifyJson: 'auth/verify.json',
-  getCountriesFlagJson: 'countries/flag.json',
-}
-
-export async function executeApiMethod({ method, params = {} }: ApiTestParams): Promise<ApiTestResult> {
+export async function executeApiMethod({
+  method,
+  params = {},
+}: ApiTestParams): Promise<ApiTestResult> {
   const startTime = Date.now()
-  
+
   try {
-    const endpoint = METHOD_ENDPOINTS[method]
-    if (!endpoint) {
-      throw new Error(`Неизвестный метод API: ${method}`)
+    let result: any
+
+    // Выполняем соответствующий метод API
+    switch (method) {
+      // Catalogs Service
+      case 'getCompetitionsListJson':
+        result = await getCompetitionsListJson(params)
+        break
+      case 'getCountriesListJson':
+        result = await getCountriesListJson(params)
+        break
+      case 'getFederationsListJson':
+        result = await getFederationsListJson(params)
+        break
+      case 'getSeasonsListJson':
+        result = await getSeasonsListJson(params)
+        break
+      case 'getTeamsListJson':
+        result = await getTeamsListJson(params)
+        break
+
+      // Events Service
+      case 'getMatchesEventsJson':
+        result = await getScoresEventsJson(params)
+        break
+
+      // Fixtures Service
+      case 'getFixturesMatchesJson':
+        result = await getFixturesMatchesJson(params)
+        break
+
+      // Lineups & Stats Service
+      case 'getMatchesLineupsJson':
+        result = await getMatchesLineupsJson(params)
+        break
+      case 'getMatchesStatsJson':
+        result = await getMatchesStatsJson(params)
+        break
+      case 'getTeamsHead2HeadJson':
+        result = await getTeamsHead2HeadJson(params)
+        break
+
+      // Matches Service
+      case 'getMatchesHistoryJson':
+        result = await getMatchesHistoryJson(params)
+        break
+      case 'getMatchesLiveJson':
+        result = await getMatchesLiveJson(params)
+        break
+      case 'getTeamsLastmatchesJson':
+        result = await getTeamsMatchesJson(params)
+        break
+
+      // Tables Service
+      case 'getCompetitionsTopscorersJson':
+        result = await getCompetitionsTopscorersJson(params)
+        break
+      case 'getCompetitionsTopcardsJson':
+        result = await getCompetitionsTopcardsJson(params)
+        break
+      case 'getTablesStandingsJson':
+        result = await getTablesStandingsJson(params)
+        break
+
+      // Utility Service
+      case 'getAuthVerifyJson':
+        result = await getAuthVerifyJson(params)
+        break
+      case 'getCountriesFlagJson':
+        result = await getCountriesFlagPng(params)
+        break
+
+      // Методы, которые пока не реализованы в новом API клиенте
+      case 'getOddsLiveJson':
+      case 'getOddsPreJson':
+      case 'getTranslationsCompetitionsJson':
+      case 'getTranslationsCountriesJson':
+      case 'getTranslationsFederationsJson':
+      case 'getTranslationsTeamsJson':
+        throw new Error(`Метод ${method} пока не поддерживается в новом API клиенте`)
+
+      default:
+        throw new Error(`Неизвестный метод API: ${method}`)
     }
 
-    // Строим URL с параметрами
-    const url = new URL(endpoint, 'https://example.com') // базовый URL будет заменён в customFetch
-    
-    // Добавляем параметры в query string
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== null && value !== undefined && value !== '') {
-        url.searchParams.set(key, String(value))
-      }
-    })
-
-    // Используем только путь и query string
-    const pathWithQuery = url.pathname + url.search
-
-    const response = await customFetch(pathWithQuery, {
-      method: 'GET',
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`HTTP ${response.status}: ${errorText}`)
-    }
-
-    const data = await response.json()
     const duration = Date.now() - startTime
 
     return {
       success: true,
-      data,
+      data: result,
       duration,
     }
   } catch (error) {

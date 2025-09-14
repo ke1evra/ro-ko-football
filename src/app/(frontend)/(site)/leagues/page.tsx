@@ -4,18 +4,18 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ArrowLeft, AlertCircle } from 'lucide-react'
-import { customFetch } from '@/lib/http/livescore/customFetch'
+import { getCompetitionsListJson, getCountriesListJson, getFederationsListJson } from '@/app/(frontend)/client'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const revalidate = 60 // кэш страницы на 1 минуту
 
 interface LeaguesPageProps {
-  searchParams: {
+  searchParams: Promise<{
     country?: string
     federation?: string
     page?: string
-  }
+  }>
 }
 
 interface Competition {
@@ -41,126 +41,6 @@ const HIGHLIGHT_COUNTRIES_RU = new Set([
   'Швеция',
 ])
 
-function extractCompetitions(raw: unknown): Competition[] {
-  const pickArrays = (obj: unknown): unknown[] => {
-    const arrs: unknown[] = []
-    if (Array.isArray(obj)) arrs.push(obj)
-    if (obj && typeof obj === 'object') {
-      const o = obj as Record<string, unknown>
-      if (Array.isArray(o.competitions)) arrs.push(o.competitions)
-      if (o.data && typeof o.data === 'object') {
-        const d = o.data as Record<string, unknown>
-        if (Array.isArray(d.competitions)) arrs.push(d.competitions)
-        if (Array.isArray(d.competition)) arrs.push(d.competition)
-        if (d.data && typeof d.data === 'object') {
-          const dd = d.data as Record<string, unknown>
-          if (Array.isArray(dd.competitions)) arrs.push(dd.competitions)
-        }
-      }
-    }
-    return arrs
-  }
-
-  const candidates = pickArrays(raw)
-  for (const arr of candidates) {
-    if (Array.isArray(arr)) {
-      const mapped: Competition[] = arr
-        .map((item: unknown) => {
-          const c = item as any
-          const id = typeof c.id === 'number' ? c.id : undefined
-          const name = typeof c.name === 'string' ? c.name : undefined
-          const country =
-            Array.isArray(c.countries) && c.countries.length > 0 ? c.countries[0] : undefined
-
-          if (!id || !name) return null
-          const countrySafe = country
-            ? {
-                id: typeof country.id === 'number' ? country.id : undefined,
-                name: typeof country.name === 'string' ? country.name : undefined,
-                flag: typeof country.flag === 'string' ? country.flag : null,
-              }
-            : null
-
-          return { id, name, country: countrySafe }
-        })
-        .filter((v): v is Competition => Boolean(v))
-
-      if (mapped.length) return mapped
-    }
-  }
-  return []
-}
-
-function extractCountries(raw: unknown): Array<{ id: number; name: string }> {
-  const pickArrays = (obj: unknown): unknown[] => {
-    const arrs: unknown[] = []
-    if (Array.isArray(obj)) arrs.push(obj)
-    if (obj && typeof obj === 'object') {
-      const o = obj as Record<string, unknown>
-      if (Array.isArray(o.countries)) arrs.push(o.countries)
-      if (o.data && typeof o.data === 'object') {
-        const d = o.data as Record<string, unknown>
-        if (Array.isArray(d.countries)) arrs.push(d.countries)
-        if (Array.isArray(d.data)) arrs.push(d.data)
-      }
-    }
-    return arrs
-  }
-
-  const candidates = pickArrays(raw)
-  for (const arr of candidates) {
-    if (Array.isArray(arr)) {
-      const mapped = arr
-        .map((item: unknown) => {
-          const country = item as any
-          const id = typeof country.id === 'number' ? country.id : undefined
-          const name = typeof country.name === 'string' ? country.name : undefined
-          if (!id || !name) return null
-          return { id, name }
-        })
-        .filter((item): item is { id: number; name: string } => Boolean(item))
-
-      if (mapped.length) return mapped
-    }
-  }
-  return []
-}
-
-function extractFederations(raw: unknown): Array<{ id: number; name: string }> {
-  const pickArrays = (obj: unknown): unknown[] => {
-    const arrs: unknown[] = []
-    if (Array.isArray(obj)) arrs.push(obj)
-    if (obj && typeof obj === 'object') {
-      const o = obj as Record<string, unknown>
-      if (Array.isArray(o.federations)) arrs.push(o.federations)
-      if (o.data && typeof o.data === 'object') {
-        const d = o.data as Record<string, unknown>
-        if (Array.isArray(d.federations)) arrs.push(d.federations)
-        if (Array.isArray(d.data)) arrs.push(d.data)
-      }
-    }
-    return arrs
-  }
-
-  const candidates = pickArrays(raw)
-  for (const arr of candidates) {
-    if (Array.isArray(arr)) {
-      const mapped = arr
-        .map((item: unknown) => {
-          const fed = item as any
-          const id = typeof fed.id === 'number' ? fed.id : undefined
-          const name = typeof fed.name === 'string' ? fed.name : undefined
-          if (!id || !name) return null
-          return { id, name }
-        })
-        .filter((item): item is { id: number; name: string } => Boolean(item))
-
-      if (mapped.length) return mapped
-    }
-  }
-  return []
-}
-
 async function getCompetitions(countryId?: string, federationId?: string, page = 1): Promise<{
   competitions: Competition[]
   hasMore: boolean
@@ -168,49 +48,46 @@ async function getCompetitions(countryId?: string, federationId?: string, page =
   federationName?: string
 }> {
   try {
-    // Строим URL с параметрами
-    const url = new URL('competitions/list.json', 'https://example.com')
-    url.searchParams.set('page', page.toString())
-    url.searchParams.set('size', '50')
-    url.searchParams.set('lang', 'ru')
-    
-    if (countryId) {
-      url.searchParams.set('country_id', countryId)
-    }
-    if (federationId) {
-      url.searchParams.set('federation_id', federationId)
+    // Получаем соревнования
+    const params = {
+      page,
+      size: 50,
+      ...(countryId && { country_id: parseInt(countryId) }),
+      ...(federationId && { federation_id: parseInt(federationId) }),
     }
 
-    const pathWithQuery = url.pathname + url.search
-    const res = await customFetch(pathWithQuery, {
+    const response = await getCompetitionsListJson(params, {
       next: { revalidate: 60 },
-    } as RequestInit)
+    })
     
-    let raw: unknown
-    try {
-      raw = await res.json()
-    } catch {
-      raw = null
-    }
-    
-    const competitions = extractCompetitions(raw)
+    const competitions = (response.data?.data?.competition || [])
+      .map((comp) => {
+        if (!comp.id || !comp.name) return null
+        
+        // Извлекаем информацию о стране из массива countries
+        const country = comp.countries && comp.countries.length > 0 ? comp.countries[0] : null
+        
+        return {
+          id: parseInt(comp.id),
+          name: comp.name,
+          country: country ? {
+            id: parseInt(country.id),
+            name: country.name,
+            flag: country.flag,
+          } : null,
+        }
+      })
+      .filter((comp): comp is Competition => Boolean(comp))
 
     // Получаем название страны если указан ID
     let countryName
     if (countryId) {
       try {
-        const countryRes = await customFetch('countries/list.json?lang=ru', {
+        const countryResponse = await getCountriesListJson({}, {
           next: { revalidate: 300 },
-        } as RequestInit)
+        })
         
-        let countryRaw: unknown
-        try {
-          countryRaw = await countryRes.json()
-        } catch {
-          countryRaw = null
-        }
-        
-        const countries = extractCountries(countryRaw)
+        const countries = countryResponse.data?.data?.country || []
         const country = countries.find((c) => c.id === parseInt(countryId))
         countryName = country?.name
       } catch (error) {
@@ -218,23 +95,16 @@ async function getCompetitions(countryId?: string, federationId?: string, page =
       }
     }
 
-    // Получаем н��звание федерации если указан ID
+    // Получаем название федерации если указан ID
     let federationName
     if (federationId) {
       try {
-        const fedRes = await customFetch('federations/list.json', {
+        const fedResponse = await getFederationsListJson({
           next: { revalidate: 300 },
-        } as RequestInit)
+        })
         
-        let fedRaw: unknown
-        try {
-          fedRaw = await fedRes.json()
-        } catch {
-          fedRaw = null
-        }
-        
-        const federations = extractFederations(fedRaw)
-        const federation = federations.find((f) => f.id === parseInt(federationId))
+        const federations = fedResponse.data?.data?.federation || []
+        const federation = federations.find((f) => f.id === federationId)
         federationName = federation?.name
       } catch (error) {
         console.error('Ошибка загрузки названия федерации:', error)
@@ -258,9 +128,10 @@ function byName(a?: string | null, b?: string | null) {
 }
 
 export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
-  const countryId = searchParams.country
-  const federationId = searchParams.federation
-  const page = parseInt(searchParams.page || '1')
+  const resolvedSearchParams = await searchParams
+  const countryId = resolvedSearchParams.country
+  const federationId = resolvedSearchParams.federation
+  const page = parseInt(resolvedSearchParams.page || '1')
   
   const { competitions, hasMore, countryName, federationName } = await getCompetitions(
     countryId,
@@ -380,7 +251,7 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
                   >
                     <div className="group border rounded-md p-4 flex items-center gap-3 hover:bg-accent transition-colors">
                       <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden">
-                        {competition.country?.flag ? (
+                        {competition.country?.id ? (
                           <CountryFlagImage
                             countryId={competition.country.id}
                             countryName={competition.country.name}
@@ -420,7 +291,7 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
                       className="flex items-center gap-3 p-3 hover:bg-accent/50 transition-colors"
                     >
                       <div className="w-8 h-8 rounded bg-muted flex items-center justify-center overflow-hidden">
-                        {competition.country?.flag ? (
+                        {competition.country?.id ? (
                           <CountryFlagImage
                             countryId={competition.country.id}
                             countryName={competition.country.name}
