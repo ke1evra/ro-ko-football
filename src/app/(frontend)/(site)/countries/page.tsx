@@ -45,18 +45,26 @@ async function getCountries(
     })
 
     const allCountries = (response.data?.data?.country || [])
-      .map((country: { id?: number | string; name?: string; flag?: string | null; fifa_code?: string | null; uefa_code?: string | null } ) => {
-        if (!country.id || !country.name) return null
-        return {
-          id: Number(country.id),
-          name: country.name,
-          flag: country.flag,
-          fifa_code: country.fifa_code,
-          uefa_code: country.uefa_code,
-        }
-      })
-      .filter((country: Country | null): country is Country => Boolean(country))
-      .sort((a: Country, b: Country) => a.name.localeCompare(b.name)) // Сортируем по алфавиту
+      .map(
+        (country: {
+          id?: number | string
+          name?: string
+          flag?: string | null
+          fifa_code?: string | null
+          uefa_code?: string | null
+        }) => {
+          if (!country.id || !country.name) return null
+          return {
+            id: Number(country.id),
+            name: country.name,
+            flag: country.flag,
+            fifa_code: country.fifa_code,
+            uefa_code: country.uefa_code,
+          }
+        },
+      )
+      .filter((country): country is NonNullable<typeof country> => country !== null)
+      .sort((a, b) => a.name.localeCompare(b.name)) // Сортируем по алфавиту
 
     // Реализуем пагинацию на клиенте
     const pageSize = 20
@@ -73,7 +81,7 @@ async function getCountries(
           next: { revalidate: 300 },
         })
 
-        const federations = fedResponse.data?.data?.federation || []
+        const federations = fedResponse.data?.data?.data?.federation || []
         const federation = federations.find(
           (f: { id?: number | string; name?: string }) => Number(f.id) === Number(federationId),
         )

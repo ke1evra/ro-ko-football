@@ -19,8 +19,8 @@ async function getFederations(): Promise<Federation[]> {
       next: { revalidate: 300 },
     })
 
-    // Извлекаем федерации из структуры data.data.federation
-    const federations = response.data?.data?.federation || []
+    // Извлекаем федерации из структуры data.data.data.federation (согласно типам)
+    const federations = response.data?.data?.data?.federation || []
 
     return federations
       .map((fed: { id?: number | string; name?: string }) => {

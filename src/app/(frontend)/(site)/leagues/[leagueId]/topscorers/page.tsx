@@ -93,7 +93,7 @@ async function getLeagueTopscorers(leagueId: string): Promise<Topscorer[]> {
     )
 
     console.log(`Структура ответа topscorers:`, Object.keys(response.data?.data || {}))
-    const topscorers = response.data?.data?.topscorer || []
+    const topscorers = response.data?.data?.topscorers || []
     console.log(`Всего бомбардиров получено: ${topscorers.length}`)
 
     return topscorers

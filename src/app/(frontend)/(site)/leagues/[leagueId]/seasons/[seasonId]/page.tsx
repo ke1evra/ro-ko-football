@@ -100,7 +100,7 @@ async function getSeasonInfo(seasonId: string): Promise<Season | null> {
   try {
     const response = await getSeasonsListJson({ next: { revalidate: 300 } })
 
-    const seasons = (response.data?.data?.seasons || []) as Array<{
+    const seasons = (response.data?.data?.season || []) as Array<{
       id?: number | string
       name?: string
       year?: number | string
@@ -136,7 +136,7 @@ async function getStandings(leagueId: string, seasonId: string): Promise<Standin
     )
 
     console.log(`Структура ответа standings:`, Object.keys(response.data?.data || {}))
-    const standings = response.data?.data?.standing || []
+    const standings = response.data?.data?.table || []
     console.log(`Всего команд в таблице получено: ${standings.length}`)
 
     return standings

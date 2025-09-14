@@ -124,7 +124,7 @@ async function getCompetitions(
           next: { revalidate: 300 },
         })
 
-        const federationsRaw = (fedResponse.data?.data?.federation || []) as Array<{
+        const federationsRaw = (fedResponse.data?.data?.data?.federation || []) as Array<{
           id?: number | string
           name?: string
         }>

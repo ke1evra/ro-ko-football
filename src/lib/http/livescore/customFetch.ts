@@ -37,8 +37,15 @@ export function createCustomFetch({
   fetchImpl = fetch,
 }: CreateFetchOptions = {}) {
   // Возвращаем функцию, совместимую с kubb
-  return async function customFetch(config: any): Promise<any> {
-    const { method = 'GET', url: configUrl = '', params, ...restConfig } = config
+  return async function customFetch<TRes = unknown, TErr = unknown, TBody = unknown>(
+    config: {
+      method?: string
+      url: string
+      params?: Record<string, any>
+      body?: TBody
+    } & RequestConfig,
+  ): Promise<{ data: TRes; status: number; statusText: string }> {
+    const { method = 'GET', url: configUrl = '', params, body, ...restConfig } = config
 
     // Нормализуем базовый URL и путь
     const base = new URL(baseUrl.endsWith('/') ? baseUrl : baseUrl + '/')
@@ -85,6 +92,24 @@ export function createCustomFetch({
         accept: 'application/json',
         ...(restConfig.headers || {}),
       },
+    }
+
+    // Поддержк�� тела запроса для не-GET методов
+    if (body !== undefined && String(method).toUpperCase() !== 'GET') {
+      if (typeof FormData !== 'undefined' && body instanceof FormData) {
+        init.body = body as any
+      } else if (
+        typeof body === 'string' ||
+        (typeof Blob !== 'undefined' && body instanceof Blob)
+      ) {
+        init.body = body as any
+      } else {
+        init.body = JSON.stringify(body)
+        const hdrs = (init.headers ||= {}) as Record<string, string>
+        if (typeof hdrs === 'object' && hdrs && !('content-type' in hdrs)) {
+          hdrs['content-type'] = 'application/json'
+        }
+      }
     }
 
     const response = await fetchImpl(fullUrl.toString(), init)

@@ -39,13 +39,10 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
     console.log(`Поиск лиги с ID: ${leagueId}`)
 
     // Получаем информацию о лиге из списка всех лиг
-    const response = await getCompetitionsListJson(
-      { size: 500 },
-      { next: { revalidate: 300 } },
-    )
+    const response = await getCompetitionsListJson({ size: 500 }, { next: { revalidate: 300 } })
 
-    // Проверяем разные возможные структуры данных
-    const competitions = (response.data?.data?.competition || response.data?.competition || []) as Array<{
+    // Проверяем различные структуры, но используем типизированный путь data.data.competition
+    const competitions = (response.data?.data?.competition || []) as Array<{
       id?: number | string
       name?: string
       countries?: Array<{ id?: number | string; name?: string; flag?: string }>
@@ -89,7 +86,7 @@ async function getLeagueSeasons(leagueId: string): Promise<Season[]> {
   try {
     const response = await getSeasonsListJson({ next: { revalidate: 300 } })
 
-    const seasons = (response.data?.data?.seasons || []) as Array<{
+    const seasons = (response.data?.data?.season || []) as Array<{
       id?: number | string
       name?: string
       year?: number | string
