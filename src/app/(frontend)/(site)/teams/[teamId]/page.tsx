@@ -12,9 +12,9 @@ import { Breadcrumbs } from '@/components/Breadcrumbs'
 export const revalidate = 300 // 5 минут
 
 interface TeamPageProps {
-  params: {
+  params: Promise<{
     teamId: string
-  }
+  }>
 }
 
 interface Team {
@@ -194,7 +194,7 @@ function getResultColor(result: string): string {
 }
 
 export default async function TeamPage({ params }: TeamPageProps) {
-  const teamId = params.teamId
+  const { teamId } = await params
 
   const [team, matches] = await Promise.all([getTeamInfo(teamId), getTeamMatches(teamId)])
 

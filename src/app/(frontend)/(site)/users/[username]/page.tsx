@@ -12,13 +12,14 @@ function pickAvatar(user: any): string | undefined {
   return undefined
 }
 
-export default async function UserPublicPage({ params }: { params: { username: string } }) {
+export default async function UserPublicPage({ params }: { params: Promise<{ username: string }> }) {
   const payload = await getPayload({ config })
 
+  const { username } = await params
   // Находим пользователя по username
   const users = await payload.find({
     collection: 'users',
-    where: { username: { equals: params.username } },
+    where: { username: { equals: username } },
     depth: 1,
     limit: 1,
   })
