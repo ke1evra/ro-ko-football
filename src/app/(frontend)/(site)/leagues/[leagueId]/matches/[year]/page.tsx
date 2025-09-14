@@ -90,13 +90,13 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
     if (!league) return null
 
     return {
-      id: parseInt(league.id),
+      id: Number(league.id),
       name: league.name || 'Неизвестная лига',
       country:
         league.countries && league.countries.length > 0
           ? {
-              id: parseInt(league.countries[0].id),
-              name: league.countries[0].name,
+              id: Number(league.countries[0].id),
+              name: league.countries[0].name || 'Неизвестная страна',
             }
           : undefined,
     }
@@ -164,16 +164,16 @@ async function getLeagueMatches(leagueId: string, year: string): Promise<Match[]
         }
 
         const processedMatch = {
-          id: parseInt(match.id),
+          id: Number(match.id),
           date: match.date || '',
           time: match.scheduled || match.time || '',
           status: match.status || 'finished',
           home_team: {
-            id: parseInt(match.home?.id || '0'),
+            id: Number(match.home?.id ?? 0),
             name: match.home?.name || 'Неизвестная команда',
           },
           away_team: {
-            id: parseInt(match.away?.id || '0'),
+            id: Number(match.away?.id ?? 0),
             name: match.away?.name || 'Неизвестная команда',
           },
           score,

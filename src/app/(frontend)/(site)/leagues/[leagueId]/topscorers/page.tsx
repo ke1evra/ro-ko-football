@@ -63,13 +63,13 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
     if (!league) return null
 
     return {
-      id: parseInt(league.id),
+      id: Number(league.id),
       name: league.name || 'Неизвестная лига',
       country:
         league.countries && league.countries.length > 0
           ? {
-              id: parseInt(league.countries[0].id),
-              name: league.countries[0].name,
+              id: Number(league.countries[0].id),
+              name: league.countries[0].name || 'Неизвестная страна',
             }
           : undefined,
     }
@@ -100,16 +100,16 @@ async function getLeagueTopscorers(leagueId: string): Promise<Topscorer[]> {
       .map((scorer: any, index: number) => ({
         position: index + 1,
         player: {
-          id: parseInt(scorer.player?.id || '0'),
+          id: Number(scorer.player?.id ?? 0),
           name: scorer.player?.name || 'Неизвестный игрок',
         },
         team: {
-          id: parseInt(scorer.team?.id || '0'),
+          id: Number(scorer.team?.id ?? 0),
           name: scorer.team?.name || 'Неизвестная команда',
         },
-        goals: parseInt(scorer.goals || '0'),
-        matches: scorer.matches ? parseInt(scorer.matches) : undefined,
-        assists: scorer.assists ? parseInt(scorer.assists) : undefined,
+        goals: Number(scorer.goals ?? 0),
+        matches: scorer.matches ? Number(scorer.matches) : undefined,
+        assists: scorer.assists ? Number(scorer.assists) : undefined,
       }))
       .sort((a: Topscorer, b: Topscorer) => b.goals - a.goals)
   } catch (error) {

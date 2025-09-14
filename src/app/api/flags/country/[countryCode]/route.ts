@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest, { params }: { params: { countryCode: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ countryCode: string }> }) {
   try {
-    const countryCode = params.countryCode
+    const { countryCode } = await params
 
     if (!countryCode || countryCode.length < 2) {
       return NextResponse.json({ error: 'Invalid country code' }, { status: 400 })

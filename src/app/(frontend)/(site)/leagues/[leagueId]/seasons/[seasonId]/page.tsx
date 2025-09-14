@@ -79,13 +79,13 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
     if (!league) return null
 
     return {
-      id: parseInt(league.id),
+      id: Number(league.id),
       name: league.name || 'Неизвестная лига',
       country:
         league.countries && league.countries.length > 0
           ? {
-              id: parseInt(league.countries[0].id),
-              name: league.countries[0].name,
+              id: Number(league.countries[0].id),
+              name: league.countries[0].name || 'Неизвестная страна',
               flag: league.countries[0].flag,
             }
           : undefined,
@@ -110,9 +110,9 @@ async function getSeasonInfo(seasonId: string): Promise<Season | null> {
     if (!season) return null
 
     return {
-      id: parseInt(season.id),
+      id: Number(season.id),
       name: season.name || `Сезон ${season.year || season.id}`,
-      year: season.year ? parseInt(season.year) : undefined,
+      year: season.year ? Number(season.year) : undefined,
     }
   } catch (error) {
     console.error('Ошибка загрузки информации о сезоне:', error)

@@ -106,7 +106,7 @@ type MatchNormalized = {
 async function findMatchById(matchId: number): Promise<MatchNormalized | null> {
   // Сначала пробуем найти в live
   try {
-    const liveResp = await getMatchesLiveJson({ size: 100 })
+    const liveResp = await getMatchesLiveJson()
     const liveList = (liveResp.data?.data?.match || []) as Array<any>
     const m = liveList.find((match: any) => Number(match.id) === matchId)
 
@@ -150,7 +150,7 @@ async function findMatchById(matchId: number): Promise<MatchNormalized | null> {
       new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     )
 
-    const historyResp = await getMatchesHistoryJson({ from, to, size: 100 })
+    const historyResp = await getMatchesHistoryJson({ from, to })
     const historyList = (historyResp.data?.data?.match || []) as Array<any>
     const m = historyList.find((match: any) => Number(match.id) === matchId)
 

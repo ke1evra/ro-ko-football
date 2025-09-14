@@ -68,13 +68,13 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
     }
 
     return {
-      id: parseInt(league.id),
+      id: Number(league.id),
       name: league.name || 'Неизвестная лига',
       country:
         league.countries && league.countries.length > 0
           ? {
               id: Number(league.countries[0].id),
-              name: league.countries[0].name,
+              name: league.countries[0].name || 'Неизвестная страна',
               flag: league.countries[0].flag,
             }
           : undefined,

@@ -68,26 +68,31 @@ async function getCompetitions(
       next: { revalidate: 60 },
     })
 
-    const competitions = (response.data?.data?.competition || [])
-      .map((comp) => {
-        if (!comp.id || !comp.name) return null
+    const competitionsRaw = (response.data?.data?.competition || []) as Array<{
+      id?: number | string
+      name?: string
+      countries?: Array<{ id?: number | string; name?: string; flag?: string | null }>
+    }>
+    const competitions = competitionsRaw
+      .map((comp): Competition | null => {
+        if (!comp?.id || !comp?.name) return null
 
         // Извлекаем информацию о стране из массива countries
-        const country = comp.countries && comp.countries.length > 0 ? comp.countries[0] : null
+        const country = comp.countries && comp.countries.length > 0 ? comp.countries[0] : undefined
 
         return {
-          id: parseInt(comp.id),
+          id: Number(comp.id),
           name: comp.name,
           country: country
             ? {
-                id: parseInt(country.id),
+                id: country.id != null ? Number(country.id) : undefined,
                 name: country.name,
-                flag: country.flag,
+                flag: country.flag ?? null,
               }
-            : null,
+            : undefined,
         }
       })
-      .filter((comp): comp is Competition => Boolean(comp))
+      .filter((c): c is Competition => c !== null)
 
     // Получаем название страны если указан ID
     let countryName
@@ -100,8 +105,11 @@ async function getCompetitions(
           },
         )
 
-        const countries = countryResponse.data?.data?.country || []
-        const country = countries.find((c) => c.id === parseInt(countryId))
+        const countriesRaw = (countryResponse.data?.data?.country || []) as Array<{
+          id?: number | string
+          name?: string
+        }>
+        const country = countriesRaw.find((c) => Number(c.id) === Number(countryId))
         countryName = country?.name
       } catch (error) {
         console.error('Ошибка загрузки названия страны:', error)
@@ -116,8 +124,11 @@ async function getCompetitions(
           next: { revalidate: 300 },
         })
 
-        const federations = fedResponse.data?.data?.federation || []
-        const federation = federations.find((f) => f.id === federationId)
+        const federationsRaw = (fedResponse.data?.data?.federation || []) as Array<{
+          id?: number | string
+          name?: string
+        }>
+        const federation = federationsRaw.find((f) => String(f.id) === String(federationId))
         federationName = federation?.name
       } catch (error) {
         console.error('Ошибка загрузки названия федерации:', error)

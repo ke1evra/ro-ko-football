@@ -5,7 +5,11 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import type { Post } from '@/payload-types'
-import { getFixturesMatchesJson, getMatchesLiveJson, getMatchesHistoryJson } from '@/app/(frontend)/client'
+import {
+  getFixturesMatchesJson,
+  getMatchesLiveJson,
+  getMatchesHistoryJson,
+} from '@/app/(frontend)/client'
 import { Calendar, Clock, MapPin } from 'lucide-react'
 import { LocalDateTime } from '@/components/LocalDateTime'
 import { Badge } from '@/components/ui/badge'
@@ -76,30 +80,31 @@ function extractCompetitions(raw: unknown): Competition[] {
   }
 
   const candidates = pickArrays(raw)
+  const toCompetition = (item: unknown): Competition | null => {
+    const c = item as RawCompetition
+    const id = toNumber(c.id)
+    const name = typeof c.name === 'string' ? c.name : undefined
+    const teamId = toNumber(c.team_id)
+    const country =
+      Array.isArray(c.countries) && c.countries.length > 0 ? c.countries[0] : undefined
+
+    if (!id || !name) return null
+    const countrySafe: Country | null = country
+      ? {
+          id: toNumber(country.id),
+          name: typeof country.name === 'string' ? country.name : undefined,
+          flag: typeof country.flag === 'string' ? country.flag : null,
+          teamId: teamId,
+        }
+      : null
+
+    return { id, name, country: countrySafe, teamId }
+  }
   for (const arr of candidates) {
     if (Array.isArray(arr)) {
-      const mapped: Competition[] = arr
-        .map((item: unknown) => {
-          const c = item as RawCompetition
-          const id = toNumber(c.id)
-          const name = typeof c.name === 'string' ? c.name : undefined
-          const teamId = toNumber(c.team_id)
-          const country =
-            Array.isArray(c.countries) && c.countries.length > 0 ? c.countries[0] : undefined
-
-          if (!id || !name) return null
-          const countrySafe: Country | null = country
-            ? {
-                id: toNumber(country.id),
-                name: typeof country.name === 'string' ? country.name : undefined,
-                flag: typeof country.flag === 'string' ? country.flag : null,
-                teamId: teamId,
-              }
-            : null
-
-          return { id, name, country: countrySafe, teamId }
-        })
-        .filter((v): v is Competition => Boolean(v))
+      const mapped = (arr as unknown[])
+        .map(toCompetition)
+        .filter((v): v is NonNullable<typeof v> => v !== null)
 
       if (mapped.length) return mapped
     }
@@ -241,17 +246,12 @@ interface MatchData {
   fixture_id?: number
 }
 
-
-
 async function getLiveMatches(): Promise<MatchData[]> {
   try {
-    const resp = await getMatchesLiveJson(
-      { size: 100 },
-      { next: { revalidate: 60 } }
-    )
-    
+    const resp = await getMatchesLiveJson({ page: 1 }, { next: { revalidate: 60 } })
+
     const matches = (resp.data?.data?.match || []) as Array<any>
-    
+
     return matches.map((m: any) => ({
       id: Number(m.fixture_id || m.id || 0),
       match_id: Number(m.id || 0),
@@ -286,15 +286,14 @@ async function getRecentMatches(): Promise<MatchData[]> {
   try {
     const now = new Date()
     const to = new Date(now.toISOString().split('T')[0])
-    const from = new Date(new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-    
-    const resp = await getMatchesHistoryJson(
-      { from, to, size: 100 },
-      { next: { revalidate: 60 } }
+    const from = new Date(
+      new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     )
-    
+
+    const resp = await getMatchesHistoryJson({ from, to, page: 1 }, { next: { revalidate: 60 } })
+
     const matches = (resp.data?.data?.match || []) as Array<any>
-    
+
     return matches.map((m: any) => ({
       id: Number(m.fixture_id || m.id || 0),
       match_id: Number(m.id || 0),
@@ -329,9 +328,9 @@ async function getUpcomingMatches(): Promise<MatchData[]> {
   try {
     const now = new Date()
     const start = new Date(now.toISOString().split('T')[0])
-    const end = new Date(new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-
-
+    const end = new Date(
+      new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    )
 
     // Загружаем несколько страниц, чтобы покрыть неделю
     const fixturesRaw: any[] = []
@@ -352,14 +351,12 @@ async function getUpcomingMatches(): Promise<MatchData[]> {
     }
 
     const fixtures = fixturesRaw
-    
-
 
     const mapped: MatchData[] = fixtures
       .map((fx: any) => {
         const homeTeam = fx.home?.name || fx.home_team?.name || fx.home_name || 'Команда дома'
         const awayTeam = fx.away?.name || fx.away_team?.name || fx.away_name || 'Команда гостей'
-        
+
         return {
           id: Number(fx.id),
           date: String(fx.date || ''),
@@ -376,15 +373,18 @@ async function getUpcomingMatches(): Promise<MatchData[]> {
             ? { id: Number(fx.competition.id || '0'), name: fx.competition.name || '' }
             : undefined,
           location: typeof fx.location === 'string' ? fx.location : fx.venue?.name || null,
-          round: typeof fx.round === 'string' ? fx.round : fx.round != null ? String(fx.round) : undefined,
+          round:
+            typeof fx.round === 'string'
+              ? fx.round
+              : fx.round != null
+                ? String(fx.round)
+                : undefined,
           group_id: fx.group_id != null ? Number(fx.group_id) : null,
           odds: fx.odds,
           h2h: typeof fx.h2h === 'string' ? fx.h2h : undefined,
         }
       })
       .filter((m: MatchData) => Boolean(m.id && m.date))
-
-
 
     mapped.sort(
       (a: MatchData, b: MatchData) =>
@@ -550,11 +550,15 @@ export default async function Home() {
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium truncate">{m.home_team.name}</span>
-                      <span className="text-sm font-bold">{m.scores?.score?.split(' - ')[0] || '0'}</span>
+                      <span className="text-sm font-bold">
+                        {m.scores?.score?.split(' - ')[0] || '0'}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium truncate">{m.away_team.name}</span>
-                      <span className="text-sm font-bold">{m.scores?.score?.split(' - ')[1] || '0'}</span>
+                      <span className="text-sm font-bold">
+                        {m.scores?.score?.split(' - ')[1] || '0'}
+                      </span>
                     </div>
                   </div>
                 </Link>
@@ -589,11 +593,15 @@ export default async function Home() {
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-sm truncate">{m.home_team.name}</span>
-                      <span className="text-sm font-bold">{m.scores?.score?.split(' - ')[0] || '0'}</span>
+                      <span className="text-sm font-bold">
+                        {m.scores?.score?.split(' - ')[0] || '0'}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm truncate">{m.away_team.name}</span>
-                      <span className="text-sm font-bold">{m.scores?.score?.split(' - ')[1] || '0'}</span>
+                      <span className="text-sm font-bold">
+                        {m.scores?.score?.split(' - ')[1] || '0'}
+                      </span>
                     </div>
                   </div>
                 </Link>

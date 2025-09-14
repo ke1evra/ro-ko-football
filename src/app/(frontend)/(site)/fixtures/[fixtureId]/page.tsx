@@ -235,6 +235,7 @@ export default async function FixturePage({ params }: { params: Promise<{ fixtur
     id?: number
     time?: number
     label?: string
+    event?: string
     is_home?: boolean
     is_away?: boolean
     player?: { name?: string } | null

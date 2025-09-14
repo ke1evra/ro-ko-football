@@ -23,7 +23,15 @@ export async function createCommentAction({
   try {
     const created = await payload.create({
       collection: 'comments',
-      data: { post: Number(postId), content, parent: parentId ? Number(parentId) : undefined },
+      data: {
+        post: Number(postId),
+        content,
+        parent: parentId ? Number(parentId) : undefined,
+        author: (user as any).id,
+        upvotes: 0,
+        downvotes: 0,
+        score: 0,
+      },
       user,
     })
 
@@ -83,7 +91,7 @@ export async function voteCommentAction({
       // Не существует — создаём
       await payload.create({
         collection: 'commentVotes',
-        data: { comment: Number(commentId), value },
+        data: { comment: Number(commentId), value, user: (user as any).id },
         user,
       })
     }
