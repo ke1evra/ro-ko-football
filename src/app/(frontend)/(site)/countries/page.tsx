@@ -5,7 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, Flag, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import { getCountriesListJson, getFederationsListJson } from '@/app/(frontend)/client/clients/CatalogsService'
+import { getCountriesListJson, getFederationsListJson } from '@/app/(frontend)/client'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
@@ -20,10 +20,10 @@ interface Country {
 }
 
 interface CountriesPageProps {
-  searchParams: {
+  searchParams: Promise<{
     federation?: string
     page?: string
-  }
+  }>
 }
 
 async function getCountries(federationId?: string, page = 1): Promise<{
@@ -32,10 +32,8 @@ async function getCountries(federationId?: string, page = 1): Promise<{
   federationName?: string
 }> {
   try {
-    // Получаем страны
+    // Получаем все страны (API не поддерживает пагинацию)
     const params = {
-      page,
-      size: 20,
       ...(federationId && { federation_id: parseInt(federationId) }),
     }
 
@@ -43,7 +41,7 @@ async function getCountries(federationId?: string, page = 1): Promise<{
       next: { revalidate: 300 },
     })
     
-    const countries = (response.data?.country || [])
+    const allCountries = (response.data?.data?.country || [])
       .map((country) => {
         if (!country.id || !country.name) return null
         return {
@@ -55,6 +53,14 @@ async function getCountries(federationId?: string, page = 1): Promise<{
         }
       })
       .filter((country): country is Country => Boolean(country))
+      .sort((a, b) => a.name.localeCompare(b.name)) // Сортируем по алфавиту
+
+    // Реализуем пагинацию на клиенте
+    const pageSize = 20
+    const startIndex = (page - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    const countries = allCountries.slice(startIndex, endIndex)
+    const hasMore = endIndex < allCountries.length
 
     // Получаем название федерации если указан ID
     let federationName
@@ -74,7 +80,7 @@ async function getCountries(federationId?: string, page = 1): Promise<{
 
     return {
       countries,
-      hasMore: countries.length === 20, // Если получили полную страницу, возможно есть еще
+      hasMore,
       federationName,
     }
   } catch (error) {
@@ -84,8 +90,9 @@ async function getCountries(federationId?: string, page = 1): Promise<{
 }
 
 export default async function CountriesPage({ searchParams }: CountriesPageProps) {
-  const federationId = searchParams.federation
-  const page = parseInt(searchParams.page || '1')
+  const resolvedSearchParams = await searchParams
+  const federationId = resolvedSearchParams.federation
+  const page = parseInt(resolvedSearchParams.page || '1')
   
   const { countries, hasMore, federationName } = await getCountries(federationId, page)
 
@@ -144,16 +151,12 @@ export default async function CountriesPage({ searchParams }: CountriesPageProps
                     <CardHeader className="pb-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                          {country.flag ? (
-                            <CountryFlagImage
-                              countryId={country.id}
-                              countryName={country.name}
-                              size="large"
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <Flag className="h-5 w-5 text-muted-foreground" />
-                          )}
+                          <CountryFlagImage
+                            countryId={country.id}
+                            countryName={country.name}
+                            size="large"
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-base truncate">

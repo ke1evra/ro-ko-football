@@ -17,12 +17,14 @@ export function CountryFlagImage({
   className = '' 
 }: CountryFlagImageProps) {
   const [imageError, setImageError] = useState(false)
-  const [imageLoading, setImageLoading] = useState(true)
+  const [imageLoaded, setImageLoaded] = useState(false)
 
-  // Если нет ID страны или произошла ошибка загрузки, показываем иконку
-  if (!countryId || imageError) {
+  console.log(`CountryFlagImage: countryId=${countryId}, countryName=${countryName}, imageError=${imageError}, imageLoaded=${imageLoaded}`)
+
+  // Если нет ID страны, показываем иконку
+  if (!countryId) {
     return (
-      <div className={`flex items-center justify-center bg-muted ${className}`}>
+      <div className={`flex items-center justify-center bg-muted rounded ${className}`}>
         <Flag className={`text-muted-foreground ${
           size === 'small' ? 'h-3 w-3' : 
           size === 'large' ? 'h-5 w-5' : 'h-4 w-4'
@@ -31,19 +33,35 @@ export function CountryFlagImage({
     )
   }
 
+  // Если произошла ошибка загрузки, показываем первую букву
+  if (imageError) {
+    return (
+      <div className={`flex items-center justify-center bg-red-100 rounded ${className}`}>
+        {countryName ? (
+          <span className={`font-semibold text-red-600 ${
+            size === 'small' ? 'text-xs' : 
+            size === 'large' ? 'text-sm' : 'text-xs'
+          }`}>
+            {countryName.charAt(0).toUpperCase()}
+          </span>
+        ) : (
+          <Flag className={`text-red-600 ${
+            size === 'small' ? 'h-3 w-3' : 
+            size === 'large' ? 'h-5 w-5' : 'h-4 w-4'
+          }`} />
+        )}
+      </div>
+    )
+  }
+
   const sizeParam = size === 'small' ? 'small' : size === 'large' ? 'large' : 'medium'
-  
-  // Используем API для получения флага
   const flagUrl = `/api/countries/${countryId}/flag?size=${sizeParam}`
 
   return (
     <div className={`relative ${className}`}>
-      {imageLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted animate-pulse">
-          <Flag className={`text-muted-foreground ${
-            size === 'small' ? 'h-3 w-3' : 
-            size === 'large' ? 'h-5 w-5' : 'h-4 w-4'
-          }`} />
+      {!imageLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center bg-blue-100 rounded">
+          <span className="text-blue-600 text-xs">Loading...</span>
         </div>
       )}
       
@@ -51,11 +69,15 @@ export function CountryFlagImage({
       <img
         src={flagUrl}
         alt={`Флаг ${countryName || 'страны'}`}
-        className={`${className} ${imageLoading ? 'opacity-0' : 'opacity-100'} transition-opacity`}
-        onLoad={() => setImageLoading(false)}
-        onError={() => {
+        className={`w-full h-full object-cover rounded ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+        onLoad={() => {
+          console.log(`Флаг загружен для страны ${countryName} (ID: ${countryId})`)
+          setImageLoaded(true)
+        }}
+        onError={(e) => {
+          console.error(`Ошибка загрузки флага для страны ${countryName} (ID: ${countryId}):`, e)
+          console.error(`URL флага: ${flagUrl}`)
           setImageError(true)
-          setImageLoading(false)
         }}
       />
     </div>

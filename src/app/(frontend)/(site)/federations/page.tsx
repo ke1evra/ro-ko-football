@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Globe } from 'lucide-react'
 import Link from 'next/link'
-import { getFederationsListJson } from '@/app/(frontend)/client/clients/CatalogsService'
+import { getFederationsListJson } from '@/app/(frontend)/client'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const revalidate = 300 // 5 минут
@@ -18,10 +18,10 @@ async function getFederations(): Promise<Federation[]> {
     const response = await getFederationsListJson({
       next: { revalidate: 300 },
     })
-    
+
     // Извлекаем федерации из структуры data.data.federation
     const federations = response.data?.data?.federation || []
-    
+
     return federations
       .map((fed) => {
         if (!fed.id || !fed.name) return null
@@ -43,18 +43,11 @@ export default async function FederationsPage() {
   return (
     <Section>
       <Container className="space-y-6">
-        <Breadcrumbs 
-          items={[
-            { label: 'Федерации' }
-          ]}
-          className="mb-4"
-        />
-        
+        <Breadcrumbs items={[{ label: 'Федерации' }]} className="mb-4" />
+
         <header>
           <h1 className="text-3xl font-bold tracking-tight">Футбольные федерации</h1>
-          <p className="text-muted-foreground">
-            Выберите федерацию для просмотра стран и лиг
-          </p>
+          <p className="text-muted-foreground">Выберите федерацию для просмотра стран и лиг</p>
         </header>
 
         {federations.length === 0 ? (
@@ -79,16 +72,12 @@ export default async function FederationsPage() {
                         <Globe className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg truncate">
-                          {federation.name}
-                        </CardTitle>
+                        <CardTitle className="text-lg truncate">{federation.name}</CardTitle>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription>
-                      Просмотреть страны и лиги этой федерации
-                    </CardDescription>
+                    <CardDescription>Просмотреть страны и лиги этой федерации</CardDescription>
                   </CardContent>
                 </Card>
               </Link>

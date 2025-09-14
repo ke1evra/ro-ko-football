@@ -15,15 +15,21 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid country ID' }, { status: 400 })
     }
 
-    // Строим URL с параметрами
-    const url = new URL('countries/flag.json', 'https://example.com')
+    // Используем прямой fetch для получения изображения флага
+    const baseUrl = process.env.LIVESCORE_API_BASE || 'https://livescore-api.com/api-client'
+    const apiKey = process.env.LIVESCORE_KEY || ''
+    const apiSecret = process.env.LIVESCORE_SECRET || ''
+    
+    // Убеждаемся, что baseUrl заканчивается на /
+    const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/'
+    const url = new URL('countries/flag.json', normalizedBaseUrl)
+    url.searchParams.set('key', apiKey)
+    url.searchParams.set('secret', apiSecret)
+    url.searchParams.set('lang', 'ru')
     url.searchParams.set('country_id', countryId.toString())
     url.searchParams.set('size', size)
 
-    const pathWithQuery = url.pathname + url.search
-    const response = await customFetch(pathWithQuery, {
-      method: 'GET',
-    })
+    const response = await fetch(url.toString())
 
     if (!response.ok) {
       return NextResponse.json({ error: 'Flag not found' }, { status: 404 })
@@ -41,28 +47,6 @@ export async function GET(
           'Cache-Control': 'public, max-age=86400', // Кэш на 24 часа
         },
       })
-    }
-
-    // Если это JSON с URL
-    try {
-      const data = await response.json()
-      
-      // Если API возвращает URL изображения
-      if (typeof data === 'string' && data.startsWith('http')) {
-        return NextResponse.redirect(data)
-      }
-
-      // Если API возвращает объект с URL
-      if (data && data.url && typeof data.url === 'string') {
-        return NextResponse.redirect(data.url)
-      }
-
-      // Если API возвращает объект с flag
-      if (data && data.flag && typeof data.flag === 'string') {
-        return NextResponse.redirect(data.flag)
-      }
-    } catch {
-      // Если не удалось распарсить JSON, возвращаем ошибку
     }
 
     return NextResponse.json({ error: 'Flag not found' }, { status: 404 })
