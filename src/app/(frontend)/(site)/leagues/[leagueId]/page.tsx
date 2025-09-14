@@ -37,25 +37,30 @@ interface League {
 async function getLeagueInfo(leagueId: string): Promise<League | null> {
   try {
     console.log(`Поиск лиги с ID: ${leagueId}`)
-    
+
     // Получаем информацию о лиге из списка всех лиг
     const response = await getCompetitionsListJson(
-      {
-        size: 500,
-      },
-      {
-        next: { revalidate: 300 },
-      },
+      { size: 500 },
+      { next: { revalidate: 300 } },
     )
 
     // Проверяем разные возможные структуры данных
-    const competitions = response.data?.data?.competition || response.data?.competition || []
+    const competitions = (response.data?.data?.competition || response.data?.competition || []) as Array<{
+      id?: number | string
+      name?: string
+      countries?: Array<{ id?: number | string; name?: string; flag?: string }>
+    }>
     console.log(`Найдено ${competitions.length} соревнований`)
     console.log(`Структура ответа:`, Object.keys(response.data || {}))
     console.log(`Структура data:`, Object.keys(response.data?.data || {}))
-    console.log(`Первые 5 ID:`, competitions.slice(0, 5).map(c => ({ id: c.id, name: c.name })))
-    
-    const league = competitions.find((comp) => comp.id === leagueId || comp.id === parseInt(leagueId))
+    console.log(
+      `Первые 5 ID:`,
+      competitions.slice(0, 5).map((c) => ({ id: c.id, name: c.name })),
+    )
+
+    const league = competitions.find(
+      (comp) => String(comp.id) === String(leagueId) || Number(comp.id) === Number(leagueId),
+    )
     console.log(`Лига найдена:`, league ? { id: league.id, name: league.name } : 'НЕ НАЙДЕНА')
 
     if (!league) {
@@ -68,7 +73,7 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
       country:
         league.countries && league.countries.length > 0
           ? {
-              id: parseInt(league.countries[0].id),
+              id: Number(league.countries[0].id),
               name: league.countries[0].name,
               flag: league.countries[0].flag,
             }
@@ -82,21 +87,21 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
 
 async function getLeagueSeasons(leagueId: string): Promise<Season[]> {
   try {
-    const response = await getSeasonsListJson(
-      {},
-      {
-        next: { revalidate: 300 },
-      },
-    )
+    const response = await getSeasonsListJson({ next: { revalidate: 300 } })
 
-    const seasons = response.data?.data?.seasons || []
+    const seasons = (response.data?.data?.seasons || []) as Array<{
+      id?: number | string
+      name?: string
+      year?: number | string
+      is_current?: string | boolean
+    }>
 
     if (Array.isArray(seasons)) {
       return seasons
         .map((season) => ({
-          id: parseInt(season.id),
+          id: Number(season.id),
           name: season.name || `Сезон ${season.year || season.id}`,
-          year: season.year ? parseInt(season.year) : undefined,
+          year: season.year ? Number(season.year) : undefined,
           is_current: season.is_current === '1' || season.is_current === true,
         }))
         .sort((a: Season, b: Season) => {

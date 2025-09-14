@@ -205,22 +205,22 @@ function StandingsTableSkeleton() {
     <div className="space-y-4">
       {/* Переключатели */}
       <div className="flex gap-2">
-        {[1, 2, 3].map((i) => (
+        {[1, 2, 3].map((i: number) => (
           <Skeleton key={i} className="h-10 w-20" />
         ))}
       </div>
 
       {/* Заголовок таблицы */}
       <div className="grid grid-cols-8 gap-4 py-2 border-b">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((i: number) => (
           <Skeleton key={i} className="h-4" />
         ))}
       </div>
 
       {/* Строки таблицы */}
-      {Array.from({ length: 10 }).map((_, i) => (
+      {Array.from({ length: 10 }).map((_: unknown, i: number) => (
         <div key={i} className="grid grid-cols-8 gap-4 py-3">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((j) => (
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((j: number) => (
             <Skeleton key={j} className="h-4" />
           ))}
         </div>
@@ -232,7 +232,7 @@ function StandingsTableSkeleton() {
 function LiveMatchesSkeleton() {
   return (
     <div className="space-y-3">
-      {Array.from({ length: 3 }).map((_, i) => (
+      {Array.from({ length: 3 }).map((_: unknown, i: number) => (
         <div key={i} className="p-3 border rounded-lg space-y-2">
           <div className="flex justify-between items-center">
             <Skeleton className="h-4 w-24" />
@@ -252,7 +252,7 @@ function LiveMatchesSkeleton() {
 function FixturesSkeleton() {
   return (
     <div className="space-y-3">
-      {Array.from({ length: 5 }).map((_, i) => (
+      {Array.from({ length: 5 }).map((_: unknown, i: number) => (
         <div key={i} className="p-3 border rounded-lg space-y-2">
           <div className="flex justify-between items-center">
             <Skeleton className="h-4 w-20" />

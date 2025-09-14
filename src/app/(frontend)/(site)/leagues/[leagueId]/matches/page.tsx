@@ -50,24 +50,36 @@ interface League {
 
 async function getLeagueInfo(leagueId: string): Promise<League | null> {
   try {
-    const response = await getCompetitionsListJson({
-      size: 500,
-    }, {
-      next: { revalidate: 300 },
-    })
+    const response = await getCompetitionsListJson(
+      {
+        size: 500,
+      },
+      {
+        next: { revalidate: 300 },
+      },
+    )
 
-    const competitions = response.data?.data?.competition || []
-    const league = competitions.find((comp) => comp.id === leagueId || comp.id === parseInt(leagueId))
-    
+    const competitions = (response.data?.data?.competition || []) as Array<{
+      id?: number | string
+      name?: string
+      countries?: Array<{ id?: number | string; name?: string }>
+    }>
+    const league = competitions.find(
+      (comp) => String(comp.id) === String(leagueId) || Number(comp.id) === Number(leagueId),
+    )
+
     if (!league) return null
 
     return {
       id: parseInt(league.id),
       name: league.name || 'Неизвестная лига',
-      country: league.countries && league.countries.length > 0 ? {
-        id: parseInt(league.countries[0].id),
-        name: league.countries[0].name,
-      } : undefined,
+      country:
+        league.countries && league.countries.length > 0
+          ? {
+              id: parseInt(league.countries[0].id),
+              name: league.countries[0].name,
+            }
+          : undefined,
     }
   } catch (error) {
     console.error('Ошибка загрузки информации о лиге:', error)
@@ -78,51 +90,59 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
 async function getLeagueMatches(leagueId: string, date?: string): Promise<Match[]> {
   try {
     console.log(`Загрузка матчей для лиги ${leagueId}, дата: ${date || 'не указана'}`)
-    
+
     let allMatches: any[] = []
-    
+
     if (date) {
       // Если дата указана, используем диапазон для всего года
       const year = new Date(date).getFullYear()
       const fromDate = `${year}-01-01`
       const toDate = `${year}-12-31`
-      
+
       console.log(`Используем диапазон дат: ${fromDate} - ${toDate}`)
-      
-      const response = await getMatchesHistoryJson({
-        competition_id: parseInt(leagueId),
-        from: new Date(fromDate),
-        to: new Date(toDate),
-      }, {
-        next: { revalidate: 300 },
-      })
-      
+
+      const response = await getMatchesHistoryJson(
+        {
+          competition_id: String(leagueId),
+          from: new Date(fromDate),
+          to: new Date(toDate),
+        },
+        {
+          next: { revalidate: 300 },
+        },
+      )
+
       allMatches = response.data?.data?.match || []
       console.log(`Матчей найдено для ${year} года: ${allMatches.length}`)
     } else {
       // Если дата не указана, пробуем получить матчи за последние несколько дней
       console.log('Дата не указана, ищем матчи за последние дни')
-      
+
       const dates = []
       for (let i = 0; i < 30; i++) {
-        const targetDate = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        const targetDate = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split('T')[0]
         dates.push(targetDate)
       }
-      
+
       // Берем только несколько последних дат для начала
       for (const targetDate of dates.slice(0, 5)) {
         try {
-          const response = await getMatchesHistoryJson({
-            competition_id: parseInt(leagueId),
-            date: targetDate,
-          }, {
-            next: { revalidate: 300 },
-          })
-          
+          const response = await getMatchesHistoryJson(
+            {
+              competition_id: String(leagueId),
+              date: new Date(targetDate),
+            },
+            {
+              next: { revalidate: 300 },
+            },
+          )
+
           const matches = response.data?.data?.match || []
           allMatches.push(...matches)
           console.log(`Матчей найдено для даты ${targetDate}: ${matches.length}`)
-          
+
           if (allMatches.length > 0) break // Если нашли матчи, останавливаемся
         } catch (error) {
           console.log(`Нет матчей на дату ${targetDate}`)
@@ -131,9 +151,9 @@ async function getLeagueMatches(leagueId: string, date?: string): Promise<Match[
     }
 
     console.log(`Всего матчей получено: ${allMatches.length}`)
-    
+
     return allMatches
-      .map((match) => {
+      .map((match: any) => {
         // Парсим счет из строки "2 - 1"
         let score = undefined
         if (match.scores?.ft_score) {
@@ -162,7 +182,7 @@ async function getLeagueMatches(leagueId: string, date?: string): Promise<Match[
           score,
         }
       })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .sort((a: Match, b: Match) => new Date(b.date).getTime() - new Date(a.date).getTime())
   } catch (error) {
     console.error('Ошибка загрузки матчей лиги:', error)
     return []
@@ -207,7 +227,7 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
   const resolvedSearchParams = await searchParams
   const leagueId = resolvedParams.leagueId
   const selectedDate = resolvedSearchParams.date
-  
+
   const [league, matches] = await Promise.all([
     getLeagueInfo(leagueId),
     getLeagueMatches(leagueId, selectedDate),
@@ -219,15 +239,12 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
         <Container className="space-y-6">
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Лига не найдена. Проверьте правильность ссылки.
-            </AlertDescription>
+            <AlertDescription>Лига не найдена. Проверьте правильность ссылки.</AlertDescription>
           </Alert>
-          
+
           <Link href="/leagues">
             <Button variant="outline">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              К списку лиг
+              <ArrowLeft className="h-4 w-4 mr-2" />К списку лиг
             </Button>
           </Link>
         </Container>
@@ -237,47 +254,49 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
 
   const breadcrumbItems = [
     { label: 'Лиги', href: '/leagues' },
-    ...(league.country ? [{ label: league.country.name, href: `/leagues?country=${league.country.id}` }] : []),
+    ...(league.country
+      ? [{ label: league.country.name, href: `/leagues?country=${league.country.id}` }]
+      : []),
     { label: league.name, href: `/leagues/${leagueId}` },
-    { label: 'Матчи' }
+    { label: 'Матчи' },
   ]
 
   // Группируем матчи по датам
-  const matchesByDate = matches.reduce((acc, match) => {
-    const date = match.date
-    if (!acc[date]) {
-      acc[date] = []
-    }
-    acc[date].push(match)
-    return acc
-  }, {} as Record<string, Match[]>)
+  const matchesByDate = matches.reduce(
+    (acc, match) => {
+      const date = match.date
+      if (!acc[date]) {
+        acc[date] = []
+      }
+      acc[date].push(match)
+      return acc
+    },
+    {} as Record<string, Match[]>,
+  )
 
   return (
     <Section>
       <Container className="space-y-6">
         <Breadcrumbs items={breadcrumbItems} className="mb-4" />
-        
+
         <header>
           <div className="flex items-center gap-4 mb-4">
             <Link href={`/leagues/${leagueId}`}>
               <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                К лиге
+                <ArrowLeft className="h-4 w-4 mr-2" />К лиге
               </Button>
             </Link>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Calendar className="h-8 w-8 text-primary" />
               <div>
                 <h1 className="text-3xl font-bold tracking-tight">Матчи</h1>
-                <p className="text-muted-foreground text-lg">
-                  {league.name}
-                </p>
+                <p className="text-muted-foreground text-lg">{league.name}</p>
               </div>
             </div>
-            
+
             <YearSelector leagueId={leagueId} />
           </div>
         </header>
@@ -285,9 +304,7 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
         {matches.length === 0 ? (
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Матчи не найдены для этой лиги.
-            </AlertDescription>
+            <AlertDescription>Матчи не найдены для этой лиги.</AlertDescription>
           </Alert>
         ) : (
           <>
@@ -318,7 +335,7 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
                               <Clock className="h-4 w-4" />
                               {match.time}
                             </div>
-                            
+
                             <div className="flex items-center gap-3 flex-1">
                               <div className="text-right flex-1">
                                 <Link
@@ -328,19 +345,17 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
                                   {match.home_team.name}
                                 </Link>
                               </div>
-                              
+
                               <div className="flex items-center gap-2 px-3">
                                 {match.score ? (
                                   <div className="text-lg font-bold">
                                     {match.score.home} : {match.score.away}
                                   </div>
                                 ) : (
-                                  <div className="text-muted-foreground">
-                                    vs
-                                  </div>
+                                  <div className="text-muted-foreground">vs</div>
                                 )}
                               </div>
-                              
+
                               <div className="text-left flex-1">
                                 <Link
                                   href={`/teams/${match.away_team.id}`}
@@ -351,7 +366,7 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
                               </div>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-center gap-2">
                             {getStatusBadge(match.status)}
                           </div>

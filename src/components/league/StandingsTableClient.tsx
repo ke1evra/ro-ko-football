@@ -64,7 +64,10 @@ export default function StandingsTableClient({
           <Badge variant={data.source === 'live' ? 'default' : 'secondary'}>
             {data.source === 'live' ? 'Live' : data.source === 'database' ? 'БД' : 'Снапшот'}
           </Badge>
-          <span>Данные от: {data.lastUpdated ? new Date(data.lastUpdated).toLocaleString('ru-RU') : 'Неизвестно'}</span>
+          <span>
+            Данные от:{' '}
+            {data.lastUpdated ? new Date(data.lastUpdated).toLocaleString('ru-RU') : 'Неизвестно'}
+          </span>
         </div>
         {round && <Badge variant="outline">Тур {round}</Badge>}
       </div>
@@ -87,47 +90,49 @@ export default function StandingsTableClient({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Array.isArray(data.standings) ? data.standings.map((team: any, index: number) => (
-              <TableRow key={team.teamId} className="hover:bg-muted/50">
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className={getPositionColor(team.rank)}>{team.rank}</span>
-                    {index > 0 && (
-                      <PositionTrend
-                        current={team.rank}
-                        previous={data.standings?.[index - 1]?.rank}
-                      />
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="font-medium">{team.teamName}</div>
-                </TableCell>
-                <TableCell className="text-center">{team.played}</TableCell>
-                <TableCell className="text-center text-green-600">{team.wins}</TableCell>
-                <TableCell className="text-center text-yellow-600">{team.draws}</TableCell>
-                <TableCell className="text-center text-red-600">{team.losses}</TableCell>
-                <TableCell className="text-center">
-                  <span className="text-green-600">{team.goalsFor}</span>
-                  <span className="text-muted-foreground">:</span>
-                  <span className="text-red-600">{team.goalsAgainst}</span>
-                </TableCell>
-                <TableCell className="text-center">
-                  <span className={team.goalDiff >= 0 ? 'text-green-600' : 'text-red-600'}>
-                    {team.goalDiff > 0 ? '+' : ''}
-                    {team.goalDiff}
-                  </span>
-                </TableCell>
-                <TableCell className="text-center font-bold">{team.points}</TableCell>
-                <TableCell>
-                  {team.form ? (
-                    <FormIndicator form={team.form} />
-                  ) : (
-                    <span className="text-muted-foreground text-xs">—</span>
-                  )}
-                </TableCell>
-              </TableRow>
-            )) : null}
+            {Array.isArray(data.standings)
+              ? data.standings.map((team: any, index: number) => (
+                  <TableRow key={team.teamId} className="hover:bg-muted/50">
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className={getPositionColor(team.rank)}>{team.rank}</span>
+                        {index > 0 && (
+                          <PositionTrend
+                            current={team.rank}
+                            previous={data.standings?.[index - 1]?.rank}
+                          />
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-medium">{team.teamName}</div>
+                    </TableCell>
+                    <TableCell className="text-center">{team.played}</TableCell>
+                    <TableCell className="text-center text-green-600">{team.wins}</TableCell>
+                    <TableCell className="text-center text-yellow-600">{team.draws}</TableCell>
+                    <TableCell className="text-center text-red-600">{team.losses}</TableCell>
+                    <TableCell className="text-center">
+                      <span className="text-green-600">{team.goalsFor}</span>
+                      <span className="text-muted-foreground">:</span>
+                      <span className="text-red-600">{team.goalsAgainst}</span>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <span className={team.goalDiff >= 0 ? 'text-green-600' : 'text-red-600'}>
+                        {team.goalDiff > 0 ? '+' : ''}
+                        {team.goalDiff}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-center font-bold">{team.points}</TableCell>
+                    <TableCell>
+                      {team.form ? (
+                        <FormIndicator form={team.form} />
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              : null}
           </TableBody>
         </Table>
       </div>

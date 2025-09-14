@@ -37,9 +37,13 @@ export default async function PostPage({ params }: { params: { slug: string } })
         <header className="space-y-4">
           <h1 className="text-2xl font-semibold">{post.title}</h1>
           <div className="flex items-center gap-3">
-            <UserAvatar user={post.author} size="md" />
+            <UserAvatar user={typeof post.author === 'object' ? (post.author as any) : null} size="md" />
             <div className="flex flex-col">
-              <div className="text-sm font-medium">{post.author?.name || post.author?.email}</div>
+              <div className="text-sm font-medium">
+                {typeof post.author === 'object'
+                  ? (post.author as any)?.name || (post.author as any)?.email
+                  : ''}
+              </div>
               <div className="text-xs text-muted-foreground">
                 {format(new Date(post.createdAt), 'd MMMM yyyy', { locale: ru })}
               </div>
@@ -53,7 +57,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
         <section className="space-y-3">
           <h2 className="text-lg font-medium">Комментарии ({comments.totalDocs})</h2>
-          <CommentsTree postId={post.id} comments={comments.docs as any[]} />
+          <CommentsTree postId={String(post.id)} comments={comments.docs as any[]} />
         </section>
       </Container>
     </Section>

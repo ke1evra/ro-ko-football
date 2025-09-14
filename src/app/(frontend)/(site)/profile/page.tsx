@@ -88,9 +88,9 @@ export default function ProfilePage() {
 
           <div>
             <label className="block text-sm font-medium mb-2">О себе</label>
-            <Textarea 
-              name="bio" 
-              value={form.bio} 
+            <Textarea
+              name="bio"
+              value={form.bio}
               onChange={onChange}
               placeholder="Расскажите немного о себе..."
               rows={3}
@@ -104,9 +104,9 @@ export default function ProfilePage() {
                 (используется, если не загружен файл)
               </span>
             </label>
-            <Input 
-              name="avatarUrl" 
-              value={form.avatarUrl} 
+            <Input
+              name="avatarUrl"
+              value={form.avatarUrl}
               onChange={onChange}
               placeholder="https://example.com/avatar.jpg"
             />
@@ -117,27 +117,27 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">Сайт</label>
-                <Input 
-                  name="website" 
-                  value={form.website} 
+                <Input
+                  name="website"
+                  value={form.website}
                   onChange={onChange}
                   placeholder="https://example.com"
                 />
               </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">X/Twitter</label>
-                <Input 
-                  name="twitter" 
-                  value={form.twitter} 
+                <Input
+                  name="twitter"
+                  value={form.twitter}
                   onChange={onChange}
                   placeholder="@username"
                 />
               </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">GitHub</label>
-                <Input 
-                  name="github" 
-                  value={form.github} 
+                <Input
+                  name="github"
+                  value={form.github}
                   onChange={onChange}
                   placeholder="username"
                 />

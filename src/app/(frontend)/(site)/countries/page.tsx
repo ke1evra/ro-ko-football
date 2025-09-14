@@ -26,7 +26,10 @@ interface CountriesPageProps {
   }>
 }
 
-async function getCountries(federationId?: string, page = 1): Promise<{
+async function getCountries(
+  federationId?: string,
+  page = 1,
+): Promise<{
   countries: Country[]
   hasMore: boolean
   federationName?: string
@@ -40,20 +43,20 @@ async function getCountries(federationId?: string, page = 1): Promise<{
     const response = await getCountriesListJson(params, {
       next: { revalidate: 300 },
     })
-    
+
     const allCountries = (response.data?.data?.country || [])
-      .map((country) => {
+      .map((country: { id?: number | string; name?: string; flag?: string | null; fifa_code?: string | null; uefa_code?: string | null } ) => {
         if (!country.id || !country.name) return null
         return {
-          id: country.id,
+          id: Number(country.id),
           name: country.name,
           flag: country.flag,
           fifa_code: country.fifa_code,
           uefa_code: country.uefa_code,
         }
       })
-      .filter((country): country is Country => Boolean(country))
-      .sort((a, b) => a.name.localeCompare(b.name)) // Сортируем по алфавиту
+      .filter((country: Country | null): country is Country => Boolean(country))
+      .sort((a: Country, b: Country) => a.name.localeCompare(b.name)) // Сортируем по алфавиту
 
     // Реализуем пагинацию на клиенте
     const pageSize = 20
@@ -69,9 +72,11 @@ async function getCountries(federationId?: string, page = 1): Promise<{
         const fedResponse = await getFederationsListJson({
           next: { revalidate: 300 },
         })
-        
+
         const federations = fedResponse.data?.data?.federation || []
-        const federation = federations.find((f) => f.id === federationId)
+        const federation = federations.find(
+          (f: { id?: number | string; name?: string }) => Number(f.id) === Number(federationId),
+        )
         federationName = federation?.name
       } catch (error) {
         console.error('Ошибка загрузки названия федерации:', error)
@@ -93,42 +98,37 @@ export default async function CountriesPage({ searchParams }: CountriesPageProps
   const resolvedSearchParams = await searchParams
   const federationId = resolvedSearchParams.federation
   const page = parseInt(resolvedSearchParams.page || '1')
-  
+
   const { countries, hasMore, federationName } = await getCountries(federationId, page)
 
-  const breadcrumbItems = federationName 
+  const breadcrumbItems = federationName
     ? [
         { label: 'Федерации', href: '/federations' },
         { label: federationName, href: `/countries?federation=${federationId}` },
-        { label: 'Страны' }
+        { label: 'Страны' },
       ]
-    : [
-        { label: 'Страны' }
-      ]
+    : [{ label: 'Страны' }]
 
   return (
     <Section>
       <Container className="space-y-6">
         <Breadcrumbs items={breadcrumbItems} className="mb-4" />
-        
+
         <header>
           <div className="flex items-center gap-4 mb-4">
             {federationId && (
               <Link href="/federations">
                 <Button variant="outline" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  К федерациям
+                  <ArrowLeft className="h-4 w-4 mr-2" />К федерациям
                 </Button>
               </Link>
             )}
           </div>
-          
+
           <h1 className="text-3xl font-bold tracking-tight">
             {federationName ? `Страны федерации ${federationName}` : 'Все страны'}
           </h1>
-          <p className="text-muted-foreground">
-            Выберите страну для просмотра лиг и соревнований
-          </p>
+          <p className="text-muted-foreground">Выберите страну для просмотра лиг и соревнований</p>
         </header>
 
         {countries.length === 0 ? (
@@ -141,12 +141,8 @@ export default async function CountriesPage({ searchParams }: CountriesPageProps
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {countries.map((country) => (
-                <Link
-                  key={country.id}
-                  href={`/leagues?country=${country.id}`}
-                  className="block"
-                >
+              {countries.map((country: Country) => (
+                <Link key={country.id} href={`/leagues?country=${country.id}`} className="block">
                   <Card className="h-full hover:shadow-md transition-shadow">
                     <CardHeader className="pb-3">
                       <div className="flex items-center gap-3">
@@ -159,9 +155,7 @@ export default async function CountriesPage({ searchParams }: CountriesPageProps
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base truncate">
-                            {country.name}
-                          </CardTitle>
+                          <CardTitle className="text-base truncate">{country.name}</CardTitle>
                           {(country.fifa_code || country.uefa_code) && (
                             <Badge variant="outline" className="mt-1 text-xs">
                               {country.fifa_code || country.uefa_code}
@@ -190,16 +184,14 @@ export default async function CountriesPage({ searchParams }: CountriesPageProps
                       page: (page - 1).toString(),
                     }).toString()}`}
                   >
-                    <Button variant="outline">
-                      Предыдущая страница
-                    </Button>
+                    <Button variant="outline">Предыдущая страница</Button>
                   </Link>
                 )}
-                
+
                 <Badge variant="outline" className="px-3 py-1">
                   Страница {page}
                 </Badge>
-                
+
                 {hasMore && (
                   <Link
                     href={`/countries?${new URLSearchParams({
@@ -207,9 +199,7 @@ export default async function CountriesPage({ searchParams }: CountriesPageProps
                       page: (page + 1).toString(),
                     }).toString()}`}
                   >
-                    <Button variant="outline">
-                      Следующая страница
-                    </Button>
+                    <Button variant="outline">Следующая страница</Button>
                   </Link>
                 )}
               </div>

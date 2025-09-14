@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ArrowLeft, AlertCircle, Trophy, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import Link from 'next/link'
-import { getCompetitionsListJson, getSeasonsListJson, getTablesStandingsJson } from '@/app/(frontend)/client'
+import {
+  getCompetitionsListJson,
+  getSeasonsListJson,
+  getTablesStandingsJson,
+} from '@/app/(frontend)/client'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
@@ -54,25 +58,37 @@ interface Season {
 
 async function getLeagueInfo(leagueId: string): Promise<League | null> {
   try {
-    const response = await getCompetitionsListJson({
-      size: 500,
-    }, {
-      next: { revalidate: 300 },
-    })
+    const response = await getCompetitionsListJson(
+      {
+        size: 500,
+      },
+      {
+        next: { revalidate: 300 },
+      },
+    )
 
-    const competitions = response.data?.data?.competition || []
-    const league = competitions.find((comp) => comp.id === leagueId || comp.id === parseInt(leagueId))
-    
+    const competitions = (response.data?.data?.competition || []) as Array<{
+      id?: number | string
+      name?: string
+      countries?: Array<{ id?: number | string; name?: string; flag?: string }>
+    }>
+    const league = competitions.find(
+      (comp) => String(comp.id) === String(leagueId) || Number(comp.id) === Number(leagueId),
+    )
+
     if (!league) return null
 
     return {
       id: parseInt(league.id),
       name: league.name || 'Неизвестная лига',
-      country: league.countries && league.countries.length > 0 ? {
-        id: parseInt(league.countries[0].id),
-        name: league.countries[0].name,
-        flag: league.countries[0].flag,
-      } : undefined,
+      country:
+        league.countries && league.countries.length > 0
+          ? {
+              id: parseInt(league.countries[0].id),
+              name: league.countries[0].name,
+              flag: league.countries[0].flag,
+            }
+          : undefined,
     }
   } catch (error) {
     console.error('Ошибка загрузки информации о лиге:', error)
@@ -82,13 +98,15 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
 
 async function getSeasonInfo(seasonId: string): Promise<Season | null> {
   try {
-    const response = await getSeasonsListJson({}, {
-      next: { revalidate: 300 },
-    })
+    const response = await getSeasonsListJson({ next: { revalidate: 300 } })
 
-    const seasons = response.data?.data?.seasons || []
-    const season = seasons.find((s) => s.id === parseInt(seasonId))
-    
+    const seasons = (response.data?.data?.seasons || []) as Array<{
+      id?: number | string
+      name?: string
+      year?: number | string
+    }>
+    const season = seasons.find((s) => Number(s.id) === Number(seasonId))
+
     if (!season) return null
 
     return {
@@ -105,21 +123,24 @@ async function getSeasonInfo(seasonId: string): Promise<Season | null> {
 async function getStandings(leagueId: string, seasonId: string): Promise<StandingsTeam[]> {
   try {
     console.log(`Загрузка турнирной таблицы для лиги ${leagueId}, сезон ${seasonId}`)
-    
-    const response = await getTablesStandingsJson({
-      competition_id: parseInt(leagueId),
-      season: parseInt(seasonId),
-      include_form: 'yes',
-    }, {
-      next: { revalidate: 300 },
-    })
+
+    const response = await getTablesStandingsJson(
+      {
+        competition_id: String(leagueId),
+        season: parseInt(seasonId),
+        include_form: 1,
+      },
+      {
+        next: { revalidate: 300 },
+      },
+    )
 
     console.log(`Структура ответа standings:`, Object.keys(response.data?.data || {}))
     const standings = response.data?.data?.standing || []
     console.log(`Всего команд в таблице получено: ${standings.length}`)
-    
+
     return standings
-      .map((team, index) => ({
+      .map((team: any, index: number) => ({
         position: parseInt(team.position) || index + 1,
         team: {
           id: parseInt(team.team?.id || '0'),
@@ -136,7 +157,7 @@ async function getStandings(leagueId: string, seasonId: string): Promise<Standin
         points: parseInt(team.points || '0'),
         form: team.form ? team.form.split('').slice(-5) : undefined,
       }))
-      .sort((a, b) => a.position - b.position)
+      .sort((a: StandingsTeam, b: StandingsTeam) => a.position - b.position)
   } catch (error) {
     console.error('Ошибка загрузки турнирной таблицы:', error)
     return []
@@ -159,7 +180,7 @@ function getFormColor(result: string) {
 export default async function SeasonPage({ params }: SeasonPageProps) {
   const resolvedParams = await params
   const { leagueId, seasonId } = resolvedParams
-  
+
   const [league, season, standings] = await Promise.all([
     getLeagueInfo(leagueId),
     getSeasonInfo(seasonId),
@@ -172,15 +193,12 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
         <Container className="space-y-6">
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Лига не найдена. Проверьте правильность ссылки.
-            </AlertDescription>
+            <AlertDescription>Лига не найдена. Проверьте правильность ссылки.</AlertDescription>
           </Alert>
-          
+
           <Link href="/leagues">
             <Button variant="outline">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              К списку лиг
+              <ArrowLeft className="h-4 w-4 mr-2" />К списку лиг
             </Button>
           </Link>
         </Container>
@@ -189,33 +207,35 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
   }
 
   const breadcrumbItems = []
-  
+
   if (league.country) {
     breadcrumbItems.push({ label: 'Лиги', href: '/leagues' })
-    breadcrumbItems.push({ label: league.country.name, href: `/leagues?country=${league.country.id}` })
+    breadcrumbItems.push({
+      label: league.country.name,
+      href: `/leagues?country=${league.country.id}`,
+    })
     breadcrumbItems.push({ label: league.name, href: `/leagues/${leagueId}` })
   } else {
     breadcrumbItems.push({ label: 'Лиги', href: '/leagues' })
     breadcrumbItems.push({ label: league.name, href: `/leagues/${leagueId}` })
   }
-  
+
   breadcrumbItems.push({ label: season?.name || `Сезон ${seasonId}` })
 
   return (
     <Section>
       <Container className="space-y-6">
         <Breadcrumbs items={breadcrumbItems} className="mb-4" />
-        
+
         <header>
           <div className="flex items-center gap-4 mb-4">
             <Link href={`/leagues/${leagueId}`}>
               <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                К лиге
+                <ArrowLeft className="h-4 w-4 mr-2" />К лиге
               </Button>
             </Link>
           </div>
-          
+
           <div className="flex items-center gap-4">
             {league.country && (
               <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
@@ -227,11 +247,9 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
                 />
               </div>
             )}
-            
+
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                {league.name}
-              </h1>
+              <h1 className="text-3xl font-bold tracking-tight">{league.name}</h1>
               <p className="text-muted-foreground text-lg">
                 {season?.name || `Сезон ${seasonId}`}
                 {league.country && ` • ${league.country.name}`}
@@ -246,17 +264,13 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
               <Trophy className="h-5 w-5" />
               Турнирная таблица
             </CardTitle>
-            <CardDescription>
-              Текущие позиции команд в турнирной таблице
-            </CardDescription>
+            <CardDescription>Текущие позиции команд в турнирной таблице</CardDescription>
           </CardHeader>
           <CardContent>
             {standings.length === 0 ? (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Турнирная таблица не найдена для этого сезона.
-                </AlertDescription>
+                <AlertDescription>Турнирная таблица не найдена для этого сезона.</AlertDescription>
               </Alert>
             ) : (
               <div className="overflow-x-auto">
@@ -280,16 +294,17 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
                       <tr
                         key={team.team.id}
                         className={`border-b hover:bg-muted/50 ${
-                          index < 4 ? 'bg-green-50' : 
-                          index >= standings.length - 3 ? 'bg-red-50' : ''
+                          index < 4
+                            ? 'bg-green-50'
+                            : index >= standings.length - 3
+                              ? 'bg-red-50'
+                              : ''
                         }`}
                       >
                         <td className="p-2 font-medium">
                           <div className="flex items-center gap-2">
                             {team.position}
-                            {index < 4 && (
-                              <div className="w-2 h-2 rounded-full bg-green-500" />
-                            )}
+                            {index < 4 && <div className="w-2 h-2 rounded-full bg-green-500" />}
                             {index >= standings.length - 3 && (
                               <div className="w-2 h-2 rounded-full bg-red-500" />
                             )}
@@ -323,11 +338,17 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
                         <td className="p-2 text-center text-sm">
                           {team.goals_for}:{team.goals_against}
                         </td>
-                        <td className={`p-2 text-center font-medium ${
-                          team.goal_difference > 0 ? 'text-green-600' :
-                          team.goal_difference < 0 ? 'text-red-600' : 'text-muted-foreground'
-                        }`}>
-                          {team.goal_difference > 0 ? '+' : ''}{team.goal_difference}
+                        <td
+                          className={`p-2 text-center font-medium ${
+                            team.goal_difference > 0
+                              ? 'text-green-600'
+                              : team.goal_difference < 0
+                                ? 'text-red-600'
+                                : 'text-muted-foreground'
+                          }`}
+                        >
+                          {team.goal_difference > 0 ? '+' : ''}
+                          {team.goal_difference}
                         </td>
                         <td className="p-2 text-center font-bold">{team.points}</td>
                         <td className="p-2">
@@ -348,7 +369,7 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
                     ))}
                   </tbody>
                 </table>
-                
+
                 {/* Легенда */}
                 <div className="mt-4 flex flex-wrap gap-4 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
@@ -360,7 +381,10 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
                     <span>Вылет</span>
                   </div>
                   <div className="ml-4">
-                    <span>И - Игры, В - Выигрыши, Н - Ничьи, П - Поражения, РМ - Разность мячей, О - Очки</span>
+                    <span>
+                      И - Игры, В - Выигрыши, Н - Ничьи, П - Поражения, РМ - Разность мячей, О -
+                      Очки
+                    </span>
                   </div>
                 </div>
               </div>
@@ -376,15 +400,13 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
                   <Trophy className="h-8 w-8 text-primary" />
                   <div>
                     <h3 className="font-medium">Бомбардиры</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Лучшие снайперы сезона
-                    </p>
+                    <p className="text-sm text-muted-foreground">Лучшие снайперы сезона</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </Link>
-          
+
           <Link href={`/leagues/${leagueId}/matches`}>
             <Card className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">
@@ -394,15 +416,13 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
                   </div>
                   <div>
                     <h3 className="font-medium">Матчи</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Расписание и результаты
-                    </p>
+                    <p className="text-sm text-muted-foreground">Расписание и результаты</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </Link>
-          
+
           <Link href={`/leagues/${leagueId}/teams`}>
             <Card className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">
@@ -412,9 +432,7 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
                   </div>
                   <div>
                     <h3 className="font-medium">Команды</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Все команды лиги
-                    </p>
+                    <p className="text-sm text-muted-foreground">Все команды лиги</p>
                   </div>
                 </div>
               </CardContent>

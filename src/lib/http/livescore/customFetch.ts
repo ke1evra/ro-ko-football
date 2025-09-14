@@ -39,21 +39,21 @@ export function createCustomFetch({
   // Возвращаем функцию, совместимую с kubb
   return async function customFetch(config: any): Promise<any> {
     const { method = 'GET', url: configUrl = '', params, ...restConfig } = config
-    
+
     // Нормализуем базовый URL и путь
     const base = new URL(baseUrl.endsWith('/') ? baseUrl : baseUrl + '/')
-    let path = configUrl.startsWith('/') ? configUrl.slice(1) : configUrl
-    
+    const path = configUrl.startsWith('/') ? configUrl.slice(1) : configUrl
+
     const fullUrl = new URL(path, base)
-    
+
     // Добавляем query параметры
     const searchParams = new URLSearchParams(fullUrl.search)
-    
+
     // Добавляем авторизацию и локаль
     if (apiKey) searchParams.set('key', apiKey)
     if (apiSecret) searchParams.set('secret', apiSecret)
     if (defaultLang && !searchParams.has('lang')) searchParams.set('lang', defaultLang)
-    
+
     // Добавляем параметры из config.params
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -62,9 +62,9 @@ export function createCustomFetch({
         }
       })
     }
-    
+
     fullUrl.search = searchParams.toString()
-    
+
     const init: RequestInit = {
       method,
       ...restConfig,
@@ -75,7 +75,7 @@ export function createCustomFetch({
     }
 
     const response = await fetchImpl(fullUrl.toString(), init)
-    
+
     let data: any
     try {
       data = await response.json()

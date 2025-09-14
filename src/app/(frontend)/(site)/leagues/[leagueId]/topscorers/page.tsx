@@ -51,9 +51,13 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
       },
     )
 
-    const competitions = response.data?.data?.competition || []
+    const competitions = (response.data?.data?.competition || []) as Array<{
+      id?: number | string
+      name?: string
+      countries?: Array<{ id?: number | string; name?: string }>
+    }>
     const league = competitions.find(
-      (comp) => comp.id === leagueId || comp.id === parseInt(leagueId),
+      (comp) => String(comp.id) === String(leagueId) || Number(comp.id) === Number(leagueId),
     )
 
     if (!league) return null
@@ -81,7 +85,7 @@ async function getLeagueTopscorers(leagueId: string): Promise<Topscorer[]> {
 
     const response = await getCompetitionsTopscorersJson(
       {
-        competition_id: parseInt(leagueId),
+        competition_id: String(leagueId),
       },
       {
         next: { revalidate: 300 },
@@ -93,7 +97,7 @@ async function getLeagueTopscorers(leagueId: string): Promise<Topscorer[]> {
     console.log(`Всего бомбардиров получено: ${topscorers.length}`)
 
     return topscorers
-      .map((scorer, index) => ({
+      .map((scorer: any, index: number) => ({
         position: index + 1,
         player: {
           id: parseInt(scorer.player?.id || '0'),
@@ -107,7 +111,7 @@ async function getLeagueTopscorers(leagueId: string): Promise<Topscorer[]> {
         matches: scorer.matches ? parseInt(scorer.matches) : undefined,
         assists: scorer.assists ? parseInt(scorer.assists) : undefined,
       }))
-      .sort((a, b) => b.goals - a.goals)
+      .sort((a: Topscorer, b: Topscorer) => b.goals - a.goals)
   } catch (error) {
     console.error('Ошибка загрузки бомбардиров лиги:', error)
     return []

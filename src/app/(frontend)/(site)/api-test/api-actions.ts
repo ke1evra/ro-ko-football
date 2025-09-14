@@ -21,6 +21,13 @@ import {
   getCountriesFlagPng,
 } from '@/app/(frontend)/client'
 
+import type {
+  GetScoresEventsJsonQueryParams,
+  GetMatchesLineupsJsonQueryParams,
+  GetMatchesStatsJsonQueryParams,
+  GetTeamsHead2HeadJsonQueryParams,
+} from '@/app/(frontend)/client'
+
 export interface ApiTestParams {
   method: string
   params?: Record<string, any>
@@ -63,7 +70,7 @@ export async function executeApiMethod({
 
       // Events Service
       case 'getMatchesEventsJson':
-        result = await getScoresEventsJson(params)
+        result = await getScoresEventsJson(params as unknown as GetScoresEventsJsonQueryParams)
         break
 
       // Fixtures Service
@@ -73,13 +80,17 @@ export async function executeApiMethod({
 
       // Lineups & Stats Service
       case 'getMatchesLineupsJson':
-        result = await getMatchesLineupsJson(params)
+        result = await getMatchesLineupsJson(
+          params as unknown as GetMatchesLineupsJsonQueryParams,
+        )
         break
       case 'getMatchesStatsJson':
-        result = await getMatchesStatsJson(params)
+        result = await getMatchesStatsJson(params as unknown as GetMatchesStatsJsonQueryParams)
         break
       case 'getTeamsHead2HeadJson':
-        result = await getTeamsHead2HeadJson(params)
+        result = await getTeamsHead2HeadJson(
+          params as unknown as GetTeamsHead2HeadJsonQueryParams,
+        )
         break
 
       // Matches Service

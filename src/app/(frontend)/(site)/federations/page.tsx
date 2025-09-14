@@ -23,14 +23,14 @@ async function getFederations(): Promise<Federation[]> {
     const federations = response.data?.data?.federation || []
 
     return federations
-      .map((fed) => {
+      .map((fed: { id?: number | string; name?: string }) => {
         if (!fed.id || !fed.name) return null
         return {
-          id: fed.id,
+          id: String(fed.id),
           name: fed.name,
         }
       })
-      .filter((fed): fed is Federation => Boolean(fed))
+      .filter((fed: Federation | null): fed is Federation => Boolean(fed))
   } catch (error) {
     console.error('Ошибка загрузки федераций:', error)
     return []

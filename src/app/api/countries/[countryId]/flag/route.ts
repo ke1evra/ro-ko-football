@@ -3,12 +3,12 @@ import { customFetch } from '@/lib/http/livescore/customFetch'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ countryId: string }> }
+  { params }: { params: Promise<{ countryId: string }> },
 ) {
   try {
     const { searchParams } = new URL(request.url)
     const size = searchParams.get('size') || 'medium'
-    
+
     const resolvedParams = await params
     const countryId = parseInt(resolvedParams.countryId)
     if (isNaN(countryId)) {
@@ -19,7 +19,7 @@ export async function GET(
     const baseUrl = process.env.LIVESCORE_API_BASE || 'https://livescore-api.com/api-client'
     const apiKey = process.env.LIVESCORE_KEY || ''
     const apiSecret = process.env.LIVESCORE_SECRET || ''
-    
+
     // Убеждаемся, что baseUrl заканчивается на /
     const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/'
     const url = new URL('countries/flag.json', normalizedBaseUrl)
@@ -37,7 +37,7 @@ export async function GET(
 
     // Проверяем тип контента
     const contentType = response.headers.get('content-type')
-    
+
     if (contentType?.startsWith('image/')) {
       // Если это изображение, возвращаем его напрямую
       const imageBuffer = await response.arrayBuffer()

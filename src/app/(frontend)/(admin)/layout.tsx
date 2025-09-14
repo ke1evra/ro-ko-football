@@ -7,8 +7,10 @@ import type { User } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
 
+import type { ReactNode } from 'react'
+
 type AuthLayoutProps = {
-  children: React.ReactNode
+  children: ReactNode
 }
 
 export default async function AuthLayout({ children }: AuthLayoutProps) {

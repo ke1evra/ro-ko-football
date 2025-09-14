@@ -23,7 +23,7 @@ export async function createCommentAction({
   try {
     const created = await payload.create({
       collection: 'comments',
-      data: { post: postId, content, parent: parentId || undefined },
+      data: { post: Number(postId), content, parent: parentId ? Number(parentId) : undefined },
       user,
     })
 
@@ -61,20 +61,20 @@ export async function voteCommentAction({
     // 0 — снять голос; 1 или -1 — поставить/переключить
     const existing = await payload.find({
       collection: 'commentVotes',
-      where: { and: [{ comment: { equals: commentId } }, { user: { equals: user.id } }] },
+      where: { and: [{ comment: { equals: Number(commentId) } }, { user: { equals: user.id } }] },
       limit: 1,
     })
 
     if (value === 0) {
       if (existing.docs[0]) {
-        await payload.delete({ collection: 'commentVotes', id: existing.docs[0].id as string })
+        await payload.delete({ collection: 'commentVotes', id: String(existing.docs[0].id) })
       }
     } else if (existing.docs[0]) {
       // Обновляем, если значение меняется
       if (existing.docs[0].value !== value) {
         await payload.update({
           collection: 'commentVotes',
-          id: existing.docs[0].id as string,
+          id: String(existing.docs[0].id),
           data: { value },
           user,
         })
@@ -83,7 +83,7 @@ export async function voteCommentAction({
       // Не существует — создаём
       await payload.create({
         collection: 'commentVotes',
-        data: { comment: commentId, value },
+        data: { comment: Number(commentId), value },
         user,
       })
     }

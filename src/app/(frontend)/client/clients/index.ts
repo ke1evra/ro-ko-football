@@ -1,26 +1,74 @@
-export { catalogsService } from "./CatalogsService/catalogsService.ts";
-export { getGetCompetitionsListJsonUrl, getCompetitionsListJson } from "./CatalogsService/getCompetitionsListJson.ts";
-export { getGetCountriesListJsonUrl, getCountriesListJson } from "./CatalogsService/getCountriesListJson.ts";
-export { getGetFederationsListJsonUrl, getFederationsListJson } from "./CatalogsService/getFederationsListJson.ts";
-export { getGetSeasonsListJsonUrl, getSeasonsListJson } from "./CatalogsService/getSeasonsListJson.ts";
-export { getGetTeamsListJsonUrl, getTeamsListJson } from "./CatalogsService/getTeamsListJson.ts";
-export { eventsService } from "./EventsService/eventsService.ts";
-export { getGetScoresEventsJsonUrl, getScoresEventsJson } from "./EventsService/getScoresEventsJson.ts";
-export { fixturesService } from "./FixturesService/fixturesService.ts";
-export { getGetFixturesMatchesJsonUrl, getFixturesMatchesJson } from "./FixturesService/getFixturesMatchesJson.ts";
-export { getGetMatchesLineupsJsonUrl, getMatchesLineupsJson } from "./Lineups&StatsService/getMatchesLineupsJson.ts";
-export { getGetMatchesStatsJsonUrl, getMatchesStatsJson } from "./Lineups&StatsService/getMatchesStatsJson.ts";
-export { lineupsStatsService } from "./Lineups&StatsService/lineupsStatsService.ts";
-export { getGetMatchesHistoryJsonUrl, getMatchesHistoryJson } from "./MatchesService/getMatchesHistoryJson.ts";
-export { getGetMatchesLiveJsonUrl, getMatchesLiveJson } from "./MatchesService/getMatchesLiveJson.ts";
-export { getGetTeamsHead2HeadJsonUrl, getTeamsHead2HeadJson } from "./MatchesService/getTeamsHead2HeadJson.ts";
-export { getGetTeamsMatchesJsonUrl, getTeamsMatchesJson } from "./MatchesService/getTeamsMatchesJson.ts";
-export { matchesService } from "./MatchesService/matchesService.ts";
-export { operations } from "./operations.ts";
-export { getGetCompetitionsTopcardsJsonUrl, getCompetitionsTopcardsJson } from "./TablesService/getCompetitionsTopcardsJson.ts";
-export { getGetCompetitionsTopscorersJsonUrl, getCompetitionsTopscorersJson } from "./TablesService/getCompetitionsTopscorersJson.ts";
-export { getGetTablesStandingsJsonUrl, getTablesStandingsJson } from "./TablesService/getTablesStandingsJson.ts";
-export { tablesService } from "./TablesService/tablesService.ts";
-export { getGetAuthVerifyJsonUrl, getAuthVerifyJson } from "./UtilityService/getAuthVerifyJson.ts";
-export { getGetCountriesFlagPngUrl, getCountriesFlagPng } from "./UtilityService/getCountriesFlagPng.ts";
-export { utilityService } from "./UtilityService/utilityService.ts";
+export { catalogsService } from './CatalogsService/catalogsService.ts'
+export {
+  getGetCompetitionsListJsonUrl,
+  getCompetitionsListJson,
+} from './CatalogsService/getCompetitionsListJson.ts'
+export {
+  getGetCountriesListJsonUrl,
+  getCountriesListJson,
+} from './CatalogsService/getCountriesListJson.ts'
+export {
+  getGetFederationsListJsonUrl,
+  getFederationsListJson,
+} from './CatalogsService/getFederationsListJson.ts'
+export {
+  getGetSeasonsListJsonUrl,
+  getSeasonsListJson,
+} from './CatalogsService/getSeasonsListJson.ts'
+export { getGetTeamsListJsonUrl, getTeamsListJson } from './CatalogsService/getTeamsListJson.ts'
+export { eventsService } from './EventsService/eventsService.ts'
+export {
+  getGetScoresEventsJsonUrl,
+  getScoresEventsJson,
+} from './EventsService/getScoresEventsJson.ts'
+export { fixturesService } from './FixturesService/fixturesService.ts'
+export {
+  getGetFixturesMatchesJsonUrl,
+  getFixturesMatchesJson,
+} from './FixturesService/getFixturesMatchesJson.ts'
+export {
+  getGetMatchesLineupsJsonUrl,
+  getMatchesLineupsJson,
+} from './Lineups&StatsService/getMatchesLineupsJson.ts'
+export {
+  getGetMatchesStatsJsonUrl,
+  getMatchesStatsJson,
+} from './Lineups&StatsService/getMatchesStatsJson.ts'
+export { lineupsStatsService } from './Lineups&StatsService/lineupsStatsService.ts'
+export {
+  getGetMatchesHistoryJsonUrl,
+  getMatchesHistoryJson,
+} from './MatchesService/getMatchesHistoryJson.ts'
+export {
+  getGetMatchesLiveJsonUrl,
+  getMatchesLiveJson,
+} from './MatchesService/getMatchesLiveJson.ts'
+export {
+  getGetTeamsHead2HeadJsonUrl,
+  getTeamsHead2HeadJson,
+} from './MatchesService/getTeamsHead2HeadJson.ts'
+export {
+  getGetTeamsMatchesJsonUrl,
+  getTeamsMatchesJson,
+} from './MatchesService/getTeamsMatchesJson.ts'
+export { matchesService } from './MatchesService/matchesService.ts'
+export { operations } from './operations.ts'
+export {
+  getGetCompetitionsTopcardsJsonUrl,
+  getCompetitionsTopcardsJson,
+} from './TablesService/getCompetitionsTopcardsJson.ts'
+export {
+  getGetCompetitionsTopscorersJsonUrl,
+  getCompetitionsTopscorersJson,
+} from './TablesService/getCompetitionsTopscorersJson.ts'
+export {
+  getGetTablesStandingsJsonUrl,
+  getTablesStandingsJson,
+} from './TablesService/getTablesStandingsJson.ts'
+export { tablesService } from './TablesService/tablesService.ts'
+export { getGetAuthVerifyJsonUrl, getAuthVerifyJson } from './UtilityService/getAuthVerifyJson.ts'
+export {
+  getGetCountriesFlagPngUrl,
+  getCountriesFlagPng,
+} from './UtilityService/getCountriesFlagPng.ts'
+export { utilityService } from './UtilityService/utilityService.ts'

@@ -26,7 +26,12 @@ export default function ApiTestPanel() {
       <div className="space-y-2">
         <h4 className="font-medium">1) Список стран (JSON)</h4>
         <Row>
-          <a href={countriesUrl} target="_blank" rel="noreferrer" className="underline text-primary">
+          <a
+            href={countriesUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="underline text-primary"
+          >
             Открыть /api/ls/countries
           </a>
         </Row>
@@ -77,24 +82,35 @@ export default function ApiTestPanel() {
             placeholder="например, 1440 (Australia)"
           />
           {teamId ? (
-            <a href={teamFlagUrl} target="_blank" rel="noreferrer" className="underline text-primary">
+            <a
+              href={teamFlagUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="underline text-primary"
+            >
               Открыть {teamFlagUrl}
             </a>
           ) : null}
         </Row>
         <Row>
           {teamId ? (
-            <img src={teamFlagUrl} alt={`flag team ${teamId}`} className="h-8 w-auto rounded border" />
+            <img
+              src={teamFlagUrl}
+              alt={`flag team ${teamId}`}
+              className="h-8 w-auto rounded border"
+            />
           ) : null}
         </Row>
       </div>
 
       {/* 4. Флаг страны по коду (UI-тест; предупреждение) */}
       <div className="space-y-2">
-        <h4 className="font-medium">4) Флаг страны по коду (AUS, GER) — не поддерживается API напрямую</h4>
+        <h4 className="font-medium">
+          4) Флаг страны по коду (AUS, GER) — не поддерживается API напрямую
+        </h4>
         <p className="text-xs text-muted-foreground">
-          Прямой вызов по коду не поддерживается Livescore API — требуется country_id или team_id. Этот блок
-          оставлен как UI-тест для проверки редиректа/ошибок.
+          Прямой вызов по коду не поддерживается Livescore API — требуется country_id или team_id.
+          Этот блок оставлен как UI-тест для проверки редиректа/ошибок.
         </p>
         <Row>
           <label className="text-sm w-36">country code:</label>

@@ -83,11 +83,14 @@ async function getTeamInfo(teamId: string): Promise<Team | null> {
       id: team.id,
       name: team.name || 'Неизвестная команда',
       logo: team.logo,
-      country: team.countries && team.countries.length > 0 ? {
-        id: team.countries[0].id,
-        name: team.countries[0].name,
-        flag: team.countries[0].flag,
-      } : undefined,
+      country:
+        team.countries && team.countries.length > 0
+          ? {
+              id: team.countries[0].id,
+              name: team.countries[0].name,
+              flag: team.countries[0].flag,
+            }
+          : undefined,
       founded: team.founded,
       venue: team.venue,
     }
@@ -112,7 +115,7 @@ async function getTeamMatches(teamId: string, limit = 10): Promise<Match[]> {
     }
 
     const matches = result.data.data || result.data.matches || result.data
-    
+
     if (Array.isArray(matches)) {
       return matches.map((match: any) => ({
         id: match.id,
@@ -127,15 +130,19 @@ async function getTeamMatches(teamId: string, limit = 10): Promise<Match[]> {
           name: match.away_team?.name || match.away_team_name || 'Неизвестная команда',
           logo: match.away_team?.logo,
         },
-        score: match.score ? {
-          home: match.score.home || match.home_score,
-          away: match.score.away || match.away_score,
-        } : undefined,
+        score: match.score
+          ? {
+              home: match.score.home || match.home_score,
+              away: match.score.away || match.away_score,
+            }
+          : undefined,
         status: match.status || 'unknown',
-        competition: match.competition ? {
-          id: match.competition.id,
-          name: match.competition.name,
-        } : undefined,
+        competition: match.competition
+          ? {
+              id: match.competition.id,
+              name: match.competition.name,
+            }
+          : undefined,
       }))
     }
 
@@ -188,11 +195,8 @@ function getResultColor(result: string): string {
 
 export default async function TeamPage({ params }: TeamPageProps) {
   const teamId = params.teamId
-  
-  const [team, matches] = await Promise.all([
-    getTeamInfo(teamId),
-    getTeamMatches(teamId),
-  ])
+
+  const [team, matches] = await Promise.all([getTeamInfo(teamId), getTeamMatches(teamId)])
 
   if (!team) {
     return (
@@ -200,15 +204,12 @@ export default async function TeamPage({ params }: TeamPageProps) {
         <Container className="space-y-6">
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Команда не найдена. Проверьте правильность ссылки.
-            </AlertDescription>
+            <AlertDescription>Команда не найдена. Проверьте правильность ссылки.</AlertDescription>
           </Alert>
-          
+
           <Link href="/leagues">
             <Button variant="outline">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              К лигам
+              <ArrowLeft className="h-4 w-4 mr-2" />К лигам
             </Button>
           </Link>
         </Container>
@@ -216,21 +217,19 @@ export default async function TeamPage({ params }: TeamPageProps) {
     )
   }
 
-  const breadcrumbItems = team.country 
+  const breadcrumbItems = team.country
     ? [
         { label: 'Страны', href: '/countries' },
         { label: team.country.name, href: `/leagues?country=${team.country.id}` },
-        { label: team.name }
+        { label: team.name },
       ]
-    : [
-        { label: team.name }
-      ]
+    : [{ label: team.name }]
 
   return (
     <Section>
       <Container className="space-y-6">
         <Breadcrumbs items={breadcrumbItems} className="mb-4" />
-        
+
         <header>
           <div className="flex items-center gap-4 mb-4">
             <Button variant="outline" size="sm" onClick={() => window.history.back()}>
@@ -238,28 +237,20 @@ export default async function TeamPage({ params }: TeamPageProps) {
               Назад
             </Button>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
               {team.logo ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={team.logo}
-                  alt={team.name}
-                  className="w-full h-full object-contain"
-                />
+                <img src={team.logo} alt={team.name} className="w-full h-full object-contain" />
               ) : (
                 <span className="text-2xl">⚽</span>
               )}
             </div>
-            
+
             <div>
               <h1 className="text-3xl font-bold tracking-tight">{team.name}</h1>
-              {team.country && (
-                <p className="text-muted-foreground text-lg">
-                  {team.country.name}
-                </p>
-              )}
+              {team.country && <p className="text-muted-foreground text-lg">{team.country.name}</p>}
             </div>
           </div>
         </header>
@@ -273,17 +264,13 @@ export default async function TeamPage({ params }: TeamPageProps) {
                   <Calendar className="h-5 w-5" />
                   Последние матчи
                 </CardTitle>
-                <CardDescription>
-                  Результаты последних игр команды
-                </CardDescription>
+                <CardDescription>Результаты последних игр команды</CardDescription>
               </CardHeader>
               <CardContent>
                 {matches.length === 0 ? (
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      Матчи не найдены для этой команды.
-                    </AlertDescription>
+                    <AlertDescription>Матчи не найдены для этой команды.</AlertDescription>
                   </Alert>
                 ) : (
                   <div className="space-y-3">
@@ -291,21 +278,23 @@ export default async function TeamPage({ params }: TeamPageProps) {
                       const result = getMatchResult(match, team.id)
                       const isHome = match.home_team.id === team.id
                       const opponent = isHome ? match.away_team : match.home_team
-                      
+
                       return (
-                        <Link
-                          key={match.id}
-                          href={`/matches/${match.id}`}
-                          className="block"
-                        >
+                        <Link key={match.id} href={`/matches/${match.id}`} className="block">
                           <Card className="hover:shadow-md transition-shadow">
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                   <Badge className={getResultColor(result)}>
-                                    {result === 'win' ? 'П' : result === 'loss' ? 'Пор' : result === 'draw' ? 'Н' : 'Пред'}
+                                    {result === 'win'
+                                      ? 'П'
+                                      : result === 'loss'
+                                        ? 'Пор'
+                                        : result === 'draw'
+                                          ? 'Н'
+                                          : 'Пред'}
                                   </Badge>
-                                  
+
                                   <div className="flex items-center gap-2">
                                     {opponent.logo && (
                                       // eslint-disable-next-line @next/next/no-img-element
@@ -320,14 +309,13 @@ export default async function TeamPage({ params }: TeamPageProps) {
                                     </span>
                                   </div>
                                 </div>
-                                
+
                                 <div className="text-right">
                                   {match.score && (
                                     <div className="font-bold text-lg">
-                                      {isHome 
+                                      {isHome
                                         ? `${match.score.home}:${match.score.away}`
-                                        : `${match.score.away}:${match.score.home}`
-                                      }
+                                        : `${match.score.away}:${match.score.home}`}
                                     </div>
                                   )}
                                   <div className="text-sm text-muted-foreground">
@@ -375,14 +363,14 @@ export default async function TeamPage({ params }: TeamPageProps) {
                     </div>
                   </div>
                 )}
-                
+
                 {team.founded && (
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Основана:</span>
                     <span>{team.founded}</span>
                   </div>
                 )}
-                
+
                 {team.venue && (
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Стадион:</span>
@@ -405,29 +393,23 @@ export default async function TeamPage({ params }: TeamPageProps) {
                   className="block p-3 rounded-lg border hover:bg-accent transition-colors"
                 >
                   <div className="font-medium">Все матчи</div>
-                  <div className="text-sm text-muted-foreground">
-                    Полное расписание команды
-                  </div>
+                  <div className="text-sm text-muted-foreground">Полное расписание команды</div>
                 </Link>
-                
+
                 <Link
                   href={`/teams/${teamId}/stats`}
                   className="block p-3 rounded-lg border hover:bg-accent transition-colors"
                 >
                   <div className="font-medium">Статистика</div>
-                  <div className="text-sm text-muted-foreground">
-                    Подробная статистика
-                  </div>
+                  <div className="text-sm text-muted-foreground">Подробная статистика</div>
                 </Link>
-                
+
                 <Link
                   href={`/teams/${teamId}/squad`}
                   className="block p-3 rounded-lg border hover:bg-accent transition-colors"
                 >
                   <div className="font-medium">Состав</div>
-                  <div className="text-sm text-muted-foreground">
-                    Игроки команды
-                  </div>
+                  <div className="text-sm text-muted-foreground">Игроки команды</div>
                 </Link>
               </CardContent>
             </Card>
@@ -450,9 +432,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
                     />
                     <div>
                       <div className="font-medium">{team.country.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Все команды страны
-                      </div>
+                      <div className="text-sm text-muted-foreground">Все команды страны</div>
                     </div>
                   </Link>
                 </CardContent>

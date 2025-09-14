@@ -45,7 +45,10 @@ export default async function LiveMatchesWidget({ league }: LiveMatchesWidgetPro
             {hasError ? 'Сервис live-матчей временно недоступен' : 'Сейчас нет live-матчей'}
           </p>
           <p className="text-xs mt-1">
-            Обновлено: {data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString('ru-RU') : 'Неизвестно'}
+            Обновлено:{' '}
+            {data.lastUpdated
+              ? new Date(data.lastUpdated).toLocaleTimeString('ru-RU')
+              : 'Неизвестно'}
           </p>
           {hasError && (
             <p className="text-xs mt-2 text-orange-600">
@@ -80,7 +83,8 @@ export default async function LiveMatchesWidget({ league }: LiveMatchesWidgetPro
 
         {/* Время последнего обновления */}
         <div className="text-xs text-muted-foreground text-center pt-2 border-t">
-          Обновлено: {data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString('ru-RU') : 'Неизвестно'}
+          Обновлено:{' '}
+          {data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString('ru-RU') : 'Неизвестно'}
         </div>
 
         {/* Ссылка на все live-матчи, если их много */}

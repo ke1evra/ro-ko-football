@@ -10,11 +10,11 @@ interface CountryFlagImageProps {
   className?: string
 }
 
-export function CountryFlagImage({ 
-  countryId, 
-  countryName, 
-  size = 'medium', 
-  className = '' 
+export function CountryFlagImage({
+  countryId,
+  countryName,
+  size = 'medium',
+  className = '',
 }: CountryFlagImageProps) {
   const [imageError, setImageError] = useState(false)
 
@@ -22,10 +22,11 @@ export function CountryFlagImage({
   if (!countryId) {
     return (
       <div className={`flex items-center justify-center bg-muted rounded ${className}`}>
-        <Flag className={`text-muted-foreground ${
-          size === 'small' ? 'h-3 w-3' : 
-          size === 'large' ? 'h-5 w-5' : 'h-4 w-4'
-        }`} />
+        <Flag
+          className={`text-muted-foreground ${
+            size === 'small' ? 'h-3 w-3' : size === 'large' ? 'h-5 w-5' : 'h-4 w-4'
+          }`}
+        />
       </div>
     )
   }
@@ -35,17 +36,19 @@ export function CountryFlagImage({
     return (
       <div className={`flex items-center justify-center bg-muted rounded ${className}`}>
         {countryName ? (
-          <span className={`font-semibold text-muted-foreground ${
-            size === 'small' ? 'text-xs' : 
-            size === 'large' ? 'text-sm' : 'text-xs'
-          }`}>
+          <span
+            className={`font-semibold text-muted-foreground ${
+              size === 'small' ? 'text-xs' : size === 'large' ? 'text-sm' : 'text-xs'
+            }`}
+          >
             {countryName.charAt(0).toUpperCase()}
           </span>
         ) : (
-          <Flag className={`text-muted-foreground ${
-            size === 'small' ? 'h-3 w-3' : 
-            size === 'large' ? 'h-5 w-5' : 'h-4 w-4'
-          }`} />
+          <Flag
+            className={`text-muted-foreground ${
+              size === 'small' ? 'h-3 w-3' : size === 'large' ? 'h-5 w-5' : 'h-4 w-4'
+            }`}
+          />
         )}
       </div>
     )
@@ -63,18 +66,18 @@ export function CountryFlagImage({
         className="w-full h-full object-cover rounded"
         onError={() => {
           // Тихо обрабатываем ошибку - не логируем для турниров
-          const isLikelyTournament = countryName && (
-            countryName.includes('Championship') ||
-            countryName.includes('League') ||
-            countryName.includes('Cup') ||
-            countryName.includes('Nations') ||
-            countryName.includes('Olympics')
-          )
-          
+          const isLikelyTournament =
+            countryName &&
+            (countryName.includes('Championship') ||
+              countryName.includes('League') ||
+              countryName.includes('Cup') ||
+              countryName.includes('Nations') ||
+              countryName.includes('Olympics'))
+
           if (!isLikelyTournament) {
             console.warn(`Не удалось ��агрузить флаг для ${countryName} (ID: ${countryId})`)
           }
-          
+
           setImageError(true)
         }}
       />

@@ -132,12 +132,14 @@ function extractCountries(raw: unknown): RawCountry[] {
 
 async function getCountriesMap(): Promise<Map<string, string>> {
   try {
-    const res = await customFetch('countries/list.json', {
+    const res = await customFetch({
+      method: 'GET',
+      url: '/countries/list.json',
       next: { revalidate: 300 },
-    } as RequestInit)
+    })
     let raw: unknown
     try {
-      raw = await res.json()
+      raw = res.data
     } catch {
       raw = null
     }
@@ -155,13 +157,16 @@ async function getCountriesMap(): Promise<Map<string, string>> {
 }
 
 async function getCompetitionsList(): Promise<Competition[]> {
-  const res = await customFetch('competitions/list.json?size=60', {
+  const res = await customFetch({
+    method: 'GET',
+    url: '/competitions/list.json',
+    params: { size: 60 },
     next: { revalidate: 60 },
-  } as unknown as RequestInit)
+  })
 
   let raw: unknown
   try {
-    raw = await res.json()
+    raw = res.data
   } catch {
     raw = null
   }

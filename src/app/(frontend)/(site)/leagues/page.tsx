@@ -4,7 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ArrowLeft, AlertCircle } from 'lucide-react'
-import { getCompetitionsListJson, getCountriesListJson, getFederationsListJson } from '@/app/(frontend)/client'
+import {
+  getCompetitionsListJson,
+  getCountriesListJson,
+  getFederationsListJson,
+} from '@/app/(frontend)/client'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
@@ -41,7 +45,11 @@ const HIGHLIGHT_COUNTRIES_RU = new Set([
   'Швеция',
 ])
 
-async function getCompetitions(countryId?: string, federationId?: string, page = 1): Promise<{
+async function getCompetitions(
+  countryId?: string,
+  federationId?: string,
+  page = 1,
+): Promise<{
   competitions: Competition[]
   hasMore: boolean
   countryName?: string
@@ -59,22 +67,24 @@ async function getCompetitions(countryId?: string, federationId?: string, page =
     const response = await getCompetitionsListJson(params, {
       next: { revalidate: 60 },
     })
-    
+
     const competitions = (response.data?.data?.competition || [])
       .map((comp) => {
         if (!comp.id || !comp.name) return null
-        
+
         // Извлекаем информацию о стране из массива countries
         const country = comp.countries && comp.countries.length > 0 ? comp.countries[0] : null
-        
+
         return {
           id: parseInt(comp.id),
           name: comp.name,
-          country: country ? {
-            id: parseInt(country.id),
-            name: country.name,
-            flag: country.flag,
-          } : null,
+          country: country
+            ? {
+                id: parseInt(country.id),
+                name: country.name,
+                flag: country.flag,
+              }
+            : null,
         }
       })
       .filter((comp): comp is Competition => Boolean(comp))
@@ -83,10 +93,13 @@ async function getCompetitions(countryId?: string, federationId?: string, page =
     let countryName
     if (countryId) {
       try {
-        const countryResponse = await getCountriesListJson({}, {
-          next: { revalidate: 300 },
-        })
-        
+        const countryResponse = await getCountriesListJson(
+          {},
+          {
+            next: { revalidate: 300 },
+          },
+        )
+
         const countries = countryResponse.data?.data?.country || []
         const country = countries.find((c) => c.id === parseInt(countryId))
         countryName = country?.name
@@ -102,7 +115,7 @@ async function getCompetitions(countryId?: string, federationId?: string, page =
         const fedResponse = await getFederationsListJson({
           next: { revalidate: 300 },
         })
-        
+
         const federations = fedResponse.data?.data?.federation || []
         const federation = federations.find((f) => f.id === federationId)
         federationName = federation?.name
@@ -132,11 +145,11 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
   const countryId = resolvedSearchParams.country
   const federationId = resolvedSearchParams.federation
   const page = parseInt(resolvedSearchParams.page || '1')
-  
+
   const { competitions, hasMore, countryName, federationName } = await getCompetitions(
     countryId,
     federationId,
-    page
+    page,
   )
 
   // Если нет фильтров, показываем подсвеченные лиги
@@ -188,19 +201,22 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
 
   const getBreadcrumbItems = () => {
     const items = []
-    
+
     if (federationName) {
       items.push({ label: 'Федерации', href: '/federations' })
       items.push({ label: federationName, href: `/countries?federation=${federationId}` })
     }
-    
+
     if (countryName) {
       if (!federationName) {
         items.push({ label: 'Страны', href: '/countries' })
       }
-      items.push({ label: countryName, href: `/leagues?country=${countryId}${federationId ? `&federation=${federationId}` : ''}` })
+      items.push({
+        label: countryName,
+        href: `/leagues?country=${countryId}${federationId ? `&federation=${federationId}` : ''}`,
+      })
     }
-    
+
     items.push({ label: 'Лиги' })
     return items
   }
@@ -209,7 +225,7 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
     <Section>
       <Container className="space-y-6">
         <Breadcrumbs items={getBreadcrumbItems()} className="mb-4" />
-        
+
         <header>
           <div className="flex items-center gap-4 mb-4">
             {getBackLink() && (
@@ -221,13 +237,12 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
               </Link>
             )}
           </div>
-          
+
           <h1 className="text-3xl font-bold tracking-tight">{getTitle()}</h1>
           <p className="text-muted-foreground">
-            {highlight.length > 0 
+            {highlight.length > 0
               ? 'Подсвечены основные лиги. Остальные доступны списком ниже.'
-              : 'Выберите лигу для просмотра сезонов и турнирных таблиц'
-            }
+              : 'Выберите лигу для просмотра сезонов и турнирных таблиц'}
           </p>
         </header>
 
@@ -244,11 +259,7 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
             {highlight.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {highlight.map((competition) => (
-                  <Link
-                    key={competition.id}
-                    href={`/leagues/${competition.id}`}
-                    className="block"
-                  >
+                  <Link key={competition.id} href={`/leagues/${competition.id}`} className="block">
                     <div className="group border rounded-md p-4 flex items-center gap-3 hover:bg-accent transition-colors">
                       <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden">
                         {competition.country?.id ? (
@@ -259,7 +270,9 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <span className="text-xl" aria-hidden>⚽</span>
+                          <span className="text-xl" aria-hidden>
+                            ⚽
+                          </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -279,10 +292,8 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
             {/* Все лиги списком */}
             {rest.length > 0 && (
               <section className="space-y-4">
-                {highlight.length > 0 && (
-                  <h2 className="text-xl font-semibold">Все лиги</h2>
-                )}
-                
+                {highlight.length > 0 && <h2 className="text-xl font-semibold">Все лиги</h2>}
+
                 <div className="divide-y rounded-md border">
                   {rest.map((competition) => (
                     <Link
@@ -299,7 +310,9 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <span className="text-sm" aria-hidden>⚽</span>
+                          <span className="text-sm" aria-hidden>
+                            ⚽
+                          </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -327,16 +340,14 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
                       page: (page - 1).toString(),
                     }).toString()}`}
                   >
-                    <Button variant="outline">
-                      Предыдущая страница
-                    </Button>
+                    <Button variant="outline">Предыдущая страница</Button>
                   </Link>
                 )}
-                
+
                 <Badge variant="outline" className="px-3 py-1">
                   Страница {page}
                 </Badge>
-                
+
                 {hasMore && (
                   <Link
                     href={`/leagues?${new URLSearchParams({
@@ -345,9 +356,7 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
                       page: (page + 1).toString(),
                     }).toString()}`}
                   >
-                    <Button variant="outline">
-                      Следующая страница
-                    </Button>
+                    <Button variant="outline">Следующая страница</Button>
                   </Link>
                 )}
               </div>

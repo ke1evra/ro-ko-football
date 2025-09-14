@@ -53,7 +53,7 @@ export default async function UserPublicPage({ params }: { params: { username: s
       <div className="flex items-center gap-4">
         {avatar ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatar} alt={user.name || user.username} className="h-16 w-16 rounded-full" />
+          <img src={avatar} alt={String(user.name || user.username || '')} className="h-16 w-16 rounded-full" />
         ) : (
           <div className="h-16 w-16 rounded-full bg-muted" />
         )}
@@ -80,7 +80,7 @@ export default async function UserPublicPage({ params }: { params: { username: s
                 {p.title}
               </Link>
               <div className="text-xs text-muted-foreground">
-                {new Date(p.publishedAt).toLocaleString()}
+                {p.publishedAt ? new Date(p.publishedAt).toLocaleString() : ''}
               </div>
             </div>
           ))}

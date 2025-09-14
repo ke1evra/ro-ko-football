@@ -10,7 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Loader2, Play, AlertCircle, CheckCircle } from 'lucide-react'
 import { executeApiMethod, type ApiTestResult } from './api-actions'
 
@@ -18,14 +24,17 @@ interface ApiMethod {
   name: string
   description: string
   category: string
-  params?: Record<string, {
-    type: 'string' | 'number' | 'boolean' | 'select'
-    required?: boolean
-    description?: string
-    options?: string[]
-    min?: number
-    max?: number
-  }>
+  params?: Record<
+    string,
+    {
+      type: 'string' | 'number' | 'boolean' | 'select'
+      required?: boolean
+      description?: string
+      options?: string[]
+      min?: number
+      max?: number
+    }
+  >
 }
 
 const API_METHODS: ApiMethod[] = [
@@ -36,7 +45,12 @@ const API_METHODS: ApiMethod[] = [
     category: 'Catalogs',
     params: {
       page: { type: 'number', description: 'Номер страницы (по умолчанию 1)', min: 1 },
-      size: { type: 'number', description: 'Размер страницы (по умолчанию 30, максимум 100)', min: 1, max: 100 },
+      size: {
+        type: 'number',
+        description: 'Размер страницы (по умолчанию 30, максимум 100)',
+        min: 1,
+        max: 100,
+      },
       lang: { type: 'string', description: 'ISO 639-1 код языка для перевода (например, ru)' },
       country_id: { type: 'number', description: 'ID страны' },
       federation_id: { type: 'number', description: 'ID федерации' },
@@ -83,7 +97,7 @@ const API_METHODS: ApiMethod[] = [
       competition_id: { type: 'number', description: 'ID соревнования' },
     },
   },
-  
+
   // Events Service
   {
     name: 'getMatchesEventsJson',
@@ -93,7 +107,7 @@ const API_METHODS: ApiMethod[] = [
       match_id: { type: 'number', required: true, description: 'ID матча' },
     },
   },
-  
+
   // Fixtures Service
   {
     name: 'getFixturesMatchesJson',
@@ -107,7 +121,7 @@ const API_METHODS: ApiMethod[] = [
       size: { type: 'number', description: 'Размер страницы', min: 1, max: 100 },
     },
   },
-  
+
   // Lineups & Stats Service
   {
     name: 'getMatchesLineupsJson',
@@ -135,7 +149,7 @@ const API_METHODS: ApiMethod[] = [
       limit: { type: 'number', description: 'Лимит матчей', min: 1, max: 50 },
     },
   },
-  
+
   // Matches Service
   {
     name: 'getMatchesHistoryJson',
@@ -158,7 +172,7 @@ const API_METHODS: ApiMethod[] = [
       competition_id: { type: 'number', description: 'ID соревнования' },
     },
   },
-  
+
   // Tables Service
   {
     name: 'getCompetitionsTopscorersJson',
@@ -187,10 +201,14 @@ const API_METHODS: ApiMethod[] = [
     params: {
       competition_id: { type: 'number', required: true, description: 'ID соревнования' },
       season_id: { type: 'number', description: 'ID сезона' },
-      include_form: { type: 'select', description: 'Включить форму команд', options: ['yes', 'no'] },
+      include_form: {
+        type: 'select',
+        description: 'Включить форму команд',
+        options: ['yes', 'no'],
+      },
     },
   },
-  
+
   // Utility Service
   {
     name: 'getAuthVerifyJson',
@@ -214,10 +232,10 @@ export default function ApiTestPage() {
   const [result, setResult] = useState<ApiTestResult | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const categories = Array.from(new Set(API_METHODS.map(method => method.category)))
+  const categories = Array.from(new Set(API_METHODS.map((method) => method.category)))
 
   const handleParamChange = (paramName: string, value: any) => {
-    setParams(prev => ({
+    setParams((prev) => ({
       ...prev,
       [paramName]: value,
     }))
@@ -261,7 +279,10 @@ export default function ApiTestPage() {
     }
   }
 
-  const renderParamInput = (paramName: string, paramConfig: NonNullable<ApiMethod['params']>[string]) => {
+  const renderParamInput = (
+    paramName: string,
+    paramConfig: NonNullable<ApiMethod['params']>[string],
+  ) => {
     const value = params[paramName] || ''
 
     switch (paramConfig.type) {
@@ -272,7 +293,7 @@ export default function ApiTestPage() {
               <SelectValue placeholder="Выберите значение" />
             </SelectTrigger>
             <SelectContent>
-              {paramConfig.options?.map(option => (
+              {paramConfig.options?.map((option) => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>
@@ -280,7 +301,7 @@ export default function ApiTestPage() {
             </SelectContent>
           </Select>
         )
-      
+
       case 'number':
         return (
           <Input
@@ -292,10 +313,13 @@ export default function ApiTestPage() {
             placeholder={`Введите число${paramConfig.min ? ` (мин: ${paramConfig.min})` : ''}${paramConfig.max ? ` (макс: ${paramConfig.max})` : ''}`}
           />
         )
-      
+
       case 'boolean':
         return (
-          <Select value={value} onValueChange={(val) => handleParamChange(paramName, val === 'true')}>
+          <Select
+            value={value}
+            onValueChange={(val) => handleParamChange(paramName, val === 'true')}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Выберите значение" />
             </SelectTrigger>
@@ -305,7 +329,7 @@ export default function ApiTestPage() {
             </SelectContent>
           </Select>
         )
-      
+
       default:
         return (
           <Input
@@ -339,34 +363,36 @@ export default function ApiTestPage() {
               <CardContent>
                 <Tabs defaultValue={categories[0]} className="w-full">
                   <TabsList className="grid w-full grid-cols-2 lg:grid-cols-1 lg:h-auto">
-                    {categories.map(category => (
+                    {categories.map((category) => (
                       <TabsTrigger key={category} value={category} className="text-xs">
                         {category}
                       </TabsTrigger>
                     ))}
                   </TabsList>
-                  
-                  {categories.map(category => (
+
+                  {categories.map((category) => (
                     <TabsContent key={category} value={category} className="space-y-2">
-                      {API_METHODS.filter(method => method.category === category).map(method => (
-                        <Button
-                          key={method.name}
-                          variant={selectedMethod?.name === method.name ? 'default' : 'outline'}
-                          className="w-full justify-start text-left h-auto p-3"
-                          onClick={() => {
-                            setSelectedMethod(method)
-                            setParams({})
-                            setResult(null)
-                          }}
-                        >
-                          <div>
-                            <div className="font-medium text-sm">{method.name}</div>
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {method.description}
+                      {API_METHODS.filter((method) => method.category === category).map(
+                        (method) => (
+                          <Button
+                            key={method.name}
+                            variant={selectedMethod?.name === method.name ? 'default' : 'outline'}
+                            className="w-full justify-start text-left h-auto p-3"
+                            onClick={() => {
+                              setSelectedMethod(method)
+                              setParams({})
+                              setResult(null)
+                            }}
+                          >
+                            <div>
+                              <div className="font-medium text-sm">{method.name}</div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {method.description}
+                              </div>
                             </div>
-                          </div>
-                        </Button>
-                      ))}
+                          </Button>
+                        ),
+                      )}
                     </TabsContent>
                   ))}
                 </Tabs>
@@ -417,12 +443,7 @@ export default function ApiTestPage() {
                       </p>
                     )}
 
-                    <Button
-                      onClick={executeMethod}
-                      disabled={loading}
-                      className="w-full"
-                      size="lg"
-                    >
+                    <Button onClick={executeMethod} disabled={loading} className="w-full" size="lg">
                       {loading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -454,11 +475,7 @@ export default function ApiTestPage() {
                             Ошибка
                           </>
                         )}
-                        {result.duration && (
-                          <Badge variant="outline">
-                            {result.duration}мс
-                          </Badge>
-                        )}
+                        {result.duration && <Badge variant="outline">{result.duration}мс</Badge>}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -476,9 +493,7 @@ export default function ApiTestPage() {
                       ) : (
                         <Alert variant="destructive">
                           <AlertCircle className="h-4 w-4" />
-                          <AlertDescription>
-                            {result.error}
-                          </AlertDescription>
+                          <AlertDescription>{result.error}</AlertDescription>
                         </Alert>
                       )}
                     </CardContent>

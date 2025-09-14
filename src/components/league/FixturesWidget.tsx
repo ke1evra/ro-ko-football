@@ -32,7 +32,8 @@ export default async function FixturesWidget({ league, season, date }: FixturesW
       throw new Error(`Failed to fetch fixtures: ${response.status}`)
     }
 
-    const data: FixturesResponse & { fixtures?: any[]; lastUpdated?: string; error?: string } = await response.json()
+    const data: FixturesResponse & { fixtures?: any[]; lastUpdated?: string; error?: string } =
+      await response.json()
 
     // Если нет предстоящих матчей
     const fixtures = Array.isArray(data.fixtures) ? data.fixtures : []
@@ -47,7 +48,10 @@ export default async function FixturesWidget({ league, season, date }: FixturesW
             {hasError ? 'Сервис расписания матчей временно недоступен' : 'Нет предстоящих матчей'}
           </p>
           <p className="text-xs mt-1">
-            Обновлено: {data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString('ru-RU') : 'Неизвестно'}
+            Обновлено:{' '}
+            {data.lastUpdated
+              ? new Date(data.lastUpdated).toLocaleTimeString('ru-RU')
+              : 'Неизвестно'}
           </p>
           {hasError && (
             <p className="text-xs mt-2 text-orange-600">
@@ -101,7 +105,8 @@ export default async function FixturesWidget({ league, season, date }: FixturesW
                         href={`/fixtures?date=${dateKey}&league=${league}`}
                         className="text-xs text-primary hover:underline"
                       >
-                        Ещё {(dayFixtures as any[]).length - 3} {getMatchesWord((dayFixtures as any[]).length - 3)}
+                        Ещё {(dayFixtures as any[]).length - 3}{' '}
+                        {getMatchesWord((dayFixtures as any[]).length - 3)}
                       </Link>
                     </div>
                   )}
@@ -112,7 +117,8 @@ export default async function FixturesWidget({ league, season, date }: FixturesW
 
         {/* Время последнего обновления */}
         <div className="text-xs text-muted-foreground text-center pt-2 border-t">
-          Обновлено: {data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString('ru-RU') : 'Неизвестно'}
+          Обновлено:{' '}
+          {data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString('ru-RU') : 'Неизвестно'}
         </div>
 
         {/* Ссылка на все матчи */}

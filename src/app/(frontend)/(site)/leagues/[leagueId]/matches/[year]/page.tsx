@@ -77,9 +77,13 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
       },
     )
 
-    const competitions = response.data?.data?.competition || []
+    const competitions = (response.data?.data?.competition || []) as Array<{
+      id?: number | string
+      name?: string
+      countries?: Array<{ id?: number | string; name?: string }>
+    }>
     const league = competitions.find(
-      (comp) => comp.id === leagueId || comp.id === parseInt(leagueId),
+      (comp) => String(comp.id) === String(leagueId) || Number(comp.id) === Number(leagueId),
     )
 
     if (!league) return null
@@ -104,25 +108,25 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
 async function getLeagueMatches(leagueId: string, year: string): Promise<Match[]> {
   try {
     console.log(`[DEBUG] Начинаем загрузку матчей для лиги ${leagueId}, год: ${year}`)
-    
+
     const fromDate = `${year}-01-01`
     const toDate = `${year}-12-31`
 
     console.log(`[DEBUG] Диапазон дат: ${fromDate} - ${toDate}`)
 
     const requestParams = {
-      competition_id: leagueId,
-      from: fromDate,
-      to: toDate,
+      competition_id: String(leagueId),
+      from: new Date(fromDate),
+      to: new Date(toDate),
     }
-    
+
     console.log(`[DEBUG] Параметры запроса:`, requestParams)
     console.log(`[DEBUG] Типы параметров:`, {
       competition_id: typeof requestParams.competition_id,
       from: typeof requestParams.from,
       to: typeof requestParams.to,
     })
-    
+
     console.log(`[DEBUG] Значения дат:`, {
       from: requestParams.from,
       to: requestParams.to,
@@ -135,7 +139,7 @@ async function getLeagueMatches(leagueId: string, year: string): Promise<Match[]
     console.log(`[DEBUG] Ответ получен, статус:`, response.status)
     console.log(`[DEBUG] Структура ответа:`, Object.keys(response))
     console.log(`[DEBUG] response.data:`, response.data)
-    
+
     if (response.data?.data) {
       console.log(`[DEBUG] response.data.data:`, response.data.data)
       console.log(`[DEBUG] Ключи в data.data:`, Object.keys(response.data.data))
@@ -145,7 +149,7 @@ async function getLeagueMatches(leagueId: string, year: string): Promise<Match[]
     console.log(`[DEBUG] Найдено матчей в API: ${allMatches.length}`)
 
     const processedMatches = allMatches
-      .map((match, index) => {
+      .map((match: any, index: number) => {
         // Парсим счет из строки "2 - 1"
         let score = undefined
         if (match.scores?.ft_score) {
@@ -176,7 +180,7 @@ async function getLeagueMatches(leagueId: string, year: string): Promise<Match[]
 
         return processedMatch
       })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .sort((a: Match, b: Match) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
     return processedMatches
   } catch (error) {
@@ -303,7 +307,9 @@ export default async function MatchesYearPage({ params }: MatchesYearPageProps) 
           <p className="text-sm text-yellow-700">Год: {year}</p>
           {matches.length > 0 && (
             <details className="mt-2">
-              <summary className="text-sm text-yellow-700 cursor-pointer">Первый матч (клик для раскрытия)</summary>
+              <summary className="text-sm text-yellow-700 cursor-pointer">
+                Первый матч (клик для раскрытия)
+              </summary>
               <pre className="text-xs text-yellow-600 mt-1 overflow-auto">
                 {JSON.stringify(matches[0], null, 2)}
               </pre>

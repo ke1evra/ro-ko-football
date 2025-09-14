@@ -48,9 +48,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, doc: result })
   } catch (error) {
     console.error('Media upload error:', error)
-    return NextResponse.json(
-      { error: 'Failed to upload file' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 })
   }
 }

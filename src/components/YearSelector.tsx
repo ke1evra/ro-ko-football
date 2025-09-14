@@ -22,14 +22,16 @@ export function YearSelector({ leagueId, selectedYear }: YearSelectorProps) {
   return (
     <div className="flex items-center gap-2">
       <span className="text-sm text-muted-foreground">Выберите год:</span>
-      <select 
+      <select
         className="px-3 py-1 border rounded-md text-sm"
         value={selectedYear || ''}
         onChange={handleYearChange}
       >
         <option value="">Последние матчи</option>
-        {Array.from({ length: 26 }, (_, i) => 2025 - i).map(year => (
-          <option key={year} value={year}>{year}</option>
+        {Array.from({ length: 26 }, (_, i) => 2025 - i).map((year) => (
+          <option key={year} value={year}>
+            {year}
+          </option>
         ))}
       </select>
     </div>

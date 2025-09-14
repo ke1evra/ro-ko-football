@@ -43,7 +43,7 @@ export function TeamFlagImage({
 
     // Используем URL API напрямую как источник изображения
     const flagApiUrl = `/api/flags/${teamId}`
-    
+
     // Проверяем, что изображение загружается
     const img = new Image()
     img.onload = () => {

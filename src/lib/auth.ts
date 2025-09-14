@@ -71,7 +71,7 @@ export async function getUser(): Promise<User | null> {
     const payload: Payload = await getPayload({ config: await configPromise })
 
     const { user } = await payload.auth({ headers })
-    
+
     if (!user) return null
 
     // Загружаем полные данные пользователя с аватаром
