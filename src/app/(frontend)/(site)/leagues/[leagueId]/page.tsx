@@ -5,16 +5,16 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ArrowLeft, AlertCircle, Calendar, Trophy } from 'lucide-react'
 import Link from 'next/link'
-import { executeApiMethod } from '../../api-test/api-actions'
+import { getCompetitionsListJson, getSeasonsListJson } from '@/app/(frontend)/client'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const revalidate = 300 // 5 минут
 
 interface LeaguePageProps {
-  params: {
+  params: Promise<{
     leagueId: string
-  }
+  }>
 }
 
 interface Season {
@@ -36,37 +36,43 @@ interface League {
 
 async function getLeagueInfo(leagueId: string): Promise<League | null> {
   try {
+    console.log(`Поиск лиги с ID: ${leagueId}`)
+    
     // Получаем информацию о лиге из списка всех лиг
-    const result = await executeApiMethod({
-      method: 'getCompetitionsListJson',
-      params: {
-        size: 100,
-        lang: 'ru',
+    const response = await getCompetitionsListJson(
+      {
+        size: 500,
       },
-    })
+      {
+        next: { revalidate: 300 },
+      },
+    )
 
-    if (!result.success || !result.data) {
-      return null
-    }
+    // Проверяем разные возможные структуры данных
+    const competitions = response.data?.data?.competition || response.data?.competition || []
+    console.log(`Найдено ${competitions.length} соревнований`)
+    console.log(`Структура ответа:`, Object.keys(response.data || {}))
+    console.log(`Структура data:`, Object.keys(response.data?.data || {}))
+    console.log(`Первые 5 ID:`, competitions.slice(0, 5).map(c => ({ id: c.id, name: c.name })))
+    
+    const league = competitions.find((comp) => comp.id === leagueId || comp.id === parseInt(leagueId))
+    console.log(`Лига найдена:`, league ? { id: league.id, name: league.name } : 'НЕ НАЙДЕНА')
 
-    const competitions = result.data.data || result.data.competitions || result.data
-    if (!Array.isArray(competitions)) {
-      return null
-    }
-
-    const league = competitions.find((comp: any) => comp.id === parseInt(leagueId))
     if (!league) {
       return null
     }
 
     return {
-      id: league.id,
+      id: parseInt(league.id),
       name: league.name || 'Неизвестная лига',
-      country: league.countries && league.countries.length > 0 ? {
-        id: league.countries[0].id,
-        name: league.countries[0].name,
-        flag: league.countries[0].flag,
-      } : undefined,
+      country:
+        league.countries && league.countries.length > 0
+          ? {
+              id: parseInt(league.countries[0].id),
+              name: league.countries[0].name,
+              flag: league.countries[0].flag,
+            }
+          : undefined,
     }
   } catch (error) {
     console.error('Ошибка загрузки информации о лиге:', error)
@@ -76,27 +82,22 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
 
 async function getLeagueSeasons(leagueId: string): Promise<Season[]> {
   try {
-    const result = await executeApiMethod({
-      method: 'getSeasonsListJson',
-      params: {},
-    })
+    const response = await getSeasonsListJson(
+      {},
+      {
+        next: { revalidate: 300 },
+      },
+    )
 
-    if (!result.success || !result.data) {
-      return []
-    }
+    const seasons = response.data?.data?.seasons || []
 
-    // Извлекаем сезоны из ответа API
-    const seasons = result.data.data || result.data.seasons || result.data
-    
     if (Array.isArray(seasons)) {
-      // Фильтруем сезоны по лиге (если API поддерживает это)
-      // Иначе возвращаем все сезоны
       return seasons
-        .map((season: any) => ({
-          id: season.id,
+        .map((season) => ({
+          id: parseInt(season.id),
           name: season.name || `Сезон ${season.year || season.id}`,
-          year: season.year,
-          is_current: season.is_current || false,
+          year: season.year ? parseInt(season.year) : undefined,
+          is_current: season.is_current === '1' || season.is_current === true,
         }))
         .sort((a: Season, b: Season) => {
           // Сортируем: текущий сезон первым, затем по году (новые первыми)
@@ -114,12 +115,10 @@ async function getLeagueSeasons(leagueId: string): Promise<Season[]> {
 }
 
 export default async function LeaguePage({ params }: LeaguePageProps) {
-  const leagueId = params.leagueId
-  
-  const [league, seasons] = await Promise.all([
-    getLeagueInfo(leagueId),
-    getLeagueSeasons(leagueId),
-  ])
+  const resolvedParams = await params
+  const leagueId = resolvedParams.leagueId
+
+  const [league, seasons] = await Promise.all([getLeagueInfo(leagueId), getLeagueSeasons(leagueId)])
 
   if (!league) {
     return (
@@ -127,15 +126,12 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
         <Container className="space-y-6">
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Лига не найдена. Проверьте правильность ссылки.
-            </AlertDescription>
+            <AlertDescription>Лига не найдена. Проверьте правильность ссылки.</AlertDescription>
           </Alert>
-          
+
           <Link href="/leagues">
             <Button variant="outline">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              К списку лиг
+              <ArrowLeft className="h-4 w-4 mr-2" />К списку лиг
             </Button>
           </Link>
         </Container>
@@ -143,32 +139,28 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
     )
   }
 
-  const breadcrumbItems = league.country 
+  const breadcrumbItems = league.country
     ? [
         { label: 'Лиги', href: '/leagues' },
         { label: league.country.name, href: `/leagues?country=${league.country.id}` },
-        { label: league.name }
+        { label: league.name },
       ]
-    : [
-        { label: 'Лиги', href: '/leagues' },
-        { label: league.name }
-      ]
+    : [{ label: 'Лиги', href: '/leagues' }, { label: league.name }]
 
   return (
     <Section>
       <Container className="space-y-6">
         <Breadcrumbs items={breadcrumbItems} className="mb-4" />
-        
+
         <header>
           <div className="flex items-center gap-4 mb-4">
             <Link href="/leagues">
               <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                К лигам
+                <ArrowLeft className="h-4 w-4 mr-2" />К лигам
               </Button>
             </Link>
           </div>
-          
+
           <div className="flex items-center gap-4">
             {league.country && (
               <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
@@ -180,13 +172,11 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                 />
               </div>
             )}
-            
+
             <div>
               <h1 className="text-3xl font-bold tracking-tight">{league.name}</h1>
               {league.country && (
-                <p className="text-muted-foreground text-lg">
-                  {league.country.name}
-                </p>
+                <p className="text-muted-foreground text-lg">{league.country.name}</p>
               )}
             </div>
           </div>
@@ -209,9 +199,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                 {seasons.length === 0 ? (
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      Сезоны не найдены для этой лиги.
-                    </AlertDescription>
+                    <AlertDescription>Сезоны не найдены для этой лиги.</AlertDescription>
                   </Alert>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -227,16 +215,10 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                               <div>
                                 <h3 className="font-medium">{season.name}</h3>
                                 {season.year && (
-                                  <p className="text-sm text-muted-foreground">
-                                    {season.year}
-                                  </p>
+                                  <p className="text-sm text-muted-foreground">{season.year}</p>
                                 )}
                               </div>
-                              {season.is_current && (
-                                <Badge variant="default">
-                                  Текущий
-                                </Badge>
-                              )}
+                              {season.is_current && <Badge variant="default">Текущий</Badge>}
                             </div>
                           </CardContent>
                         </Card>
@@ -263,29 +245,23 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                   className="block p-3 rounded-lg border hover:bg-accent transition-colors"
                 >
                   <div className="font-medium">Команды</div>
-                  <div className="text-sm text-muted-foreground">
-                    Все команды лиги
-                  </div>
+                  <div className="text-sm text-muted-foreground">Все команды лиги</div>
                 </Link>
-                
+
                 <Link
                   href={`/leagues/${leagueId}/matches`}
                   className="block p-3 rounded-lg border hover:bg-accent transition-colors"
                 >
-                  <div className="font-medium">Матчи</div>
-                  <div className="text-sm text-muted-foreground">
-                    Расписание и результаты
-                  </div>
+                  <div className="font-medium">М��тчи</div>
+                  <div className="text-sm text-muted-foreground">Расписание и результаты</div>
                 </Link>
-                
+
                 <Link
                   href={`/leagues/${leagueId}/topscorers`}
                   className="block p-3 rounded-lg border hover:bg-accent transition-colors"
                 >
                   <div className="font-medium">Бомбардиры</div>
-                  <div className="text-sm text-muted-foreground">
-                    Лучшие снайперы
-                  </div>
+                  <div className="text-sm text-muted-foreground">Лучшие снайперы</div>
                 </Link>
               </CardContent>
             </Card>
@@ -310,9 +286,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                     </div>
                     <div>
                       <div className="font-medium">{league.country.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Другие лиги страны
-                      </div>
+                      <div className="text-sm text-muted-foreground">Другие лиги страны</div>
                     </div>
                   </Link>
                 </CardContent>

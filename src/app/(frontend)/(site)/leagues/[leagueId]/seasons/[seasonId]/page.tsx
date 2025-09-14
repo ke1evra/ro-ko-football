@@ -5,17 +5,17 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ArrowLeft, AlertCircle, Trophy, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import Link from 'next/link'
-import { executeApiMethod } from '../../../../api-test/api-actions'
+import { getCompetitionsListJson, getSeasonsListJson, getTablesStandingsJson } from '@/app/(frontend)/client'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const revalidate = 300 // 5 минут
 
 interface SeasonPageProps {
-  params: {
+  params: Promise<{
     leagueId: string
     seasonId: string
-  }
+  }>
 }
 
 interface StandingsTeam {
@@ -54,33 +54,22 @@ interface Season {
 
 async function getLeagueInfo(leagueId: string): Promise<League | null> {
   try {
-    const result = await executeApiMethod({
-      method: 'getCompetitionsListJson',
-      params: {
-        size: 100,
-        lang: 'ru',
-      },
+    const response = await getCompetitionsListJson({
+      size: 500,
+    }, {
+      next: { revalidate: 300 },
     })
 
-    if (!result.success || !result.data) {
-      return null
-    }
-
-    const competitions = result.data.data || result.data.competitions || result.data
-    if (!Array.isArray(competitions)) {
-      return null
-    }
-
-    const league = competitions.find((comp: any) => comp.id === parseInt(leagueId))
-    if (!league) {
-      return null
-    }
+    const competitions = response.data?.data?.competition || []
+    const league = competitions.find((comp) => comp.id === leagueId || comp.id === parseInt(leagueId))
+    
+    if (!league) return null
 
     return {
-      id: league.id,
+      id: parseInt(league.id),
       name: league.name || 'Неизвестная лига',
       country: league.countries && league.countries.length > 0 ? {
-        id: league.countries[0].id,
+        id: parseInt(league.countries[0].id),
         name: league.countries[0].name,
         flag: league.countries[0].flag,
       } : undefined,
@@ -93,29 +82,19 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
 
 async function getSeasonInfo(seasonId: string): Promise<Season | null> {
   try {
-    const result = await executeApiMethod({
-      method: 'getSeasonsListJson',
-      params: {},
+    const response = await getSeasonsListJson({}, {
+      next: { revalidate: 300 },
     })
 
-    if (!result.success || !result.data) {
-      return null
-    }
-
-    const seasons = result.data.data || result.data.seasons || result.data
-    if (!Array.isArray(seasons)) {
-      return null
-    }
-
-    const season = seasons.find((s: any) => s.id === parseInt(seasonId))
-    if (!season) {
-      return null
-    }
+    const seasons = response.data?.data?.seasons || []
+    const season = seasons.find((s) => s.id === parseInt(seasonId))
+    
+    if (!season) return null
 
     return {
-      id: season.id,
+      id: parseInt(season.id),
       name: season.name || `Сезон ${season.year || season.id}`,
-      year: season.year,
+      year: season.year ? parseInt(season.year) : undefined,
     }
   } catch (error) {
     console.error('Ошибка загрузки информации о сезоне:', error)
@@ -125,59 +104,42 @@ async function getSeasonInfo(seasonId: string): Promise<Season | null> {
 
 async function getStandings(leagueId: string, seasonId: string): Promise<StandingsTeam[]> {
   try {
-    const result = await executeApiMethod({
-      method: 'getTablesStandingsJson',
-      params: {
-        competition_id: parseInt(leagueId),
-        season_id: parseInt(seasonId),
-        include_form: 'yes',
-      },
+    console.log(`Загрузка турнирной таблицы для лиги ${leagueId}, сезон ${seasonId}`)
+    
+    const response = await getTablesStandingsJson({
+      competition_id: parseInt(leagueId),
+      season: parseInt(seasonId),
+      include_form: 'yes',
+    }, {
+      next: { revalidate: 300 },
     })
 
-    if (!result.success || !result.data) {
-      return []
-    }
-
-    // Извлекаем турнирную таблицу из ответа API
-    const standings = result.data.data || result.data.standings || result.data.table || result.data
+    console.log(`Структура ответа standings:`, Object.keys(response.data?.data || {}))
+    const standings = response.data?.data?.standing || []
+    console.log(`Всего команд в таблице получено: ${standings.length}`)
     
-    if (Array.isArray(standings)) {
-      return standings.map((team: any, index: number) => ({
-        position: team.position || index + 1,
+    return standings
+      .map((team, index) => ({
+        position: parseInt(team.position) || index + 1,
         team: {
-          id: team.team?.id || team.team_id,
-          name: team.team?.name || team.team_name || 'Неизвестная команда',
+          id: parseInt(team.team?.id || '0'),
+          name: team.team?.name || 'Неизвестная команда',
           logo: team.team?.logo,
         },
-        played: team.played || team.games_played || 0,
-        won: team.won || team.wins || 0,
-        drawn: team.drawn || team.draws || 0,
-        lost: team.lost || team.losses || 0,
-        goals_for: team.goals_for || team.goals_scored || 0,
-        goals_against: team.goals_against || team.goals_conceded || 0,
-        goal_difference: team.goal_difference || (team.goals_for || 0) - (team.goals_against || 0),
-        points: team.points || 0,
+        played: parseInt(team.played || '0'),
+        won: parseInt(team.won || '0'),
+        drawn: parseInt(team.drawn || '0'),
+        lost: parseInt(team.lost || '0'),
+        goals_for: parseInt(team.goals_for || '0'),
+        goals_against: parseInt(team.goals_against || '0'),
+        goal_difference: parseInt(team.goal_difference || '0'),
+        points: parseInt(team.points || '0'),
         form: team.form ? team.form.split('').slice(-5) : undefined,
       }))
-    }
-
-    return []
+      .sort((a, b) => a.position - b.position)
   } catch (error) {
     console.error('Ошибка загрузки турнирной таблицы:', error)
     return []
-  }
-}
-
-function getFormIcon(result: string) {
-  switch (result.toUpperCase()) {
-    case 'W':
-      return <TrendingUp className="h-3 w-3 text-green-600" />
-    case 'L':
-      return <TrendingDown className="h-3 w-3 text-red-600" />
-    case 'D':
-      return <Minus className="h-3 w-3 text-yellow-600" />
-    default:
-      return null
   }
 }
 
@@ -195,7 +157,8 @@ function getFormColor(result: string) {
 }
 
 export default async function SeasonPage({ params }: SeasonPageProps) {
-  const { leagueId, seasonId } = params
+  const resolvedParams = await params
+  const { leagueId, seasonId } = resolvedParams
   
   const [league, season, standings] = await Promise.all([
     getLeagueInfo(leagueId),
@@ -339,7 +302,6 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
                           >
                             <div className="flex items-center gap-2">
                               {team.team.logo ? (
-                                // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                   src={team.team.logo}
                                   alt={team.team.name}
@@ -407,7 +369,7 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
         </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link href={`/leagues/${leagueId}/seasons/${seasonId}/topscorers`}>
+          <Link href={`/leagues/${leagueId}/topscorers`}>
             <Card className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -423,7 +385,7 @@ export default async function SeasonPage({ params }: SeasonPageProps) {
             </Card>
           </Link>
           
-          <Link href={`/leagues/${leagueId}/seasons/${seasonId}/matches`}>
+          <Link href={`/leagues/${leagueId}/matches`}>
             <Card className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
