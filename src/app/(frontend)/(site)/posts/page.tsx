@@ -9,8 +9,9 @@ export const dynamic = 'force-dynamic'
 
 const PAGE_SIZE = 10
 
-export default async function PostsPage({ searchParams }: { searchParams: { page?: string } }) {
-  const page = Math.max(parseInt(searchParams?.page || '1', 10) || 1, 1)
+export default async function PostsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const { page: pageParam } = await searchParams
+  const page = Math.max(parseInt(pageParam || '1', 10) || 1, 1)
 
   const payload = await getPayload({ config: await configPromise })
   const result = await payload.find({
