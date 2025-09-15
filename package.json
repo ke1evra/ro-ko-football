@@ -25,7 +25,10 @@
     "pm2:logs": "pm2 logs",
     "pm2:monit": "pm2 monit",
     "pm2:status": "pm2 status",
-    "production:check": "node scripts/production-check.js"
+    "production:check": "node scripts/production-check.js",
+    "env:setup": "node scripts/setup-env.js",
+    "env:setup:interactive": "node scripts/setup-env.js --interactive",
+    "env:setup:force": "node scripts/setup-env.js --force"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -69,6 +72,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@tailwindcss/postcss": "^4.1.12",
     "@vercel/analytics": "^1.5.0",
+    "chalk": "^5.6.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

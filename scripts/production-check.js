@@ -58,6 +58,7 @@ checkFile(path.join(projectRoot, 'package.json'), 'package.json')
 checkFile(path.join(projectRoot, 'next.config.mjs'), 'next.config.mjs')
 checkFile(path.join(projectRoot, 'src/payload.config.ts'), 'payload.config.ts')
 checkFile(path.join(projectRoot, 'ecosystem.config.js'), 'ecosystem.config.js')
+checkFile(path.join(projectRoot, '.env.example'), '.env.example')
 checkFile(path.join(projectRoot, '.next/BUILD_ID'), 'Сборка Next.js (.next/BUILD_ID)')
 
 // Проверка директорий
