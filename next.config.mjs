@@ -4,6 +4,15 @@ import { withPayload } from '@payloadcms/next/withPayload'
 const nextConfig = {
   // Your Next.js config here
   output: 'standalone', // Required for Docker deployment
+  // Lightweight build settings for low-RAM VPS
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
+  webpack: (config, { dev }) => {
+    if (!dev) {
+      config.optimization.minimize = false
+    }
+    return config
+  },
 
   // Allow external images for flags and other assets
   images: {
