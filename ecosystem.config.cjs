@@ -17,8 +17,8 @@ module.exports = {
     {
       // Основное приложение Next.js
       name: 'football-platform',
-      script: 'pnpm',
-      args: 'exec next start -p 4317 -H 0.0.0.0',
+      script: 'node',
+      args: '.next/standalone/server.js',
       cwd: './',
       instances: 1,
       exec_mode: 'fork',
