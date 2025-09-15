@@ -18,10 +18,10 @@ module.exports = {
       // Основное приложение Next.js
       name: 'football-platform',
       script: 'pnpm',
-      args: 'start',
+      args: 'exec next start -p 4317 -H 0.0.0.0',
       cwd: './',
-      instances: 'max', // Использовать все доступные CPU ядра
-      exec_mode: 'cluster', // Кластерный режим для лучшей производительности
+      instances: 1,
+      exec_mode: 'fork',
 
       // Переменные окружения
       env: {
