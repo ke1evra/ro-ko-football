@@ -26,7 +26,7 @@ module.exports = {
       // Переменные окружения
       env: {
         NODE_ENV: 'production',
-        PORT: 3000,
+        PORT: 4317,
         NODE_OPTIONS: '--no-deprecation',
         // Базовые переменные (остальные из .env файла)
         NEXT_TELEMETRY_DISABLED: '1',
@@ -60,37 +60,6 @@ module.exports = {
       shutdown_with_message: true,
     },
 
-    // Воркер для фоновых задач (если потребуется)
-    {
-      name: 'football-worker',
-      script: './workers/background-tasks.js',
-      cwd: './',
-      instances: 1,
-      exec_mode: 'fork',
-
-      env: {
-        NODE_ENV: 'production',
-        NODE_OPTIONS: '--no-deprecation',
-        WORKER_TYPE: 'background',
-      },
-
-      // Настройки для воркера
-      watch: false,
-      autorestart: true,
-      max_memory_restart: '512M',
-
-      // Логирование воркера
-      log_file: './logs/worker-combined.log',
-      out_file: './logs/worker-out.log',
-      error_file: './logs/worker-error.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-
-      // Запускать только если файл воркера существует
-      ignore_watch: ['node_modules', '.next', 'logs'],
-      min_uptime: '10s',
-      max_restarts: 5,
-      restart_delay: 5000,
-    },
   ],
 
   // Настройки деплоя (опционально)
@@ -111,7 +80,7 @@ module.exports = {
       // Переменные окружения для деплоя
       env: {
         NODE_ENV: 'production',
-        PORT: 3000,
+        PORT: 4317,
       },
     },
 
