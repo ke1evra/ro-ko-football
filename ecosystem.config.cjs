@@ -27,6 +27,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 4317,
+        HOST: '0.0.0.0',
         NODE_OPTIONS: '--no-deprecation',
         // Базовые переменные (остальные из .env файла)
         NEXT_TELEMETRY_DISABLED: '1',
@@ -81,6 +82,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 4317,
+        HOST: '0.0.0.0',
       },
     },
 
