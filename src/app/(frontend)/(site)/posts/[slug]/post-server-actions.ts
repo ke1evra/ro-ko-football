@@ -24,9 +24,9 @@ export async function createCommentAction({
     const created = await payload.create({
       collection: 'comments',
       data: {
-        post: Number(postId),
+        post: postId,
         content,
-        parent: parentId ? Number(parentId) : undefined,
+        parent: parentId || undefined,
         author: (user as any).id,
         upvotes: 0,
         downvotes: 0,
@@ -69,7 +69,7 @@ export async function voteCommentAction({
     // 0 — снять голос; 1 или -1 — поставить/переключить
     const existing = await payload.find({
       collection: 'commentVotes',
-      where: { and: [{ comment: { equals: Number(commentId) } }, { user: { equals: user.id } }] },
+      where: { and: [{ comment: { equals: commentId } }, { user: { equals: user.id } }] },
       limit: 1,
     })
 
@@ -91,7 +91,7 @@ export async function voteCommentAction({
       // Не существует — создаём
       await payload.create({
         collection: 'commentVotes',
-        data: { comment: Number(commentId), value, user: (user as any).id },
+        data: { comment: commentId, value, user: (user as any).id },
         user,
       })
     }
