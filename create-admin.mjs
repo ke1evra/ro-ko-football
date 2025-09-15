@@ -56,7 +56,7 @@ async function main() {
   }
 
   console.log('Инициализация Payload...')
-  const { default: config } = await import('./src/payload.config.ts')
+  const { default: config } = await import('./create-admin-config.mjs')
   const payload = await getPayload({ config })
 
   console.log(`Поиск пользователя: ${email}`)

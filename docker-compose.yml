@@ -11,22 +11,20 @@ services:
     working_dir: /home/node/app/
     command: sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm dev"
     depends_on:
-      - postgres
+      - mongodb
     env_file:
       - .env.docker
 
-  postgres:
+  mongodb:
     restart: always
-    image: postgres:15-alpine
+    image: mongo:7-jammy
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - mongodata:/data/db
     ports:
-      - '5433:5432'
+      - '27017:27017'
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: payload
+      MONGO_INITDB_DATABASE: payload
 
 volumes:
-  pgdata:
+  mongodata:
   node_modules:

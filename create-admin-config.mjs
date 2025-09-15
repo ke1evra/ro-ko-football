@@ -3,27 +3,43 @@ import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { fileURLToPath } from 'url'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
-
 import sharp from 'sharp'
 import path from 'node:path'
-
-import { Users } from '@/collections/Users'
-import { Media } from '@/collections/Media'
-import { Posts } from '@/collections/Posts'
-import { Comments } from '@/collections/Comments'
-import { CommentVotes } from '@/collections/CommentVotes'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+// Простые коллекции для создания админа
+const Users = {
+  slug: 'users',
+  admin: {
+    useAsTitle: 'email',
+  },
+  auth: true,
+  fields: [
+    {
+      name: 'role',
+      type: 'select',
+      options: [
+        { label: 'Admin', value: 'admin' },
+        { label: 'User', value: 'user' },
+      ],
+      required: true,
+      defaultValue: 'user',
+    },
+    {
+      name: 'emailVerified',
+      type: 'checkbox',
+      defaultValue: false,
+    },
+  ],
+}
+
 export default buildConfig({
   admin: {
     user: Users.slug,
-    importMap: {
-      baseDir: path.resolve(dirname),
-    },
   },
-  collections: [Users, Media, Posts, Comments, CommentVotes],
+  collections: [Users],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

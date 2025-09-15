@@ -88,7 +88,7 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: number;
+    defaultIDType: string;
   };
   globals: {};
   globalsSelect: {};
@@ -124,7 +124,7 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: number;
+  id: string;
   role: 'admin' | 'user';
   /**
    * Уникальный идентификатор для публичного профиля
@@ -132,7 +132,7 @@ export interface User {
   username?: string | null;
   name?: string | null;
   bio?: string | null;
-  avatar?: (number | null) | Media;
+  avatar?: (string | null) | Media;
   /**
    * Если нет загруженного медиа, можно указать внешний URL
    */
@@ -177,7 +177,7 @@ export interface User {
  * via the `definition` "media".
  */
 export interface Media {
-  id: number;
+  id: string;
   alt: string;
   updatedAt: string;
   createdAt: string;
@@ -214,15 +214,15 @@ export interface Media {
  * via the `definition` "posts".
  */
 export interface Post {
-  id: number;
+  id: string;
   title: string;
   /**
    * Автогенерируется из заголовка при сохранении
    */
   slug?: string | null;
   content: string;
-  featuredImage?: (number | null) | Media;
-  author: number | User;
+  featuredImage?: (string | null) | Media;
+  author: string | User;
   publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -232,14 +232,14 @@ export interface Post {
  * via the `definition` "comments".
  */
 export interface Comment {
-  id: number;
-  post: number | Post;
+  id: string;
+  post: string | Post;
   /**
    * Родительский комментарий (для ответов)
    */
-  parent?: (number | null) | Comment;
+  parent?: (string | null) | Comment;
   content: string;
-  author: number | User;
+  author: string | User;
   upvotes: number;
   downvotes: number;
   score: number;
@@ -251,9 +251,9 @@ export interface Comment {
  * via the `definition` "commentVotes".
  */
 export interface CommentVote {
-  id: number;
-  comment: number | Comment;
-  user: number | User;
+  id: string;
+  comment: string | Comment;
+  user: string | User;
   /**
    * 1 — плюс, -1 — минус
    */
@@ -266,32 +266,32 @@ export interface CommentVote {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: number;
+  id: string;
   document?:
     | ({
         relationTo: 'users';
-        value: number | User;
+        value: string | User;
       } | null)
     | ({
         relationTo: 'media';
-        value: number | Media;
+        value: string | Media;
       } | null)
     | ({
         relationTo: 'posts';
-        value: number | Post;
+        value: string | Post;
       } | null)
     | ({
         relationTo: 'comments';
-        value: number | Comment;
+        value: string | Comment;
       } | null)
     | ({
         relationTo: 'commentVotes';
-        value: number | CommentVote;
+        value: string | CommentVote;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -301,10 +301,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: number;
+  id: string;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   key?: string | null;
   value?:
@@ -324,7 +324,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: number;
+  id: string;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
