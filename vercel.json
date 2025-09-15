@@ -1,3 +1,15 @@
 {
-  "installCommand": "npm install"
+  "version": 2,
+  "installCommand": "npm install",
+  "env": {
+    "PAYLOAD_SECRET": "@payload-secret",
+    "DATABASE_URI": "@database-uri",
+    "LIVESCORE_API_BASE": "@livescore-api-base",
+    "LIVESCORE_KEY": "@livescore-key",
+    "LIVESCORE_SECRET": "@livescore-secret",
+    "RESEND_API_KEY": "@resend-api-key",
+    "EMAIL_FROM": "@email-from",
+    "APP_URL": "@app-url",
+    "NEXT_PUBLIC_SITE_URL": "@public-site-url"
+  }
 }
