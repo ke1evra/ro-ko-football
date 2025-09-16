@@ -13,8 +13,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { LogIn, LogOut, User as UserIcon, BarChart2 } from 'lucide-react'
+import { LogIn, LogOut, User as UserIcon } from 'lucide-react'
 import { UserAvatar } from '@/components/UserAvatar'
+import { SiteLogo } from '@/components/site/Logo'
 import { Container } from '@/components/ds'
 
 export const Header = () => {
@@ -29,9 +30,8 @@ export const Header = () => {
   return (
     <header className="bg-background border-b sticky top-0 z-50">
       <Container className="flex justify-between items-center py-4">
-        <Link href="/" className="text-2xl font-bold flex items-center gap-2">
-          <BarChart2 className="h-6 w-6 text-primary" />
-          NEWS BETS
+        <Link href="/" className="flex items-center gap-2" aria-label="RoCoScore home">
+          <SiteLogo className="text-2xl" />
         </Link>
         <nav className="hidden md:flex items-center justify-center flex-1 mx-8">
           <div className="flex items-center gap-6 text-base font-medium">

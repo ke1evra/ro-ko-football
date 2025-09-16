@@ -707,7 +707,7 @@ export default async function MatchPage({ params }: { params: Promise<{ matchId:
               <CardTitle>Статистика</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div className="grid grid-cols-1 gap-3 text-sm">
                 {(() => {
                   const map = new Map<string, { info: StatInfo; val: string }>()
                   for (const [k, vRaw] of Object.entries(stats ?? {})) {
@@ -718,21 +718,55 @@ export default async function MatchPage({ params }: { params: Promise<{ matchId:
                     const val = String(vRaw)
                     map.set(norm, { info, val })
                   }
+
+                  function parsePair(raw: string): { home: number; away: number; isPercent: boolean; textHome: string; textAway: string } {
+                    const [hRaw, aRaw] = raw.split(':')
+                    const clean = (s?: string) => String(s ?? '').trim()
+                    const hasPct = clean(hRaw).includes('%') || clean(aRaw).includes('%')
+                    const toNum = (s?: string) => {
+                      const t = clean(s).replace('%', '')
+                      const n = Number(t)
+                      return Number.isFinite(n) ? n : 0
+                    }
+                    const h = toNum(hRaw)
+                    const a = toNum(aRaw)
+                    return {
+                      home: h,
+                      away: a,
+                      isPercent: hasPct,
+                      textHome: clean(hRaw),
+                      textAway: clean(aRaw),
+                    }
+                  }
+
                   return Array.from(map.values())
                     .sort((a, b) => a.info.weight - b.info.weight || a.info.labelRu.localeCompare(b.info.labelRu, 'ru'))
                     .map(({ info, val }) => {
-                      const [homeVal, awayVal] = val.split(':')
+                      const pair = parsePair(val)
+                      const total = pair.home + pair.away
+                      const homePct = pair.isPercent
+                        ? Math.max(0, Math.min(100, pair.home))
+                        : total > 0
+                          ? (pair.home / total) * 100
+                          : 50
+                      const awayPct = 100 - homePct
                       return (
-                        <div key={info.key} className="flex items-center justify-between gap-2 border rounded p-2">
-                          <span className="text-muted-foreground truncate inline-flex items-center gap-2">
-                            <span aria-hidden>{info.emoji}</span>
-                            <span>{info.labelRu}</span>
-                          </span>
-                          <span className="inline-flex items-center gap-2">
-                            <Badge variant="outline">{homeVal}</Badge>
-                            <span className="text-muted-foreground">:</span>
-                            <Badge variant="outline">{awayVal}</Badge>
-                          </span>
+                        <div key={info.key} className="space-y-2">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-muted-foreground truncate inline-flex items-center gap-2">
+                              <span aria-hidden>{info.emoji}</span>
+                              <span>{info.labelRu}</span>
+                            </span>
+                            <span className="tabular-nums text-right min-w-[90px]">
+                              <span>{pair.textHome}</span>
+                              <span className="text-muted-foreground"> : </span>
+                              <span>{pair.textAway}</span>
+                            </span>
+                          </div>
+                          <div className="h-2 w-full rounded bg-muted overflow-hidden">
+                            <div className="h-full bg-primary" style={{ width: `${homePct}%` }} />
+                            <div className="h-full bg-accent" style={{ width: `${awayPct}%` }} />
+                          </div>
                         </div>
                       )
                     })
