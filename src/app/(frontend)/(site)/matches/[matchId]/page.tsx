@@ -49,17 +49,109 @@ function ruEventLabel(label?: string, fallback?: string): string | undefined {
   if (!fallback) return undefined
   const key = fallback.toUpperCase()
   const map: Record<string, string> = {
-    GOAL: 'Гол',
-    OWN_GOAL: 'Автогол',
-    PENALTY: 'Пенальти',
-    MISSED_PENALTY: 'Нереализованный пенальти',
-    YELLOW_CARD: 'Жёлтая карточка',
-    RED_CARD: 'Красная карточка',
-    SUBSTITUTION: 'Замена',
-    START: 'Начало',
-    END: 'Конец матча',
+    GOAL: '⚽ Гол',
+    OWN_GOAL: '🥅 Автогол',
+    PENALTY: '🟢 Пенальти',
+    MISSED_PENALTY: '🔴 Нереализованный пенальти',
+    YELLOW_CARD: '🟨 Жёлтая карточка',
+    RED_CARD: '🟥 Красная карточка',
+    SUBSTITUTION: '🔁 Замена',
+    START: '⏱️ Начало',
+    END: '⏱️ Конец матча',
+    CORNER: '🚩 Угловой',
+    OFFSIDE: '📐 Офсайд',
+    FOUL: '🚫 Фол',
+    THROW_IN: '↔️ Аут',
+    SHOT_ON_TARGET: '🎯 Удар в створ',
+    SHOT_OFF_TARGET: '🥏 Удар мимо',
   }
   return map[key] || fallback
+}
+
+// Маппинг и сортировка метрик статистики
+type StatInfo = { key: string; labelRu: string; emoji: string; weight: number }
+function normalizeStatKey(k: string): string {
+  const raw = k
+  const s = k.toLowerCase().replace(/\s+/g, '').replace(/_/g, '')
+  // Владение
+  if (s.includes('posses') || s.includes('possesion') || s.includes('posession') || s.includes('possession')) return 'possession'
+  // Удары (total)
+  if (/(^|total)shots?/.test(s) || s === 'shots' || s.includes('shotstotal')) return 'shots'
+  // Удары в створ
+  if (s.includes('ontarget') || s.includes('ongoal')) return 'shots_on_target'
+  // Удары мимо
+  if (s.includes('offtarget') || s.includes('offgoal')) return 'shots_off_target'
+  if (s.includes('blocked')) return 'shots_blocked'
+  if (s.includes('insidebox') || s.includes('inthebox')) return 'shots_inside_box'
+  if (s.includes('outsidebox') || s.includes('outofbox')) return 'shots_outside_box'
+  // Угловые
+  if (s.includes('corner')) return 'corners'
+  // Карточки
+  if (s.includes('yellow')) return 'yellow_cards'
+  if (s.includes('red')) return 'red_cards'
+  // Офсайды
+  if (s.includes('offside')) return 'offsides'
+  // Фолы (с учётом опечаток)
+  if (s.includes('foul') || s.includes('faul')) return 'fouls'
+  // Ауты
+  if (s.includes('throwin') || s.includes('throwins') || s.includes('throw')) return 'throw_ins'
+  // Сэйвы
+  if (s.includes('save')) return 'saves'
+  // Пенальти (счёт пенальти/назначенные)
+  if (s.includes('penalt')) return 'penalties'
+  // Атаки
+  if (s === 'attacks' || s.includes('attack') && !s.includes('danger')) return 'attacks'
+  if (s.includes('dangerousattack')) return 'dangerous_attacks'
+  return raw
+}
+function statKeyInfo(k: string): StatInfo {
+  const n = normalizeStatKey(k)
+  switch (n) {
+    case 'possession':
+      return { key: k, labelRu: 'Владение мячом', emoji: '🕹️', weight: 5 }
+    case 'shots':
+      return { key: k, labelRu: 'Удары', emoji: '🥅', weight: 10 }
+    case 'shots_on_target':
+      return { key: k, labelRu: 'Удары в створ', emoji: '🎯', weight: 20 }
+    case 'corners':
+      return { key: k, labelRu: 'Угловые', emoji: '🚩', weight: 30 }
+    case 'yellow_cards':
+      return { key: k, labelRu: 'Жёлтые карточки', emoji: '🟨', weight: 40 }
+    case 'offsides':
+      return { key: k, labelRu: 'Офсайды', emoji: '📐', weight: 50 }
+    case 'fouls':
+      return { key: k, labelRu: 'Фолы', emoji: '🚫', weight: 60 }
+    case 'throw_ins':
+      return { key: k, labelRu: 'Ауты', emoji: '↔️', weight: 70 }
+    // Дополнительные распространённые метрики
+    case 'shots_off_target':
+      return { key: k, labelRu: 'Удары мимо', emoji: '🥏', weight: 200 }
+    case 'shots_blocked':
+      return { key: k, labelRu: 'Заблокированные удары', emoji: '🧱', weight: 201 }
+    case 'shots_inside_box':
+      return { key: k, labelRu: 'Удары из штрафной', emoji: '🧨', weight: 202 }
+    case 'shots_outside_box':
+      return { key: k, labelRu: 'Удары из‑за штрафной', emoji: '📍', weight: 203 }
+    case 'red_cards':
+      return { key: k, labelRu: 'Красные карточки', emoji: '🟥', weight: 210 }
+    case 'saves':
+      return { key: k, labelRu: 'Сэйвы', emoji: '🧤', weight: 220 }
+    case 'penalties':
+      return { key: k, labelRu: 'Пенальти', emoji: '🟢', weight: 230 }
+    case 'attacks':
+      return { key: k, labelRu: 'Атаки', emoji: '⚔️', weight: 240 }
+    case 'dangerous_attacks':
+      return { key: k, labelRu: 'Опасные атаки', emoji: '🔥', weight: 250 }
+    default: {
+      const pretty = k
+        .replaceAll('_', ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase())
+        .replace('Fauls', 'Фолы')
+        .replace('Possesion', 'Владение мячом')
+        .replace('Possession', 'Владение мячом')
+      return { key: k, labelRu: pretty, emoji: '•', weight: 1000 }
+    }
+  }
 }
 
 type MatchNormalized = {
@@ -616,26 +708,35 @@ export default async function MatchPage({ params }: { params: Promise<{ matchId:
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                {Object.entries(stats)
-                  .filter(([, v]) => v)
-                  .map(([k, v]) => {
-                    const [homeVal, awayVal] = String(v).split(':')
-                    return (
-                      <div
-                        key={k}
-                        className="flex items-center justify-between gap-2 border rounded p-2"
-                      >
-                        <span className="text-muted-foreground truncate">
-                          {k.replaceAll('_', ' ')}
-                        </span>
-                        <span className="inline-flex items-center gap-2">
-                          <Badge variant="outline">{homeVal}</Badge>
-                          <span className="text-muted-foreground">:</span>
-                          <Badge variant="outline">{awayVal}</Badge>
-                        </span>
-                      </div>
-                    )
-                  })}
+                {(() => {
+                  const map = new Map<string, { info: StatInfo; val: string }>()
+                  for (const [k, vRaw] of Object.entries(stats ?? {})) {
+                    if (!vRaw) continue
+                    const norm = normalizeStatKey(k)
+                    if (map.has(norm)) continue // избегаем дублей одного показателя
+                    const info = statKeyInfo(k)
+                    const val = String(vRaw)
+                    map.set(norm, { info, val })
+                  }
+                  return Array.from(map.values())
+                    .sort((a, b) => a.info.weight - b.info.weight || a.info.labelRu.localeCompare(b.info.labelRu, 'ru'))
+                    .map(({ info, val }) => {
+                      const [homeVal, awayVal] = val.split(':')
+                      return (
+                        <div key={info.key} className="flex items-center justify-between gap-2 border rounded p-2">
+                          <span className="text-muted-foreground truncate inline-flex items-center gap-2">
+                            <span aria-hidden>{info.emoji}</span>
+                            <span>{info.labelRu}</span>
+                          </span>
+                          <span className="inline-flex items-center gap-2">
+                            <Badge variant="outline">{homeVal}</Badge>
+                            <span className="text-muted-foreground">:</span>
+                            <Badge variant="outline">{awayVal}</Badge>
+                          </span>
+                        </div>
+                      )
+                    })
+                })()}
               </div>
             </CardContent>
           </Card>

@@ -155,6 +155,7 @@ async function getLeagueMatches(leagueId: string, date?: string): Promise<Match[
         const end = new Date(`${year}-12-31T00:00:00Z`)
         let page = 1
         let hasNext = true
+
         while (hasNext && page <= 5) {
           const resp = await getFixturesMatchesJson(
             { competition_id: String(leagueId), from: start, to: end, size: 100, page },
@@ -508,10 +509,12 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5" /> Матчи тура недели {formatDate(toISO(anchorFriday(new Date(`${selectedDate}T00:00:00Z`))))}
+                      <Calendar className="h-5 w-5" /> Матчи тура недели{' '}
+                      {formatDate(toISO(anchorFriday(new Date(`${selectedDate}T00:00:00Z`))))}
                     </CardTitle>
                     <CardDescription>
-                      Всего: {tourMatches.length}. Выбранная дата: {formatDate(selectedDate)} (подсвечены ярче)
+                      Всего: {tourMatches.length}. Выбранная дата: {formatDate(selectedDate)}{' '}
+                      (подсвечены ярче)
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -539,7 +542,10 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
                               </div>
                               <div className="flex items-center gap-3 flex-1">
                                 <div className="text-right flex-1">
-                                  <Link href={`/teams/${m.home_team.id}`} className="font-medium hover:text-primary transition-colors">
+                                  <Link
+                                    href={`/teams/${m.home_team.id}`}
+                                    className="font-medium hover:text-primary transition-colors"
+                                  >
                                     {m.home_team.name}
                                   </Link>
                                 </div>
@@ -553,7 +559,10 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
                                   )}
                                 </div>
                                 <div className="text-left flex-1">
-                                  <Link href={`/teams/${m.away_team.id}`} className="font-medium hover:text-primary transition-colors">
+                                  <Link
+                                    href={`/teams/${m.away_team.id}`}
+                                    className="font-medium hover:text-primary transition-colors"
+                                  >
                                     {m.away_team.name}
                                   </Link>
                                 </div>
@@ -615,8 +624,6 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
                   </div>
                 </CardContent>
               </Card>
-
-
 
               <div className="text-muted-foreground">
                 Всего матчей в сезоне: <Badge variant="outline">{matches.length}</Badge> • Сыграно:{' '}
