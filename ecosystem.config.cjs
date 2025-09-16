@@ -60,7 +60,6 @@ module.exports = {
       listen_timeout: 3000,
       shutdown_with_message: true,
     },
-
   ],
 
   // Настройки деплоя (опционально)
