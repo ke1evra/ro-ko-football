@@ -28,9 +28,14 @@ const nextConfig = {
     ],
   },
 
-  // Rewrites for media files
+  // Rewrites for media files and pretty date routes
   async rewrites() {
     return [
+      // Pretty route for matches-by-date → query param
+      {
+        source: '/leagues/:leagueId/matches/:date',
+        destination: '/leagues/:leagueId/matches?date=:date',
+      },
       {
         source: '/media/:path*',
         destination: '/api/media/:path*',

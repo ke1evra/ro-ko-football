@@ -120,39 +120,29 @@ async function getLeagueMatches(leagueId: string, date?: string): Promise<Match[
       allMatches = response.data?.data?.match || []
       console.log(`Матчей найдено для ${year} года: ${allMatches.length}`)
     } else {
-      // Если дата не указана, пробуем получить матчи за последние несколько дней
-      console.log('Дата не указана, ищем матчи за последние дни')
+      // Без даты: грузим историю всего сезона (Европа: 1 июля — 30 июня)
+      const now = new Date()
+      const year = now.getUTCFullYear()
+      const seasonStart =
+        now.getUTCMonth() + 1 >= 7
+          ? new Date(`${year}-07-01T00:00:00Z`)
+          : new Date(`${year - 1}-07-01T00:00:00Z`)
+      const seasonEnd =
+        now.getUTCMonth() + 1 >= 7
+          ? new Date(`${year + 1}-06-30T23:59:59Z`)
+          : new Date(`${year}-06-30T23:59:59Z`)
+      const histTo = now < seasonEnd ? now : seasonEnd
 
-      const dates = []
-      for (let i = 0; i < 30; i++) {
-        const targetDate = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split('T')[0]
-        dates.push(targetDate)
-      }
-
-      // Берем только несколько последних дат для начала
-      for (const targetDate of dates.slice(0, 5)) {
-        try {
-          const response = await getMatchesHistoryJson(
-            {
-              competition_id: String(leagueId),
-              date: new Date(targetDate),
-            },
-            {
-              next: { revalidate: 300 },
-            },
-          )
-
-          const matches = response.data?.data?.match || []
-          allMatches.push(...matches)
-          console.log(`Матчей найдено для даты ${targetDate}: ${matches.length}`)
-
-          if (allMatches.length > 0) break // Если нашли матчи, останавливаемся
-        } catch (error) {
-          console.log(`Нет матчей на дату ${targetDate}`)
-        }
-      }
+      const response = await getMatchesHistoryJson(
+        {
+          competition_id: String(leagueId),
+          from: seasonStart,
+          to: histTo,
+        },
+        { next: { revalidate: 300 } },
+      )
+      allMatches = response.data?.data?.match || []
+      console.log(`История сезона: ${allMatches.length}`)
     }
 
     // Дополнительно получаем будущие матчи (fixtures)
@@ -177,14 +167,22 @@ async function getLeagueMatches(leagueId: string, date?: string): Promise<Match[
           page += 1
         }
       } else {
+        // Без даты: грузим расписание до конца сезона
         const now = new Date()
-        const start = new Date(now.toISOString().split('T')[0])
-        const end = new Date(
-          new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        )
+        const year = now.getUTCFullYear()
+        const seasonStart =
+          now.getUTCMonth() + 1 >= 7
+            ? new Date(`${year}-07-01T00:00:00Z`)
+            : new Date(`${year - 1}-07-01T00:00:00Z`)
+        const seasonEnd =
+          now.getUTCMonth() + 1 >= 7
+            ? new Date(`${year + 1}-06-30T23:59:59Z`)
+            : new Date(`${year}-06-30T23:59:59Z`)
+        const start = now > seasonStart ? now : seasonStart
+        const end = seasonEnd
         let page = 1
         let hasNext = true
-        while (hasNext && page <= 5) {
+        while (hasNext && page <= 20) {
           const resp = await getFixturesMatchesJson(
             { competition_id: String(leagueId), from: start, to: end, size: 100, page },
             { next: { revalidate: 60 } },
@@ -452,6 +450,25 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
     {} as Record<string, Match[]>,
   )
 
+  const tourMatches = (() => {
+    if (!selectedDate) return [] as Match[]
+    const target = new Date(`${selectedDate}T00:00:00Z`)
+    const fri = anchorFriday(target)
+    const from = addDays(fri, -1)
+    const to = addDays(fri, 3)
+    const inWindow = (m: Match) => {
+      const d = new Date(`${m.date}T${m.time || '00:00'}Z`)
+      return d >= from && d <= to
+    }
+    return normalizedMatches
+      .filter(inWindow)
+      .sort(
+        (a, b) =>
+          new Date(`${a.date}T${a.time || '00:00'}Z`).getTime() -
+          new Date(`${b.date}T${b.time || '00:00'}Z`).getTime(),
+      )
+  })()
+
   return (
     <Section>
       <Container className="space-y-6">
@@ -487,6 +504,73 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
         ) : (
           <>
             <div className="space-y-6">
+              {selectedDate && tourMatches.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5" /> Матчи тура недели {formatDate(toISO(anchorFriday(new Date(`${selectedDate}T00:00:00Z`))))}
+                    </CardTitle>
+                    <CardDescription>
+                      Всего: {tourMatches.length}. Выбранная дата: {formatDate(selectedDate)} (подсвечены ярче)
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {tourMatches.map((m) => {
+                        const isExactDay = m.date === selectedDate
+                        const played = isPlayed(m)
+                        return (
+                          <div
+                            key={m.id}
+                            className={`flex items-center justify-between p-3 border rounded-lg transition-colors ${
+                              isExactDay
+                                ? 'bg-primary/10 border-primary'
+                                : played
+                                  ? 'hover:bg-accent/50'
+                                  : 'bg-amber-50/50 dark:bg-amber-900/10'
+                            }`}
+                          >
+                            <div className="flex items-center gap-4 flex-1">
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Calendar className="h-4 w-4" />
+                                {formatDate(m.date)}
+                                <Clock className="h-4 w-4 ml-3" />
+                                {m.time || '—'}
+                              </div>
+                              <div className="flex items-center gap-3 flex-1">
+                                <div className="text-right flex-1">
+                                  <Link href={`/teams/${m.home_team.id}`} className="font-medium hover:text-primary transition-colors">
+                                    {m.home_team.name}
+                                  </Link>
+                                </div>
+                                <div className="px-3">
+                                  {m.score ? (
+                                    <div className="text-lg font-bold">
+                                      {m.score.home} : {m.score.away}
+                                    </div>
+                                  ) : (
+                                    <div className="text-muted-foreground">vs</div>
+                                  )}
+                                </div>
+                                <div className="text-left flex-1">
+                                  <Link href={`/teams/${m.away_team.id}`} className="font-medium hover:text-primary transition-colors">
+                                    {m.away_team.name}
+                                  </Link>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant={played ? 'secondary' : 'outline'}>
+                                {played ? 'Завершен' : 'Запланирован'}
+                              </Badge>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -532,64 +616,7 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
                 </CardContent>
               </Card>
 
-              {unplayedMatches.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Clock className="h-5 w-5" /> Несыгранные матчи
-                    </CardTitle>
-                    <CardDescription>Всего: {unplayedMatches.length}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {unplayedMatches
-                        .slice()
-                        .sort(
-                          (a, b) =>
-                            new Date(`${a.date}T${a.time || '00:00'}Z`).getTime() -
-                            new Date(`${b.date}T${b.time || '00:00'}Z`).getTime(),
-                        )
-                        .map((match) => (
-                          <div
-                            key={match.id}
-                            className="flex items-center justify-between p-3 border rounded-lg bg-amber-50/50 dark:bg-amber-900/10"
-                          >
-                            <div className="flex items-center gap-4 flex-1">
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Calendar className="h-4 w-4" />
-                                {formatDate(match.date)}
-                                <Clock className="h-4 w-4 ml-3" />
-                                {match.time || '—'}
-                              </div>
-                              <div className="flex items-center gap-3 flex-1">
-                                <div className="text-right flex-1">
-                                  <Link
-                                    href={`/teams/${match.home_team.id}`}
-                                    className="font-medium hover:text-primary transition-colors"
-                                  >
-                                    {match.home_team.name}
-                                  </Link>
-                                </div>
-                                <div className="px-3 text-muted-foreground">vs</div>
-                                <div className="text-left flex-1">
-                                  <Link
-                                    href={`/teams/${match.away_team.id}`}
-                                    className="font-medium hover:text-primary transition-colors"
-                                  >
-                                    {match.away_team.name}
-                                  </Link>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {getStatusBadge(match.status)}
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+
 
               <div className="text-muted-foreground">
                 Всего матчей в сезоне: <Badge variant="outline">{matches.length}</Badge> • Сыграно:{' '}
