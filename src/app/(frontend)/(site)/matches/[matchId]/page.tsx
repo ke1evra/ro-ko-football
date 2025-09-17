@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, ArrowLeft, Calendar, Clock, MapPin, Trophy } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Calendar, Clock, MapPin } from 'lucide-react'
 import { LocalDateTime } from '@/components/LocalDateTime'
 import {
   getMatchesLiveJson,
@@ -406,183 +406,124 @@ export default async function MatchPage({ params }: { params: Promise<{ matchId:
     <Section>
       <Container className="space-y-6">
         {/* Шапка */}
-        <header className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="rounded-2xl bg-emerald-900/90 text-emerald-50 ring-1 ring-emerald-700/50 p-4 md:p-6 space-y-4">
+          <header className="flex flex-col items-center gap-2 text-sm text-emerald-100">
+          <div className="inline-flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             <LocalDateTime date={match.date} time={match.time} utc />
+          </div>
+
+          <div className="inline-flex flex-wrap items-center justify-center gap-2">
             {match.competition?.name ? (
-              <Badge variant="outline" className="ml-2">
+              <Badge variant="outline" className="border-emerald-400/50 text-emerald-50">
                 {match.competition.name}
               </Badge>
             ) : null}
             {match.round ? (
-              <Badge variant="secondary" className="ml-2">
+              <Badge variant="secondary" className="bg-emerald-800 text-emerald-50">
                 Тур {match.round}
               </Badge>
             ) : null}
             {match.group_id ? (
-              <Badge variant="secondary" className="ml-2">
+              <Badge variant="secondary" className="bg-emerald-800 text-emerald-50">
                 Группа {match.group_id}
+              </Badge>
+            ) : null}
+            {match.status ? (
+              <Badge variant="secondary" className="bg-emerald-800 text-emerald-50">
+                {statusRu(match.status) || match.status}
               </Badge>
             ) : null}
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Trophy className="h-6 w-6 text-primary" />
-              <h1 className="text-2xl font-bold tracking-tight">
-                {match.home.name} — {match.away.name}
-              </h1>
-            </div>
-            <div className="text-sm text-muted-foreground inline-flex items-center gap-2">
-              {match.status ? (
-                <Badge variant="secondary">{statusRu(match.status) || match.status}</Badge>
-              ) : null}
-              <Clock className="h-4 w-4" />
-              <LocalDateTime date={match.date} time={match.time} utc showDate={false} />
-            </div>
-          </div>
-
-          {/* Время и обновления */}
-          <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
-            <span>
-              <span className="font-medium">Начало:</span>{' '}
-              <LocalDateTime date={match.date} time={match.time} utc />
-            </span>
+          <div className="text-xs text-emerald-200 inline-flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            <LocalDateTime date={match.date} time={match.time} utc showDate={false} />
             {typeof match.time_status !== 'undefined' ? (
-              <span>
-                <span className="font-medium">Сейчас:</span>{' '}
-                {timeStatusRu(match.time_status) || '—'}
-              </span>
+              <span>Сейчас: {timeStatusRu(match.time_status) || '—'}</span>
             ) : null}
             {match.last_changed ? (
               <span>
-                <span className="font-medium">Обновлено:</span>{' '}
-                <LocalDateTime dateTime={match.last_changed.replace(' ', 'T')} utc />
+                Обновлено: <LocalDateTime dateTime={match.last_changed.replace(' ', 'T')} utc />
               </span>
             ) : null}
           </div>
         </header>
 
         {/* Детали */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Детали матча</CardTitle>
+          <Card className="bg-transparent text-emerald-50 border-none shadow-none">
+          <CardHeader className="text-center">
+            <CardTitle className="text-center">Матч</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Команды */}
-            <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-3">
-              <div className="text-right">
-                <Link
-                  href={`/teams/${match.home.id}`}
-                  className="text-lg font-semibold hover:text-primary"
-                >
-                  {match.home.name}
-                </Link>
+          <CardContent className="space-y-6">
+            <div className="flex flex-col items-center gap-3">
+              <Link
+                href={`/teams/${match.home.id}`}
+                className="text-2xl font-semibold hover:text-primary"
+              >
+                {match.home.name}
+              </Link>
+              <div className="flex items-center gap-2">
+                {match.odds?.pre?.['1'] != null ? (
+                  <Badge variant="outline" className="bg-emerald-800/60 border-emerald-600/60 text-emerald-50">1 {match.odds.pre['1']}</Badge>
+                ) : null}
+                {match.odds?.live?.['1'] != null ? (
+                  <Badge variant="outline" className="bg-emerald-800/60 border-emerald-600/60 text-emerald-50">Live {match.odds.live['1']}</Badge>
+                ) : null}
               </div>
-              <div className="text-center text-muted-foreground">vs</div>
-              <div className="text-left">
-                <Link
-                  href={`/teams/${match.away.id}`}
-                  className="text-lg font-semibold hover:text-primary"
-                >
-                  {match.away.name}
-                </Link>
+
+              <div className="text-6xl font-extrabold tabular-nums tracking-tight text-center">
+                {match.scores?.score ? match.scores.score : '— : —'}
+              </div>
+              <div className="flex items-center gap-2">
+                {match.odds?.pre?.X != null ? (
+                  <Badge variant="outline" className="bg-emerald-800/60 border-emerald-600/60 text-emerald-50">Ничья {match.odds.pre.X}</Badge>
+                ) : null}
+                {match.odds?.live?.X != null ? (
+                  <Badge variant="outline" className="bg-emerald-800/60 border-emerald-600/60 text-emerald-50">Live {match.odds.live.X}</Badge>
+                ) : null}
+              </div>
+
+              <Link
+                href={`/teams/${match.away.id}`}
+                className="text-2xl font-semibold hover:text-primary"
+              >
+                {match.away.name}
+              </Link>
+              <div className="flex items-center gap-2">
+                {match.odds?.pre?.['2'] != null ? (
+                  <Badge variant="outline" className="bg-emerald-800/60 border-emerald-600/60 text-emerald-50">2 {match.odds.pre['2']}</Badge>
+                ) : null}
+                {match.odds?.live?.['2'] != null ? (
+                  <Badge variant="outline" className="bg-emerald-800/60 border-emerald-600/60 text-emerald-50">Live {match.odds.live['2']}</Badge>
+                ) : null}
               </div>
             </div>
 
-            {/* Место проведения */}
             {match.location ? (
-              <div className="text-sm text-muted-foreground inline-flex items-center gap-2">
+              <div className="text-sm text-emerald-100 inline-flex items-center justify-center gap-2">
                 <MapPin className="h-4 w-4" />
                 <span>{match.location}</span>
               </div>
             ) : null}
 
-            {/* Текущий счёт */}
-            {match.scores?.score ? (
-              <div className="text-sm">
-                <div className="font-medium mb-1">Счёт</div>
-                <div className="text-muted-foreground">{match.scores.score}</div>
-                <div className="text-xs text-muted-foreground mt-1 grid grid-cols-2 gap-2">
-                  {match.scores.ht_score ? <span>1-й тайм: {match.scores.ht_score}</span> : null}
-                  {match.scores.ft_score ? (
-                    <span>Основное время: {match.scores.ft_score}</span>
-                  ) : null}
-                  {match.scores.et_score ? <span>Доп. время: {match.scores.et_score}</span> : null}
-                  {match.scores.ps_score ? <span>Пенальти: {match.scores.ps_score}</span> : null}
-                </div>
-              </div>
-            ) : null}
-
-            {/* Коэффициенты */}
-            {match.odds?.pre && (match.odds.pre['1'] || match.odds.pre.X || match.odds.pre['2']) ? (
-              <div className="text-sm">
-                <div className="font-medium mb-1">Прематчевые коэффициенты</div>
-                <div className="flex items-center gap-3 text-muted-foreground">
-                  {match.odds.pre['1'] != null ? (
-                    <Badge variant="outline">1 {match.odds.pre['1']}</Badge>
-                  ) : null}
-                  {match.odds.pre.X != null ? (
-                    <Badge variant="outline">X {match.odds.pre.X}</Badge>
-                  ) : null}
-                  {match.odds.pre['2'] != null ? (
-                    <Badge variant="outline">2 {match.odds.pre['2']}</Badge>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
-
-            {match.odds?.live &&
-            (match.odds.live['1'] != null ||
-              match.odds.live.X != null ||
-              match.odds.live['2'] != null) ? (
-              <div className="text-sm">
-                <div className="font-medium mb-1">Live коэффициенты</div>
-                <div className="flex items-center gap-3 text-muted-foreground">
-                  {match.odds.live['1'] != null ? (
-                    <Badge variant="outline">1 {match.odds.live['1']}</Badge>
-                  ) : null}
-                  {match.odds.live.X != null ? (
-                    <Badge variant="outline">X {match.odds.live.X}</Badge>
-                  ) : null}
-                  {match.odds.live['2'] != null ? (
-                    <Badge variant="outline">2 {match.odds.live['2']}</Badge>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
-
-            {/* Исходы по этапам */}
-            {match.outcomes &&
-            (match.outcomes.half_time ||
-              match.outcomes.full_time ||
-              match.outcomes.extra_time ||
-              match.outcomes.penalty_shootout) ? (
-              <div className="text-sm">
-                <div className="font-medium mb-1">Исходы</div>
-                <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                  {match.outcomes.half_time ? (
-                    <div>1-й тайм: {match.outcomes.half_time}</div>
-                  ) : null}
-                  {match.outcomes.full_time ? <div>Матч: {match.outcomes.full_time}</div> : null}
-                  {match.outcomes.extra_time ? (
-                    <div>Доп. время: {match.outcomes.extra_time}</div>
-                  ) : null}
-                  {match.outcomes.penalty_shootout ? (
-                    <div>П��нальти: {match.outcomes.penalty_shootout}</div>
-                  ) : null}
-                </div>
+            {match.scores?.ht_score || match.scores?.ft_score || match.scores?.et_score || match.scores?.ps_score ? (
+              <div className="text-xs text-emerald-200 text-center space-y-1">
+                {match.scores.ht_score ? <div>1-й тайм: {match.scores.ht_score}</div> : null}
+                {match.scores.ft_score ? <div>Основное время: {match.scores.ft_score}</div> : null}
+                {match.scores.et_score ? <div>Доп. время: {match.scores.et_score}</div> : null}
+                {match.scores.ps_score ? <div>Пенальти: {match.scores.ps_score}</div> : null}
               </div>
             ) : null}
           </CardContent>
         </Card>
+        </div>
 
         {/* События матча */}
         {events.length > 0 ? (
           <Card>
-            <CardHeader>
-              <CardTitle>События матча</CardTitle>
+            <CardHeader className="text-center">
+              <CardTitle className="text-center">События матча</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -611,8 +552,8 @@ export default async function MatchPage({ params }: { params: Promise<{ matchId:
         {/* Составы */}
         {lineups.home || lineups.away ? (
           <Card>
-            <CardHeader>
-              <CardTitle>Составы</CardTitle>
+            <CardHeader className="text-center">
+              <CardTitle className="text-center">Составы</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -703,8 +644,8 @@ export default async function MatchPage({ params }: { params: Promise<{ matchId:
         {/* Статистика */}
         {stats && Object.keys(stats).length > 0 ? (
           <Card>
-            <CardHeader>
-              <CardTitle>Статистика</CardTitle>
+            <CardHeader className="text-center">
+              <CardTitle className="text-center">Статистика</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-3 text-sm">
@@ -744,28 +685,28 @@ export default async function MatchPage({ params }: { params: Promise<{ matchId:
                     .map(({ info, val }) => {
                       const pair = parsePair(val)
                       const total = pair.home + pair.away
-                      const homePct = pair.isPercent
-                        ? Math.max(0, Math.min(100, pair.home))
-                        : total > 0
-                          ? (pair.home / total) * 100
-                          : 50
-                      const awayPct = 100 - homePct
+                      const clamp = (n: number) => Math.max(0, Math.min(100, n))
+                      const homePct = pair.isPercent ? clamp(pair.home) : total > 0 ? (pair.home / total) * 100 : 0
+                      const awayPct = pair.isPercent ? clamp(pair.away) : total > 0 ? (pair.away / total) * 100 : 0
                       return (
                         <div key={info.key} className="space-y-2">
-                          <div className="flex items-center justify-between gap-3">
-                            <span className="text-muted-foreground truncate inline-flex items-center gap-2">
-                              <span aria-hidden>{info.emoji}</span>
-                              <span>{info.labelRu}</span>
-                            </span>
-                            <span className="tabular-nums text-right min-w-[90px]">
-                              <span>{pair.textHome}</span>
-                              <span className="text-muted-foreground"> : </span>
-                              <span>{pair.textAway}</span>
-                            </span>
+                          <div className="text-muted-foreground inline-flex items-center justify-center gap-2 text-center">
+                            <span aria-hidden>{info.emoji}</span>
+                            <span className="font-medium">{info.labelRu}</span>
                           </div>
-                          <div className="h-2 w-full rounded bg-muted overflow-hidden">
-                            <div className="h-full bg-primary" style={{ width: `${homePct}%` }} />
-                            <div className="h-full bg-accent" style={{ width: `${awayPct}%` }} />
+                          <div className="tabular-nums font-semibold text-lg text-center">
+                            <span className="text-red-600">{pair.textHome}</span>
+                            <span className="text-muted-foreground"> : </span>
+                            <span className="text-blue-600">{pair.textAway}</span>
+                          </div>
+                          <div className="relative h-3 w-full rounded bg-muted overflow-hidden">
+                            <div className="absolute inset-y-0 left-1/2 w-px bg-border" aria-hidden />
+                            <div className="absolute inset-y-0 right-1/2 w-1/2 flex justify-end pr-0.5">
+                              <div className="h-full bg-red-500/60" style={{ width: `${homePct}%` }} />
+                            </div>
+                            <div className="absolute inset-y-0 left-1/2 w-1/2 flex justify-start pl-0.5">
+                              <div className="h-full bg-blue-500/60" style={{ width: `${awayPct}%` }} />
+                            </div>
                           </div>
                         </div>
                       )
@@ -782,8 +723,8 @@ export default async function MatchPage({ params }: { params: Promise<{ matchId:
           h2h.team1_last_matches?.length ||
           h2h.team2_last_matches?.length) ? (
           <Card>
-            <CardHeader>
-              <CardTitle>История встреч</CardTitle>
+            <CardHeader className="text-center">
+              <CardTitle className="text-center">История встреч</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {h2h.last_matches_between && h2h.last_matches_between.length > 0 ? (
