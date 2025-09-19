@@ -65,7 +65,7 @@ export const Posts: CollectionConfig = {
   slug: 'posts',
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'author', 'publishedAt', 'updatedAt'],
+    defaultColumns: ['title', 'postType', 'author', 'publishedAt', 'updatedAt'],
   },
   access: {
     read: () => true,
@@ -88,6 +88,19 @@ export const Posts: CollectionConfig = {
       },
     },
     {
+      name: 'postType',
+      type: 'select',
+      options: [
+        { label: 'Обычный пост', value: 'regular' },
+        { label: 'Прогноз', value: 'prediction' },
+      ],
+      defaultValue: 'regular',
+      required: true,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'content',
       type: 'textarea',
       required: true,
@@ -97,6 +110,148 @@ export const Posts: CollectionConfig = {
       type: 'relationship',
       relationTo: 'media',
       required: false,
+    },
+    // Поля для прогнозов
+    {
+      name: 'matchId',
+      type: 'number',
+      admin: {
+        condition: (data) => data.postType === 'prediction',
+        description: 'ID матча из API для которого делается прогноз',
+      },
+    },
+    {
+      name: 'fixtureId',
+      type: 'number',
+      admin: {
+        condition: (data) => data.postType === 'prediction',
+        description: 'ID фикстуры из API для которого делается прогноз',
+      },
+    },
+    {
+      name: 'prediction',
+      type: 'group',
+      admin: {
+        condition: (data) => data.postType === 'prediction',
+      },
+      fields: [
+        {
+          name: 'outcome',
+          type: 'select',
+          options: [
+            { label: 'Победа хозяев', value: 'home' },
+            { label: 'Ничья', value: 'draw' },
+            { label: 'Победа гостей', value: 'away' },
+          ],
+          admin: {
+            description: 'Прогноз исхода матча',
+          },
+        },
+        {
+          name: 'score',
+          type: 'group',
+          fields: [
+            {
+              name: 'home',
+              type: 'number',
+              min: 0,
+              admin: {
+                description: 'Голы хозяев',
+              },
+            },
+            {
+              name: 'away',
+              type: 'number',
+              min: 0,
+              admin: {
+                description: 'Голы гостей',
+              },
+            },
+          ],
+        },
+        {
+          name: 'fouls',
+          type: 'group',
+          fields: [
+            {
+              name: 'total',
+              type: 'number',
+              min: 0,
+              admin: {
+                description: 'Общее количество фолов',
+              },
+            },
+            {
+              name: 'overUnder',
+              type: 'select',
+              options: [
+                { label: 'Больше 25.5', value: 'over' },
+                { label: 'Меньше 25.5', value: 'under' },
+              ],
+            },
+          ],
+        },
+        {
+          name: 'corners',
+          type: 'group',
+          fields: [
+            {
+              name: 'total',
+              type: 'number',
+              min: 0,
+              admin: {
+                description: 'Общее количество угловых',
+              },
+            },
+            {
+              name: 'home',
+              type: 'number',
+              min: 0,
+              admin: {
+                description: 'Угловые хозяев',
+              },
+            },
+            {
+              name: 'away',
+              type: 'number',
+              min: 0,
+              admin: {
+                description: 'Угловые гостей',
+              },
+            },
+          ],
+        },
+        {
+          name: 'yellowCards',
+          type: 'group',
+          fields: [
+            {
+              name: 'total',
+              type: 'number',
+              min: 0,
+              admin: {
+                description: 'Общее количество желтых карточек',
+              },
+            },
+            {
+              name: 'home',
+              type: 'number',
+              min: 0,
+              admin: {
+                description: 'Желтые карточки хозяев',
+              },
+            },
+            {
+              name: 'away',
+              type: 'number',
+              min: 0,
+              admin: {
+                description: 'Желтые карточки гостей',
+              },
+            },
+          ],
+        },
+      ],
     },
     {
       name: 'author',

@@ -12,6 +12,7 @@ import {
 } from '@/app/(frontend)/client'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { YearSelector } from '@/components/YearSelector'
+import PredictionButton from '@/components/predictions/PredictionButton'
 
 export const revalidate = 300 // 5 минут
 
@@ -305,6 +306,83 @@ function getStatusBadge(status: string) {
   }
 }
 
+function MatchCard({ match, isExactDay = false }: { match: Match; isExactDay?: boolean }) {
+  const played = isPlayed(match)
+  const isScheduled = match.status.toLowerCase() === 'scheduled' || match.status.toLowerCase() === 'ns'
+  
+  // Определяем URL для перехода к матчу
+  const matchUrl = played ? `/matches/${match.id}` : `/fixtures/${match.id}`
+
+  return (
+    <div
+      className={`group relative border rounded-lg transition-all duration-200 ${
+        isExactDay
+          ? 'bg-primary/10 border-primary shadow-sm'
+          : played
+            ? 'hover:bg-accent/50 hover:shadow-md'
+            : 'bg-amber-50/50 dark:bg-amber-900/10 hover:bg-amber-100/70 dark:hover:bg-amber-900/20 hover:shadow-md'
+      }`}
+    >
+      {/* Кликабельная область */}
+      <Link href={matchUrl} className="block p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              {formatDate(match.date)}
+              <Clock className="h-4 w-4 ml-3" />
+              {match.time || '—'}
+            </div>
+            <div className="flex items-center gap-3 flex-1">
+              <div className="text-right flex-1">
+                <span className="font-medium group-hover:text-primary transition-colors">
+                  {match.home_team.name}
+                </span>
+              </div>
+              <div className="px-3">
+                {match.score ? (
+                  <div className="text-lg font-bold">
+                    {match.score.home} : {match.score.away}
+                  </div>
+                ) : (
+                  <div className="text-muted-foreground">vs</div>
+                )}
+              </div>
+              <div className="text-left flex-1">
+                <span className="font-medium group-hover:text-primary transition-colors">
+                  {match.away_team.name}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {getStatusBadge(match.status)}
+          </div>
+        </div>
+      </Link>
+      
+      {/* Кнопка прогноза для запланированных матчей */}
+      {isScheduled && (
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <PredictionButton 
+            fixtureId={match.id}
+            size="sm"
+            variant="secondary"
+            className="shadow-sm"
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function isPlayed(m: Match): boolean {
+  if (m.score && (typeof m.score.home === 'number' || typeof m.score.away === 'number'))
+    return true
+  const s = (m.status || '').toLowerCase()
+  return s === 'finished' || s === 'ft'
+}
+
 export default async function MatchesPage({ params, searchParams }: MatchesPageProps) {
   const resolvedParams = await params
   const resolvedSearchParams = await searchParams
@@ -317,12 +395,6 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
   ])
 
   // Разделяем матчи на сыгранные и несыгранные
-  const isPlayed = (m: Match): boolean => {
-    if (m.score && (typeof m.score.home === 'number' || typeof m.score.away === 'number'))
-      return true
-    const s = (m.status || '').toLowerCase()
-    return s === 'finished' || s === 'ft'
-  }
   const playedMatches: Match[] = matches.filter(isPlayed)
   const unplayedMatches: Match[] = matches.filter((m) => !isPlayed(m))
 
@@ -337,7 +409,7 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
     // Используем UTC-дни недели, чтобы избежать смещения
     const day = d.getUTCDay() // 0=Sun..6=Sat
     if (day >= 1 && day <= 4) {
-      // Пн–Чт → ближайшая будущая пятница этой неде��и
+      // Пн–Чт → ближайшая будущая пятница этой недели
       return addDays(d, 5 - day)
     }
     // Пт/Сб/Вс → предыдущая пятница
@@ -403,10 +475,10 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
     'Март',
     'Апрель',
     'Май',
-    'Июнь',
+    'Июн��',
     'Июль',
     'Август',
-    'Сентябрь',
+    'С��нтябрь',
     'Октябрь',
     'Ноябрь',
     'Декабрь',
@@ -519,67 +591,18 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {tourMatches.map((m) => {
-                        const isExactDay = m.date === selectedDate
-                        const played = isPlayed(m)
-                        return (
-                          <div
-                            key={m.id}
-                            className={`flex items-center justify-between p-3 border rounded-lg transition-colors ${
-                              isExactDay
-                                ? 'bg-primary/10 border-primary'
-                                : played
-                                  ? 'hover:bg-accent/50'
-                                  : 'bg-amber-50/50 dark:bg-amber-900/10'
-                            }`}
-                          >
-                            <div className="flex items-center gap-4 flex-1">
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Calendar className="h-4 w-4" />
-                                {formatDate(m.date)}
-                                <Clock className="h-4 w-4 ml-3" />
-                                {m.time || '—'}
-                              </div>
-                              <div className="flex items-center gap-3 flex-1">
-                                <div className="text-right flex-1">
-                                  <Link
-                                    href={`/teams/${m.home_team.id}`}
-                                    className="font-medium hover:text-primary transition-colors"
-                                  >
-                                    {m.home_team.name}
-                                  </Link>
-                                </div>
-                                <div className="px-3">
-                                  {m.score ? (
-                                    <div className="text-lg font-bold">
-                                      {m.score.home} : {m.score.away}
-                                    </div>
-                                  ) : (
-                                    <div className="text-muted-foreground">vs</div>
-                                  )}
-                                </div>
-                                <div className="text-left flex-1">
-                                  <Link
-                                    href={`/teams/${m.away_team.id}`}
-                                    className="font-medium hover:text-primary transition-colors"
-                                  >
-                                    {m.away_team.name}
-                                  </Link>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant={played ? 'secondary' : 'outline'}>
-                                {played ? 'Завершен' : 'Запланирован'}
-                              </Badge>
-                            </div>
-                          </div>
-                        )
-                      })}
+                      {tourMatches.map((match) => (
+                        <MatchCard 
+                          key={match.id} 
+                          match={match} 
+                          isExactDay={match.date === selectedDate}
+                        />
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
               )}
+              
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -667,58 +690,9 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
                               new Date(`${a.date}T${a.time || '00:00'}Z`).getTime() -
                               new Date(`${b.date}T${b.time || '00:00'}Z`).getTime(),
                           )
-                          .map((match) => {
-                            const played = isPlayed(match)
-                            return (
-                              <div
-                                key={match.id}
-                                className={`flex items-center justify-between p-3 border rounded-lg transition-colors ${
-                                  played
-                                    ? 'hover:bg-accent/50'
-                                    : 'bg-amber-50/50 dark:bg-amber-900/10'
-                                }`}
-                              >
-                                <div className="flex items-center gap-4 flex-1">
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Calendar className="h-4 w-4" />
-                                    {formatDate(match.date)}
-                                    <Clock className="h-4 w-4 ml-3" />
-                                    {match.time || '—'}
-                                  </div>
-                                  <div className="flex items-center gap-3 flex-1">
-                                    <div className="text-right flex-1">
-                                      <Link
-                                        href={`/teams/${match.home_team.id}`}
-                                        className="font-medium hover:text-primary transition-colors"
-                                      >
-                                        {match.home_team.name}
-                                      </Link>
-                                    </div>
-                                    <div className="px-3">
-                                      {match.score ? (
-                                        <div className="text-lg font-bold">
-                                          {match.score.home} : {match.score.away}
-                                        </div>
-                                      ) : (
-                                        <div className="text-muted-foreground">vs</div>
-                                      )}
-                                    </div>
-                                    <div className="text-left flex-1">
-                                      <Link
-                                        href={`/teams/${match.away_team.id}`}
-                                        className="font-medium hover:text-primary transition-colors"
-                                      >
-                                        {match.away_team.name}
-                                      </Link>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {getStatusBadge(match.status)}
-                                </div>
-                              </div>
-                            )
-                          })}
+                          .map((match) => (
+                            <MatchCard key={match.id} match={match} />
+                          ))}
                       </div>
                     </CardContent>
                   </Card>

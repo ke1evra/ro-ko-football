@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 import { Button } from '@/components/ui/button'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
-import { Calendar, MessageSquare, ThumbsUp, Newspaper, Activity } from 'lucide-react'
+import { Calendar, MessageSquare, ThumbsUp, Newspaper, Activity, TrendingUp } from 'lucide-react'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import PredictionButton from '@/components/predictions/PredictionButton'
 
 import {
   getCompetitionsListJson,
@@ -185,6 +186,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                   <Link className="underline" href="/leagues">Лиги</Link>
                   <Link className="underline" href="/countries">Страны</Link>
                   <Link className="underline" href="/posts">Посты</Link>
+                  <Link className="underline" href="/predictions">Прогнозы</Link>
                   <Link className="underline" href="/leagues/7/matches">Матчи (пример)</Link>
                 </div>
               </CardContent>
@@ -203,17 +205,52 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
               <CardContent className="space-y-4">
                 {items.map(({ post, commentsCount, rating }) => (
                   <article key={post.id} className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
-                    <Link href={post.slug ? `/posts/${post.slug}` : `/posts?pid=${post.id}`} className="block">
-                      <h3 className="text-lg font-semibold">{post.title}</h3>
-                      {post.publishedAt ? (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {new Date(post.publishedAt).toLocaleDateString('ru-RU')}
+                    <div className="flex items-start justify-between mb-2">
+                      <Link href={post.slug ? `/posts/${post.slug}` : `/posts?pid=${post.id}`} className="flex-1">
+                        <h3 className="text-lg font-semibold">{post.title}</h3>
+                        {post.publishedAt ? (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {new Date(post.publishedAt).toLocaleDateString('ru-RU')}
+                          </div>
+                        ) : null}
+                      </Link>
+                      {(post as any).postType === 'prediction' && (
+                        <div className="ml-2 flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                          <TrendingUp className="h-3 w-3" />
+                          Прогноз
                         </div>
-                      ) : null}
+                      )}
+                    </div>
+                    
+                    <Link href={post.slug ? `/posts/${post.slug}` : `/posts?pid=${post.id}`} className="block">
                       {post.content ? (
                         <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{post.content}</p>
                       ) : null}
                     </Link>
+                    
+                    {/* Показываем краткую информацию о прогнозе */}
+                    {(post as any).postType === 'prediction' && (post as any).prediction && (
+                      <div className="mt-3 p-2 bg-muted/50 rounded text-sm">
+                        <div className="flex items-center gap-4">
+                          {(post as any).prediction.outcome && (
+                            <span>
+                              <strong>Исход:</strong> {
+                                (post as any).prediction.outcome === 'home' ? 'Победа хозяев' :
+                                (post as any).prediction.outcome === 'draw' ? 'Ничья' :
+                                (post as any).prediction.outcome === 'away' ? 'Победа гостей' : 'Не указан'
+                              }
+                            </span>
+                          )}
+                          {(post as any).prediction.score?.home !== undefined && 
+                           (post as any).prediction.score?.away !== undefined && (
+                            <span>
+                              <strong>Счет:</strong> {(post as any).prediction.score.home}:{(post as any).prediction.score.away}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="mt-3 flex items-center justify-between">
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="inline-flex items-center gap-1">
@@ -262,17 +299,20 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                 ) : (
                   <ul className="space-y-3 text-sm">
                     {topUpcoming.map((m) => (
-                      <li key={m.fixtureId} className="flex items-center justify-between border rounded p-2 hover:bg-accent/50 transition-colors">
-                        <Link href={`/fixtures/${m.fixtureId}`} className="flex items-center justify-between gap-3 w-full">
-                          <div className="min-w-0">
+                      <li key={m.fixtureId} className="border rounded p-2 hover:bg-accent/50 transition-colors">
+                        <div className="flex items-center justify-between gap-3">
+                          <Link href={`/fixtures/${m.fixtureId}`} className="flex-1 min-w-0">
                             <div className="truncate font-medium">{m.home} — {m.away}</div>
                             <div className="text-muted-foreground truncate">{m.competitionName}</div>
-                          </div>
-                          <div className="text-right text-muted-foreground ml-3">
+                          </Link>
+                          <div className="text-right text-muted-foreground">
                             <div>{new Date(`${m.date}T${m.time || '00:00'}Z`).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit' })}</div>
                             <div className="text-xs">{m.time || '—'}</div>
                           </div>
-                        </Link>
+                        </div>
+                        <div className="mt-2 flex justify-end">
+                          <PredictionButton fixtureId={m.fixtureId} size="sm" />
+                        </div>
                       </li>
                     ))}
                   </ul>

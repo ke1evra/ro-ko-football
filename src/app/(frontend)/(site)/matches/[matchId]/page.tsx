@@ -84,7 +84,7 @@ function normalizeStatKey(k: string): string {
   if (s.includes('blocked')) return 'shots_blocked'
   if (s.includes('insidebox') || s.includes('inthebox')) return 'shots_inside_box'
   if (s.includes('outsidebox') || s.includes('outofbox')) return 'shots_outside_box'
-  // Угловые
+  // Углов��е
   if (s.includes('corner')) return 'corners'
   // Карточки
   if (s.includes('yellow')) return 'yellow_cards'
@@ -196,13 +196,69 @@ type MatchNormalized = {
 }
 
 async function findMatchById(matchId: number): Promise<MatchNormalized | null> {
-  // Сначала пробуем найти в live
+  // Сначала пробуем получить матч напрямую по ID через getScoresEventsJson
   try {
+    console.log(`Попытка получить матч ${matchId} напрямую по ID...`)
+    const eventsResp = await getScoresEventsJson({ id: matchId })
+    const matchData = eventsResp.data?.data?.match
+
+    if (matchData) {
+      console.log(`Матч ${matchId} найден напрямую по ID`)
+      console.log('Данные матча:', JSON.stringify(matchData, null, 2))
+      
+      const homeName = matchData.home?.name || matchData.home_name || 'Команда дома'
+      const awayName = matchData.away?.name || matchData.away_name || 'Команда гостей'
+      
+      return {
+        id: Number(matchData.id || matchId),
+        fixture_id: matchData.fixture_id ? Number(matchData.fixture_id) : undefined,
+        date: String(matchData.date || ''),
+        time: String(matchData.time || matchData.scheduled || ''),
+        home: { 
+          id: Number(matchData.home?.id || matchData.home_id || '0'), 
+          name: homeName 
+        },
+        away: { 
+          id: Number(matchData.away?.id || matchData.away_id || '0'), 
+          name: awayName 
+        },
+        competition: matchData.competition
+          ? { id: Number(matchData.competition.id || '0'), name: matchData.competition.name || '' }
+          : undefined,
+        location: typeof matchData.location === 'string' ? matchData.location : null,
+        round: typeof matchData.round === 'string' ? matchData.round : undefined,
+        group_id: matchData.group_id != null ? Number(matchData.group_id) : null,
+        odds: matchData.odds,
+        h2h: undefined, // Не возвращается в этом endpoint
+        status: matchData.status || 'FINISHED',
+        time_status: matchData.time_status ?? null,
+        scores: {
+          score: matchData.score || matchData.scores?.score,
+          ht_score: matchData.ht_score || matchData.scores?.ht_score,
+          ft_score: matchData.ft_score || matchData.scores?.ft_score,
+          et_score: matchData.et_score || matchData.scores?.et_score,
+          ps_score: matchData.ps_score || matchData.scores?.ps_score,
+        },
+        added: matchData.added,
+        last_changed: matchData.last_changed,
+        outcomes: matchData.outcomes,
+        urls: undefined, // Не возвращается в этом endpoint
+      }
+    }
+  } catch (error) {
+    console.log(`Не удалось получить матч ${matchId} напрямую:`, error)
+    // Продолжаем с fallback методами
+  }
+
+  // Фоллбэк 1: ищем в live матчах
+  try {
+    console.log(`Поиск матча ${matchId} в live матчах...`)
     const liveResp = await getMatchesLiveJson()
     const liveList = (liveResp.data?.data?.match || []) as Array<any>
     const m = liveList.find((match: any) => Number(match.id) === matchId)
 
     if (m) {
+      console.log(`Матч ${matchId} найден в live матчах`)
       const homeName = m.home?.name || 'Команда дома'
       const awayName = m.away?.name || 'Команда гостей'
       return {
@@ -230,54 +286,71 @@ async function findMatchById(matchId: number): Promise<MatchNormalized | null> {
         urls: m.urls,
       }
     }
-  } catch {
-    // игнорируем и пробуем history
+  } catch (error) {
+    console.log(`Ошибка поиска в live матчах:`, error)
   }
 
-  // Фоллбэк: ищем в истории за последнюю неделю
-  try {
-    const now = new Date()
-    const to = new Date(now.toISOString().split('T')[0])
-    const from = new Date(
-      new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    )
+  // Фоллбэк 2: ищем в истории за последние 6 месяцев
+  const searchPeriods = [
+    { days: 30, size: 500 },   // Последний месяц
+    { days: 90, size: 1000 },  // Последние 3 месяца
+    { days: 180, size: 2000 }, // Последние 6 месяцев
+  ]
 
-    const historyResp = await getMatchesHistoryJson({ from, to })
-    const historyList = (historyResp.data?.data?.match || []) as Array<any>
-    const m = historyList.find((match: any) => Number(match.id) === matchId)
+  for (const period of searchPeriods) {
+    try {
+      const now = new Date()
+      const to = new Date(now.toISOString().split('T')[0])
+      const from = new Date(
+        new Date(now.getTime() - period.days * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      )
 
-    if (m) {
-      const homeName = m.home?.name || 'Команда дома'
-      const awayName = m.away?.name || 'Команда гостей'
-      return {
-        id: Number(m.id),
-        fixture_id: Number(m.fixture_id || 0) || undefined,
-        date: String(m.date || ''),
-        time: String(m.time || ''),
-        home: { id: Number(m.home?.id || '0'), name: homeName },
-        away: { id: Number(m.away?.id || '0'), name: awayName },
-        competition: m.competition
-          ? { id: Number(m.competition.id || '0'), name: m.competition.name || '' }
-          : undefined,
-        location: typeof m.location === 'string' ? m.location : null,
-        round:
-          typeof m.round === 'string' ? m.round : m.round != null ? String(m.round) : undefined,
-        group_id: m.group_id != null ? Number(m.group_id) : null,
-        odds: m.odds,
-        h2h: m.urls?.head2head || undefined,
-        status: m.status || 'FINISHED',
-        time_status: m.time_status ?? null,
-        scores: m.scores,
-        added: m.added,
-        last_changed: m.last_changed,
-        outcomes: m.outcomes,
-        urls: m.urls,
+      console.log(`Поиск матча ${matchId} в истории за последние ${period.days} дней...`)
+
+      const historyResp = await getMatchesHistoryJson({ 
+        from, 
+        to, 
+        size: period.size 
+      })
+      const historyList = (historyResp.data?.data?.match || []) as Array<any>
+      const m = historyList.find((match: any) => Number(match.id) === matchId)
+
+      if (m) {
+        console.log(`Матч ${matchId} найден в истории за ${period.days} дней`)
+        const homeName = m.home?.name || 'Команда дома'
+        const awayName = m.away?.name || 'Команда гостей'
+        return {
+          id: Number(m.id),
+          fixture_id: Number(m.fixture_id || 0) || undefined,
+          date: String(m.date || ''),
+          time: String(m.time || ''),
+          home: { id: Number(m.home?.id || '0'), name: homeName },
+          away: { id: Number(m.away?.id || '0'), name: awayName },
+          competition: m.competition
+            ? { id: Number(m.competition.id || '0'), name: m.competition.name || '' }
+            : undefined,
+          location: typeof m.location === 'string' ? m.location : null,
+          round:
+            typeof m.round === 'string' ? m.round : m.round != null ? String(m.round) : undefined,
+          group_id: m.group_id != null ? Number(m.group_id) : null,
+          odds: m.odds,
+          h2h: m.urls?.head2head || undefined,
+          status: m.status || 'FINISHED',
+          time_status: m.time_status ?? null,
+          scores: m.scores,
+          added: m.added,
+          last_changed: m.last_changed,
+          outcomes: m.outcomes,
+          urls: m.urls,
+        }
       }
+    } catch (error) {
+      console.error(`Ошибка поиска матча в истории за ${period.days} дней:`, error)
+      // продолжаем со следующим периодом
     }
-  } catch {
-    // игнорируем
   }
 
+  console.log(`Матч ${matchId} не найден ни одним из методов`)
   return null
 }
 
@@ -314,7 +387,7 @@ export default async function MatchPage({ params }: { params: Promise<{ matchId:
         <Container>
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>Неверный идентификат��р матча.</AlertDescription>
+            <AlertDescription>Неверный идентификатор матча.</AlertDescription>
           </Alert>
         </Container>
       </Section>
@@ -358,7 +431,8 @@ export default async function MatchPage({ params }: { params: Promise<{ matchId:
 
     const evRes = settled[0]
     if (evRes.status === 'fulfilled') {
-      const e = (evRes.value.data?.data?.event || []) as typeof events
+      const eventsData = evRes.value.data?.data
+      const e = (eventsData?.event || []) as typeof events
       events = e
         .slice()
         .sort((a, b) => (a.time ?? 0) - (b.time ?? 0) || (a.sort ?? 0) - (b.sort ?? 0))
@@ -389,18 +463,37 @@ export default async function MatchPage({ params }: { params: Promise<{ matchId:
         <Container className="space-y-4">
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>Матч не найден в текущих или недавних матчах.</AlertDescription>
+            <AlertDescription>
+              Матч не найден. Возможно, он слишком старый или ID неверный.
+              <br />
+              <span className="text-xs text-muted-foreground">
+                Поиск выполнялся напрямую по ID, в live матчах и истории за последние 6 месяцев.
+              </span>
+            </AlertDescription>
           </Alert>
-          <Link href="/">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              На главную
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                На главную
+              </Button>
+            </Link>
+            <Link href="/leagues">
+              <Button variant="outline" size="sm">
+                К лигам
+              </Button>
+            </Link>
+          </div>
         </Container>
       </Section>
     )
   }
+
+  console.log('Финальные данные матча для отображения:', {
+    scores: match.scores,
+    status: match.status,
+    time_status: match.time_status
+  })
 
   return (
     <Section>

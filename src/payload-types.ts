@@ -220,8 +220,68 @@ export interface Post {
    * Автогенерируется из заголовка при сохранении
    */
   slug?: string | null;
+  postType: 'regular' | 'prediction';
   content: string;
   featuredImage?: (string | null) | Media;
+  /**
+   * ID матча из API для которого делается прогноз
+   */
+  matchId?: number | null;
+  /**
+   * ID фикстуры из API для которого делается прогноз
+   */
+  fixtureId?: number | null;
+  prediction?: {
+    /**
+     * Прогноз исхода матча
+     */
+    outcome?: ('home' | 'draw' | 'away') | null;
+    score?: {
+      /**
+       * Голы хозяев
+       */
+      home?: number | null;
+      /**
+       * Голы гостей
+       */
+      away?: number | null;
+    };
+    fouls?: {
+      /**
+       * Общее количество фолов
+       */
+      total?: number | null;
+      overUnder?: ('over' | 'under') | null;
+    };
+    corners?: {
+      /**
+       * Общее количество угловых
+       */
+      total?: number | null;
+      /**
+       * Угловые хозяев
+       */
+      home?: number | null;
+      /**
+       * Угловые гостей
+       */
+      away?: number | null;
+    };
+    yellowCards?: {
+      /**
+       * Общее количество желтых карточек
+       */
+      total?: number | null;
+      /**
+       * Желтые карточки хозяев
+       */
+      home?: number | null;
+      /**
+       * Желтые карточки гостей
+       */
+      away?: number | null;
+    };
+  };
   author: string | User;
   publishedAt?: string | null;
   updatedAt: string;
@@ -420,8 +480,42 @@ export interface MediaSelect<T extends boolean = true> {
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
+  postType?: T;
   content?: T;
   featuredImage?: T;
+  matchId?: T;
+  fixtureId?: T;
+  prediction?:
+    | T
+    | {
+        outcome?: T;
+        score?:
+          | T
+          | {
+              home?: T;
+              away?: T;
+            };
+        fouls?:
+          | T
+          | {
+              total?: T;
+              overUnder?: T;
+            };
+        corners?:
+          | T
+          | {
+              total?: T;
+              home?: T;
+              away?: T;
+            };
+        yellowCards?:
+          | T
+          | {
+              total?: T;
+              home?: T;
+              away?: T;
+            };
+      };
   author?: T;
   publishedAt?: T;
   updatedAt?: T;

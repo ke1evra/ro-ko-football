@@ -60,6 +60,12 @@ export const Header = () => {
               Лиги
             </Link>
             <Link
+              href="/predictions"
+              className="text-lg uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
+            >
+              Прогнозы
+            </Link>
+            <Link
               href="/ui-demo"
               className="text-lg uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
             >

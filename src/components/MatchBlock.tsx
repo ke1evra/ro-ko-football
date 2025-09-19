@@ -2,9 +2,12 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CalendarIcon } from 'lucide-react'
+import PredictionButton from '@/components/predictions/PredictionButton'
 
 export interface MatchData {
   id: string
+  matchId?: number
+  fixtureId?: number
   homeTeam: {
     name: string
     logo?: string
@@ -68,12 +71,21 @@ const MatchBlock: React.FC<MatchBlockProps> = ({ match }) => {
             )}
           </div>
         </div>
-        <div className="mt-4 flex items-center text-muted-foreground text-sm">
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {new Date(match.date).toLocaleString('ru-RU', {
-            dateStyle: 'medium',
-            timeStyle: 'short',
-          })}
+        <div className="mt-4 flex items-center justify-between">
+          <div className="flex items-center text-muted-foreground text-sm">
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {new Date(match.date).toLocaleString('ru-RU', {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+            })}
+          </div>
+          {match.status === 'scheduled' && (
+            <PredictionButton 
+              matchId={match.matchId}
+              fixtureId={match.fixtureId}
+              size="sm"
+            />
+          )}
         </div>
       </CardContent>
     </Card>
