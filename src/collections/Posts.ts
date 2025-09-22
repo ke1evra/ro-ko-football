@@ -91,7 +91,7 @@ export const Posts: CollectionConfig = {
       name: 'postType',
       type: 'select',
       options: [
-        { label: 'Обычный пост', value: 'regular' },
+        { label: 'Обычный пос��', value: 'regular' },
         { label: 'Прогноз', value: 'prediction' },
       ],
       defaultValue: 'regular',
@@ -247,6 +247,32 @@ export const Posts: CollectionConfig = {
               min: 0,
               admin: {
                 description: 'Желтые карточки гостей',
+              },
+            },
+          ],
+        },
+        {
+          name: 'events',
+          type: 'array',
+          admin: {
+            description: 'Динамические события прогноза с коэффициентами',
+          },
+          fields: [
+            {
+              name: 'event',
+              type: 'text',
+              required: true,
+              admin: {
+                description: 'Название события (например, "П1", "ТБ 2.5", "УГ ТБ 8.5")',
+              },
+            },
+            {
+              name: 'coefficient',
+              type: 'number',
+              required: true,
+              min: 1,
+              admin: {
+                description: 'Коэффициент на событие',
               },
             },
           ],

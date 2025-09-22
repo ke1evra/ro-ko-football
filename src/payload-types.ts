@@ -281,6 +281,22 @@ export interface Post {
        */
       away?: number | null;
     };
+    /**
+     * Динамические события прогноза с коэффициентами
+     */
+    events?:
+      | {
+          /**
+           * Название события (например, "П1", "ТБ 2.5", "УГ ТБ 8.5")
+           */
+          event: string;
+          /**
+           * Коэффициент на событие
+           */
+          coefficient: number;
+          id?: string | null;
+        }[]
+      | null;
   };
   author: string | User;
   publishedAt?: string | null;
@@ -514,6 +530,13 @@ export interface PostsSelect<T extends boolean = true> {
               total?: T;
               home?: T;
               away?: T;
+            };
+        events?:
+          | T
+          | {
+              event?: T;
+              coefficient?: T;
+              id?: T;
             };
       };
   author?: T;

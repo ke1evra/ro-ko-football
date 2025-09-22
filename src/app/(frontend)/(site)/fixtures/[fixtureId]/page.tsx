@@ -1,66 +1,18 @@
 import Link from 'next/link'
 import { Container, Section } from '@/components/ds'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, ArrowLeft, Calendar, Clock, MapPin, Trophy } from 'lucide-react'
-import { LocalDateTime } from '@/components/LocalDateTime'
+import { AlertCircle, ArrowLeft } from 'lucide-react'
 import {
   getFixturesMatchesJson,
   getMatchesLiveJson,
-  getScoresEventsJson,
-  getMatchesLineupsJson,
-  getMatchesStatsJson,
-  getTeamsHead2HeadJson,
 } from '@/app/(frontend)/client'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
+import FixturePageClient from '@/components/fixtures/FixturePageClient'
 import type { Metadata } from 'next'
 
 export const revalidate = 300
-
-// Вспомогательные мапперы статусов на русский
-function statusRu(status?: string): string | undefined {
-  if (!status) return undefined
-  const s = status.toUpperCase()
-  if (s.includes('NOT') || s === 'NS' || s.includes('SCHEDULED')) return 'Запланирован'
-  if (s.includes('IN PLAY') || s === 'LIVE') return 'Идёт'
-  if (s === 'HT' || s.includes('HALF TIME')) return 'Перерыв'
-  if (s.includes('ADDED TIME')) return 'Добавленное время'
-  if (s.includes('FINISHED') || s === 'FT') return 'Завершён'
-  if (s.includes('POSTPONED')) return 'Отложен'
-  if (s.includes('CANCELLED')) return 'Отменён'
-  if (s.includes('ABANDONED')) return 'Прерван'
-  return status
-}
-
-function timeStatusRu(timeStatus?: string | null): string | undefined {
-  if (!timeStatus) return undefined
-  const ts = String(timeStatus).toUpperCase()
-  if (/^\d+$/.test(ts)) return `${ts}′`
-  if (ts === 'HT') return 'Перерыв'
-  if (ts === 'FT') return 'Завершён'
-  if (ts === 'AET') return 'После доп. времени'
-  if (ts === 'AP') return 'После пенальти'
-  return timeStatus
-}
-
-function ruEventLabel(label?: string, fallback?: string): string | undefined {
-  if (label) return label
-  if (!fallback) return undefined
-  const key = fallback.toUpperCase()
-  const map: Record<string, string> = {
-    GOAL: 'Гол',
-    OWN_GOAL: 'Автогол',
-    PENALTY: 'Пенальти',
-    MISSED_PENALTY: 'Нереализованный пенальти',
-    YELLOW_CARD: 'Жёлтая карточка',
-    RED_CARD: 'Красная карточка',
-    SUBSTITUTION: 'Замена',
-    START: 'Начало',
-    END: 'Конец матча',
-  }
-  return map[key] || fallback
-}
 
 type FixtureNormalized = {
   id: number
@@ -188,6 +140,48 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
   return null
 }
 
+async function getPredictionsForFixture(fixtureId: number) {
+  try {
+    const payload = await getPayload({ config: await configPromise })
+    
+    const predictionsRes = await payload.find({
+      collection: 'posts',
+      where: {
+        and: [
+          { postType: { equals: 'prediction' } },
+          { fixtureId: { equals: fixtureId } }
+        ]
+      },
+      sort: '-publishedAt',
+      limit: 10,
+      depth: 1,
+    })
+
+    // Подсчёт комментариев для каждого прогноза
+    const withCounts = await Promise.all(
+      predictionsRes.docs.map(async (post) => {
+        try {
+          const commentsRes = await payload.find({
+            collection: 'comments',
+            where: { post: { equals: post.id } },
+            limit: 1,
+            depth: 0,
+          })
+          const commentsCount = commentsRes?.totalDocs ?? 0
+          return { post, commentsCount, rating: 0 }
+        } catch {
+          return { post, commentsCount: 0, rating: 0 }
+        }
+      }),
+    )
+
+    return withCounts
+  } catch (error) {
+    console.error('Ошибка загрузки прогнозов:', error)
+    return []
+  }
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -228,67 +222,10 @@ export default async function FixturePage({ params }: { params: Promise<{ fixtur
     )
   }
 
-  const fx = await findFixtureById(id)
-
-  // Загружаем дочерние данные (если match_id доступен)
-  let events: Array<{
-    id?: number
-    time?: number
-    label?: string
-    event?: string
-    is_home?: boolean
-    is_away?: boolean
-    player?: { name?: string } | null
-    info?: { name?: string } | null
-    sort?: number
-  }> = []
-  let lineups: {
-    home?: import('@/app/(frontend)/client').Lineup
-    away?: import('@/app/(frontend)/client').Lineup
-  } = {}
-  let stats: Record<string, string | null> | undefined
-  let h2h:
-    | {
-        last_matches_between?: import('@/app/(frontend)/client').Match[]
-        team1_last_matches?: import('@/app/(frontend)/client').Match[]
-        team2_last_matches?: import('@/app/(frontend)/client').Match[]
-      }
-    | undefined
-
-  if (fx?.match_id) {
-    const settled = await Promise.allSettled([
-      getScoresEventsJson({ id: fx.match_id }),
-      getMatchesLineupsJson({ match_id: fx.match_id }),
-      getMatchesStatsJson({ match_id: fx.match_id }),
-      getTeamsHead2HeadJson({ team1_id: fx.home.id, team2_id: fx.away.id }),
-    ])
-
-    const evRes = settled[0]
-    if (evRes.status === 'fulfilled') {
-      const e = (evRes.value.data?.data?.event || []) as typeof events
-      events = e
-        .slice()
-        .sort((a, b) => (a.time ?? 0) - (b.time ?? 0) || (a.sort ?? 0) - (b.sort ?? 0))
-    }
-
-    const luRes = settled[1]
-    if (luRes.status === 'fulfilled') {
-      lineups = {
-        home: luRes.value.data?.data?.home,
-        away: luRes.value.data?.data?.away,
-      }
-    }
-
-    const stRes = settled[2]
-    if (stRes.status === 'fulfilled') {
-      stats = stRes.value.data?.data as Record<string, string | null> | undefined
-    }
-
-    const h2hRes = settled[3]
-    if (h2hRes.status === 'fulfilled') {
-      h2h = h2hRes.value.data?.data as typeof h2h
-    }
-  }
+  const [fx, predictions] = await Promise.all([
+    findFixtureById(id),
+    getPredictionsForFixture(id)
+  ])
 
   if (!fx) {
     return (
@@ -311,427 +248,7 @@ export default async function FixturePage({ params }: { params: Promise<{ fixtur
   return (
     <Section>
       <Container className="space-y-6">
-        {/* Шапка */}
-        <header className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            <LocalDateTime date={fx.date} time={fx.time} utc />
-            {fx.competition?.name ? (
-              <Badge variant="outline" className="ml-2">
-                {fx.competition.name}
-              </Badge>
-            ) : null}
-            {fx.round ? (
-              <Badge variant="secondary" className="ml-2">
-                Тур {fx.round}
-              </Badge>
-            ) : null}
-            {fx.group_id ? (
-              <Badge variant="secondary" className="ml-2">
-                Группа {fx.group_id}
-              </Badge>
-            ) : null}
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Trophy className="h-6 w-6 text-primary" />
-              <h1 className="text-2xl font-bold tracking-tight">
-                {fx.home.name} — {fx.away.name}
-              </h1>
-            </div>
-            <div className="text-sm text-muted-foreground inline-flex items-center gap-2">
-              {fx.status ? <Badge variant="secondary">{fx.status}</Badge> : null}
-              <Clock className="h-4 w-4" />
-              <LocalDateTime date={fx.date} time={fx.time} utc showDate={false} />
-            </div>
-          </div>
-
-          {/* Время и обновления */}
-          <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
-            <span>
-              <span className="font-medium">Начало:</span>{' '}
-              <LocalDateTime date={fx.date} time={fx.time} utc />
-            </span>
-            {typeof fx.time_status !== 'undefined' ? (
-              <span>
-                <span className="font-medium">Сейчас:</span> {timeStatusRu(fx.time_status) || '—'}
-              </span>
-            ) : null}
-            {fx.last_changed ? (
-              <span>
-                <span className="font-medium">Обновлено:</span>{' '}
-                <LocalDateTime dateTime={fx.last_changed.replace(' ', 'T')} utc />
-              </span>
-            ) : null}
-          </div>
-        </header>
-
-        {/* Детали */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Детали матча</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Команды */}
-            <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-3">
-              <div className="text-right">
-                <Link
-                  href={`/teams/${fx.home.id}`}
-                  className="text-lg font-semibold hover:text-primary"
-                >
-                  {fx.home.name}
-                </Link>
-              </div>
-              <div className="text-center text-muted-foreground">vs</div>
-              <div className="text-left">
-                <Link
-                  href={`/teams/${fx.away.id}`}
-                  className="text-lg font-semibold hover:text-primary"
-                >
-                  {fx.away.name}
-                </Link>
-              </div>
-            </div>
-
-            {/* Место проведения */}
-            {fx.location ? (
-              <div className="text-sm text-muted-foreground inline-flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                <span>{fx.location}</span>
-              </div>
-            ) : null}
-
-            {/* Текущий счёт (если матч live/завершён) */}
-            {fx.scores?.score ? (
-              <div className="text-sm">
-                <div className="font-medium mb-1">Счёт</div>
-                <div className="text-muted-foreground">{fx.scores.score}</div>
-                <div className="text-xs text-muted-foreground mt-1 grid grid-cols-2 gap-2">
-                  {fx.scores.ht_score ? <span>HT: {fx.scores.ht_score}</span> : null}
-                  {fx.scores.ft_score ? <span>FT: {fx.scores.ft_score}</span> : null}
-                  {fx.scores.et_score ? <span>ET: {fx.scores.et_score}</span> : null}
-                  {fx.scores.ps_score ? <span>PS: {fx.scores.ps_score}</span> : null}
-                </div>
-              </div>
-            ) : null}
-
-            {/* Коэффициенты */}
-            {fx.odds?.pre && (fx.odds.pre['1'] || fx.odds.pre.X || fx.odds.pre['2']) ? (
-              <div className="text-sm">
-                <div className="font-medium mb-1">Прематчевые коэффициенты</div>
-                <div className="flex items-center gap-3 text-muted-foreground">
-                  {fx.odds.pre['1'] != null ? (
-                    <Badge variant="outline">1 {fx.odds.pre['1']}</Badge>
-                  ) : null}
-                  {fx.odds.pre.X != null ? (
-                    <Badge variant="outline">X {fx.odds.pre.X}</Badge>
-                  ) : null}
-                  {fx.odds.pre['2'] != null ? (
-                    <Badge variant="outline">2 {fx.odds.pre['2']}</Badge>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
-
-            {fx.odds?.live &&
-            (fx.odds.live['1'] != null || fx.odds.live.X != null || fx.odds.live['2'] != null) ? (
-              <div className="text-sm">
-                <div className="font-medium mb-1">Live коэффициенты</div>
-                <div className="flex items-center gap-3 text-muted-foreground">
-                  {fx.odds.live['1'] != null ? (
-                    <Badge variant="outline">1 {fx.odds.live['1']}</Badge>
-                  ) : null}
-                  {fx.odds.live.X != null ? (
-                    <Badge variant="outline">X {fx.odds.live.X}</Badge>
-                  ) : null}
-                  {fx.odds.live['2'] != null ? (
-                    <Badge variant="outline">2 {fx.odds.live['2']}</Badge>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
-
-            {/* Исходы по этапам */}
-            {fx.outcomes &&
-            (fx.outcomes.half_time ||
-              fx.outcomes.full_time ||
-              fx.outcomes.extra_time ||
-              fx.outcomes.penalty_shootout) ? (
-              <div className="text-sm">
-                <div className="font-medium mb-1">Исходы</div>
-                <div className="grid grid-cols-2 gap-2 text-muted-foreground">
-                  {fx.outcomes.half_time ? <div>1-й тайм: {fx.outcomes.half_time}</div> : null}
-                  {fx.outcomes.full_time ? <div>Матч: {fx.outcomes.full_time}</div> : null}
-                  {fx.outcomes.extra_time ? <div>Доп. время: {fx.outcomes.extra_time}</div> : null}
-                  {fx.outcomes.penalty_shootout ? (
-                    <div>Пенальти: {fx.outcomes.penalty_shootout}</div>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
-
-            {/* H2H */}
-            {fx.h2h ? (
-              <div className="text-sm">
-                <a
-                  href={fx.h2h}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  История встреч (H2H)
-                </a>
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
-
-        {/* События матча */}
-        {events.length > 0 ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>События матча</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {events.map((ev) => (
-                  <div
-                    key={ev.id ?? `${ev.time}-${ev.sort}`}
-                    className="flex items-center justify-between text-sm"
-                  >
-                    <div className="text-muted-foreground w-14">{ev.time ? `${ev.time}'` : ''}</div>
-                    <div className="flex-1 px-2">
-                      <div className="font-medium truncate">{ruEventLabel(ev.label, ev.event)}</div>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {[ev.player?.name, ev.info?.name].filter(Boolean).join(' / ')}
-                      </div>
-                    </div>
-                    <div className="text-xs text-muted-foreground w-20 text-right">
-                      {ev.is_home ? 'Home' : ev.is_away ? 'Away' : ''}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ) : null}
-
-        {/* Составы */}
-        {lineups.home || lineups.away ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Составы</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <div className="font-medium mb-2">{fx.home.name}</div>
-                  <div className="text-sm text-muted-foreground mb-1">Стартовый состав</div>
-                  <div className="space-y-1 text-sm">
-                    {lineups.home?.starting_lineup?.map((p, i) => (
-                      <div key={`${p?.id ?? i}`} className="flex items-center gap-2">
-                        {p?.number != null ? (
-                          <span className="text-xs w-6 text-center">{p.number}</span>
-                        ) : (
-                          <span className="w-6" />
-                        )}
-                        <span className="truncate">{p?.name}</span>
-                        {p?.position ? (
-                          <span className="text-xs text-muted-foreground">({p.position})</span>
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
-                  {lineups.home?.substitutes && lineups.home.substitutes.length > 0 ? (
-                    <div className="mt-3">
-                      <div className="text-sm text-muted-foreground mb-1">Запасные</div>
-                      <div className="space-y-1 text-sm">
-                        {lineups.home.substitutes.map((p, i) => (
-                          <div key={`${p?.id ?? i}`} className="flex items-center gap-2">
-                            {p?.number != null ? (
-                              <span className="text-xs w-6 text-center">{p.number}</span>
-                            ) : (
-                              <span className="w-6" />
-                            )}
-                            <span className="truncate">{p?.name}</span>
-                            {p?.position ? (
-                              <span className="text-xs text-muted-foreground">({p.position})</span>
-                            ) : null}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-
-                <div>
-                  <div className="font-medium mb-2">{fx.away.name}</div>
-                  <div className="text-sm text-muted-foreground mb-1">Стартовый состав</div>
-                  <div className="space-y-1 text-sm">
-                    {lineups.away?.starting_lineup?.map((p, i) => (
-                      <div key={`${p?.id ?? i}`} className="flex items-center gap-2">
-                        {p?.number != null ? (
-                          <span className="text-xs w-6 text-center">{p.number}</span>
-                        ) : (
-                          <span className="w-6" />
-                        )}
-                        <span className="truncate">{p?.name}</span>
-                        {p?.position ? (
-                          <span className="text-xs text-muted-foreground">({p.position})</span>
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
-                  {lineups.away?.substitutes && lineups.away.substitutes.length > 0 ? (
-                    <div className="mt-3">
-                      <div className="text-sm text-muted-foreground mb-1">Запасные</div>
-                      <div className="space-y-1 text-sm">
-                        {lineups.away.substitutes.map((p, i) => (
-                          <div key={`${p?.id ?? i}`} className="flex items-center gap-2">
-                            {p?.number != null ? (
-                              <span className="text-xs w-6 text-center">{p.number}</span>
-                            ) : (
-                              <span className="w-6" />
-                            )}
-                            <span className="truncate">{p?.name}</span>
-                            {p?.position ? (
-                              <span className="text-xs text-muted-foreground">({p.position})</span>
-                            ) : null}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : null}
-
-        {/* Статистика */}
-        {stats && Object.keys(stats).length > 0 ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Статистика</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                {Object.entries(stats)
-                  .filter(([, v]) => v)
-                  .map(([k, v]) => {
-                    const [homeVal, awayVal] = String(v).split(':')
-                    return (
-                      <div
-                        key={k}
-                        className="flex items-center justify-between gap-2 border rounded p-2"
-                      >
-                        <span className="text-muted-foreground truncate">
-                          {k.replaceAll('_', ' ')}
-                        </span>
-                        <span className="inline-flex items-center gap-2">
-                          <Badge variant="outline">{homeVal}</Badge>
-                          <span className="text-muted-foreground">:</span>
-                          <Badge variant="outline">{awayVal}</Badge>
-                        </span>
-                      </div>
-                    )
-                  })}
-              </div>
-            </CardContent>
-          </Card>
-        ) : null}
-
-        {/* Очные встречи (H2H) */}
-        {h2h &&
-        (h2h.last_matches_between?.length ||
-          h2h.team1_last_matches?.length ||
-          h2h.team2_last_matches?.length) ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Очные встречи (H2H)</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {h2h.last_matches_between && h2h.last_matches_between.length > 0 ? (
-                <div>
-                  <div className="font-medium mb-2">Последние очные матчи</div>
-                  <div className="space-y-1 text-sm">
-                    {h2h.last_matches_between.slice(0, 5).map((m) => (
-                      <div key={m.id} className="flex items-center justify-between">
-                        <div className="text-xs text-muted-foreground">
-                          <LocalDateTime
-                            date={m.date as unknown as string}
-                            time={m.time as unknown as string}
-                            utc
-                          />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="truncate max-w-[180px] text-right">{m.home?.name}</span>
-                          <span className="text-muted-foreground">
-                            {m.scores?.ft_score || m.scores?.score || 'vs'}
-                          </span>
-                          <span className="truncate max-w-[180px]">{m.away?.name}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-
-              {h2h.team1_last_matches && h2h.team1_last_matches.length > 0 ? (
-                <div>
-                  <div className="font-medium mb-2">Последние матчи — {fx.home.name}</div>
-                  <div className="space-y-1 text-sm">
-                    {h2h.team1_last_matches.slice(0, 5).map((m) => (
-                      <div key={m.id} className="flex items-center justify-between">
-                        <div className="text-xs text-muted-foreground">
-                          <LocalDateTime
-                            date={m.date as unknown as string}
-                            time={m.time as unknown as string}
-                            utc
-                          />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="truncate max-w-[180px] text-right">{m.home?.name}</span>
-                          <span className="text-muted-foreground">
-                            {m.scores?.ft_score || m.scores?.score || 'vs'}
-                          </span>
-                          <span className="truncate max-w-[180px]">{m.away?.name}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-
-              {h2h.team2_last_matches && h2h.team2_last_matches.length > 0 ? (
-                <div>
-                  <div className="font-medium mb-2">Последние матчи — {fx.away.name}</div>
-                  <div className="space-y-1 text-sm">
-                    {h2h.team2_last_matches.slice(0, 5).map((m) => (
-                      <div key={m.id} className="flex items-center justify-between">
-                        <div className="text-xs text-muted-foreground">
-                          <LocalDateTime
-                            date={m.date as unknown as string}
-                            time={m.time as unknown as string}
-                            utc
-                          />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="truncate max-w-[180px] text-right">{m.home?.name}</span>
-                          <span className="text-muted-foreground">
-                            {m.scores?.ft_score || m.scores?.score || 'vs'}
-                          </span>
-                          <span className="truncate max-w-[180px]">{m.away?.name}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
-        ) : null}
+        <FixturePageClient fx={fx} initialPredictions={predictions} />
 
         {/* Навигация */}
         <div className="flex items-center gap-2">
