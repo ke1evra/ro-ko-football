@@ -13,6 +13,7 @@ export type RequestConfig = RequestInit & {
     revalidate?: number | false
     tags?: string[]
   }
+  timeoutMs?: number
 }
 
 export type ResponseErrorConfig<T = unknown> = {
@@ -45,7 +46,7 @@ export function createCustomFetch({
       body?: TBody
     } & RequestConfig,
   ): Promise<{ data: TRes; status: number; statusText: string }> {
-    const { method = 'GET', url: configUrl = '', params, body, ...restConfig } = config
+    const { method = 'GET', url: configUrl = '', params, body, timeoutMs = 8000, ...restConfig } = config
 
     // Нормализуем базовый URL и путь
     const base = new URL(baseUrl.endsWith('/') ? baseUrl : baseUrl + '/')
@@ -94,6 +95,30 @@ export function createCustomFetch({
       },
     }
 
+    // По умолчанию отключаем кэш и ISR для всех запросов через клиент,
+    // чтобы избежать ошибок "Failed to set fetch cache" при сетевых таймаутах
+    if (!('cache' in init)) {
+      init.cache = 'no-store'
+    }
+    ;(init as any).next = (init as any).next ?? { revalidate: 0 }
+
+    // Таймаут и AbortController на все запросы
+    let timeoutHandle: any = null
+    let ac: AbortController | null = null
+    try {
+      if (typeof AbortController !== 'undefined') {
+        ac = new AbortController()
+        const origSignal = (restConfig as any).signal as AbortSignal | undefined
+        if (origSignal && 'addEventListener' in origSignal) {
+          origSignal.addEventListener('abort', () => ac?.abort(), { once: true } as any)
+        }
+        ;(init as any).signal = ac.signal
+        timeoutHandle = setTimeout(() => ac?.abort(), timeoutMs)
+      }
+    } catch {
+      // ignore
+    }
+
     // Поддержк�� тела запроса для не-GET методов
     if (body !== undefined && String(method).toUpperCase() !== 'GET') {
       if (typeof FormData !== 'undefined' && body instanceof FormData) {
@@ -112,7 +137,12 @@ export function createCustomFetch({
       }
     }
 
-    const response = await fetchImpl(fullUrl.toString(), init)
+    let response: Response
+    try {
+      response = await fetchImpl(fullUrl.toString(), init)
+    } finally {
+      if (timeoutHandle) clearTimeout(timeoutHandle)
+    }
 
     let data: any
     try {

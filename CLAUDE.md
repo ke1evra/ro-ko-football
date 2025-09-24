@@ -171,3 +171,75 @@ MVP: launch fast → start with **live stats pages**, then switch to Directus, t
 - **Goal:** editorial news; finalize SEO.
 - **Exit:** news visible; sitemap/robots/JSON-LD valid.
 - **DoD:** E2E news; SEO checks pass; Lighthouse budgets green.
+
+---
+
+## 5. Client Data Reference
+
+### User Roles
+- `admin` — full access
+- `user` — regular users
+
+### Collections
+
+#### Users
+- email, username, name
+- role: admin/user
+- rating, emailVerified
+
+#### Posts
+- title, slug (auto-generated), content
+- postType: regular/prediction
+- author, publishedAt
+- For predictions: matchId, fixtureId, prediction data
+
+#### Comments
+- content, author, post
+- parent (for threading)
+
+### Access Rules
+- **Read**: public for all collections
+- **Create**: authenticated users only
+- **Update/Delete**: admin or owner only
+
+### API Clients
+
+#### catalogsService
+- getCompetitionsListJson — list of competitions/leagues
+- getCountriesListJson — list of countries
+- getFederationsListJson — list of federations (UEFA, FIFA, etc.)
+- getTeamsListJson — list of teams
+- getSeasonsListJson — list of seasons
+
+#### matchesService
+- getMatchesLiveJson — live matches
+- getMatchesHistoryJson — completed matches
+- getTeamsHead2HeadJson — head-to-head between teams
+- getTeamsMatchesJson — matches for specific team
+
+#### tablesService
+- getTablesStandingsJson — league standings/tables
+- getCompetitionsTopscorersJson — top scorers
+- getCompetitionsTopcardsJson — top cards (yellow/red)
+
+#### fixturesService
+- getFixturesMatchesJson — upcoming fixtures
+
+#### eventsService
+- getScoresEventsJson — match events (goals, cards, etc.)
+
+#### lineupsStatsService
+- getMatchesLineupsJson — team lineups
+- getMatchesStatsJson — match statistics
+
+#### utilityService
+- getAuthVerifyJson — API auth verification
+- getCountriesFlagPng — country flag images
+
+### Highlight Leagues
+```json
+{
+  "eng": 148, "ger": 175, "ita": 207, "fra": 168,
+  "esp": 302, "rus": 271, "ucl": 2, "uel": 3
+}
+```

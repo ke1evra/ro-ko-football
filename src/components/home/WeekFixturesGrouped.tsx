@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { LocalDateTime } from '@/components/LocalDateTime'
 import { Calendar, Clock, MapPin } from 'lucide-react'
+import { COMPETITION_NAME_PATTERNS } from '@/lib/highlight-competitions'
 
 export type UpcomingMatch = {
   id: number
@@ -22,6 +23,22 @@ export type UpcomingMatch = {
     live?: { '1'?: number | null; '2'?: number | null; X?: number | null }
   }
   h2h?: string
+}
+
+const PRIORITY_ORDER = ['ucl', 'uel', 'eng', 'ger', 'ita', 'fra', 'esp', 'rus'] as const
+type PriorityKey = (typeof PRIORITY_ORDER)[number]
+
+function getCompetitionWeight(name?: string): number {
+  if (!name) return 9999
+  const lower = name.toLowerCase()
+  for (let i = 0; i < PRIORITY_ORDER.length; i += 1) {
+    const key = PRIORITY_ORDER[i] as PriorityKey
+    const patterns = COMPETITION_NAME_PATTERNS[key] || []
+    if (patterns.some((re) => re.test(lower))) {
+      return i
+    }
+  }
+  return 9999
 }
 
 export default function WeekFixturesGrouped({ matches }: { matches: UpcomingMatch[] }) {
@@ -64,7 +81,16 @@ export default function WeekFixturesGrouped({ matches }: { matches: UpcomingMatc
             </div>
 
             <div className="divide-y">
-              {Array.from(leagues.entries()).map(([leagueKey, bucket]) => (
+              {Array.from(leagues.entries())
+                .sort((a, b) => {
+                  const wa = getCompetitionWeight(a[1].competition?.name)
+                  const wb = getCompetitionWeight(b[1].competition?.name)
+                  if (wa !== wb) return wa - wb
+                  const an = a[1].competition?.name || ''
+                  const bn = b[1].competition?.name || ''
+                  return an.localeCompare(bn)
+                })
+                .map(([leagueKey, bucket]) => (
                 <div key={leagueKey}>
                   <div className="flex items-center justify-between px-3 py-2 bg-muted/40">
                     <div className="flex items-center gap-2">

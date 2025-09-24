@@ -292,8 +292,8 @@ async function findMatchById(matchId: number): Promise<MatchNormalized | null> {
 
   // Фоллбэк 2: ищем в истории за последние 6 месяцев
   const searchPeriods = [
-    { days: 30, size: 500 },   // Последний месяц
-    { days: 90, size: 1000 },  // Последние 3 месяца
+    { days: 30, size: 100 },   // Последний месяц
+    { days: 90, size: 200 },   // Последние 3 месяца
     { days: 180, size: 2000 }, // Последние 6 месяцев
   ]
 

@@ -39,7 +39,7 @@ async function getLeagueInfo(leagueId: string): Promise<League | null> {
     console.log(`Поиск лиги с ID: ${leagueId}`)
 
     // Получаем информацию о лиге из списка всех лиг
-    const response = await getCompetitionsListJson({ size: 500 }, { next: { revalidate: 300 } })
+    const response = await getCompetitionsListJson({ size: 100 }, { next: { revalidate: 300 }, cache: 'no-store' })
 
     // Проверяем различные структуры, но используем типизированный путь data.data.competition
     const competitions = (response.data?.data?.competition || []) as Array<{

@@ -72,56 +72,42 @@ async function getPostsPage(pageParam?: string) {
 }
 
 async function getTopUpcomingMatches() {
-  // Получаем Competitions и выбираем топ‑лиги по странам/названиям
-  const compsRes = await getCompetitionsListJson({ size: 1000 })
-  const comps = ((compsRes.data as any)?.data?.competition || []) as Array<{
-    id?: number | string
-    name?: string
-    countries?: Array<{ id?: number | string; name?: string }>
-  }>
+  try {
+    // Используем чит-лист вместо тяжёлого запроса всех лиг
+    const topCompIds = [2, 3, 148, 175, 207, 168, 302, 271] // ucl, uel, eng, ger, ita, fra, esp, rus
+    const compIdSet = new Set<number>(topCompIds)
 
-  let topCompIds = comps
-    .filter((c) => {
-      const country = c.countries?.[0]?.name
-      const name = c.name || ''
-      if (country && (TOP_COUNTRIES_RU.has(country) || TOP_COUNTRIES_EN.has(country))) return true
-      return TOP_LEAGUE_NAME_PATTERNS.some((p) => name.includes(p))
+    // Запрашиваем только на 3 дня вперёд вместо 14
+    const now = new Date()
+    const to = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
+    const fixturesRes = await getFixturesMatchesJson({ 
+      from: now, 
+      to, 
+      size: 100, // Уменьшили с 500 до 100
+      competition_id: topCompIds.join(',') // Фильтруем сразу в API
     })
-    .map((c) => Number(c.id))
-    .filter((v) => Number.isFinite(v))
+    
+    const fixtures = (((fixturesRes.data as any)?.data?.fixtures || []) as any[])
+      .map((fx) => ({
+        fixtureId: Number(fx.id),
+        competitionId: Number(fx.competition?.id || 0) || undefined,
+        date: String(fx.date || ''),
+        time: String(fx.time || ''),
+        competitionName: String(fx.competition?.name || ''),
+        home: fx.home?.name || fx.home_team?.name || fx.home_name || 'Команда дома',
+        away: fx.away?.name || fx.away_team?.name || fx.away_name || 'Команда гостей',
+      }))
+      .filter((m) => m.fixtureId && m.date)
+      .sort(
+        (a, b) => new Date(`${a.date}T${a.time || '00:00'}Z`).getTime() - new Date(`${b.date}T${b.time || '00:00'}Z`).getTime(),
+      )
+      .slice(0, 5)
 
-  // Если ничего не нашли — возьмём топ-6 первых по имени (временный фолбэк)
-  if (topCompIds.length === 0) {
-    topCompIds = comps
-      .filter((c) => c.name)
-      .slice(0, 6)
-      .map((c) => Number(c.id))
-      .filter((v) => Number.isFinite(v))
+    return fixtures
+  } catch (e) {
+    console.error('[getTopUpcomingMatches] Error:', e)
+    return []
   }
-
-  const compIdSet = new Set<number>(topCompIds)
-
-  const now = new Date()
-  const to = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
-  const fixturesRes = await getFixturesMatchesJson({ from: now, to, size: 500 })
-  const fixtures = (((fixturesRes.data as any)?.data?.fixtures || []) as any[])
-    .filter((fx) => compIdSet.has(Number(fx?.competition?.id)))
-    .map((fx) => ({
-      fixtureId: Number(fx.id),
-      competitionId: Number(fx.competition?.id || 0) || undefined,
-      date: String(fx.date || ''),
-      time: String(fx.time || ''),
-      competitionName: String(fx.competition?.name || ''),
-      home: fx.home?.name || fx.home_team?.name || fx.home_name || 'Команда дома',
-      away: fx.away?.name || fx.away_team?.name || fx.away_name || 'Команда гостей',
-    }))
-    .filter((m) => m.fixtureId && m.date)
-    .sort(
-      (a, b) => new Date(`${a.date}T${a.time || '00:00'}Z`).getTime() - new Date(`${b.date}T${b.time || '00:00'}Z`).getTime(),
-    )
-    .slice(0, 5)
-
-  return fixtures
 }
 
 async function getLiveMatchesTop() {

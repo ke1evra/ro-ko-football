@@ -98,16 +98,17 @@ async function getCompetitions(
   federationName?: string
 }> {
   try {
-    // Получаем соревнования (увеличиваем size для главной без фильтров)
+    // Получаем соревнования (ограничиваем size для избежания таймаутов)
     const params = {
       page,
-      size: !countryId && !federationId ? 1000 : 50,
+      size: !countryId && !federationId ? 100 : 50, // Уменьшили с 1000 до 100
       ...(countryId && { country_id: parseInt(countryId) }),
       ...(federationId && { federation_id: parseInt(federationId) }),
     }
 
     const response = await getCompetitionsListJson(params, {
       next: { revalidate: 60 },
+      cache: 'no-store', // Отключаем кэш для избежания ошибок
     })
 
     const competitionsRaw = (response.data?.data?.competition || []) as Array<{
