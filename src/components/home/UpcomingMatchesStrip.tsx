@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 
-import { getCompetitionWeightByIdName } from '@/lib/highlight-competitions'
+import { getLeaguePriorityClient } from '@/lib/highlight-competitions-client'
 import type { Fixture } from '@/app/(frontend)/client/types/Fixture'
 
 export type StripMatch = {
@@ -30,20 +30,39 @@ function formatTime(date: string, time?: string) {
 function normalizeFixture(fx: any): StripMatch | null {
   const id = Number(fx?.id)
   if (!Number.isFinite(id)) return null
+  
+  // Извлекаем данные из разных возможных форматов API
+  const home = {
+    id: Number(fx?.home_id || fx?.home?.id || 0),
+    name: String(fx?.home_name || fx?.home?.name || 'Команда дома'),
+    logo: fx?.home?.logo || fx?.home_logo || null,
+  }
+  
+  const away = {
+    id: Number(fx?.away_id || fx?.away?.id || 0),
+    name: String(fx?.away_name || fx?.away?.name || 'Команда гостей'),
+    logo: fx?.away?.logo || fx?.away_logo || null,
+  }
+  
+  const competition = fx?.competition_id ? {
+    id: Number(fx.competition_id),
+    name: String(fx?.league?.name || fx?.competition?.name || 'Неизвестная лига'),
+  } : undefined
+  
   return {
     id,
     date: String(fx?.date || ''),
     time: typeof fx?.time === 'string' ? fx.time : undefined,
-    home: fx?.home || fx?.homeTeam || fx?.teamA || undefined,
-    away: fx?.away || fx?.awayTeam || fx?.teamB || undefined,
-    competition: fx?.competition || undefined,
+    home,
+    away,
+    competition,
     country: fx?.country || fx?.competition?.country || undefined,
   }
 }
 
 function sortByPriorityAndTime(a: StripMatch, b: StripMatch) {
-  const wa = getCompetitionWeightByIdName(a.competition)
-  const wb = getCompetitionWeightByIdName(b.competition)
+  const wa = getLeaguePriorityClient(a.competition?.id || 0)
+  const wb = getLeaguePriorityClient(b.competition?.id || 0)
   if (wa !== wb) return wa - wb
   const ta = new Date(`${a.date}T${a.time || '00:00'}Z`).getTime()
   const tb = new Date(`${b.date}T${b.time || '00:00'}Z`).getTime()
@@ -113,13 +132,18 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
 
   return (
     <div className="w-full overflow-x-auto">
-      <div className="flex gap-3 min-w-max py-2 px-3">
+      <div className="flex gap-3 py-2 min-w-max">
         {sorted.length > 0
           ? sorted.map((m) => (
               <Link key={m.id} href={`/fixtures/${m.id}`} className="flex-shrink-0">
                 <div className="w-64 border rounded-lg p-3 hover:bg-accent transition-colors">
-                  <div className="text-[11px] text-muted-foreground mb-1">
-                    {m.country?.name ? `${m.country.name}. ` : ''}{m.competition?.name || ''}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      {m.competition?.name || 'Неизвестная лига'}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {formatTime(m.date, m.time)}
+                    </div>
                   </div>
                   <div className="grid grid-cols-[24px_1fr] gap-2">
                     <div className="relative w-6 h-6 rounded bg-muted/60 overflow-hidden">

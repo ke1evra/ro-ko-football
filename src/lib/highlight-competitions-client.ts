@@ -1,10 +1,14 @@
-import { getCompetitionsListJson } from '@/app/(frontend)/client'
+/**
+ * Клиентские утилиты для работы с приоритетными лигами
+ * Эти функции можно использовать в клиентских компонентах
+ * Синхронизировано с серверной версией из highlight-competitions.ts
+ */
 
 /**
- * Приоритетные лиги для отображения на главной странице
+ * Приоритетные лиги (клиентская копия серверной версии)
  * ID получены через прямой запрос к API лиг
  */
-export const PRIORITY_LEAGUES = {
+export const PRIORITY_LEAGUES_CLIENT = {
   // Топ-5 европейских лиг
   PREMIER_LEAGUE: { 
     id: 2, 
@@ -76,50 +80,34 @@ export const PRIORITY_LEAGUES = {
 } as const
 
 /**
- * Получить ID всех приоритетных лиг
- */
-export function getPriorityLeagueIds(): number[] {
-  return Object.values(PRIORITY_LEAGUES).map(league => league.id)
-}
-
-/**
- * Проверить, является ли лига приоритетной
- */
-export function isPriorityLeague(competitionId: number): boolean {
-  return getPriorityLeagueIds().includes(competitionId)
-}
-
-/**
  * Получить приоритет лиги (чем меньше число, тем выше приоритет)
+ * Клие��тская версия функции
  */
-export function getLeaguePriority(competitionId: number): number {
-  const league = Object.values(PRIORITY_LEAGUES).find(league => league.id === competitionId)
+export function getLeaguePriorityClient(competitionId: number): number {
+  const league = Object.values(PRIORITY_LEAGUES_CLIENT).find(league => league.id === competitionId)
   return league?.priority ?? 999 // Низкий приоритет для неприоритетных лиг
 }
 
 /**
+ * Проверить, является ли лига приоритетной
+ * Клиентская версия функции
+ */
+export function isPriorityLeagueClient(competitionId: number): boolean {
+  return Object.values(PRIORITY_LEAGUES_CLIENT).some(league => league.id === competitionId)
+}
+
+/**
  * Получить информацию о лиге по ID
+ * Клиентская версия функции
  */
-export function getLeagueInfo(competitionId: number) {
-  return Object.values(PRIORITY_LEAGUES).find(league => league.id === competitionId)
+export function getLeagueInfoClient(competitionId: number) {
+  return Object.values(PRIORITY_LEAGUES_CLIENT).find(league => league.id === competitionId)
 }
 
 /**
- * Получить все приоритетные лиги, отсортированные по приоритету
+ * Получить ID всех приоритетных лиг
+ * Клиентская версия функции
  */
-export function getAllPriorityLeagues() {
-  return Object.values(PRIORITY_LEAGUES).sort((a, b) => a.priority - b.priority)
-}
-
-/**
- * Сортировать матчи по приоритету лиг
- */
-export function sortMatchesByLeaguePriority<T extends { competitionId?: number }>(
-  matches: T[]
-): T[] {
-  return matches.sort((a, b) => {
-    const priorityA = getLeaguePriority(a.competitionId || 0)
-    const priorityB = getLeaguePriority(b.competitionId || 0)
-    return priorityA - priorityB
-  })
+export function getPriorityLeagueIdsClient(): number[] {
+  return Object.values(PRIORITY_LEAGUES_CLIENT).map(league => league.id)
 }

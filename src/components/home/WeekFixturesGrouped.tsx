@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { LocalDateTime } from '@/components/LocalDateTime'
 import { Calendar, Clock, MapPin } from 'lucide-react'
-import { COMPETITION_NAME_PATTERNS } from '@/lib/highlight-competitions'
+import { getLeaguePriorityClient } from '@/lib/highlight-competitions-client'
 
 export type UpcomingMatch = {
   id: number
@@ -25,20 +25,9 @@ export type UpcomingMatch = {
   h2h?: string
 }
 
-const PRIORITY_ORDER = ['ucl', 'uel', 'eng', 'ger', 'ita', 'fra', 'esp', 'rus'] as const
-type PriorityKey = (typeof PRIORITY_ORDER)[number]
-
-function getCompetitionWeight(name?: string): number {
-  if (!name) return 9999
-  const lower = name.toLowerCase()
-  for (let i = 0; i < PRIORITY_ORDER.length; i += 1) {
-    const key = PRIORITY_ORDER[i] as PriorityKey
-    const patterns = COMPETITION_NAME_PATTERNS[key] || []
-    if (patterns.some((re) => re.test(lower))) {
-      return i
-    }
-  }
-  return 9999
+function getCompetitionWeight(competitionId?: number): number {
+  if (!competitionId) return 9999
+  return getLeaguePriorityClient(competitionId)
 }
 
 export default function WeekFixturesGrouped({ matches }: { matches: UpcomingMatch[] }) {
@@ -83,8 +72,8 @@ export default function WeekFixturesGrouped({ matches }: { matches: UpcomingMatc
             <div className="divide-y">
               {Array.from(leagues.entries())
                 .sort((a, b) => {
-                  const wa = getCompetitionWeight(a[1].competition?.name)
-                  const wb = getCompetitionWeight(b[1].competition?.name)
+                  const wa = getCompetitionWeight(a[1].competition?.id)
+                  const wb = getCompetitionWeight(b[1].competition?.id)
                   if (wa !== wb) return wa - wb
                   const an = a[1].competition?.name || ''
                   const bn = b[1].competition?.name || ''

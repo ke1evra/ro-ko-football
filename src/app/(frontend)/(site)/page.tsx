@@ -15,21 +15,15 @@ import {
   getFixturesMatchesJson,
   getMatchesLiveJson,
 } from '@/app/(frontend)/client'
+import { 
+  getPriorityLeagueIds, 
+  sortMatchesByLeaguePriority,
+  isPriorityLeague,
+  getAllPriorityLeagues
+} from '@/lib/highlight-competitions'
+import WeekFixturesGrouped from '@/components/home/WeekFixturesGrouped'
 
 export const revalidate = 120
-
-// Страны для топ-6 лиг
-const TOP_COUNTRIES_RU = new Set(['Англия', 'Германия', 'Италия', 'Испания', 'Франция', 'Россия'])
-const TOP_COUNTRIES_EN = new Set(['England', 'Germany', 'Italy', 'Spain', 'France', 'Russia'])
-const TOP_LEAGUE_NAME_PATTERNS = [
-  'Premier League',
-  'Bundesliga',
-  'Serie A',
-  'La Liga',
-  'Ligue 1',
-  'Премьер',
-  'РПЛ',
-]
 
 type SearchParams = Promise<{ page?: string }>
 
@@ -71,72 +65,32 @@ async function getPostsPage(pageParam?: string) {
   }
 }
 
+async function getPriorityLeagueMatches() {
+  // Заглушка для серверного рендеринга - данные будут загружены на клиенте
+  return { matches: [], rawData: { fixtures: [], message: 'Данные загружаются на клиенте' } }
+}
+
 async function getTopUpcomingMatches() {
-  try {
-    // Используем чит-лист вместо тяжёлого запроса всех лиг
-    const topCompIds = [2, 3, 148, 175, 207, 168, 302, 271] // ucl, uel, eng, ger, ita, fra, esp, rus
-    const compIdSet = new Set<number>(topCompIds)
-
-    // Запрашиваем только на 3 дня вперёд вместо 14
-    const now = new Date()
-    const to = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
-    const fixturesRes = await getFixturesMatchesJson({ 
-      from: now, 
-      to, 
-      size: 100, // Уменьшили с 500 до 100
-      competition_id: topCompIds.join(',') // Фильтруем сразу в API
-    })
-    
-    const fixtures = (((fixturesRes.data as any)?.data?.fixtures || []) as any[])
-      .map((fx) => ({
-        fixtureId: Number(fx.id),
-        competitionId: Number(fx.competition?.id || 0) || undefined,
-        date: String(fx.date || ''),
-        time: String(fx.time || ''),
-        competitionName: String(fx.competition?.name || ''),
-        home: fx.home?.name || fx.home_team?.name || fx.home_name || 'Команда дома',
-        away: fx.away?.name || fx.away_team?.name || fx.away_name || 'Команда гостей',
-      }))
-      .filter((m) => m.fixtureId && m.date)
-      .sort(
-        (a, b) => new Date(`${a.date}T${a.time || '00:00'}Z`).getTime() - new Date(`${b.date}T${b.time || '00:00'}Z`).getTime(),
-      )
-      .slice(0, 5)
-
-    return fixtures
-  } catch (e) {
-    console.error('[getTopUpcomingMatches] Error:', e)
-    return []
-  }
+  // Заглушка для серверного рендеринга - данные будут загружены на клиенте
+  return []
 }
 
 async function getLiveMatchesTop() {
-  try {
-    const liveRes = await getMatchesLiveJson({ page: 1 })
-    const matches = (((liveRes.data as any)?.data?.match || []) as any[]).map((m) => ({
-      matchId: Number(m.id || 0) || undefined,
-      fixtureId: Number(m.fixture_id || 0) || undefined,
-      compName: m.competition?.name || '',
-      home: m.home?.name || 'Команда дома',
-      away: m.away?.name || 'Команда гостей',
-      score: (m.scores?.score as string) || '',
-      time_status: m.time_status || m.status || 'LIVE',
-    }))
-    return matches.slice(0, 10)
-  } catch {
-    return []
-  }
+  // Заглушка для серверного рендеринга - данные будут загружены на клиенте
+  return []
 }
 
 export default async function Home({ searchParams }: { searchParams: SearchParams }) {
   const { page } = await searchParams
-  const [{ items, page: curPage, totalPages }, topUpcoming, liveTop] = await Promise.all([
+  const [{ items, page: curPage, totalPages }, topUpcoming, liveTop, priorityMatches] = await Promise.all([
     getPostsPage(page),
     getTopUpcomingMatches(),
     getLiveMatchesTop(),
+    getPriorityLeagueMatches(),
   ])
 
   const breadcrumbItems = [{ label: 'Главная' }]
+  const priorityLeagues = getAllPriorityLeagues()
 
   return (
     <Section>
@@ -268,6 +222,103 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                 <div className="text-xs text-muted-foreground">SEO‑пагинация по страницам работает через параметр ?page</div>
               </CardContent>
             </Card>
+
+            {/* Блок с матчами приоритетных лиг перенесен в лейаут */}
+
+            {/* Debug блок с сырыми данными API */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">🔧 Debug: API Response</CardTitle>
+                <CardDescription className="text-xs">
+                  Сырые данные от API для отладки (будет убрано в продакшене)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">1. Приоритетные лиги (серверная версия):</h4>
+                    <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
+                      {JSON.stringify(priorityLeagues, null, 2)}
+                    </pre>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">2. ID приоритетных лиг:</h4>
+                    <pre className="text-xs bg-muted p-2 rounded">
+                      {JSON.stringify(getPriorityLeagueIds(), null, 2)}
+                    </pre>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">3. Статистика матчей:</h4>
+                    <pre className="text-xs bg-muted p-2 rounded">
+                      {JSON.stringify({
+                        totalMatches: priorityMatches.matches.length,
+                        hasRawData: !!priorityMatches.rawData,
+                        apiStatus: priorityMatches.rawData ? 'success' : 'error',
+                        apiUrl: `${process.env.APP_URL || 'http://localhost:3000'}/api/fixtures?size=50`,
+                        sampleMatch: priorityMatches.matches[0] || null,
+                      }, null, 2)}
+                    </pre>
+                  </div>
+
+                  {priorityMatches.rawData && (
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">4. Полный ответ API fixtures:</h4>
+                      <pre className="text-xs bg-muted p-2 rounded overflow-x-auto max-h-60 overflow-y-auto">
+                        {JSON.stringify(priorityMatches.rawData, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">5. Обработанные матчи (первые 5):</h4>
+                    <pre className="text-xs bg-muted p-2 rounded overflow-x-auto max-h-40 overflow-y-auto">
+                      {JSON.stringify(priorityMatches.matches.slice(0, 5), null, 2)}
+                    </pre>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">6. Топ матчи для правой колонки:</h4>
+                    <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
+                      {JSON.stringify(topUpcoming, null, 2)}
+                    </pre>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">7. Live матчи:</h4>
+                    <pre className="text-xs bg-muted p-2 rounded overflow-x-auto max-h-40 overflow-y-auto">
+                      {JSON.stringify(liveTop, null, 2)}
+                    </pre>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">8. Матчи по приоритетным лигам:</h4>
+                    <div className="space-y-3">
+                      {priorityLeagues.map((league) => {
+                        const leagueMatches = priorityMatches.matches.filter(
+                          (m: any) => m.competition?.id === league.id
+                        )
+                        return (
+                          <div key={league.id} className="border rounded p-2">
+                            <h5 className="text-xs font-medium mb-1">
+                              {league.description} (ID: {league.id}, Приоритет: {league.priority})
+                            </h5>
+                            <pre className="text-xs bg-muted/50 p-2 rounded overflow-x-auto max-h-32 overflow-y-auto">
+                              {JSON.stringify({
+                                leagueInfo: league,
+                                matchesCount: leagueMatches.length,
+                                matches: leagueMatches.slice(0, 3), // Показываем первые 3 матча
+                              }, null, 2)}
+                            </pre>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </main>
 
           {/* Правая колонка — Два блока */}
@@ -284,7 +335,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                   <div className="text-sm text-muted-foreground">Нет ближайших матчей</div>
                 ) : (
                   <ul className="space-y-3 text-sm">
-                    {topUpcoming.map((m) => (
+                    {topUpcoming.map((m: any) => (
                       <li key={m.fixtureId} className="border rounded p-2 hover:bg-accent/50 transition-colors">
                         <div className="flex items-center justify-between gap-3">
                           <Link href={`/fixtures/${m.fixtureId}`} className="flex-1 min-w-0">

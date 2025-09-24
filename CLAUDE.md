@@ -236,10 +236,14 @@ MVP: launch fast → start with **live stats pages**, then switch to Directus, t
 - getAuthVerifyJson — API auth verification
 - getCountriesFlagPng — country flag images
 
-### Highlight Leagues
-```json
-{
-  "eng": 148, "ger": 175, "ita": 207, "fra": 168,
-  "esp": 302, "rus": 271, "ucl": 2, "uel": 3
-}
-```
+### Priority Leagues
+Located in `src/lib/highlight-competitions.ts`:
+- PREMIER_LEAGUE: 2 (England)
+- BUNDESLIGA: 1 (Germany)
+- SERIE_A: 4 (Italy)
+- LIGUE_1: 5 (France)
+- LA_LIGA: 3 (Spain)
+- RUSSIAN_PREMIER_LEAGUE: 7 (Russia)
+- UEFA_CHAMPIONS_LEAGUE: 268
+- UEFA_EUROPA_LEAGUE: 245
+- UEFA_CONFERENCE_LEAGUE: 446
