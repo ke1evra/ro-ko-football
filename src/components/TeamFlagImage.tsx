@@ -116,7 +116,7 @@ export function TeamFlagImage({
       <FlagImage 
         src={flagUrl} 
         countryName={countryName} 
-        size={size} 
+        size={size === 'medium' ? 'large' : size} 
         className="w-full h-full object-cover"
       />
     </div>
