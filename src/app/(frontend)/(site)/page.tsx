@@ -9,6 +9,7 @@ import { Calendar, MessageSquare, ThumbsUp, Newspaper, Activity, TrendingUp } fr
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import PredictionButton from '@/components/predictions/PredictionButton'
+import UpcomingAllMatchesWidget from '@/components/home/UpcomingAllMatchesWidget'
 
 import {
   getCompetitionsListJson,
@@ -22,6 +23,7 @@ import {
   getAllPriorityLeagues
 } from '@/lib/highlight-competitions'
 import WeekFixturesGrouped from '@/components/home/WeekFixturesGrouped'
+import LiveMatchesWidget from '@/components/home/LiveMatchesWidget'
 
 export const revalidate = 120
 
@@ -326,34 +328,12 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" /> Ближайшие топ‑матчи
+                  <Calendar className="h-5 w-5" /> Ближайшие матчи
                 </CardTitle>
-                <CardDescription>Топ‑5 из 6 ведущих лиг (Англия, Германия, Италия, Испания, Франция, Россия)</CardDescription>
+                <CardDescription>Первые 5 ближайших матчей всех лиг</CardDescription>
               </CardHeader>
               <CardContent>
-                {topUpcoming.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">Нет ближайших матчей</div>
-                ) : (
-                  <ul className="space-y-3 text-sm">
-                    {topUpcoming.map((m: any) => (
-                      <li key={m.fixtureId} className="border rounded p-2 hover:bg-accent/50 transition-colors">
-                        <div className="flex items-center justify-between gap-3">
-                          <Link href={`/fixtures/${m.fixtureId}`} className="flex-1 min-w-0">
-                            <div className="truncate font-medium">{m.home} — {m.away}</div>
-                            <div className="text-muted-foreground truncate">{m.competitionName}</div>
-                          </Link>
-                          <div className="text-right text-muted-foreground">
-                            <div>{new Date(`${m.date}T${m.time || '00:00'}Z`).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit' })}</div>
-                            <div className="text-xs">{m.time || '—'}</div>
-                          </div>
-                        </div>
-                        <div className="mt-2 flex justify-end">
-                          <PredictionButton fixtureId={m.fixtureId} size="sm" />
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                <UpcomingAllMatchesWidget />
               </CardContent>
             </Card>
 
@@ -365,29 +345,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                 <CardDescription>Топ‑10 текущих матчей</CardDescription>
               </CardHeader>
               <CardContent>
-                {liveTop.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">Сейчас нет лайв‑матчей</div>
-                ) : (
-                  <ul className="space-y-3 text-sm">
-                    {liveTop.map((m, idx) => {
-                      const href = m.matchId ? `/matches/${m.matchId}` : m.fixtureId ? `/fixtures/${m.fixtureId}` : '#'
-                      return (
-                        <li key={`${m.matchId ?? m.fixtureId ?? idx}`} className="flex items-center justify-between border rounded p-2 hover:bg-accent/50 transition-colors">
-                          <Link href={href} className="flex items-center justify-between gap-3 w-full">
-                            <div className="min-w-0">
-                              <div className="truncate font-medium">{m.home} — {m.away}</div>
-                              <div className="text-muted-foreground truncate">{m.compName}</div>
-                            </div>
-                            <div className="text-right text-muted-foreground ml-3">
-                              <div className="font-semibold">{m.score || m.time_status}</div>
-                              <div className="text-xs">{m.time_status}</div>
-                            </div>
-                          </Link>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                )}
+                <LiveMatchesWidget />
               </CardContent>
             </Card>
           </aside>

@@ -104,7 +104,25 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
   const maxPages = 8
 
   while (page <= maxPages) {
-    const resp = await getFixturesMatchesJson({ from: start, to: end, size: 100, page })
+    let resp: any
+    try {
+      resp = await getFixturesMatchesJson(
+        { from: start, to: end, size: 100, page },
+        { timeoutMs: 12000 },
+      )
+    } catch (e) {
+      // Retry с большим таймаутом, если API медленный
+      try {
+        resp = await getFixturesMatchesJson(
+          { from: start, to: end, size: 100, page },
+          { timeoutMs: 20000 },
+        )
+      } catch {
+        // Если повтор тоже не удался — прерываем поиск без ошибки
+        break
+      }
+    }
+
     const fixtures = (resp.data?.data?.fixtures || []) as Array<any>
 
     const found = fixtures.find((fx) => Number(fx?.id) === fixtureId)

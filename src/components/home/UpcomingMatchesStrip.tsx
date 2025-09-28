@@ -4,8 +4,8 @@ import * as React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
-
-import { getLeaguePriorityClient } from '@/lib/highlight-competitions-client'
+import { getLeaguePriorityClient, isPriorityLeagueClient } from '@/lib/highlight-competitions-client'
+import { getTeamLogoUrl, getTeamLogoAlt } from '@/lib/team-logo-utils'
 import type { Fixture } from '@/app/(frontend)/client/types/Fixture'
 
 export type StripMatch = {
@@ -28,35 +28,57 @@ function formatTime(date: string, time?: string) {
 }
 
 function normalizeFixture(fx: any): StripMatch | null {
-  const id = Number(fx?.id)
+  const rawId = fx?.id ?? fx?.fixtureId ?? fx?.fixture_id
+  const id = Number(rawId)
   if (!Number.isFinite(id)) return null
-  
+
   // Извлекаем данные из разных возможных форматов API
   const home = {
-    id: Number(fx?.home_id || fx?.home?.id || 0),
-    name: String(fx?.home_name || fx?.home?.name || 'Команда дома'),
-    logo: fx?.home?.logo || fx?.home_logo || null,
+    id: Number(fx?.home_id || fx?.home?.id || fx?.homeTeam?.id || 0),
+    name: String(
+      fx?.home_name || fx?.home?.name || fx?.homeTeam?.name || fx?.homeName || 'Команда дома',
+    ),
+    logo: fx?.home?.logo || fx?.home_logo || fx?.homeTeam?.logo || null,
   }
-  
+
   const away = {
-    id: Number(fx?.away_id || fx?.away?.id || 0),
-    name: String(fx?.away_name || fx?.away?.name || 'Команда гостей'),
-    logo: fx?.away?.logo || fx?.away_logo || null,
+    id: Number(fx?.away_id || fx?.away?.id || fx?.awayTeam?.id || 0),
+    name: String(
+      fx?.away_name || fx?.away?.name || fx?.awayTeam?.name || fx?.awayName || 'Команда гостей',
+    ),
+    logo: fx?.away?.logo || fx?.away_logo || fx?.awayTeam?.logo || null,
   }
-  
-  const competition = fx?.competition_id ? {
-    id: Number(fx.competition_id),
-    name: String(fx?.league?.name || fx?.competition?.name || 'Неизвестная лига'),
-  } : undefined
-  
+
+  const compId =
+    fx?.competition_id || fx?.competition?.id || fx?.league?.id || fx?.competitionId
+  const competition = compId
+    ? {
+        id: Number(compId),
+        name: String(
+          fx?.league?.name || fx?.competition?.name || fx?.compName || 'Неизвестная лига',
+        ),
+      }
+    : undefined
+
+  const date =
+    fx?.date || fx?.fixture_date || fx?.fixtureDate || fx?.match_date || ''
+  const time =
+    typeof fx?.time === 'string'
+      ? fx.time
+      : typeof fx?.fixture_time === 'string'
+        ? fx.fixture_time
+        : typeof fx?.fixtureTime === 'string'
+          ? fx.fixtureTime
+          : undefined
+
   return {
     id,
-    date: String(fx?.date || ''),
-    time: typeof fx?.time === 'string' ? fx.time : undefined,
+    date: String(date),
+    time,
     home,
     away,
     competition,
-    country: fx?.country || fx?.competition?.country || undefined,
+    country: fx?.country || fx?.competition?.country || fx?.league?.country || undefined,
   }
 }
 
@@ -67,6 +89,35 @@ function sortByPriorityAndTime(a: StripMatch, b: StripMatch) {
   const ta = new Date(`${a.date}T${a.time || '00:00'}Z`).getTime()
   const tb = new Date(`${b.date}T${b.time || '00:00'}Z`).getTime()
   return ta - tb
+}
+
+function TeamLogo({ team }: { team?: { id?: number; name?: string; logo?: string | null } }) {
+  // Сначала проверяем API logo (если это URL изображения)
+  if (team?.logo && team.logo.startsWith('http')) {
+    return (
+      <Image 
+        src={team.logo} 
+        alt={getTeamLogoAlt(team?.name || 'Команда')} 
+        fill 
+        className="object-contain"
+        onError={(e) => {
+          const parent = e.currentTarget.parentElement
+          if (parent) {
+            parent.innerHTML = '<div class="w-full h-full flex items-center justify-center text-xs">⚽</div>'
+          }
+        }}
+      />
+    )
+  }
+  
+  // Затем проверяем нашу локальную базу эмодзи
+  const teamEmoji = team?.id ? getTeamLogoUrl(team.id) : null
+  if (teamEmoji) {
+    return <div className="text-sm">{teamEmoji}</div>
+  }
+  
+  // Fallback
+  return <div className="w-full h-full flex items-center justify-center text-xs">⚽</div>
 }
 
 export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
@@ -125,10 +176,18 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
   }, [])
 
   const today = new Date().toISOString().split('T')[0]
-  const todayItems = React.useMemo(() => items.filter((m) => String(m.date).startsWith(today)), [items, today])
-  const sorted = React.useMemo(() => [...todayItems].sort(sortByPriorityAndTime).slice(0, 5), [todayItems])
-
-  
+  const todayItems = React.useMemo(
+    () => items.filter((m) => String(m.date).startsWith(today)),
+    [items, today],
+  )
+  const topToday = React.useMemo(
+    () => todayItems.filter((m) => isPriorityLeagueClient(m.competition?.id || 0)),
+    [todayItems],
+  )
+  const sorted = React.useMemo(() => {
+    const arr = topToday.length > 0 ? topToday : todayItems
+    return [...arr].sort(sortByPriorityAndTime).slice(0, 5)
+  }, [todayItems, topToday])
 
   return (
     <div className="w-full overflow-x-auto">
@@ -146,16 +205,12 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
                     </div>
                   </div>
                   <div className="grid grid-cols-[24px_1fr] gap-2">
-                    <div className="relative w-6 h-6 rounded bg-muted/60 overflow-hidden">
-                      {m.home?.logo ? (
-                        <Image src={m.home.logo} alt={m.home?.name || ''} fill className="object-contain" />
-                      ) : null}
+                    <div className="relative w-6 h-6 rounded bg-muted/60 overflow-hidden flex items-center justify-center">
+                      <TeamLogo team={m.home} />
                     </div>
                     <div className="text-sm font-medium truncate">{m.home?.name}</div>
-                    <div className="relative w-6 h-6 rounded bg-muted/60 overflow-hidden">
-                      {m.away?.logo ? (
-                        <Image src={m.away.logo} alt={m.away?.name || ''} fill className="object-contain" />
-                      ) : null}
+                    <div className="relative w-6 h-6 rounded bg-muted/60 overflow-hidden flex items-center justify-center">
+                      <TeamLogo team={m.away} />
                     </div>
                     <div className="text-sm font-medium truncate">{m.away?.name}</div>
                   </div>

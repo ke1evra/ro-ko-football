@@ -29,7 +29,10 @@
     "production:check": "node scripts/production-check.js",
     "env:setup": "node scripts/setup-env.js",
     "env:setup:interactive": "node scripts/setup-env.js --interactive",
-    "env:setup:force": "node scripts/setup-env.js --force"
+    "env:setup:force": "node scripts/setup-env.js --force",
+    "logos:test": "node scripts/test-download-logos.cjs",
+    "logos:download": "node scripts/download-team-logos.cjs",
+    "logos:status": "node scripts/check-logos-progress.cjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

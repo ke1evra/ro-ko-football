@@ -1,223 +1,156 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import * as React from 'react'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { RefreshCwIcon, ClockIcon } from 'lucide-react'
-import Image from 'next/image'
 
-interface Team {
-  id: string
-  name: string
-  shortName?: string
-  logo?: {
-    url: string
+type LiveItem = {
+  id: number
+  fixtureId?: number
+  compName?: string
+  home: string
+  away: string
+  score?: string
+  time_status?: string | null
+}
+
+function normalize(match: any): LiveItem | null {
+  const id = Number(match?.id)
+  const fixtureId = Number(match?.fixture_id ?? match?.fixtureId)
+  if (!Number.isFinite(id) && !Number.isFinite(fixtureId)) return null
+  const home = (match?.home?.name ||
+    match?.homeTeam?.name ||
+    match?.home_name ||
+    match?.homeName) as string | undefined
+  const away = (match?.away?.name ||
+    match?.awayTeam?.name ||
+    match?.away_name ||
+    match?.awayName) as string | undefined
+  const compName = (match?.competition?.name || match?.league?.name || match?.compName) as
+    | string
+    | undefined
+  const score = (match?.scores?.score || match?.score) as string | undefined
+  const time_status = (match?.time_status || match?.status) as string | undefined
+  return {
+    id: Number.isFinite(id) ? id : fixtureId!,
+    fixtureId: Number.isFinite(fixtureId) ? fixtureId : undefined,
+    compName,
+    home: home || 'Команда дома',
+    away: away || 'Команда гостей',
+    score,
+    time_status: time_status ?? null,
   }
 }
 
-interface Competition {
-  id: string
-  name: string
-}
+export default function LiveMatchesWidget() {
+  const [items, setItems] = React.useState<LiveItem[]>([])
+  const [visible, setVisible] = React.useState(5)
+  const [page, setPage] = React.useState(1)
+  const [loading, setLoading] = React.useState(false)
+  const [hasMore, setHasMore] = React.useState(true)
 
-interface Match {
-  id: string
-  title: string
-  status: 'scheduled' | 'live' | 'halftime' | 'finished' | 'postponed' | 'cancelled'
-  minute?: number
-  teamA?: Team | null
-  teamB?: Team | null
-  scoreA?: number
-  scoreB?: number
-  date: string
-  competition?: Competition
-}
-
-interface LiveMatchesWidgetProps {
-  initialMatches: Match[]
-}
-
-const LiveMatchesWidget: React.FC<LiveMatchesWidgetProps> = ({ initialMatches }) => {
-  const [matches, setMatches] = useState<Match[]>(initialMatches)
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [lastUpdate, setLastUpdate] = useState(new Date())
-
-  const getStatusBadge = (status: string, minute?: number) => {
-    switch (status) {
-      case 'live':
-        return (
-          <Badge variant="default" className="bg-green-500 animate-pulse">
-            {minute ? `${minute}'` : 'LIVE'}
-          </Badge>
-        )
-      case 'halftime':
-        return (
-          <Badge variant="default" className="bg-orange-500">
-            HT
-          </Badge>
-        )
-      case 'finished':
-        return <Badge variant="outline">FT</Badge>
-      case 'scheduled':
-        return <Badge variant="secondary">Скоро</Badge>
-      case 'postponed':
-        return <Badge variant="destructive">Отложен</Badge>
-      case 'cancelled':
-        return <Badge variant="destructive">Отменён</Badge>
-      default:
-        return <Badge variant="secondary">{status}</Badge>
-    }
-  }
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleTimeString('ru-RU', {
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
-
-  const refreshMatches = async () => {
-    setIsRefreshing(true)
+  const load = React.useCallback(async (nextPage: number) => {
     try {
-      const response = await fetch('/api/matches?limit=10&sort=-date&depth=2')
-      if (response.ok) {
-        const data = await response.json()
-        setMatches(data.docs || [])
-        setLastUpdate(new Date())
+      setLoading(true)
+      const controller = new AbortController()
+      const to = setTimeout(() => controller.abort(), 8000)
+      const res = await fetch(`/api/fixtures?live=true&all=true&page=${nextPage}`, {
+        signal: controller.signal,
+      })
+      clearTimeout(to)
+      if (!res.ok) return
+      const data = await res.json()
+      const raw = (data?.matches || []) as any[]
+      const normalized = raw.map(normalize).filter(Boolean) as LiveItem[]
+      if (normalized.length === 0) {
+        setHasMore(false)
       }
-    } catch (error) {
-      console.error('Ошибка при обновлении матчей:', error)
+      setItems((prev) => {
+        // убираем дубли по id
+        const map = new Map<number, LiveItem>()
+        ;[...prev, ...normalized].forEach((it) => map.set(it.id, it))
+        return Array.from(map.values())
+      })
+      setPage(nextPage)
+    } catch {
+      // no-op
     } finally {
-      setIsRefreshing(false)
+      setLoading(false)
     }
-  }
-
-  // Автоматическое обновление каждую минуту
-  useEffect(() => {
-    const interval = setInterval(refreshMatches, 60000) // 60 секунд
-    return () => clearInterval(interval)
   }, [])
 
-  const liveMatches = matches.filter(
-    (match) => match.status === 'live' || match.status === 'halftime',
-  )
+  React.useEffect(() => {
+    // первая загрузка
+    void load(1)
+    const t = setInterval(() => void load(1), 60000) // обновляем из источника раз в минуту
+    return () => clearInterval(t)
+  }, [load])
 
-  const upcomingMatches = matches.filter((match) => match.status === 'scheduled').slice(0, 3)
-
-  const recentMatches = matches.filter((match) => match.status === 'finished').slice(0, 2)
-
-  const displayMatches = [...liveMatches, ...upcomingMatches, ...recentMatches].slice(0, 5)
+  const visibleItems = items.slice(0, visible)
 
   return (
-    <Card className="h-fit">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Матчи</CardTitle>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">
-              {lastUpdate.toLocaleTimeString('ru-RU', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={refreshMatches}
-              disabled={isRefreshing}
-              className="h-6 w-6 p-0"
-            >
-              <RefreshCwIcon className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </Button>
-          </div>
+    <div className="space-y-3 text-sm">
+      {loading && items.length === 0 ? (
+        <div className="text-sm text-muted-foreground">Загрузка…</div>
+      ) : visibleItems.length === 0 ? (
+        <div className="text-sm text-muted-foreground">Сейчас нет лайв‑матчей</div>
+      ) : (
+        <ul className="space-y-3">
+          {visibleItems.map((m, idx) => {
+            const href =
+              m.id && !m.fixtureId
+                ? `/matches/${m.id}`
+                : m.fixtureId
+                  ? `/fixtures/${m.fixtureId}`
+                  : '#'
+            return (
+              <li
+                key={`${m.id}-${idx}`}
+                className="flex items-center justify-between border rounded p-2 hover:bg-accent/50 transition-colors"
+              >
+                <Link href={href} className="flex items-center justify-between gap-3 w-full">
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">
+                      {m.home} — {m.away}
+                    </div>
+                    <div className="text-muted-foreground truncate">{m.compName}</div>
+                  </div>
+                  <div className="text-right text-muted-foreground ml-3">
+                    <div className="font-semibold">{m.score || m.time_status || '—'}</div>
+                    <div className="text-xs">{m.time_status || ''}</div>
+                  </div>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
+      {items.length > visible && (
+        <div className="pt-1">
+          <button
+            type="button"
+            className="inline-flex items-center rounded border px-3 py-1 text-xs hover:bg-accent"
+            onClick={() => setVisible((v) => v + 5)}
+            disabled={loading}
+          >
+            Показать ещё
+          </button>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {displayMatches.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Матчей пока нет</p>
-        ) : (
-          <>
-            {displayMatches.map((match) => (
-              <div key={match.id} className="border border-border rounded-lg p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    {match.competition && (
-                      <Badge variant="outline" className="text-xs">
-                        {match.competition.name}
-                      </Badge>
-                    )}
-                  </div>
-                  {getStatusBadge(match.status, match.minute)}
-                </div>
+      )}
 
-                <div className="space-y-2">
-                  {/* Команда А */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      {match.teamA?.logo?.url ? (
-                        <div className="relative w-4 h-4 flex-shrink-0">
-                          <Image
-                            src={match.teamA.logo.url}
-                            alt={match.teamA.name}
-                            fill
-                            className="object-contain"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-4 h-4 bg-gray-200 rounded-sm flex-shrink-0" />
-                      )}
-                      <span className="text-sm font-medium truncate">
-                        {match.teamA?.shortName || match.teamA?.name || 'Команда А'}
-                      </span>
-                    </div>
-                    <span className="text-sm font-bold ml-2">{match.scoreA ?? '-'}</span>
-                  </div>
-
-                  {/* Команда Б */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      {match.teamB?.logo?.url ? (
-                        <div className="relative w-4 h-4 flex-shrink-0">
-                          <Image
-                            src={match.teamB.logo.url}
-                            alt={match.teamB.name}
-                            fill
-                            className="object-contain"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-4 h-4 bg-gray-200 rounded-sm flex-shrink-0" />
-                      )}
-                      <span className="text-sm font-medium truncate">
-                        {match.teamB?.shortName || match.teamB?.name || 'Команда Б'}
-                      </span>
-                    </div>
-                    <span className="text-sm font-bold ml-2">{match.scoreB ?? '-'}</span>
-                  </div>
-                </div>
-
-                {match.status === 'scheduled' && (
-                  <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                    <ClockIcon className="h-3 w-3" />
-                    <span>{formatTime(match.date)}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            <div className="pt-2">
-              <Button asChild variant="outline" size="sm" className="w-full">
-                <Link href="/matches">Все матчи</Link>
-              </Button>
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+      {/* Пагинация по API страницам */}
+      {hasMore && (
+        <div className="pt-1">
+          <button
+            type="button"
+            className="inline-flex items-center rounded border px-3 py-1 text-xs hover:bg-accent"
+            onClick={() => void load(page + 1)}
+            disabled={loading}
+          >
+            Загрузить следующую страницу
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
-
-export default LiveMatchesWidget
