@@ -284,7 +284,7 @@ export default function DynamicEventsForm({
             {/* Вкладки категорий */}
             <div className="space-y-4">
               <Tabs defaultValue="main" className="w-full">
-                <TabsList className="flex flex-wrap gap-2 bg-transparent p-0 mb-4">
+                <TabsList className="flex flex-wrap gap-2 bg-transparent p-0 mb-6 h-auto min-h-[2rem]">
                   <TabsTrigger
                     value="main"
                     className="rounded-full border bg-muted px-2.5 py-1 h-7 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hover:bg-muted/80 transition-colors"

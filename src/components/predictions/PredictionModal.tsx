@@ -61,11 +61,27 @@ export default function PredictionModal({
     setError(null)
 
     try {
+      // Сначала получаем информацию о текущем пользователе
+      const userResponse = await fetch('/api/users/me', {
+        credentials: 'include',
+      })
+
+      if (!userResponse.ok) {
+        throw new Error('Необходимо войти в систему для создания прогноза')
+      }
+
+      const userData = await userResponse.json()
+      
+      if (!userData.user || !userData.user.id) {
+        throw new Error('Не удалось получить информацию о пользователе')
+      }
+
       const predictionPayload = {
-        title: formData.title,
+        title: formData.title, // Используем оригинальный заголовок
         content: formData.content,
         postType: 'prediction',
         fixtureId,
+        author: userData.user.id, // Добавляем ID автора
         prediction: {
           events: formData.events,
         },
@@ -125,7 +141,7 @@ export default function PredictionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] w-[90vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
