@@ -10,6 +10,7 @@ import { LocalDateTime } from '@/components/LocalDateTime'
 import PredictionButton from '@/components/predictions/PredictionButton'
 import PredictionModal from '@/components/predictions/PredictionModal'
 import { TeamLogo } from '@/components/TeamLogo'
+import H2HBlock from '@/components/fixtures/H2HBlock'
 
 // Вспомогательные мапперы статусов на русский
 function statusRu(status?: string): string | undefined {
@@ -61,6 +62,17 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
 
   // Проверяем, является ли матч запланированным (будущим)
   const isScheduled = !fx.status || fx.status.toLowerCase() === 'scheduled' || fx.status.toLowerCase() === 'ns'
+
+  // Отладочная информация
+  console.log('[FixturePageClient] Fixture data:', {
+    id: fx.id,
+    homeId: fx.home.id,
+    homeName: fx.home.name,
+    awayId: fx.away.id,
+    awayName: fx.away.name,
+    status: fx.status,
+    isScheduled
+  })
 
   return (
     <>
@@ -225,6 +237,14 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
               ) : null}
             </CardContent>
           </Card>
+
+          {/* H2H блок - показываем для всех матчей */}
+          <H2HBlock
+            homeTeamId={fx.home.id}
+            awayTeamId={fx.away.id}
+            homeTeamName={fx.home.name}
+            awayTeamName={fx.away.name}
+          />
         </div>
 
         {/* Правая колонка - Прогнозы */}
