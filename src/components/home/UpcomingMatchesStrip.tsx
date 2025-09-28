@@ -2,10 +2,9 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 
 import { getLeaguePriorityClient, isPriorityLeagueClient } from '@/lib/highlight-competitions-client'
-import { getTeamLogoUrl, getTeamLogoAlt } from '@/lib/team-logo-utils'
+import { TeamLogo } from '@/components/TeamLogo'
 import type { Fixture } from '@/app/(frontend)/client/types/Fixture'
 
 export type StripMatch = {
@@ -91,34 +90,7 @@ function sortByPriorityAndTime(a: StripMatch, b: StripMatch) {
   return ta - tb
 }
 
-function TeamLogo({ team }: { team?: { id?: number; name?: string; logo?: string | null } }) {
-  // Сначала проверяем API logo (если это URL изображения)
-  if (team?.logo && team.logo.startsWith('http')) {
-    return (
-      <Image 
-        src={team.logo} 
-        alt={getTeamLogoAlt(team?.name || 'Команда')} 
-        fill 
-        className="object-contain"
-        onError={(e) => {
-          const parent = e.currentTarget.parentElement
-          if (parent) {
-            parent.innerHTML = '<div class="w-full h-full flex items-center justify-center text-xs">⚽</div>'
-          }
-        }}
-      />
-    )
-  }
-  
-  // Затем проверяем нашу локальную базу эмодзи
-  const teamEmoji = team?.id ? getTeamLogoUrl(team.id) : null
-  if (teamEmoji) {
-    return <div className="text-sm">{teamEmoji}</div>
-  }
-  
-  // Fallback
-  return <div className="w-full h-full flex items-center justify-center text-xs">⚽</div>
-}
+
 
 export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
   const [items, setItems] = React.useState<StripMatch[]>(() =>
@@ -131,14 +103,14 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
     async function refresh() {
       try {
         setIsLoading(true)
-        const today = new Date().toISOString().split('T')[0]
-        console.log('[UpcomingMatchesStrip] fetching fixtures for date:', today)
+        console.log('[UpcomingMatchesStrip] fetching fixtures for 7-day range')
         
         // Добавляем таймаут для запроса
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 секунд таймаут
         
-        const res = await fetch(`/api/fixtures?date=${today}&size=60`, {
+        // Используем новый API с диапазоном 7 дней
+        const res = await fetch('/api/fixtures?size=60', {
           signal: controller.signal
         })
         clearTimeout(timeoutId)
@@ -175,19 +147,24 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
     }
   }, [])
 
-  const today = new Date().toISOString().split('T')[0]
-  const todayItems = React.useMemo(
-    () => items.filter((m) => String(m.date).startsWith(today)),
-    [items, today],
+  // Фильтруем только будущие матчи и сортируем по приоритету лиг и времени
+  const futureMatches = React.useMemo(() => {
+    const now = Date.now()
+    return items.filter((m) => {
+      const matchTime = new Date(`${m.date}T${m.time || '00:00'}Z`).getTime()
+      return matchTime > now
+    })
+  }, [items])
+  
+  const priorityMatches = React.useMemo(
+    () => futureMatches.filter((m) => isPriorityLeagueClient(m.competition?.id || 0)),
+    [futureMatches],
   )
-  const topToday = React.useMemo(
-    () => todayItems.filter((m) => isPriorityLeagueClient(m.competition?.id || 0)),
-    [todayItems],
-  )
+  
   const sorted = React.useMemo(() => {
-    const arr = topToday.length > 0 ? topToday : todayItems
+    const arr = priorityMatches.length > 0 ? priorityMatches : futureMatches
     return [...arr].sort(sortByPriorityAndTime).slice(0, 5)
-  }, [todayItems, topToday])
+  }, [futureMatches, priorityMatches])
 
   return (
     <div className="w-full overflow-x-auto">
@@ -205,13 +182,17 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
                     </div>
                   </div>
                   <div className="grid grid-cols-[24px_1fr] gap-2">
-                    <div className="relative w-6 h-6 rounded bg-muted/60 overflow-hidden flex items-center justify-center">
-                      <TeamLogo team={m.home} />
-                    </div>
+                    <TeamLogo 
+                      teamId={m.home?.id} 
+                      teamName={m.home?.name} 
+                      size="small" 
+                    />
                     <div className="text-sm font-medium truncate">{m.home?.name}</div>
-                    <div className="relative w-6 h-6 rounded bg-muted/60 overflow-hidden flex items-center justify-center">
-                      <TeamLogo team={m.away} />
-                    </div>
+                    <TeamLogo 
+                      teamId={m.away?.id} 
+                      teamName={m.away?.name} 
+                      size="small" 
+                    />
                     <div className="text-sm font-medium truncate">{m.away?.name}</div>
                   </div>
                 </div>
@@ -235,7 +216,7 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
                     Ближайшие матчи
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Нет матчей на сегодня из топ-лиг
+                    Нет матчей в ближайшие 7 дней из топ-лиг
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
                     АПЛ • Бундеслига • Серия А • Лига 1 • Ла Лига • РПЛ

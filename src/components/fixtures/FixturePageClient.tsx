@@ -9,6 +9,7 @@ import { Calendar, Clock, MapPin, Trophy, TrendingUp, MessageSquare, ThumbsUp } 
 import { LocalDateTime } from '@/components/LocalDateTime'
 import PredictionButton from '@/components/predictions/PredictionButton'
 import PredictionModal from '@/components/predictions/PredictionModal'
+import { TeamLogo } from '@/components/TeamLogo'
 
 // Вспомогательные мапперы статусов на русский
 function statusRu(status?: string): string | undefined {
@@ -140,16 +141,26 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
             <CardContent className="space-y-4">
               {/* Команды */}
               <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-3">
-                <div className="text-right">
+                <div className="flex items-center justify-end gap-3">
                   <Link
                     href={`/teams/${fx.home.id}`}
                     className="text-lg font-semibold hover:text-primary"
                   >
                     {fx.home.name}
                   </Link>
+                  <TeamLogo 
+                    teamId={fx.home.id} 
+                    teamName={fx.home.name} 
+                    size="large" 
+                  />
                 </div>
-                <div className="text-center text-muted-foreground">vs</div>
-                <div className="text-left">
+                <div className="text-center text-muted-foreground font-bold text-xl">vs</div>
+                <div className="flex items-center justify-start gap-3">
+                  <TeamLogo 
+                    teamId={fx.away.id} 
+                    teamName={fx.away.name} 
+                    size="large" 
+                  />
                   <Link
                     href={`/teams/${fx.away.id}`}
                     className="text-lg font-semibold hover:text-primary"

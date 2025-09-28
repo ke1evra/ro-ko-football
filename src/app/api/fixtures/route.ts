@@ -7,16 +7,13 @@ export const dynamic = 'force-dynamic'
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
-    let dateParam = (searchParams.get('date') || 'today') as any
-
-    // Всегда используем today для получения актуальных матчей
-    if (typeof dateParam === 'string' && dateParam !== 'today') {
-      console.log('[fixtures] converting date', dateParam, 'to today for actual matches')
-      dateParam = 'today'
-    }
-
-    let size = Number(searchParams.get('size') || '30')
-    if (!Number.isFinite(size) || size <= 0) size = 30
+    
+    // Поддержка диапазона дат: если передан конкретный date, используем его, иначе диапазон 7 дней
+    const dateParam = searchParams.get('date')
+    const useDateRange = !dateParam || dateParam === 'today'
+    
+    let size = Number(searchParams.get('size') || '60')
+    if (!Number.isFinite(size) || size <= 0) size = 60
     size = Math.min(size, 100)
 
     // Поддержка live=true: в этом режиме возвращаем live‑матчи
@@ -57,7 +54,25 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    const params: any = { date: dateParam, size }
+    // Формируем параметры запроса
+    const params: any = { size, lang: 'ru' }
+    
+    if (useDateRange) {
+      // Используем диапазон дат: сегодня + 7 дней
+      const today = new Date()
+      const endDate = new Date(today)
+      endDate.setDate(today.getDate() + 7)
+      
+      params.from = today.toISOString().split('T')[0]
+      params.to = endDate.toISOString().split('T')[0]
+      
+      console.log('[fixtures] using date range:', params.from, 'to', params.to)
+    } else {
+      // Используем конкретную дату
+      params.date = dateParam
+      console.log('[fixtures] using specific date:', dateParam)
+    }
+    
     if (!includeAll) {
       params.competition_id = explicitCompetition || getPriorityLeagueIds().join(',')
     }
@@ -65,7 +80,7 @@ export async function GET(req: NextRequest) {
     console.log(
       '[fixtures] using',
       includeAll ? 'ALL competitions' : `competition_id: ${params.competition_id}`,
-      'date:', dateParam, 'size:', size
+      'size:', size
     )
 
     const res = await getFixturesMatchesJson(

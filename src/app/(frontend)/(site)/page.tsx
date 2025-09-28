@@ -330,7 +330,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5" /> Ближайшие матчи
                 </CardTitle>
-                <CardDescription>Первые 5 ближайших матчей всех лиг</CardDescription>
+                <CardDescription>Матчи топ-лиг на ближайшие 7 дней</CardDescription>
               </CardHeader>
               <CardContent>
                 <UpcomingAllMatchesWidget />

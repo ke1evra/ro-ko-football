@@ -3,16 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CalendarIcon } from 'lucide-react'
 import PredictionButton from '@/components/predictions/PredictionButton'
+import { TeamLogo } from '@/components/TeamLogo'
 
 export interface MatchData {
   id: string
   matchId?: number
   fixtureId?: number
   homeTeam: {
+    id?: number | string
     name: string
     logo?: string
   }
   awayTeam: {
+    id?: number | string
     name: string
     logo?: string
   }
@@ -58,17 +61,21 @@ const MatchBlock: React.FC<MatchBlockProps> = ({ match }) => {
       <CardContent>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            {match.homeTeam.logo && (
-              <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="w-8 h-8" />
-            )}
+            <TeamLogo 
+              teamId={match.homeTeam.id} 
+              teamName={match.homeTeam.name} 
+              size="medium" 
+            />
             <span className="font-bold">{match.homeTeam.name}</span>
           </div>
           <div className="text-xl font-bold">{score}</div>
           <div className="flex items-center space-x-2">
             <span className="font-bold">{match.awayTeam.name}</span>
-            {match.awayTeam.logo && (
-              <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="w-8 h-8" />
-            )}
+            <TeamLogo 
+              teamId={match.awayTeam.id} 
+              teamName={match.awayTeam.name} 
+              size="medium" 
+            />
           </div>
         </div>
         <div className="mt-4 flex items-center justify-between">

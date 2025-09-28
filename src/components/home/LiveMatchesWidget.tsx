@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import { TeamLogo } from '@/components/TeamLogo'
 
 type LiveItem = {
   id: number
@@ -9,6 +10,8 @@ type LiveItem = {
   compName?: string
   home: string
   away: string
+  homeId?: number | string
+  awayId?: number | string
   score?: string
   time_status?: string | null
 }
@@ -25,6 +28,14 @@ function normalize(match: any): LiveItem | null {
     match?.awayTeam?.name ||
     match?.away_name ||
     match?.awayName) as string | undefined
+  const homeId = (match?.home?.id ||
+    match?.homeTeam?.id ||
+    match?.home_id ||
+    match?.homeId) as number | string | undefined
+  const awayId = (match?.away?.id ||
+    match?.awayTeam?.id ||
+    match?.away_id ||
+    match?.awayId) as number | string | undefined
   const compName = (match?.competition?.name || match?.league?.name || match?.compName) as
     | string
     | undefined
@@ -36,6 +47,8 @@ function normalize(match: any): LiveItem | null {
     compName,
     home: home || 'Команда дома',
     away: away || 'Команда гостей',
+    homeId,
+    awayId,
     score,
     time_status: time_status ?? null,
   }
@@ -108,15 +121,28 @@ export default function LiveMatchesWidget() {
                 className="flex items-center justify-between border rounded p-2 hover:bg-accent/50 transition-colors"
               >
                 <Link href={href} className="flex items-center justify-between gap-3 w-full">
-                  <div className="min-w-0">
-                    <div className="truncate font-medium">
-                      {m.home} — {m.away}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex items-center gap-1">
+                      <TeamLogo 
+                        teamId={m.homeId} 
+                        teamName={m.home} 
+                        size="small" 
+                      />
+                      <span className="truncate font-medium">{m.home}</span>
                     </div>
-                    <div className="text-muted-foreground truncate">{m.compName}</div>
+                    <span className="text-muted-foreground">—</span>
+                    <div className="flex items-center gap-1">
+                      <span className="truncate font-medium">{m.away}</span>
+                      <TeamLogo 
+                        teamId={m.awayId} 
+                        teamName={m.away} 
+                        size="small" 
+                      />
+                    </div>
                   </div>
-                  <div className="text-right text-muted-foreground ml-3">
+                  <div className="text-right text-muted-foreground ml-3 flex-shrink-0">
                     <div className="font-semibold">{m.score || m.time_status || '—'}</div>
-                    <div className="text-xs">{m.time_status || ''}</div>
+                    {m.compName && <div className="text-xs truncate max-w-20">{m.compName}</div>}
                   </div>
                 </Link>
               </li>

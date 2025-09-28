@@ -32,10 +32,10 @@ export default function UpcomingAllMatchesWidget() {
     const load = async () => {
       try {
         setLoading(true)
-        const today = new Date().toISOString().split('T')[0]
         const controller = new AbortController()
         const to = setTimeout(() => controller.abort(), 7000)
-        const res = await fetch(`/api/fixtures?date=${today}&size=100&all=true`, { signal: controller.signal })
+        // Используем новый API с диапазоном 7 дней для приоритетных лиг
+        const res = await fetch('/api/fixtures?size=100', { signal: controller.signal })
         clearTimeout(to)
         if (!res.ok) return
         const data = await res.json()
@@ -51,15 +51,20 @@ export default function UpcomingAllMatchesWidget() {
           }))
           .filter((m) => Number.isFinite(m.id))
 
-        const todayStr = new Date().toISOString().split('T')[0]
-        const onlyToday = normalized.filter((m) => String(m.date).startsWith(todayStr))
-        const withTime = onlyToday.map((m) => {
+        // Сортируем по дате и времени (ближайшие первыми)
+        const withTime = normalized.map((m) => {
           const tsVal = new Date(`${m.date}T${m.time || '00:00'}Z`).getTime()
           const ts = Number.isFinite(tsVal) ? tsVal : Number.MAX_SAFE_INTEGER
           return { ...m, ts }
         }) as (SimpleFixture & { ts: number })[]
-        withTime.sort((a, b) => a.ts - b.ts)
-        if (mounted) setItems(withTime)
+        
+        // Фильтруем только будущие матчи и сортируем по времени
+        const now = Date.now()
+        const futureMatches = withTime
+          .filter((m) => m.ts > now)
+          .sort((a, b) => a.ts - b.ts)
+        
+        if (mounted) setItems(futureMatches)
       } catch {
         // no-op
       } finally {
@@ -79,7 +84,7 @@ export default function UpcomingAllMatchesWidget() {
       {loading && items.length === 0 ? (
         <div className="text-sm text-muted-foreground">Загрузка…</div>
       ) : visibleItems.length === 0 ? (
-        <div className="text-sm text-muted-foreground">Нет ближайших матчей</div>
+        <div className="text-sm text-muted-foreground">Нет матчей в ближайшие 7 дней из топ-лиг</div>
       ) : (
         <ul className="space-y-3">
           {visibleItems.map((m) => (
