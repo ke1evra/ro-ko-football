@@ -84,10 +84,20 @@ export default function PredictionModal({
         author: userData.user.id, // Добавляем ID автора
         prediction: {
           events: formData.events,
+          // Добавляем информацию о матче
+          matchInfo: {
+            home: matchData.home.name,
+            away: matchData.away.name,
+            competition: matchData.competition?.name,
+            date: matchData.date,
+            time: matchData.time,
+          },
         },
         publishedAt: new Date().toISOString(),
       }
 
+      console.log('Sending prediction payload:', predictionPayload)
+      
       const response = await fetch('/api/posts', {
         method: 'POST',
         headers: {
@@ -96,6 +106,9 @@ export default function PredictionModal({
         credentials: 'include',
         body: JSON.stringify(predictionPayload),
       })
+      
+      console.log('Response status:', response.status)
+      console.log('Response headers:', response.headers)
 
       if (!response.ok) {
         if (response.status === 401) {

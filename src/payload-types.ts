@@ -297,6 +297,31 @@ export interface Post {
           id?: string | null;
         }[]
       | null;
+    /**
+     * Информация о матче на момент создания прогноза
+     */
+    matchInfo?: {
+      /**
+       * Название команды хозяев
+       */
+      home?: string | null;
+      /**
+       * Название команды гостей
+       */
+      away?: string | null;
+      /**
+       * Название турнира/лиги
+       */
+      competition?: string | null;
+      /**
+       * Дата матча
+       */
+      date?: string | null;
+      /**
+       * Время матча
+       */
+      time?: string | null;
+    };
   };
   author: string | User;
   publishedAt?: string | null;
@@ -537,6 +562,15 @@ export interface PostsSelect<T extends boolean = true> {
               event?: T;
               coefficient?: T;
               id?: T;
+            };
+        matchInfo?:
+          | T
+          | {
+              home?: T;
+              away?: T;
+              competition?: T;
+              date?: T;
+              time?: T;
             };
       };
   author?: T;

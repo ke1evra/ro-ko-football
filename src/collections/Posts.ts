@@ -91,7 +91,7 @@ export const Posts: CollectionConfig = {
       name: 'postType',
       type: 'select',
       options: [
-        { label: 'Обычный пос��', value: 'regular' },
+        { label: 'Обычный пост', value: 'regular' },
         { label: 'Прогноз', value: 'prediction' },
       ],
       defaultValue: 'regular',
@@ -273,6 +273,50 @@ export const Posts: CollectionConfig = {
               min: 1,
               admin: {
                 description: 'Коэффициент на событие',
+              },
+            },
+          ],
+        },
+        {
+          name: 'matchInfo',
+          type: 'group',
+          admin: {
+            description: 'Информация о матче на момент создания прогноза',
+          },
+          fields: [
+            {
+              name: 'home',
+              type: 'text',
+              admin: {
+                description: 'Название команды хозяев',
+              },
+            },
+            {
+              name: 'away',
+              type: 'text',
+              admin: {
+                description: 'Название команды гостей',
+              },
+            },
+            {
+              name: 'competition',
+              type: 'text',
+              admin: {
+                description: 'Название турнира/лиги',
+              },
+            },
+            {
+              name: 'date',
+              type: 'text',
+              admin: {
+                description: 'Дата матча',
+              },
+            },
+            {
+              name: 'time',
+              type: 'text',
+              admin: {
+                description: 'Время матча',
               },
             },
           ],

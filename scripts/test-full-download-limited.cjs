@@ -216,7 +216,7 @@ async function downloadTeamLogo(team, progress) {
     progress.downloadedLogos++
     
   } catch (error) {
-    log(`Команда ${team.id} (${team.name}): ошибка загрузки лого��ипа - ${error.message}`)
+    log(`Команда ${team.id} (${team.name}): ошибка загрузки логотипа - ${error.message}`)
     progress.failedLogos++
   }
 }
