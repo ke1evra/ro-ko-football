@@ -142,13 +142,40 @@ const getEventColor = (type: string) => {
   }
 }
 
+// Утилита для русскоязычных названий статистики
+const getStatsLabel = (key: string): string => {
+  const statsLabels: Record<string, string> = {
+    yellow_cards: 'Желтые карточки',
+    red_cards: 'Красные карточки',
+    substitutions: 'Замены',
+    possesion: 'Владение мячом (%)',
+    free_kicks: 'Штрафные удары',
+    goal_kicks: 'Удары от ворот',
+    throw_ins: 'Вбрасывания',
+    offsides: 'Офсайды',
+    corners: 'Угловые',
+    shots_on_target: 'Удары в створ',
+    shots_off_target: 'Удары мимо',
+    attempts_on_goal: 'Попытки на ворота',
+    saves: 'Сейвы',
+    fauls: 'Фолы',
+    treatments: 'Лечения',
+    penalties: 'Пенальти',
+    shots_blocked: 'Заблокированные удары',
+    dangerous_attacks: 'Опасные атаки',
+    attacks: 'Атаки',
+  }
+
+  return statsLabels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+}
+
 // Компонент для отображения события матча
 function EventItem({ event }: { event: MatchEvent }) {
   return (
     <div className="flex items-center gap-3 p-3 border rounded-lg">
       <div className="flex items-center gap-2 min-w-0 flex-1">
         <span className="text-sm font-mono font-bold text-muted-foreground min-w-[30px]">
-          {event.minute}'
+          {event.minute}&#39;
         </span>
         <span className="text-lg">{getEventIcon(event.type)}</span>
         <div className="min-w-0 flex-1">
@@ -351,10 +378,12 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
 
             {/* Счет */}
             <div className="text-center">
-              {eventsData?.data?.match?.scores?.score || ('score' in matchInfo ? matchInfo.score : null) ? (
+              {eventsData?.data?.match?.scores?.score ||
+              ('score' in matchInfo ? matchInfo.score : null) ? (
                 <div className="space-y-2">
                   <div className="text-4xl font-bold font-mono">
-                    {eventsData?.data?.match?.scores?.score || ('score' in matchInfo ? matchInfo.score : '')}
+                    {eventsData?.data?.match?.scores?.score ||
+                      ('score' in matchInfo ? matchInfo.score : '')}
                   </div>
                   {eventsData?.data?.match?.scores && (
                     <div className="text-xs text-muted-foreground space-y-1">
@@ -485,7 +514,7 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                                     {/* Время в центре */}
                                     <div className="relative z-10 bg-background border-2 border-primary rounded-full w-12 h-12 flex items-center justify-center">
                                       <span className="text-xs font-bold text-primary">
-                                        {event.minute}'
+                                        {event.minute}&#39;
                                       </span>
                                     </div>
 
@@ -501,7 +530,7 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                                     {/* Время в центре */}
                                     <div className="relative z-10 bg-background border-2 border-primary rounded-full w-12 h-12 flex items-center justify-center">
                                       <span className="text-xs font-bold text-primary">
-                                        {event.minute}'
+                                        {event.minute}&#39;
                                       </span>
                                     </div>
 
@@ -569,7 +598,7 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                     {Object.entries(stats).map(([key, stat]) => (
                       <StatsItem
                         key={key}
-                        label={key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                        label={getStatsLabel(key)}
                         homeValue={stat.home}
                         awayValue={stat.away}
                         homeTeam={matchInfo.home?.name || 'Дома'}

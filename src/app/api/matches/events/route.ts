@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
 
     console.log(`[Match Events API] Fetching events for match ${matchIdNum}`)
 
-    // Формируем URL для запроса событий матча
-    const eventsUrl = `${BASE_URL}/matches/events.json?match_id=${matchIdNum}&key=${API_KEY}&secret=${API_SECRET}`
+    // Формируем URL для запроса событий матча с русским языком
+    const eventsUrl = `${BASE_URL}/matches/events.json?match_id=${matchIdNum}&lang=ru&key=${API_KEY}&secret=${API_SECRET}`
 
     console.log(`[Match Events API] Making request to: ${eventsUrl}`)
 

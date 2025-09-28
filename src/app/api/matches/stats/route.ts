@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
 
     console.log(`[Match Stats API] Fetching stats for match ${matchIdNum}`)
 
-    // Формируем URL для запроса статистики матча
-    const statsUrl = `${BASE_URL}/matches/stats.json?match_id=${matchIdNum}&key=${API_KEY}&secret=${API_SECRET}`
+    // Формируем URL для запроса статистики матча с русским языком
+    const statsUrl = `${BASE_URL}/matches/stats.json?match_id=${matchIdNum}&lang=ru&key=${API_KEY}&secret=${API_SECRET}`
 
     console.log(`[Match Stats API] Making request to: ${statsUrl}`)
 
