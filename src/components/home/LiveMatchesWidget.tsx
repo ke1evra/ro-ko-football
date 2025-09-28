@@ -118,31 +118,34 @@ export default function LiveMatchesWidget() {
             return (
               <li
                 key={`${m.id}-${idx}`}
-                className="flex items-center justify-between border rounded p-2 hover:bg-accent/50 transition-colors"
+                className="border rounded p-3 hover:bg-accent/50 transition-colors"
               >
-                <Link href={href} className="flex items-center justify-between gap-3 w-full">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="flex items-center gap-1">
+                <Link href={href} className="block">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs text-muted-foreground truncate">
+                      {m.compName || 'Лайв матч'}
+                    </div>
+                    <div className="text-xs font-semibold text-primary">
+                      {m.score || m.time_status || 'LIVE'}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
                       <TeamLogo 
                         teamId={m.homeId} 
                         teamName={m.home} 
                         size="small" 
                       />
-                      <span className="truncate font-medium">{m.home}</span>
+                      <span className="truncate font-medium text-sm">{m.home}</span>
                     </div>
-                    <span className="text-muted-foreground">—</span>
-                    <div className="flex items-center gap-1">
-                      <span className="truncate font-medium">{m.away}</span>
+                    <div className="flex items-center gap-2">
                       <TeamLogo 
                         teamId={m.awayId} 
                         teamName={m.away} 
                         size="small" 
                       />
+                      <span className="truncate font-medium text-sm">{m.away}</span>
                     </div>
-                  </div>
-                  <div className="text-right text-muted-foreground ml-3 flex-shrink-0">
-                    <div className="font-semibold">{m.score || m.time_status || '—'}</div>
-                    {m.compName && <div className="text-xs truncate max-w-20">{m.compName}</div>}
                   </div>
                 </Link>
               </li>

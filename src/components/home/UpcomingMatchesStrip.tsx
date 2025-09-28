@@ -1,9 +1,12 @@
-"use client"
+'use client'
 
 import * as React from 'react'
 import Link from 'next/link'
 
-import { getLeaguePriorityClient, isPriorityLeagueClient } from '@/lib/highlight-competitions-client'
+import {
+  getLeaguePriorityClient,
+  isPriorityLeagueClient,
+} from '@/lib/highlight-competitions-client'
 import { TeamLogo } from '@/components/TeamLogo'
 import type { Fixture } from '@/app/(frontend)/client/types/Fixture'
 
@@ -19,7 +22,11 @@ export type StripMatch = {
 
 function formatTime(date: string, time?: string) {
   try {
-    if (time) return new Date(`${date}T${time}Z`).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+    if (time)
+      return new Date(`${date}T${time}Z`).toLocaleTimeString('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
     return new Date(date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
   } catch {
     return time || ''
@@ -48,8 +55,7 @@ function normalizeFixture(fx: any): StripMatch | null {
     logo: fx?.away?.logo || fx?.away_logo || fx?.awayTeam?.logo || null,
   }
 
-  const compId =
-    fx?.competition_id || fx?.competition?.id || fx?.league?.id || fx?.competitionId
+  const compId = fx?.competition_id || fx?.competition?.id || fx?.league?.id || fx?.competitionId
   const competition = compId
     ? {
         id: Number(compId),
@@ -59,8 +65,7 @@ function normalizeFixture(fx: any): StripMatch | null {
       }
     : undefined
 
-  const date =
-    fx?.date || fx?.fixture_date || fx?.fixtureDate || fx?.match_date || ''
+  const date = fx?.date || fx?.fixture_date || fx?.fixtureDate || fx?.match_date || ''
   const time =
     typeof fx?.time === 'string'
       ? fx.time
@@ -90,13 +95,12 @@ function sortByPriorityAndTime(a: StripMatch, b: StripMatch) {
   return ta - tb
 }
 
-
-
 export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
-  const [items, setItems] = React.useState<StripMatch[]>(() =>
-    initial.map(normalizeFixture).filter(Boolean) as StripMatch[],
+  const [items, setItems] = React.useState<StripMatch[]>(
+    () => initial.map(normalizeFixture).filter(Boolean) as StripMatch[],
   )
   const [isLoading, setIsLoading] = React.useState(false)
+  const [apiResponse, setApiResponse] = React.useState<any>(null)
 
   React.useEffect(() => {
     let mounted = true
@@ -104,17 +108,17 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
       try {
         setIsLoading(true)
         console.log('[UpcomingMatchesStrip] fetching fixtures for 7-day range')
-        
+
         // Добавляем таймаут для запроса
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 секунд таймаут
-        
+
         // Используем новый API с диапазоном 7 дней
         const res = await fetch('/api/fixtures?size=60', {
-          signal: controller.signal
+          signal: controller.signal,
         })
         clearTimeout(timeoutId)
-        
+
         console.log('[UpcomingMatchesStrip] API response status:', res.status)
         if (!res.ok) {
           console.error('[UpcomingMatchesStrip] API error:', res.status, res.statusText)
@@ -122,6 +126,10 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
         }
         const data = await res.json()
         console.log('[UpcomingMatchesStrip] API response data:', data)
+
+        // Сохраняем сырой ответ для отладки
+        if (mounted) setApiResponse(data)
+
         const list: any[] = data.fixtures || data.data?.fixtures || []
         console.log('[UpcomingMatchesStrip] extracted fixtures list:', list.length, 'items')
         if (!mounted) return
@@ -150,27 +158,51 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
   // Фильтруем только будущие матчи и сортируем по приоритету лиг и времени
   const futureMatches = React.useMemo(() => {
     const now = Date.now()
+    console.log('[UpcomingMatchesStrip] Current time:', new Date(now).toISOString())
+
     return items.filter((m) => {
       const matchTime = new Date(`${m.date}T${m.time || '00:00'}Z`).getTime()
-      return matchTime > now
+      const isFuture = matchTime > now
+      console.log(
+        `[UpcomingMatchesStrip] Match ${m.id} (${m.home?.name} vs ${m.away?.name}): ${m.date}T${m.time || '00:00'}Z -> ${new Date(matchTime).toISOString()} -> Future: ${isFuture}`,
+      )
+      return isFuture
     })
   }, [items])
-  
-  const priorityMatches = React.useMemo(
-    () => futureMatches.filter((m) => isPriorityLeagueClient(m.competition?.id || 0)),
-    [futureMatches],
-  )
-  
+
+  const priorityMatches = React.useMemo(() => {
+    const priority = futureMatches.filter((m) => {
+      const isPriority = isPriorityLeagueClient(m.competition?.id || 0)
+      console.log(
+        `[UpcomingMatchesStrip] Match ${m.id} (${m.competition?.name}, ID: ${m.competition?.id}): Priority = ${isPriority}`,
+      )
+      return isPriority
+    })
+    console.log(
+      `[UpcomingMatchesStrip] Priority matches: ${priority.length}, Future matches: ${futureMatches.length}`,
+    )
+    return priority
+  }, [futureMatches])
+
   const sorted = React.useMemo(() => {
     const arr = priorityMatches.length > 0 ? priorityMatches : futureMatches
-    return [...arr].sort(sortByPriorityAndTime).slice(0, 5)
+    console.log(
+      `[UpcomingMatchesStrip] Using ${priorityMatches.length > 0 ? 'priority' : 'all future'} matches (${arr.length} total)`,
+    )
+    const sortedArr = [...arr].sort(sortByPriorityAndTime).slice(0, 5)
+    console.log(
+      `[UpcomingMatchesStrip] Final sorted matches:`,
+      sortedArr.map((m) => `${m.id}: ${m.home?.name} vs ${m.away?.name} (${m.competition?.name})`),
+    )
+    return sortedArr
   }, [futureMatches, priorityMatches])
 
   return (
-    <div className="w-full overflow-x-auto">
-      <div className="flex gap-3 py-2 min-w-max">
-        {sorted.length > 0
-          ? sorted.map((m) => (
+    <div className="w-full">
+      <div className="overflow-x-auto">
+        <div className="flex gap-3 py-2 min-w-max">
+          {sorted.length > 0 ? (
+            sorted.map((m) => (
               <Link key={m.id} href={`/fixtures/${m.id}`} className="flex-shrink-0">
                 <div className="w-64 border rounded-lg p-3 hover:bg-accent transition-colors">
                   <div className="flex items-center justify-between mb-2">
@@ -182,47 +214,38 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
                     </div>
                   </div>
                   <div className="grid grid-cols-[24px_1fr] gap-2">
-                    <TeamLogo 
-                      teamId={m.home?.id} 
-                      teamName={m.home?.name} 
-                      size="small" 
-                    />
+                    <TeamLogo teamId={m.home?.id} teamName={m.home?.name} size="small" />
                     <div className="text-sm font-medium truncate">{m.home?.name}</div>
-                    <TeamLogo 
-                      teamId={m.away?.id} 
-                      teamName={m.away?.name} 
-                      size="small" 
-                    />
+                    <TeamLogo teamId={m.away?.id} teamName={m.away?.name} size="small" />
                     <div className="text-sm font-medium truncate">{m.away?.name}</div>
                   </div>
                 </div>
               </Link>
             ))
-          : isLoading
-            ? Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="w-64 border rounded-lg p-3">
-                  <div className="h-3 w-40 bg-muted animate-pulse rounded mb-2" />
-                  <div className="grid grid-cols-[24px_1fr] gap-2">
-                    <div className="w-6 h-6 bg-muted rounded animate-pulse" />
-                    <div className="h-4 bg-muted rounded w-36 animate-pulse" />
-                    <div className="w-6 h-6 bg-muted rounded animate-pulse" />
-                    <div className="h-4 bg-muted rounded w-28 animate-pulse" />
-                  </div>
+          ) : isLoading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="w-64 border rounded-lg p-3">
+                <div className="h-3 w-40 bg-muted animate-pulse rounded mb-2" />
+                <div className="grid grid-cols-[24px_1fr] gap-2">
+                  <div className="w-6 h-6 bg-muted rounded animate-pulse" />
+                  <div className="h-4 bg-muted rounded w-36 animate-pulse" />
+                  <div className="w-6 h-6 bg-muted rounded animate-pulse" />
+                  <div className="h-4 bg-muted rounded w-28 animate-pulse" />
                 </div>
-              ))
-            : (
-                <div className="w-64 border rounded-lg p-3 bg-muted/20">
-                  <div className="text-[11px] text-muted-foreground mb-1">
-                    Ближайшие матчи
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Нет матчей в ближайшие 7 дней из топ-лиг
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    АПЛ • Бундеслига • Серия А • Лига 1 • Ла Лига • РПЛ
-                  </div>
-                </div>
-              )}
+              </div>
+            ))
+          ) : (
+            <div className="w-64 border rounded-lg p-3 bg-muted/20">
+              <div className="text-[11px] text-muted-foreground mb-1">Ближайшие матчи</div>
+              <div className="text-sm text-muted-foreground">
+                Нет матчей в ближайшие 7 дней из топ-лиг
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                АПЛ • Бундеслига • Серия А • Лига 1 • Ла Лига • РПЛ
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
