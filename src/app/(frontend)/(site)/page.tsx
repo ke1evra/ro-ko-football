@@ -10,6 +10,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import PredictionButton from '@/components/predictions/PredictionButton'
 import UpcomingAllMatchesWidget from '@/components/home/UpcomingAllMatchesWidget'
+import LeaguesListWidget from '@/components/home/LeaguesListWidget'
 
 import {
   getCompetitionsListJson,
@@ -22,6 +23,7 @@ import {
   isPriorityLeague,
   getAllPriorityLeagues,
 } from '@/lib/highlight-competitions'
+import { getSidebarLeaguesForWidget } from '@/lib/leagues'
 import WeekFixturesGrouped from '@/components/home/WeekFixturesGrouped'
 import LiveMatchesWidget from '@/components/home/LiveMatchesWidget'
 
@@ -84,12 +86,13 @@ async function getLiveMatchesTop() {
 
 export default async function Home({ searchParams }: { searchParams: SearchParams }) {
   const { page } = await searchParams
-  const [{ items, page: curPage, totalPages }, topUpcoming, liveTop, priorityMatches] =
+  const [{ items, page: curPage, totalPages }, topUpcoming, liveTop, priorityMatches, leaguesSettings] =
     await Promise.all([
       getPostsPage(page),
       getTopUpcomingMatches(),
       getLiveMatchesTop(),
       getPriorityLeagueMatches(),
+      getSidebarLeaguesForWidget(),
     ])
 
   const breadcrumbItems = [{ label: 'Главная' }]
@@ -118,6 +121,13 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                     </li>
                   ))}
                 </ul>
+              </CardContent>
+            </Card>
+
+            {/* Виджет лиг из CMS */}
+            <Card>
+              <CardContent className="p-4">
+                <LeaguesListWidget settings={leaguesSettings} />
               </CardContent>
             </Card>
 

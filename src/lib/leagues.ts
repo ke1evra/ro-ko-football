@@ -109,3 +109,49 @@ export async function getSidebarLeagueIds(): Promise<number[]> {
     .map((item: any) => item.league?.competitionId)
     .filter((id: any) => typeof id === 'number')
 }
+
+/**
+ * Получить настройки лиг для виджета сайдбара (с полной информацией)
+ */
+export async function getSidebarLeaguesForWidget() {
+  const settings = await getSidebarLeagues()
+  
+  if (!settings?.enabled || !settings?.leagues) {
+    return null
+  }
+  
+  // Преобразуем данные в формат для виджета
+  const leagues = settings.leagues
+    .filter((item: any) => item.enabled && item.league)
+    .map((item: any) => ({
+      id: item.league.id,
+      competitionId: item.league.competitionId,
+      name: item.league.name,
+      displayName: item.league.displayName,
+      countryName: item.league.countryName,
+      countryId: item.league.countryId,
+      customName: item.customName,
+      priority: item.priority || 999,
+      enabled: item.enabled,
+      highlightColor: item.highlightColor,
+      showMatchCount: item.showMatchCount || false,
+      tier: item.league.tier,
+      isActive: item.league.active,
+      matchCount: 0, // TODO: Можно добавить подсчёт матчей
+    }))
+  
+  return {
+    enabled: settings.enabled,
+    title: settings.title || 'Лиги',
+    maxItems: settings.maxItems || 15,
+    showFlags: settings.showFlags !== false,
+    groupByCountry: settings.groupByCountry || false,
+    displaySettings: {
+      showOnlyActive: settings.displaySettings?.showOnlyActive !== false,
+      showTiers: settings.displaySettings?.showTiers || false,
+      compactMode: settings.displaySettings?.compactMode || false,
+      showLogos: settings.displaySettings?.showLogos || false,
+    },
+    leagues,
+  }
+}
