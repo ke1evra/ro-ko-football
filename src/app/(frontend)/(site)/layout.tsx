@@ -2,10 +2,22 @@ import { Footer } from '@/components/site/footer'
 import { Header } from '@/components/site/header'
 import { Main, Container } from '@/components/ds'
 import UpcomingMatchesStrip from '@/components/home/UpcomingMatchesStrip'
+import { getTopMatchesLeagues, getTopMatchesLeagueIds } from '@/lib/leagues'
 
 export const dynamic = 'force-dynamic'
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  // Получаем настройки из Payload для виджета
+  let settings = null
+  let leagueIds: number[] = []
+  
+  try {
+    settings = await getTopMatchesLeagues()
+    leagueIds = await getTopMatchesLeagueIds()
+  } catch (error) {
+    console.error('[LAYOUT] Ошибка загрузки настроек из Payload:', error)
+  }
+
   return (
     <>
       <Header />
@@ -15,10 +27,13 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         <Container className="py-3">
           <div className="mb-2">
             <h2 className="text-sm font-medium text-foreground mb-1">
-              🏆 Ближайшие матчи топ-лиг
+              🏆 {settings?.title || 'Ближайшие матчи топ-лиг'}
             </h2>
             <p className="text-xs text-muted-foreground">
-              АПЛ • Бундеслига • Серия А • Лига 1 • Ла Лига • РПЛ • Лига Чемпионов • Лига Европы
+              {settings?.enabled 
+                ? `Настроено ${leagueIds.length} лиг через CMS`
+                : 'Виджет отключён в настройках CMS'
+              }
             </p>
           </div>
           <div className="overflow-hidden">

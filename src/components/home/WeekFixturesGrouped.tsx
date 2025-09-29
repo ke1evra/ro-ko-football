@@ -1,12 +1,12 @@
 "use client"
 
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { LocalDateTime } from '@/components/LocalDateTime'
 import { Calendar, Clock, MapPin } from 'lucide-react'
-import { getLeaguePriorityClient } from '@/lib/highlight-competitions-client'
+import { getLeaguePriorityClient, initializeLeaguesCache } from '@/lib/highlight-competitions-client'
 
 export type UpcomingMatch = {
   id: number
@@ -31,6 +31,11 @@ function getCompetitionWeight(competitionId?: number): number {
 }
 
 export default function WeekFixturesGrouped({ matches }: { matches: UpcomingMatch[] }) {
+  // Инициализируем кэш лиг при загрузке компонента
+  useEffect(() => {
+    initializeLeaguesCache()
+  }, [])
+
   const grouped = useMemo(() => {
     const byDate = new Map<string, Map<string, { competition?: { id: number; name: string }; matches: UpcomingMatch[] }>>()
     for (const m of matches) {

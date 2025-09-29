@@ -189,6 +189,7 @@ function sanitizeLeagueDoc(input) {
   const out = {
     competitionId: input.competitionId,
     name: input.name,
+    displayName: input.countryName ? `${input.name} (${input.countryName})` : input.name,
     countryId: input.countryId ?? null,
     countryName: input.countryName ?? null,
     isLeague: Boolean(input.isLeague),

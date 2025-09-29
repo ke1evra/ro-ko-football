@@ -6,6 +6,7 @@ import Link from 'next/link'
 import {
   getLeaguePriorityClient,
   isPriorityLeagueClient,
+  initializeLeaguesCache,
 } from '@/lib/highlight-competitions-client'
 import { TeamLogo } from '@/components/TeamLogo'
 import type { Fixture } from '@/app/(frontend)/client/types/Fixture'
@@ -30,6 +31,33 @@ function formatTime(date: string, time?: string) {
     return new Date(date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
   } catch {
     return time || ''
+  }
+}
+
+function formatDateLabel(date: string): string {
+  try {
+    const matchDate = new Date(date)
+    const today = new Date()
+    const tomorrow = new Date(today)
+    tomorrow.setDate(today.getDate() + 1)
+    
+    // Сравниваем только даты, игнорируя время
+    const matchDateStr = matchDate.toDateString()
+    const todayStr = today.toDateString()
+    const tomorrowStr = tomorrow.toDateString()
+    
+    if (matchDateStr === todayStr) {
+      return 'Сегодня'
+    } else if (matchDateStr === tomorrowStr) {
+      return 'Завтра'
+    } else {
+      return matchDate.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'short'
+      })
+    }
+  } catch {
+    return date
   }
 }
 
@@ -103,6 +131,9 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
   const [apiResponse, setApiResponse] = React.useState<any>(null)
 
   React.useEffect(() => {
+    // Инициализируем кэш лиг при загрузке компонента
+    initializeLeaguesCache()
+    
     let mounted = true
     async function refresh() {
       try {
@@ -189,7 +220,7 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
     console.log(
       `[UpcomingMatchesStrip] Using ${priorityMatches.length > 0 ? 'priority' : 'all future'} matches (${arr.length} total)`,
     )
-    const sortedArr = [...arr].sort(sortByPriorityAndTime).slice(0, 5)
+    const sortedArr = [...arr].sort(sortByPriorityAndTime)
     console.log(
       `[UpcomingMatchesStrip] Final sorted matches:`,
       sortedArr.map((m) => `${m.id}: ${m.home?.name} vs ${m.away?.name} (${m.competition?.name})`),
@@ -204,8 +235,13 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
           {sorted.length > 0 ? (
             sorted.map((m) => (
               <Link key={m.id} href={`/fixtures/${m.id}`} className="flex-shrink-0">
-                <div className="w-64 border rounded-lg p-3 hover:bg-accent transition-colors">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="w-64 border rounded-lg p-3 hover:bg-accent transition-colors relative">
+                  {/* Мини-плашка с датой */}
+                  <div className="absolute -top-2 left-2 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-medium rounded-full">
+                    {formatDateLabel(m.date)}
+                  </div>
+                  
+                  <div className="flex items-center justify-between mb-2 mt-1">
                     <div className="text-[11px] text-muted-foreground truncate">
                       {m.competition?.name || 'Неизвестная лига'}
                     </div>
@@ -238,10 +274,10 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
             <div className="w-64 border rounded-lg p-3 bg-muted/20">
               <div className="text-[11px] text-muted-foreground mb-1">Ближайшие матчи</div>
               <div className="text-sm text-muted-foreground">
-                Нет матчей в ближайшие 7 дней из топ-лиг
+                Нет матчей в ближайшие 7 дней из приоритетных лиг
               </div>
               <div className="text-xs text-muted-foreground mt-1">
-                АПЛ • Бундеслига • Серия А • Лига 1 • Ла Лига • РПЛ
+                Настройте лиги в админке CMS
               </div>
             </div>
           )}

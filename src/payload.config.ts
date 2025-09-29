@@ -14,6 +14,9 @@ import { Comments } from '@/collections/Comments'
 import { CommentVotes } from '@/collections/CommentVotes'
 import { Leagues } from '@/collections/Leagues'
 
+import { TopMatchesLeagues } from '@/globals/TopMatchesLeagues'
+import { SidebarLeagues } from '@/globals/SidebarLeagues'
+
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
@@ -25,6 +28,7 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, Posts, Comments, CommentVotes, Leagues],
+  globals: [TopMatchesLeagues, SidebarLeagues],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

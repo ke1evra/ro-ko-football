@@ -8,8 +8,14 @@ function isAdmin(req: PayloadRequest): boolean {
 export const Leagues: CollectionConfig = {
   slug: 'leagues',
   admin: {
-    useAsTitle: 'name',
-    defaultColumns: ['name', 'competitionId', 'countryName', 'priority', 'active'],
+    useAsTitle: 'displayName',
+    defaultColumns: ['name', 'competitionId', 'countryName', 'tier', 'active'],
+    listSearchableFields: ['name', 'countryName'],
+    group: 'Футбольные данные',
+    pagination: {
+      defaultLimit: 25,
+      limits: [10, 25, 50, 100],
+    },
   },
   access: {
     read: () => true,
@@ -40,6 +46,23 @@ export const Leagues: CollectionConfig = {
       name: 'name',
       type: 'text',
       required: true,
+    },
+    {
+      name: 'displayName',
+      type: 'text',
+      admin: {
+        hidden: true,
+      },
+      hooks: {
+        beforeChange: [
+          ({ data }) => {
+            if (data?.countryName && data?.name) {
+              return `${data.name} (${data.countryName})`
+            }
+            return data?.name || 'Без названия'
+          },
+        ],
+      },
     },
     {
       name: 'countryId',

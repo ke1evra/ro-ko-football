@@ -92,8 +92,14 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    topMatchesLeagues: TopMatchesLeague;
+    sidebarLeagues: SidebarLeague;
+  };
+  globalsSelect: {
+    topMatchesLeagues: TopMatchesLeaguesSelect<false> | TopMatchesLeaguesSelect<true>;
+    sidebarLeagues: SidebarLeaguesSelect<false> | SidebarLeaguesSelect<true>;
+  };
   locale: null;
   user: User & {
     collection: 'users';
@@ -379,6 +385,7 @@ export interface League {
    */
   externalId?: string | null;
   name: string;
+  displayName?: string | null;
   /**
    * ID страны первого вхождения (если применимо)
    */
@@ -687,6 +694,7 @@ export interface LeaguesSelect<T extends boolean = true> {
   competitionId?: T;
   externalId?: T;
   name?: T;
+  displayName?: T;
   countryId?: T;
   countryName?: T;
   isLeague?: T;
@@ -750,6 +758,210 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Настройка лиг для виджета топ матчей на главной странице
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "topMatchesLeagues".
+ */
+export interface TopMatchesLeague {
+  id: string;
+  /**
+   * Показывать ли виджет топ матчей на сайте
+   */
+  enabled?: boolean | null;
+  /**
+   * Заголовок, который будет отображаться над виджетом
+   */
+  title?: string | null;
+  /**
+   * Максимальное количество матчей для показа в виджете
+   */
+  maxMatches?: number | null;
+  /**
+   * Выберите лиги для отображения в виджете топ матчей
+   */
+  leagues?:
+    | {
+        /**
+         * Выберите лигу
+         */
+        league: string | League;
+        /**
+         * Приоритет лиги (меньше число = выше приоритет)
+         */
+        priority?: number | null;
+        /**
+         * Показывать ли матчи из этой лиги
+         */
+        enabled?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Дополнительные настройки для фильтрации матчей
+   */
+  filterSettings?: {
+    /**
+     * Показывать матчи только из активных лиг
+     */
+    showOnlyActive?: boolean | null;
+    /**
+     * В каком временном диапазоне искать матчи
+     */
+    timeRange?: ('today' | 'tomorrow' | 'week' | 'month') | null;
+    /**
+     * Не показывать завершённые матчи
+     */
+    excludeFinished?: boolean | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Настройка списка лиг для левого сайдбара сайта
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sidebarLeagues".
+ */
+export interface SidebarLeague {
+  id: string;
+  /**
+   * Включить/выключить отображение списка лиг в сайдбаре
+   */
+  enabled?: boolean | null;
+  /**
+   * Заголовок секции с лигами в сайдбаре
+   */
+  title?: string | null;
+  /**
+   * Максимальное количество лиг для показа в сайдбаре
+   */
+  maxItems?: number | null;
+  /**
+   * Отображать флаги стран рядом с названиями лиг
+   */
+  showFlags?: boolean | null;
+  /**
+   * Группировать лиги по странам в сайдбаре
+   */
+  groupByCountry?: boolean | null;
+  /**
+   * Выберите лиги для отображения в сайдбаре
+   */
+  leagues?:
+    | {
+        /**
+         * Выберите лигу
+         */
+        league: string | League;
+        /**
+         * Оставьте пустым для использования оригинального названия лиги
+         */
+        customName?: string | null;
+        /**
+         * Порядок отображения в сайдбаре (меньше число = выше в списке)
+         */
+        priority?: number | null;
+        /**
+         * Показывать ли эту лигу в сайдбаре
+         */
+        enabled?: boolean | null;
+        /**
+         * HEX-код цвета для выделения лиги (например, #ff0000)
+         */
+        highlightColor?: string | null;
+        /**
+         * Отображать количество предстоящих матчей рядом с названием лиги
+         */
+        showMatchCount?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Дополнительные настройки внешнего вида сайдбара
+   */
+  displaySettings?: {
+    /**
+     * Показывать только активные лиги
+     */
+    showOnlyActive?: boolean | null;
+    /**
+     * Отображать уровень лиги (1-я лига, 2-я лига �� т.д.)
+     */
+    showTiers?: boolean | null;
+    /**
+     * Более компактное отображение списка лиг
+     */
+    compactMode?: boolean | null;
+    /**
+     * Отображать логотипы лиг (если доступны)
+     */
+    showLogos?: boolean | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "topMatchesLeagues_select".
+ */
+export interface TopMatchesLeaguesSelect<T extends boolean = true> {
+  enabled?: T;
+  title?: T;
+  maxMatches?: T;
+  leagues?:
+    | T
+    | {
+        league?: T;
+        priority?: T;
+        enabled?: T;
+        id?: T;
+      };
+  filterSettings?:
+    | T
+    | {
+        showOnlyActive?: T;
+        timeRange?: T;
+        excludeFinished?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sidebarLeagues_select".
+ */
+export interface SidebarLeaguesSelect<T extends boolean = true> {
+  enabled?: T;
+  title?: T;
+  maxItems?: T;
+  showFlags?: T;
+  groupByCountry?: T;
+  leagues?:
+    | T
+    | {
+        league?: T;
+        customName?: T;
+        priority?: T;
+        enabled?: T;
+        highlightColor?: T;
+        showMatchCount?: T;
+        id?: T;
+      };
+  displaySettings?:
+    | T
+    | {
+        showOnlyActive?: T;
+        showTiers?: T;
+        compactMode?: T;
+        showLogos?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

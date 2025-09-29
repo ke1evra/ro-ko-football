@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getFixturesMatchesJson, getMatchesLiveJson } from '@/app/(frontend)/client'
-import { getPriorityLeagueIds } from '@/lib/highlight-competitions'
+import { getTopMatchesLeagueIds } from '@/lib/leagues'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,14 +23,25 @@ export async function GET(req: NextRequest) {
     const includeAll = searchParams.get('all') === 'true'
     const explicitCompetition = searchParams.get('competition_id')
 
+    // Получаем ID лиг из Payload CMS
+    let priorityLeagueIds: number[] = []
+    try {
+      priorityLeagueIds = await getTopMatchesLeagueIds()
+      console.log('[fixtures] Priority leagues from CMS:', priorityLeagueIds)
+    } catch (error) {
+      console.error('[fixtures] Ошибка загрузки лиг из CMS:', error)
+      // Если CMS недоступен, используем пустой массив (будут загружены все матчи)
+      priorityLeagueIds = []
+    }
+
     const ac = new AbortController()
     const to = setTimeout(() => ac.abort(), 8000)
 
     if (live) {
       const page = Math.max(1, Number(searchParams.get('page') || '1') || 1)
       const liveParams: any = { page, lang: 'ru' }
-      if (!includeAll) {
-        liveParams.competition_id = explicitCompetition || getPriorityLeagueIds().join(',')
+      if (!includeAll && (explicitCompetition || priorityLeagueIds.length > 0)) {
+        liveParams.competition_id = explicitCompetition || priorityLeagueIds.join(',')
       }
 
       console.log(
@@ -73,8 +84,8 @@ export async function GET(req: NextRequest) {
       console.log('[fixtures] using specific date:', dateParam)
     }
     
-    if (!includeAll) {
-      params.competition_id = explicitCompetition || getPriorityLeagueIds().join(',')
+    if (!includeAll && (explicitCompetition || priorityLeagueIds.length > 0)) {
+      params.competition_id = explicitCompetition || priorityLeagueIds.join(',')
     }
 
     console.log(

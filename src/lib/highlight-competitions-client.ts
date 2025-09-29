@@ -1,113 +1,176 @@
 /**
  * Клиентские утилиты для работы с приоритетными лигами
- * Эти функции можно использовать в клиентских компонентах
- * Синхронизировано с серверной версией из highlight-competitions.ts
+ * Получает данные из Payload CMS через API
  */
 
 /**
- * Приоритетные лиги (клиентская копия серверной версии)
- * ID получены через прямой запрос к API лиг
+ * Кэш для приоритетных лиг на клиенте
  */
-export const PRIORITY_LEAGUES_CLIENT = {
-  // Топ-5 европейских лиг
-  PREMIER_LEAGUE: { 
-    id: 2, 
-    name: 'Premier League', 
-    country: 'England', 
-    priority: 1,
-    description: 'Английская Премьер-лига'
-  },
-  BUNDESLIGA: { 
-    id: 1, 
-    name: 'Bundesliga', 
-    country: 'Germany', 
-    priority: 2,
-    description: 'Немецкая Бундеслига'
-  },
-  SERIE_A: { 
-    id: 4, 
-    name: 'Serie A', 
-    country: 'Italy', 
-    priority: 3,
-    description: 'Итальянская Серия А'
-  },
-  LIGUE_1: { 
-    id: 5, 
-    name: 'Ligue 1', 
-    country: 'France', 
-    priority: 4,
-    description: 'Французская Лига 1'
-  },
-  LA_LIGA: { 
-    id: 3, 
-    name: 'LaLiga Santander', 
-    country: 'Spain', 
-    priority: 5,
-    description: 'Испанская Ла Лига'
-  },
+let cachedLeagues: Array<{
+  id: number
+  name: string
+  country?: string
+  priority: number
+  enabled: boolean
+}> | null = null
+
+let cacheTimestamp = 0
+const CACHE_TTL = 5 * 60 * 1000 // 5 минут
+
+/**
+ * Получить приоритетные лиги из API с кэшированием
+ */
+async function getCachedLeaguesFromAPI() {
+  const now = Date.now()
   
-  // Российская лига
-  RUSSIAN_PREMIER_LEAGUE: { 
-    id: 7, 
-    name: 'Premier League', 
-    country: 'Russia', 
-    priority: 6,
-    description: 'Российская Премьер-лига'
-  },
+  // Проверяем кэш
+  if (cachedLeagues && (now - cacheTimestamp) < CACHE_TTL) {
+    return cachedLeagues
+  }
   
-  // Европейские кубки
-  UEFA_CHAMPIONS_LEAGUE: { 
-    id: 268, 
-    name: 'Champions League', 
-    country: 'Europe', 
-    priority: 7,
-    description: 'Лига Чемпионов УЕФА'
-  },
-  UEFA_EUROPA_LEAGUE: { 
-    id: 245, 
-    name: 'Europa League', 
-    country: 'Europe', 
-    priority: 8,
-    description: 'Лига Европы УЕФА'
-  },
-  UEFA_CONFERENCE_LEAGUE: { 
-    id: 446, 
-    name: 'UEFA Conference League', 
-    country: 'Europe', 
-    priority: 9,
-    description: 'Лига Конференций УЕФА'
-  },
-} as const
+  try {
+    const response = await fetch('/api/top-matches-settings', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+    
+    const data = await response.json()
+    
+    if (!data.success || !data.enabled) {
+      console.warn('[LEAGUES_CLIENT] Настройки топ матчей отключены или недоступны')
+      return []
+    }
+    
+    // Обновляем кэш
+    cachedLeagues = data.leagues || []
+    cacheTimestamp = now
+    
+    console.log(`[LEAGUES_CLIENT] Загружено ${cachedLeagues.length} лиг из Payload`)
+    return cachedLeagues
+    
+  } catch (error) {
+    console.error('[LEAGUES_CLIENT] Ошибка при загрузке лиг:', error)
+    
+    // Возвращаем кэшированные данные, если есть
+    if (cachedLeagues) {
+      console.warn('[LEAGUES_CLIENT] Используем кэшированные данные')
+      return cachedLeagues
+    }
+    
+    // Если нет кэша и API недоступен - возвращаем пустой массив
+    console.warn('[LEAGUES_CLIENT] API недоступен, возвращаем пустой список')
+    return []
+  }
+}
+
+/**
+ * Синхронная версия для обратной совместимости
+ * Использует только кэшированные данные из CMS
+ */
+function getCachedLeaguesSync() {
+  if (cachedLeagues) {
+    return cachedLeagues
+  }
+  // Если кэш пуст - возвращаем пустой массив, НЕ fallback
+  return []
+}
 
 /**
  * Получить приоритет лиги (чем меньше число, тем выше приоритет)
- * Клие��тская версия функции
+ * Синхронная версия для использования в компонентах
  */
 export function getLeaguePriorityClient(competitionId: number): number {
-  const league = Object.values(PRIORITY_LEAGUES_CLIENT).find(league => league.id === competitionId)
+  const leagues = getCachedLeaguesSync()
+  const league = leagues.find(league => league.id === competitionId)
   return league?.priority ?? 999 // Низкий приоритет для неприоритетных лиг
 }
 
 /**
  * Проверить, является ли лига приоритетной
- * Клиентская версия функции
+ * Синхронная версия для использования в компонентах
  */
 export function isPriorityLeagueClient(competitionId: number): boolean {
-  return Object.values(PRIORITY_LEAGUES_CLIENT).some(league => league.id === competitionId)
+  const leagues = getCachedLeaguesSync()
+  return leagues.some(league => league.id === competitionId)
 }
 
 /**
  * Получить информацию о лиге по ID
- * Клиентская версия функции
+ * Синхронная версия для использования в компонентах
  */
 export function getLeagueInfoClient(competitionId: number) {
-  return Object.values(PRIORITY_LEAGUES_CLIENT).find(league => league.id === competitionId)
+  const leagues = getCachedLeaguesSync()
+  return leagues.find(league => league.id === competitionId)
 }
 
 /**
  * Получить ID всех приоритетных лиг
- * Клиентская версия функции
+ * Синхронная версия для использования в компонентах
  */
 export function getPriorityLeagueIdsClient(): number[] {
-  return Object.values(PRIORITY_LEAGUES_CLIENT).map(league => league.id)
+  const leagues = getCachedLeaguesSync()
+  return leagues.map(league => league.id)
+}
+
+/**
+ * Асинхронные версии функций для загрузки свежих данных
+ */
+
+/**
+ * Получить приоритет лиги (асинхронная версия)
+ */
+export async function getLeaguePriorityClientAsync(competitionId: number): Promise<number> {
+  const leagues = await getCachedLeaguesFromAPI()
+  const league = leagues.find(league => league.id === competitionId)
+  return league?.priority ?? 999
+}
+
+/**
+ * Проверить, является ли лига приоритетной (асинхронная версия)
+ */
+export async function isPriorityLeagueClientAsync(competitionId: number): Promise<boolean> {
+  const leagues = await getCachedLeaguesFromAPI()
+  return leagues.some(league => league.id === competitionId)
+}
+
+/**
+ * Получить информацию о лиге по ID (асинхронная версия)
+ */
+export async function getLeagueInfoClientAsync(competitionId: number) {
+  const leagues = await getCachedLeaguesFromAPI()
+  return leagues.find(league => league.id === competitionId)
+}
+
+/**
+ * Получить ID всех приоритетных лиг (асинхронная версия)
+ */
+export async function getPriorityLeagueIdsClientAsync(): Promise<number[]> {
+  const leagues = await getCachedLeaguesFromAPI()
+  return leagues.map(league => league.id)
+}
+
+/**
+ * Инициализировать кэш лиг (вызывать при загрузке приложения)
+ */
+export async function initializeLeaguesCache() {
+  try {
+    await getCachedLeaguesFromAPI()
+    console.log('[LEAGUES_CLIENT] Кэш лиг инициализирован')
+  } catch (error) {
+    console.error('[LEAGUES_CLIENT] Ошибка инициализации кэша:', error)
+  }
+}
+
+/**
+ * Очистить кэш лиг (для принудительного обновления)
+ */
+export function clearLeaguesCache() {
+  cachedLeagues = null
+  cacheTimestamp = 0
 }
