@@ -11,6 +11,7 @@ import configPromise from '@payload-config'
 import PredictionButton from '@/components/predictions/PredictionButton'
 import UpcomingAllMatchesWidget from '@/components/home/UpcomingAllMatchesWidget'
 import LeaguesListWidget from '@/components/home/LeaguesListWidget'
+import PredictionPreview from '@/components/posts/PredictionPreview'
 
 import {
   getCompetitionsListJson,
@@ -204,30 +205,10 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                       ) : null}
                     </Link>
 
-                    {/* Показываем краткую информацию о прогнозе */}
+                    {/* Показываем расширенную информацию о прогнозе */}
                     {(post as any).postType === 'prediction' && (post as any).prediction && (
-                      <div className="mt-3 p-2 bg-muted/50 rounded text-sm">
-                        <div className="flex items-center gap-4">
-                          {(post as any).prediction.outcome && (
-                            <span>
-                              <strong>Исход:</strong>{' '}
-                              {(post as any).prediction.outcome === 'home'
-                                ? 'Победа хозяев'
-                                : (post as any).prediction.outcome === 'draw'
-                                  ? 'Ничья'
-                                  : (post as any).prediction.outcome === 'away'
-                                    ? 'Победа гостей'
-                                    : 'Не указан'}
-                            </span>
-                          )}
-                          {(post as any).prediction.score?.home !== undefined &&
-                            (post as any).prediction.score?.away !== undefined && (
-                              <span>
-                                <strong>Счет:</strong> {(post as any).prediction.score.home}:
-                                {(post as any).prediction.score.away}
-                              </span>
-                            )}
-                        </div>
+                      <div className="mt-3">
+                        <PredictionPreview prediction={(post as any).prediction} />
                       </div>
                     )}
 
