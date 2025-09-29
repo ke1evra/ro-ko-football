@@ -1,10 +1,5 @@
-export {
-  getGetCompetitionsTopcardsJsonUrl,
-  getCompetitionsTopcardsJson,
-} from './getCompetitionsTopcardsJson.ts'
-export {
-  getGetCompetitionsTopscorersJsonUrl,
-  getCompetitionsTopscorersJson,
-} from './getCompetitionsTopscorersJson.ts'
-export { getGetTablesStandingsJsonUrl, getTablesStandingsJson } from './getTablesStandingsJson.ts'
-export { tablesService } from './tablesService.ts'
+export { getGetCompetitionsStandingsJsonUrl, getCompetitionsStandingsJson } from "./getCompetitionsStandingsJson.ts";
+export { getGetCompetitionsTopcardsJsonUrl, getCompetitionsTopcardsJson } from "./getCompetitionsTopcardsJson.ts";
+export { getGetCompetitionsTopscorersJsonUrl, getCompetitionsTopscorersJson } from "./getCompetitionsTopscorersJson.ts";
+export { getGetTablesStandingsJsonUrl, getTablesStandingsJson } from "./getTablesStandingsJson.ts";
+export { tablesService } from "./tablesService.ts";

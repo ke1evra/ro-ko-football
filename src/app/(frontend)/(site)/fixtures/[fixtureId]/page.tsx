@@ -11,7 +11,7 @@ import {
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import FixturePageClient from '@/components/fixtures/FixturePageClient'
-import { getPriorityLeagueIds } from '@/lib/highlight-competitions'
+import { getTopMatchesLeagueIds } from '@/lib/leagues'
 import type { Metadata } from 'next'
 
 export const revalidate = 300
@@ -60,21 +60,35 @@ type FixtureNormalized = {
 async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | null> {
   console.log(`[findFixtureById] Searching for fixture ${fixtureId}`)
   
+  // Используем те же параметры, что и виджет: диапазон дат + приоритетные лиги
+  const today = new Date()
+  const endDate = new Date(today)
+  endDate.setDate(today.getDate() + 7)
+  
+  // Получаем ID лиг из CMS
+  let priorityLeagueIds: number[] = []
+  try {
+    priorityLeagueIds = await getTopMatchesLeagueIds()
+    console.log(`[findFixtureById] Priority leagues from CMS:`, priorityLeagueIds)
+  } catch (error) {
+    console.error(`[findFixtureById] Error loading leagues from CMS:`, error)
+    priorityLeagueIds = []
+  }
+  
   // Сначала проверим, есть ли этот матч в общем списке fixtures (используем те же параметры, что и виджет)
   try {
     console.log(`[findFixtureById] Checking general fixtures API with same params as widget`)
     
-    // Используем те же параметры, что и виджет: диапазон дат + приоритетные лиги
-    const today = new Date()
-    const endDate = new Date(today)
-    endDate.setDate(today.getDate() + 7)
-    
-    const params = {
+    const params: any = {
       size: 100,
       lang: 'ru' as const,
       from: today.toISOString().split('T')[0],
       to: endDate.toISOString().split('T')[0],
-      competition_id: getPriorityLeagueIds().join(',') // те же приоритетные лиги
+    }
+    
+    // Добавляем фильтр по лигам только если есть приоритетные лиги
+    if (priorityLeagueIds.length > 0) {
+      params.competition_id = priorityLeagueIds.join(',')
     }
     
     console.log(`[findFixtureById] Using params:`, params)
@@ -111,6 +125,56 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
     }
   } catch (error) {
     console.error(`[findFixtureById] Error in general fixtures API:`, error)
+  }
+
+  // Если не найден в приоритетных лигах, пробуем поиск без фильтра по лигам
+  if (priorityLeagueIds.length > 0) {
+    try {
+      console.log(`[findFixtureById] Trying general fixtures API without league filter`)
+      
+      const paramsNoFilter = {
+        size: 100,
+        lang: 'ru' as const,
+        from: today.toISOString().split('T')[0],
+        to: endDate.toISOString().split('T')[0],
+        // Убираем фильтр по лигам
+      }
+      
+      console.log(`[findFixtureById] Using params without filter:`, paramsNoFilter)
+      
+      const fixturesResp = await getFixturesMatchesJson(paramsNoFilter)
+      
+      const fixturesList = (fixturesResp.data?.data?.fixtures || []) as Array<any>
+      console.log(`[findFixtureById] General fixtures API (no filter) returned ${fixturesList.length} fixtures`)
+      
+      // Ищем матч по ID в общем списке fixtures
+      const foundFixture = fixturesList.find((fx) => Number(fx?.id) === fixtureId)
+      if (foundFixture) {
+        console.log(`[findFixtureById] Found fixture in general fixtures API (no filter)`)
+        const fx = foundFixture
+        const homeName = fx.home_name || fx.home?.name || fx.home_team?.name || 'Команда дома'
+        const awayName = fx.away_name || fx.away?.name || fx.away_team?.name || 'Команда гостей'
+        
+        return {
+          id: Number(fx.id),
+          date: String(fx.date || ''),
+          time: String(fx.time || ''),
+          home: { id: Number(fx.home_id || fx.home?.id || fx.home_team?.id || '0'), name: homeName },
+          away: { id: Number(fx.away_id || fx.away?.id || fx.away_team?.id || '0'), name: awayName },
+          competition: fx.competition
+            ? { id: Number(fx.competition.id || '0'), name: fx.competition.name || '' }
+            : undefined,
+          location: typeof fx.location === 'string' ? fx.location : fx.venue?.name || null,
+          round:
+            typeof fx.round === 'string' ? fx.round : fx.round != null ? String(fx.round) : undefined,
+          group_id: fx.group_id != null ? Number(fx.group_id) : null,
+          odds: fx.odds,
+          h2h: typeof fx.h2h === 'string' ? fx.h2h : undefined,
+        }
+      }
+    } catch (error) {
+      console.error(`[findFixtureById] Error in general fixtures API (no filter):`, error)
+    }
   }
 
   // Если не найден в общем списке, пробуем live API

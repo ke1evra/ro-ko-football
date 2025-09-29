@@ -4,17 +4,16 @@
 * Do not edit manually.
 */
 
-import type { Competition } from "./Competition.ts";
-import type { TableRow } from "./TableRow.ts";
+import type { CompetitionsStandingsTableRow } from "./CompetitionsStandingsTableRow.ts";
 
-export const getTablesStandingsJsonQueryParamsIncludeFormEnum = {
+export const getCompetitionsStandingsJsonQueryParamsIncludeFormEnum = {
     "0": 0,
     "1": 1
 } as const;
 
-export type GetTablesStandingsJsonQueryParamsIncludeFormEnum = (typeof getTablesStandingsJsonQueryParamsIncludeFormEnum)[keyof typeof getTablesStandingsJsonQueryParamsIncludeFormEnum];
+export type GetCompetitionsStandingsJsonQueryParamsIncludeFormEnum = (typeof getCompetitionsStandingsJsonQueryParamsIncludeFormEnum)[keyof typeof getCompetitionsStandingsJsonQueryParamsIncludeFormEnum];
 
-export type GetTablesStandingsJsonQueryParams = {
+export type GetCompetitionsStandingsJsonQueryParams = {
     /**
      * @description ID соревнования (или несколько ID через запятую) для фильтрации результатов
      * @type string | undefined
@@ -39,7 +38,7 @@ export type GetTablesStandingsJsonQueryParams = {
      * @description Если =1, в ответ включается форма команд за последние 5-6 матчей (последовательность W/D/L)
      * @type integer | undefined
     */
-    include_form?: GetTablesStandingsJsonQueryParamsIncludeFormEnum | undefined;
+    include_form?: GetCompetitionsStandingsJsonQueryParamsIncludeFormEnum | undefined;
     /**
      * @description ISO 639-1 код языка для локализации данных (например, `ru` для русского)
      * @type string | undefined
@@ -50,7 +49,7 @@ export type GetTablesStandingsJsonQueryParams = {
 /**
  * @description OK – таблица получена
 */
-export type GetTablesStandingsJson200 = {
+export type GetCompetitionsStandingsJson200 = {
     /**
      * @type boolean | undefined
     */
@@ -60,21 +59,17 @@ export type GetTablesStandingsJson200 = {
     */
     data?: {
         /**
-         * @type object | undefined
-        */
-        competition?: Competition | undefined;
-        /**
-         * @description Таблица позиций команд
+         * @description Таблица позиций команд (реальная структура API)
          * @type array | undefined
         */
-        table?: TableRow[] | undefined;
+        table?: CompetitionsStandingsTableRow[] | undefined;
     } | undefined;
 };
 
 /**
  * @description Ошибка запроса
 */
-export type GetTablesStandingsJson400 = {
+export type GetCompetitionsStandingsJson400 = {
     /**
      * @type boolean | undefined
     */
@@ -88,22 +83,22 @@ export type GetTablesStandingsJson400 = {
 /**
  * @description Неавторизован (неверные ключ или секрет)
 */
-export type GetTablesStandingsJson401 = unknown;
+export type GetCompetitionsStandingsJson401 = unknown;
 
 /**
  * @description Соревнование не найдено
 */
-export type GetTablesStandingsJson404 = unknown;
+export type GetCompetitionsStandingsJson404 = unknown;
 
 /**
  * @description Внутренняя ошибка сервера
 */
-export type GetTablesStandingsJson500 = unknown;
+export type GetCompetitionsStandingsJson500 = unknown;
 
-export type GetTablesStandingsJsonQueryResponse = GetTablesStandingsJson200;
+export type GetCompetitionsStandingsJsonQueryResponse = GetCompetitionsStandingsJson200;
 
-export type GetTablesStandingsJsonQuery = {
-    Response: GetTablesStandingsJson200;
-    QueryParams: GetTablesStandingsJsonQueryParams;
-    Errors: GetTablesStandingsJson400 | GetTablesStandingsJson401 | GetTablesStandingsJson404 | GetTablesStandingsJson500;
+export type GetCompetitionsStandingsJsonQuery = {
+    Response: GetCompetitionsStandingsJson200;
+    QueryParams: GetCompetitionsStandingsJsonQueryParams;
+    Errors: GetCompetitionsStandingsJson400 | GetCompetitionsStandingsJson401 | GetCompetitionsStandingsJson404 | GetCompetitionsStandingsJson500;
 };

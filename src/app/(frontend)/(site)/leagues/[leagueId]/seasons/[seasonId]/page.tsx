@@ -8,7 +8,7 @@ import Link from 'next/link'
 import {
   getCompetitionsListJson,
   getSeasonsListJson,
-  getTablesStandingsJson,
+  getCompetitionsStandingsJson,
 } from '@/app/(frontend)/client'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
@@ -124,42 +124,69 @@ async function getStandings(leagueId: string, seasonId: string): Promise<Standin
   try {
     console.log(`Загрузка турнирной таблицы для лиги ${leagueId}, сезон ${seasonId}`)
 
-    const response = await getTablesStandingsJson(
+    const response = await getCompetitionsStandingsJson(
       {
         competition_id: String(leagueId),
         season: parseInt(seasonId),
         include_form: 1,
+        lang: 'ru'
       },
       {
         next: { revalidate: 300 },
+        cache: 'no-store'
       },
     )
 
     console.log(`Структура ответа standings:`, Object.keys(response.data?.data || {}))
+    console.log(`Полный ответ API:`, JSON.stringify(response.data, null, 2))
+    
     const standings = response.data?.data?.table || []
     console.log(`Всего команд в таблице получено: ${standings.length}`)
+    
+    if (standings.length > 0) {
+      console.log(`Первая команда в таблице:`, JSON.stringify(standings[0], null, 2))
+    }
 
     return standings
-      .map((team: any, index: number) => ({
-        position: parseInt(team.position) || index + 1,
-        team: {
-          id: parseInt(team.team?.id || '0'),
-          name: team.team?.name || 'Неизвестная команда',
-          logo: team.team?.logo,
-        },
-        played: parseInt(team.played || '0'),
-        won: parseInt(team.won || '0'),
-        drawn: parseInt(team.drawn || '0'),
-        lost: parseInt(team.lost || '0'),
-        goals_for: parseInt(team.goals_for || '0'),
-        goals_against: parseInt(team.goals_against || '0'),
-        goal_difference: parseInt(team.goal_difference || '0'),
-        points: parseInt(team.points || '0'),
-        form: team.form ? team.form.split('').slice(-5) : undefined,
-      }))
+      .map((team: any, index: number) => {
+        // Используем правильные поля из реального API ответа
+        const position = parseInt(team.rank) || index + 1
+        const teamId = parseInt(team.team_id) || 0
+        const teamName = team.name || 'Неизвестная команда'
+        const played = parseInt(team.matches) || 0
+        const won = parseInt(team.won) || 0
+        const drawn = parseInt(team.drawn) || 0
+        const lost = parseInt(team.lost) || 0
+        const goalsFor = parseInt(team.goals_scored) || 0
+        const goalsAgainst = parseInt(team.goals_conceded) || 0
+        const goalDiff = parseInt(team.goal_diff) || (goalsFor - goalsAgainst)
+        const points = parseInt(team.points) || 0
+        const form = team.form && typeof team.form === 'string' ? team.form.split('').slice(-5) : undefined
+        
+        console.log(`Команда ${teamName}: позиция=${position}, очки=${points}, форма=${team.form}`)
+        
+        return {
+          position,
+          team: {
+            id: teamId,
+            name: teamName,
+            logo: undefined, // API не возвращает логотипы в standings
+          },
+          played,
+          won,
+          drawn,
+          lost,
+          goals_for: goalsFor,
+          goals_against: goalsAgainst,
+          goal_difference: goalDiff,
+          points,
+          form,
+        }
+      })
       .sort((a: StandingsTeam, b: StandingsTeam) => a.position - b.position)
   } catch (error) {
     console.error('Ошибка загрузки турнирной таблицы:', error)
+    console.error('Детали ошибки:', error)
     return []
   }
 }

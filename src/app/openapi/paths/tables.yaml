@@ -68,6 +68,77 @@
       '500':
         description: Внутренняя ошибка сервера
 
+/competitions/standings.json:
+  get:
+    tags: [Tables]
+    summary: Турнирная таблица соревнования (рабочий endpoint)
+    description: |
+      Возвращает турнирную таблицу (позиции команд) для указанного соревнования и сезона через рабочий endpoint /competitions/standings.json.
+      Этот endpoint реально работает в отличие от /tables/standings.json который возвращает "Invalid module specified".
+      
+      **Параметры:**  
+      - `competition_id` (обязательный) – ID соревнования, для которого запрашивается турнирная таблица.  
+      - `season` (опциональный) – ID сезона. Если не указан, берётся текущий сезон соревнования.  
+      - `group` или `group_id` (опционально) – можно указать имя группы или ID группы для турниров с группами.  
+      - `include_form` (опциональный, 0/1) – если =1, в ответе для каждой команды будет добавлена форма (W/D/L результаты последних матчей).  
+      - `lang` – код языка для локализации названий команд.  
+      
+      **Пример запроса (таблица РФПЛ, сезон 56):**  
+      `GET /competitions/standings.json?competition_id=7&season=56&include_form=1&key=YOUR_KEY&secret=YOUR_SECRET`
+    parameters:
+      - $ref: '#/components/parameters/CompetitionId'
+      - name: season
+        in: query
+        schema:
+          type: integer
+        description: ID сезона, для которого нужна таблица (если не текущий)
+        example: 56
+      - name: group
+        in: query
+        schema:
+          type: string
+        description: Имя группы, если нужно standings конкретной группы (для много-групповых соревнований, напр. "A")
+        example: "A"
+      - name: group_id
+        in: query
+        schema:
+          type: integer
+        description: ID группы, если известен и нужен standings конкретной группы
+        example: 4048
+      - name: include_form
+        in: query
+        schema:
+          type: integer
+          enum: [0, 1]
+        description: Если =1, в ответ включается форма команд за последние 5-6 матчей (последовательность W/D/L)
+        example: 1
+      - $ref: '#/components/parameters/Lang'
+    responses:
+      '200':
+        description: OK – таблица получена
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    table:
+                      type: array
+                      description: Таблица позиций команд (реальная структура API)
+                      items:
+                        $ref: '#/components/schemas/CompetitionsStandingsTableRow'
+      '400':
+        $ref: '#/components/responses/ApiError'
+      '401':
+        description: Неавторизован (неверные ключ или секрет)
+      '404':
+        description: Соревнование не найдено
+      '500':
+        description: Внутренняя ошибка сервера
+
 /competitions/topscorers.json:
   get:
     tags: [Tables]

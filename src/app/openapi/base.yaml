@@ -64,6 +64,8 @@ paths:
   # Таблицы
   /tables/standings.json:
     $ref: './paths/tables.yaml#/~1tables~1standings.json'
+  /competitions/standings.json:
+    $ref: './paths/tables.yaml#/~1competitions~1standings.json'
   /competitions/topscorers.json:
     $ref: './paths/tables.yaml#/~1competitions~1topscorers.json'
   /competitions/topcards.json:
