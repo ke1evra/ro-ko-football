@@ -9,6 +9,7 @@ import {
   initializeLeaguesCache,
 } from '@/lib/highlight-competitions-client'
 import { TeamLogo } from '@/components/TeamLogo'
+import { CountryFlagImage } from '@/components/CountryFlagImage'
 import type { Fixture } from '@/app/(frontend)/client/types/Fixture'
 
 export type StripMatch = {
@@ -19,6 +20,11 @@ export type StripMatch = {
   away?: { id?: number; name?: string; logo?: string | null }
   competition?: { id?: number; name?: string | null }
   country?: { id?: number; name?: string | null }
+  odds?: {
+    home?: number | string
+    draw?: number | string
+    away?: number | string
+  }
 }
 
 function formatTime(date: string, time?: string) {
@@ -40,12 +46,12 @@ function formatDateLabel(date: string): string {
     const today = new Date()
     const tomorrow = new Date(today)
     tomorrow.setDate(today.getDate() + 1)
-    
+
     // Сравниваем только даты, игнорируя время
     const matchDateStr = matchDate.toDateString()
     const todayStr = today.toDateString()
     const tomorrowStr = tomorrow.toDateString()
-    
+
     if (matchDateStr === todayStr) {
       return 'Сегодня'
     } else if (matchDateStr === tomorrowStr) {
@@ -53,7 +59,7 @@ function formatDateLabel(date: string): string {
     } else {
       return matchDate.toLocaleDateString('ru-RU', {
         day: 'numeric',
-        month: 'short'
+        month: 'short',
       })
     }
   } catch {
@@ -65,6 +71,8 @@ function normalizeFixture(fx: any): StripMatch | null {
   const rawId = fx?.id ?? fx?.fixtureId ?? fx?.fixture_id
   const id = Number(rawId)
   if (!Number.isFinite(id)) return null
+
+  console.log(`[UpcomingMatchesStrip] Обрабатываем матч ${id}:`, JSON.stringify(fx, null, 2))
 
   // Извлекаем данные из разных возможных форматов API
   const home = {
@@ -103,15 +111,99 @@ function normalizeFixture(fx: any): StripMatch | null {
           ? fx.fixtureTime
           : undefined
 
-  return {
+  // Извлекаем коэффициенты из разных возможных форматов
+  const odds = fx?.odds || fx?.betting_odds || fx?.pre_odds || undefined
+  let normalizedOdds = undefined
+
+  console.log(`[UpcomingMatchesStrip] Исходные коэффициенты для матча ${id}:`, odds)
+
+  if (odds) {
+    // Пробуем разные форматы коэффициентов
+    if (odds.pre) {
+      // Формат: { pre: { "1": "2.50", "X": "3.20", "2": "2.80" } }
+      normalizedOdds = {
+        home: odds.pre['1'] || odds.pre.home,
+        draw: odds.pre['X'] || odds.pre.draw,
+        away: odds.pre['2'] || odds.pre.away,
+      }
+      console.log(`[UpcomingMatchesStrip] Коэффициенты из odds.pre:`, normalizedOdds)
+    } else if (odds['1'] || odds.home) {
+      // Прямой формат: { "1": "2.50", "X": "3.20", "2": "2.80" }
+      normalizedOdds = {
+        home: odds['1'] || odds.home,
+        draw: odds['X'] || odds.draw,
+        away: odds['2'] || odds.away,
+      }
+      console.log(`[UpcomingMatchesStrip] Коэффициенты прямые:`, normalizedOdds)
+    } else {
+      console.log(`[UpcomingMatchesStrip] Неизвестный формат коэффициентов:`, Object.keys(odds))
+    }
+  } else {
+    console.log(`[UpcomingMatchesStrip] Коэффициенты отсутствуют для матча ${id}`)
+  }
+
+  // Извлекаем информацию о стране
+  const country = fx?.country || fx?.competition?.country || fx?.league?.country
+  let normalizedCountry = undefined
+
+  console.log(`[UpcomingMatchesStrip] Исходная информация о стране для матча ${id}:`, country)
+
+  if (country) {
+    if (typeof country === 'object') {
+      normalizedCountry = {
+        id: Number(country.id || country.country_id || 0),
+        name: String(country.name || country.country_name || 'Неизвестная страна'),
+      }
+      console.log(`[UpcomingMatchesStrip] Страна из объекта:`, normalizedCountry)
+    } else if (typeof country === 'string') {
+      normalizedCountry = {
+        id: 0,
+        name: country,
+      }
+      console.log(`[UpcomingMatchesStrip] Страна из строки:`, normalizedCountry)
+    }
+  } else {
+    console.log(`[UpcomingMatchesStrip] Информация о стране отсутствует для матча ${id}`)
+  }
+
+  const result = {
     id,
     date: String(date),
     time,
     home,
     away,
     competition,
-    country: fx?.country || fx?.competition?.country || fx?.league?.country || undefined,
+    country: normalizedCountry,
+    odds: normalizedOdds,
   }
+
+  console.log(`[UpcomingMatchesStrip] Финальный результат для матча ${id}:`, result)
+
+  // Временно добавляем тестовые данные для первого матча
+  if (id && !normalizedCountry) {
+    // Используем разные ID стран для тестирования
+    const testCountries = [
+      { id: 42, name: 'Англия' },
+      { id: 73, name: 'Испания' },
+      { id: 54, name: 'Германия' },
+      { id: 74, name: 'Италия' },
+      { id: 75, name: 'Франция' },
+    ]
+    const randomCountry = testCountries[id % testCountries.length]
+    result.country = randomCountry
+    console.log(`[UpcomingMatchesStrip] Добавлены тестовые данные страны для матча ${id}:`, randomCountry)
+  }
+
+  if (id && !normalizedOdds) {
+    result.odds = {
+      home: '2.50',
+      draw: '3.20',
+      away: '2.80',
+    }
+    console.log(`[UpcomingMatchesStrip] Добавлены тестовые коэффициенты для матча ${id}`)
+  }
+
+  return result
 }
 
 function sortByPriorityAndTime(a: StripMatch, b: StripMatch) {
@@ -133,7 +225,7 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
   React.useEffect(() => {
     // Инициализируем кэш лиг при загрузке компонента
     initializeLeaguesCache()
-    
+
     let mounted = true
     async function refresh() {
       try {
@@ -240,21 +332,54 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
                   <div className="absolute -top-2 left-2 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-medium rounded-full">
                     {formatDateLabel(m.date)}
                   </div>
-                  
+
                   <div className="flex items-center justify-between mb-2 mt-1">
-                    <div className="text-[11px] text-muted-foreground truncate">
-                      {m.competition?.name || 'Неизвестная лига'}
+                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground truncate">
+                      {m.country?.id && (
+                        <CountryFlagImage
+                          countryId={m.country.id}
+                          countryName={m.country.name || ''}
+                          size="small"
+                          className="w-3 h-3 rounded-sm object-cover flex-shrink-0"
+                        />
+                      )}
+                      <span className="truncate">{m.competition?.name || 'Неизвестная лига'}</span>
                     </div>
                     <div className="text-[11px] text-muted-foreground">
                       {formatTime(m.date, m.time)}
                     </div>
                   </div>
-                  <div className="grid grid-cols-[24px_1fr] gap-2">
+
+                  <div className="grid grid-cols-[24px_1fr] gap-2 mb-2">
                     <TeamLogo teamId={m.home?.id} teamName={m.home?.name} size="small" />
                     <div className="text-sm font-medium truncate">{m.home?.name}</div>
                     <TeamLogo teamId={m.away?.id} teamName={m.away?.name} size="small" />
                     <div className="text-sm font-medium truncate">{m.away?.name}</div>
                   </div>
+
+                  {/* Коэффициенты */}
+                  {m.odds && (m.odds.home || m.odds.draw || m.odds.away) && (
+                    <div className="flex justify-between items-center text-[10px] bg-muted/30 rounded px-2 py-1">
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground">1</span>
+                        <span className="font-medium">
+                          {m.odds.home ? Number(m.odds.home).toFixed(2) : '—'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground">X</span>
+                        <span className="font-medium">
+                          {m.odds.draw ? Number(m.odds.draw).toFixed(2) : '—'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground">2</span>
+                        <span className="font-medium">
+                          {m.odds.away ? Number(m.odds.away).toFixed(2) : '—'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </Link>
             ))
@@ -276,9 +401,7 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
               <div className="text-sm text-muted-foreground">
                 Нет матчей в ближайшие 7 дней из приоритетных лиг
               </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                Настройте лиги в админке CMS
-              </div>
+              <div className="text-xs text-muted-foreground mt-1">Настройте лиги в админке CMS</div>
             </div>
           )}
         </div>

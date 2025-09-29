@@ -18,6 +18,8 @@ export function CountryFlagImage({
 }: CountryFlagImageProps) {
   const [imageError, setImageError] = useState(false)
 
+  
+
   // Если нет ID страны, показываем иконку
   if (!countryId) {
     return (
@@ -31,22 +33,24 @@ export function CountryFlagImage({
     )
   }
 
-  // Если произошла ошибка загрузки, показываем первую букву
-  if (imageError) {
+  // Временно показываем fallback вместо загрузки изображения для отладки
+  const showFallback = imageError
+
+  if (showFallback) {
     return (
-      <div className={`flex items-center justify-center bg-muted rounded ${className}`}>
+      <div className={`flex items-center justify-center bg-primary/10 border border-primary/20 rounded ${className}`}>
         {countryName ? (
           <span
-            className={`font-semibold text-muted-foreground ${
-              size === 'small' ? 'text-xs' : size === 'large' ? 'text-sm' : 'text-xs'
+            className={`font-bold text-primary ${
+              size === 'small' ? 'text-[8px]' : size === 'large' ? 'text-sm' : 'text-xs'
             }`}
           >
             {countryName.charAt(0).toUpperCase()}
           </span>
         ) : (
           <Flag
-            className={`text-muted-foreground ${
-              size === 'small' ? 'h-3 w-3' : size === 'large' ? 'h-5 w-5' : 'h-4 w-4'
+            className={`text-primary ${
+              size === 'small' ? 'h-2 w-2' : size === 'large' ? 'h-4 w-4' : 'h-3 w-3'
             }`}
           />
         )}
@@ -57,6 +61,8 @@ export function CountryFlagImage({
   const sizeParam = size === 'small' ? 'small' : size === 'large' ? 'large' : 'medium'
   const flagUrl = `/api/countries/${countryId}/flag?size=${sizeParam}`
 
+  
+
   return (
     <div className={`relative ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -64,20 +70,8 @@ export function CountryFlagImage({
         src={flagUrl}
         alt={`Флаг ${countryName || 'страны'}`}
         className="w-full h-full object-cover rounded"
+        onLoad={() => {}}
         onError={() => {
-          // Тихо обрабатываем ошибку - не логируем для турниров
-          const isLikelyTournament =
-            countryName &&
-            (countryName.includes('Championship') ||
-              countryName.includes('League') ||
-              countryName.includes('Cup') ||
-              countryName.includes('Nations') ||
-              countryName.includes('Olympics'))
-
-          if (!isLikelyTournament) {
-            console.warn(`Не удалось ��агрузить флаг для ${countryName} (ID: ${countryId})`)
-          }
-
           setImageError(true)
         }}
       />

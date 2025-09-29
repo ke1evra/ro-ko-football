@@ -26,6 +26,7 @@ import {
 import { getSidebarLeaguesForWidget } from '@/lib/leagues'
 import WeekFixturesGrouped from '@/components/home/WeekFixturesGrouped'
 import LiveMatchesWidget from '@/components/home/LiveMatchesWidget'
+import { LiveIndicator } from '@/components/ui/live-indicator'
 
 export const revalidate = 120
 
@@ -267,24 +268,25 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" /> Ближайшие матчи
+                  <LiveIndicator size="small" />
+                  Матчи
                 </CardTitle>
-                <CardDescription>Матчи топ-лиг на ближайшие 7 дней</CardDescription>
+                <CardDescription>Топ‑10 текущих матчей</CardDescription>
               </CardHeader>
               <CardContent>
-                <UpcomingAllMatchesWidget />
+                <LiveMatchesWidget />
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" /> Live матчи
+                  <Calendar className="h-5 w-5" /> Ближайшие матчи
                 </CardTitle>
-                <CardDescription>Топ‑10 текущих матчей</CardDescription>
+                <CardDescription>Матчи топ-лиг на ближайшие 7 дней</CardDescription>
               </CardHeader>
               <CardContent>
-                <LiveMatchesWidget />
+                <UpcomingAllMatchesWidget />
               </CardContent>
             </Card>
           </aside>

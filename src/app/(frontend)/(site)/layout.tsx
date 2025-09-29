@@ -10,7 +10,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   // Получаем настройки из Payload для виджета
   let settings = null
   let leagueIds: number[] = []
-  
+
   try {
     settings = await getTopMatchesLeagues()
     leagueIds = await getTopMatchesLeagueIds()
@@ -21,19 +21,18 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   return (
     <>
       <Header />
-      
+
       {/* Виджет с матчами приоритетных лиг - сквозной на уровне лейаута */}
-      <div className="border-b bg-muted/80">
+      <div className="border-b bg-stone-200">
         <Container className="py-3">
           <div className="mb-2">
             <h2 className="text-sm font-medium text-foreground mb-1">
               🏆 {settings?.title || 'Ближайшие матчи топ-лиг'}
             </h2>
             <p className="text-xs text-muted-foreground">
-              {settings?.enabled 
+              {settings?.enabled
                 ? `Настроено ${leagueIds.length} лиг через CMS`
-                : 'Виджет отключён в настройках CMS'
-              }
+                : 'Виджет отключён в настройках CMS'}
             </p>
           </div>
           <div className="overflow-hidden">
@@ -41,7 +40,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           </div>
         </Container>
       </div>
-      
+
       <Main className="flex-1">{children}</Main>
       <Footer />
     </>
