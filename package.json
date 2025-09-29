@@ -32,7 +32,8 @@
     "env:setup:force": "node scripts/setup-env.js --force",
     "logos:test": "node scripts/test-download-logos.cjs",
     "logos:download": "node scripts/download-team-logos.cjs",
-    "logos:status": "node scripts/check-logos-progress.cjs"
+    "logos:status": "node scripts/check-logos-progress.cjs",
+    "leagues:import": "node --loader @esbuild-kit/esm-loader scripts/import-leagues.mjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

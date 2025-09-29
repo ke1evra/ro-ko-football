@@ -72,6 +72,7 @@ export interface Config {
     posts: Post;
     comments: Comment;
     commentVotes: CommentVote;
+    leagues: League;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -83,6 +84,7 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
     commentVotes: CommentVotesSelect<false> | CommentVotesSelect<true>;
+    leagues: LeaguesSelect<false> | LeaguesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -364,6 +366,75 @@ export interface CommentVote {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "leagues".
+ */
+export interface League {
+  id: string;
+  /**
+   * ID соревнования из внешнего API
+   */
+  competitionId: number;
+  /**
+   * Внешний идентификатор (если отличается от competitionId)
+   */
+  externalId?: string | null;
+  name: string;
+  /**
+   * ID страны первого вхождения (если применимо)
+   */
+  countryId?: number | null;
+  /**
+   * Название страны (первое вхождение из списка стран)
+   */
+  countryName?: string | null;
+  isLeague?: boolean | null;
+  isCup?: boolean | null;
+  /**
+   * Дивизион (1 — высший)
+   */
+  tier?: number | null;
+  hasGroups?: boolean | null;
+  active?: boolean | null;
+  /**
+   * Только национальные сборные
+   */
+  nationalTeamsOnly?: boolean | null;
+  /**
+   * Страны, относящиеся к соревнованию
+   */
+  countries?:
+    | {
+        id: number;
+        name: string;
+      }[]
+    | null;
+  /**
+   * Федерации, относящиеся к соревнованию
+   */
+  federations?:
+    | {
+        id: number;
+        name: string;
+      }[]
+    | null;
+  /**
+   * Текущий сезон
+   */
+  season?: {
+    id?: number | null;
+    name?: string | null;
+    start?: string | null;
+    end?: string | null;
+  };
+  /**
+   * Меньше — выше приоритет
+   */
+  priority?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -388,6 +459,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'commentVotes';
         value: string | CommentVote;
+      } | null)
+    | ({
+        relationTo: 'leagues';
+        value: string | League;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -601,6 +676,46 @@ export interface CommentVotesSelect<T extends boolean = true> {
   comment?: T;
   user?: T;
   value?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "leagues_select".
+ */
+export interface LeaguesSelect<T extends boolean = true> {
+  competitionId?: T;
+  externalId?: T;
+  name?: T;
+  countryId?: T;
+  countryName?: T;
+  isLeague?: T;
+  isCup?: T;
+  tier?: T;
+  hasGroups?: T;
+  active?: T;
+  nationalTeamsOnly?: T;
+  countries?:
+    | T
+    | {
+        id?: T;
+        name?: T;
+      };
+  federations?:
+    | T
+    | {
+        id?: T;
+        name?: T;
+      };
+  season?:
+    | T
+    | {
+        id?: T;
+        name?: T;
+        start?: T;
+        end?: T;
+      };
+  priority?: T;
   updatedAt?: T;
   createdAt?: T;
 }
