@@ -235,7 +235,7 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
           {sorted.length > 0 ? (
             sorted.map((m) => (
               <Link key={m.id} href={`/fixtures/${m.id}`} className="flex-shrink-0">
-                <div className="w-64 border rounded-lg p-3 hover:bg-accent transition-colors relative">
+                <div className="w-64 border rounded-lg p-3 bg-card hover:bg-accent transition-colors relative">
                   {/* Мини-плашка с датой */}
                   <div className="absolute -top-2 left-2 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-medium rounded-full">
                     {formatDateLabel(m.date)}
@@ -260,7 +260,7 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
             ))
           ) : isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="w-64 border rounded-lg p-3">
+              <div key={i} className="w-64 border rounded-lg p-3 bg-card">
                 <div className="h-3 w-40 bg-muted animate-pulse rounded mb-2" />
                 <div className="grid grid-cols-[24px_1fr] gap-2">
                   <div className="w-6 h-6 bg-muted rounded animate-pulse" />
@@ -271,7 +271,7 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
               </div>
             ))
           ) : (
-            <div className="w-64 border rounded-lg p-3 bg-muted/20">
+            <div className="w-64 border rounded-lg p-3 bg-card">
               <div className="text-[11px] text-muted-foreground mb-1">Ближайшие матчи</div>
               <div className="text-sm text-muted-foreground">
                 Нет матчей в ближайшие 7 дней из приоритетных лиг

@@ -20,6 +20,7 @@ export async function createPostAction({ title, content }: { title: string; cont
         content,
         author: user.id,
         publishedAt: new Date().toISOString(),
+        postType: 'regular' as const,
       },
       user,
     })

@@ -4,7 +4,6 @@ import { Container, Section } from '@/components/ds'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 import { Button } from '@/components/ui/button'
-import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { Calendar, MessageSquare, ThumbsUp, Newspaper, Activity, TrendingUp } from 'lucide-react'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
@@ -96,13 +95,11 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
       getSidebarLeaguesForWidget(),
     ])
 
-  const breadcrumbItems = [{ label: 'Главная' }]
   const priorityLeagues = getAllPriorityLeagues()
 
   return (
     <Section>
       <Container className="space-y-6">
-        <Breadcrumbs items={breadcrumbItems} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Левая колонка — Новости (заглушка) */}

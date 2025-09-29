@@ -8,8 +8,8 @@ import Link from 'next/link'
 import { getCompetitionsListJson, getSeasonsListJson, getCompetitionsStandingsJson } from '@/app/(frontend)/client'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
-import StandingsTable from '@/components/league/StandingsTable'
-import SeasonSelector from '@/components/league/SeasonSelector'
+import SeasonStandingsTable from '@/components/league/SeasonStandingsTable'
+import LeagueMatchesByRounds from '@/components/league/LeagueMatchesByRounds'
 
 export const revalidate = 300 // 5 минут
 
@@ -380,14 +380,23 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
         </header>
 
         {/* Турнирная таблица текущего сезона */}
-        {currentSeason && standings.length > 0 && (
-          <StandingsTable 
-            standings={standings}
+        {currentSeason && (
+          <SeasonStandingsTable 
+            leagueId={leagueId}
+            seasonId={currentSeason.id}
             competitionName={league.name}
             seasonName={currentSeason.name}
             className="mb-6"
           />
         )}
+
+        {/* Матчи по турам */}
+        <LeagueMatchesByRounds 
+          leagueId={leagueId}
+          maxRounds={3}
+          showViewAllButton={true}
+          className="mb-6"
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Основная информация */}

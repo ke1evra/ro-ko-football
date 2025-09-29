@@ -23,7 +23,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <Header />
       
       {/* Виджет с матчами приоритетных лиг - сквозной на уровне лейаута */}
-      <div className="border-b bg-card/30">
+      <div className="border-b bg-muted/80">
         <Container className="py-3">
           <div className="mb-2">
             <h2 className="text-sm font-medium text-foreground mb-1">

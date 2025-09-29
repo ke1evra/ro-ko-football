@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     )
     clearTimeout(to)
 
-    const teams = res.data?.data?.teams || []
+    const teams = res.data?.data?.team || []
     const team = teams.find((t: any) => t.id === parseInt(teamId))
 
     if (!team) {

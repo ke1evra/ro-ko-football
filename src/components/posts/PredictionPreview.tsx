@@ -194,7 +194,7 @@ export default function PredictionPreview({ prediction, className = '' }: Predic
                   <span className="text-muted-foreground">Фолы:</span>
                   <span>{fouls.total}</span>
                   {fouls.overUnder && (
-                    <Badge variant="outline" size="sm">
+                    <Badge variant="outline" className="text-xs">
                       {fouls.overUnder === 'over' ? 'ТБ 25.5' : 'ТМ 25.5'}
                     </Badge>
                   )}
