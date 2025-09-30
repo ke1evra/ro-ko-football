@@ -229,7 +229,21 @@ export interface Post {
    */
   slug?: string | null;
   postType: 'regular' | 'prediction';
-  content: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
   featuredImage?: (string | null) | Media;
   /**
    * ID матча из API для которого делается прогноз

@@ -6,11 +6,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Loader2, TrendingUp } from 'lucide-react'
 import DynamicEventsForm from './DynamicEventsForm'
+import LexicalEditorWithToolbar from '@/components/LexicalEditorWithToolbar'
 
 interface PredictionEvent {
   id: string
@@ -34,7 +34,7 @@ interface PredictionModalProps {
 
 interface PredictionData {
   title: string
-  content: string
+  content: any
   events: PredictionEvent[]
 }
 
@@ -51,7 +51,7 @@ export default function PredictionModal({
   
   const [formData, setFormData] = useState<PredictionData>({
     title: `Прогноз на матч ${matchData.home.name} - ${matchData.away.name}`,
-    content: '',
+    content: null,
     events: [],
   })
 
@@ -189,13 +189,10 @@ export default function PredictionModal({
 
             <div>
               <Label htmlFor="content">Описание и обоснование</Label>
-              <Textarea
-                id="content"
+              <LexicalEditorWithToolbar
                 value={formData.content}
-                onChange={(e) => updateFormData('content', e.target.value)}
+                onChange={(value) => updateFormData('content', value)}
                 placeholder="Опишите ваш прогноз и его обоснование..."
-                rows={4}
-                required
               />
             </div>
           </div>

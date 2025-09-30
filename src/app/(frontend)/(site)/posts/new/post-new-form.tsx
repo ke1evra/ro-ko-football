@@ -3,13 +3,13 @@
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { createPostAction } from './post-server-actions'
+import LexicalEditorWithToolbar from '@/components/LexicalEditorWithToolbar'
 
 export function NewPostForm() {
   const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
+  const [content, setContent] = useState<any>(null)
   const [pending, startTransition] = useTransition()
 
   return (
@@ -17,7 +17,7 @@ export function NewPostForm() {
       onSubmit={(e) => {
         e.preventDefault()
         if (!title.trim()) return toast.error('Введите заголовок')
-        if (!content.trim()) return toast.error('Введите содержимое')
+        if (!content) return toast.error('Введите содержимое')
         startTransition(async () => {
           const res = await createPostAction({ title, content })
           if (res.success && res.slug) {
@@ -36,11 +36,11 @@ export function NewPostForm() {
       </div>
       <div className="grid gap-1">
         <label className="text-sm">Текст</label>
-        <Textarea
+        <LexicalEditorWithToolbar
           value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Текст поста"
-          rows={10}
+          onChange={setContent}
+          placeholder="Текст поста..."
+          autoFocus={false}
         />
       </div>
       <div>

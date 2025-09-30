@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { TrendingUp, Target, Trophy, Calendar } from 'lucide-react'
 import Link from 'next/link'
+import RichTextRenderer from '@/components/RichTextRenderer'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,7 +67,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             {/* Контент прогноза - 2/3 ширины */}
             <div className="lg:col-span-2">
               <Prose>
-                <p>{String(post.content)}</p>
+                <RichTextRenderer value={(post as any).content} />
               </Prose>
             </div>
 
@@ -138,7 +139,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         ) : (
           /* Обычный макет для не-прогнозов */
           <Prose>
-            <p>{String(post.content)}</p>
+            <RichTextRenderer value={(post as any).content} />
           </Prose>
         )}
 

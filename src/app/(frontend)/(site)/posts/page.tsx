@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { getUser } from '@/lib/auth'
 import { UserAvatar } from '@/components/UserAvatar'
+import { extractTextFromLexical, truncateText } from '@/lib/lexical-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -80,7 +81,7 @@ export default async function PostsPage({ searchParams }: { searchParams: Promis
                       </div>
                       {post.content && (
                         <p className="mt-2 text-sm text-muted-foreground line-clamp-3">
-                          {String(post.content).slice(0, 220)}
+                          {truncateText(extractTextFromLexical(post.content), 220)}
                         </p>
                       )}
                     </div>

@@ -11,6 +11,8 @@ import PredictionButton from '@/components/predictions/PredictionButton'
 import UpcomingAllMatchesWidget from '@/components/home/UpcomingAllMatchesWidget'
 import LeaguesListWidget from '@/components/home/LeaguesListWidget'
 import PredictionPreview from '@/components/posts/PredictionPreview'
+import RichTextRenderer from '@/components/RichTextRenderer'
+import { extractTextFromLexical, truncateText } from '@/lib/lexical-utils'
 
 import {
   getCompetitionsListJson,
@@ -198,7 +200,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                     >
                       {post.content ? (
                         <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
-                          {post.content}
+                          {truncateText(extractTextFromLexical(post.content))}
                         </p>
                       ) : null}
                     </Link>

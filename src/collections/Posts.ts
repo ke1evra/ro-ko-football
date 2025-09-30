@@ -102,7 +102,7 @@ export const Posts: CollectionConfig = {
     },
     {
       name: 'content',
-      type: 'textarea',
+      type: 'richText',
       required: true,
     },
     {
@@ -411,6 +411,42 @@ export const Posts: CollectionConfig = {
         // Страхуемся от слишком длинных slug
         if (data.slug && typeof data.slug === 'string') {
           data.slug = data.slug.slice(0, 160)
+        }
+
+        // Миграция: если контент ещё строка (старое textarea), конвертируем в минимальный Lexical state
+        if (typeof (data as any).content === 'string') {
+          const text = String((data as any).content).trim()
+          ;(data as any).content = {
+            root: {
+              type: 'root',
+              direction: 'ltr',
+              format: '',
+              indent: 0,
+              version: 1,
+              children: text
+                ? [
+                    {
+                      type: 'paragraph',
+                      direction: 'ltr',
+                      format: '',
+                      indent: 0,
+                      version: 1,
+                      children: [
+                        {
+                          type: 'text',
+                          text,
+                          detail: 0,
+                          format: 0,
+                          mode: 'normal',
+                          style: '',
+                          version: 1,
+                        },
+                      ],
+                    },
+                  ]
+                : [],
+            },
+          }
         }
 
         return data

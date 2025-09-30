@@ -8,6 +8,7 @@ import { AlertCircle, TrendingUp, Calendar, User } from 'lucide-react'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { extractTextFromLexical, truncateText } from '@/lib/lexical-utils'
 
 export const revalidate = 120
 
@@ -127,9 +128,9 @@ export default async function PredictionsPage({ searchParams }: PredictionsPageP
                           </Link>
                         </CardTitle>
                         <CardDescription className="mt-1">
-                          {prediction.content && prediction.content.length > 100
-                            ? `${prediction.content.substring(0, 100)}...`
-                            : prediction.content
+                          {prediction.content 
+                            ? truncateText(extractTextFromLexical(prediction.content), 100)
+                            : ''
                           }
                         </CardDescription>
                       </div>
