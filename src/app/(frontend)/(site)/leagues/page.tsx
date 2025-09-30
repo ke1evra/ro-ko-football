@@ -85,7 +85,7 @@ async function getSidebarLeagues(): Promise<CompetitionItem[]> {
     // Преобразуем в формат CompetitionItem
     const competitions: CompetitionItem[] = enabledLeagues.map((item: any) => ({
       id: item.league.competitionId,
-      name: item.customName || item.league.name,
+      name: item.customName || item.league.customName || item.league.name,
       country: item.league.countryId && item.league.countryName ? {
         id: item.league.countryId,
         name: item.league.countryName,
@@ -148,7 +148,7 @@ async function getCompetitions(
     // Преобразуем в формат CompetitionItem
     const competitions: CompetitionItem[] = leagues.map((league) => ({
       id: league.competitionId,
-      name: league.name,
+      name: league.customName || league.name,
       country: league.countryId && league.countryName ? {
         id: league.countryId,
         name: league.countryName,

@@ -46,6 +46,17 @@ export const Leagues: CollectionConfig = {
       name: 'name',
       type: 'text',
       required: true,
+      admin: {
+        description: 'Оригинальное название лиги из API',
+      },
+    },
+    {
+      name: 'customName',
+      type: 'text',
+      admin: {
+        description: 'Пользовательское название лиги (переводы, сокращения и т.д.)',
+        placeholder: 'Оставьте пустым для использования оригинального названи��',
+      },
     },
     {
       name: 'displayName',
@@ -56,10 +67,11 @@ export const Leagues: CollectionConfig = {
       hooks: {
         beforeChange: [
           ({ data }) => {
-            if (data?.countryName && data?.name) {
-              return `${data.name} (${data.countryName})`
+            const name = data?.customName || data?.name || 'Без названия'
+            if (data?.countryName) {
+              return `${name} (${data.countryName})`
             }
-            return data?.name || 'Без названия'
+            return name
           },
         ],
       },

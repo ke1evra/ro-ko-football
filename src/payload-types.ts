@@ -398,7 +398,14 @@ export interface League {
    * Внешний идентификатор (если отличается от competitionId)
    */
   externalId?: string | null;
+  /**
+   * Оригинальное название лиги из API
+   */
   name: string;
+  /**
+   * Пользовательское название лиги (переводы, сокращения и т.д.)
+   */
+  customName?: string | null;
   displayName?: string | null;
   /**
    * ID страны первого вхождения (если применимо)
@@ -708,6 +715,7 @@ export interface LeaguesSelect<T extends boolean = true> {
   competitionId?: T;
   externalId?: T;
   name?: T;
+  customName?: T;
   displayName?: T;
   countryId?: T;
   countryName?: T;

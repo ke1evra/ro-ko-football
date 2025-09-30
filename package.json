@@ -33,7 +33,11 @@
     "logos:test": "node scripts/test-download-logos.cjs",
     "logos:download": "node scripts/download-team-logos.cjs",
     "logos:status": "node scripts/check-logos-progress.cjs",
-    "leagues:import": "node --loader @esbuild-kit/esm-loader scripts/import-leagues.mjs"
+    "leagues:import": "node --loader @esbuild-kit/esm-loader scripts/import-leagues.mjs",
+    "leagues:names:export": "node --loader @esbuild-kit/esm-loader scripts/export-league-names.mjs",
+    "leagues:names:translate": "node scripts/translate-league-names.mjs",
+    "leagues:names:translate:latest": "sh scripts/leagues-names-translate-latest.sh",
+    "leagues:names:import": "node --loader @esbuild-kit/esm-loader scripts/import-league-names.mjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
