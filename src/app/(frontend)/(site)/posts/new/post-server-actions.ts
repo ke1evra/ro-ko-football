@@ -6,7 +6,7 @@ import { getUser } from '@/lib/auth'
 
 // slug теперь генерируется на стороне Payload (см. коллекцию Posts)
 
-export async function createPostAction({ title, content }: { title: string; content: string }) {
+export async function createPostAction({ title, content }: { title: string; content: any }) {
   const user = await getUser()
   if (!user) return { success: false, error: 'Необходима авторизация' }
 

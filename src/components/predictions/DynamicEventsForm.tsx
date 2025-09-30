@@ -122,6 +122,7 @@ export default function DynamicEventsForm({
               const v = parseFloat(e.target.value)
               if (!Number.isNaN(v)) setOver(v)
             }}
+            className="bg-background"
           />
           <div className="flex items-center gap-2">
             <Button
@@ -155,6 +156,7 @@ export default function DynamicEventsForm({
               const v = parseFloat(e.target.value)
               if (!Number.isNaN(v)) setUnder(v)
             }}
+            className="bg-background"
           />
           <div className="flex items-center gap-2">
             <Button
@@ -242,6 +244,7 @@ export default function DynamicEventsForm({
                   onChange={(e) => setCurrentEvent(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Введите событие или выберите во вкладках ниже"
+                  className="bg-background"
                 />
               </div>
               <div>
@@ -257,6 +260,7 @@ export default function DynamicEventsForm({
                   onChange={(e) => setCurrentCoefficient(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="1.85"
+                  className="bg-background"
                 />
               </div>
               <div className="flex items-end gap-2">

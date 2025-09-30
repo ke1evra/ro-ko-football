@@ -1,15 +1,15 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { 
-  $getRoot, 
-  $getSelection, 
-  EditorState, 
+import {
+  $getRoot,
+  $getSelection,
+  EditorState,
   LexicalEditor,
   $isRangeSelection,
   FORMAT_TEXT_COMMAND,
   SELECTION_CHANGE_COMMAND,
-  $createParagraphNode
+  $createParagraphNode,
 } from 'lexical'
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
@@ -22,31 +22,68 @@ import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPl
 import { TRANSFORMERS } from '@lexical/markdown'
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary'
+import { Component, ReactElement } from 'react'
 
 import { HeadingNode, QuoteNode, $createHeadingNode, $createQuoteNode } from '@lexical/rich-text'
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table'
-import { ListItemNode, ListNode, INSERT_UNORDERED_LIST_COMMAND, INSERT_ORDERED_LIST_COMMAND } from '@lexical/list'
+import {
+  ListItemNode,
+  ListNode,
+  INSERT_UNORDERED_LIST_COMMAND,
+  INSERT_ORDERED_LIST_COMMAND,
+} from '@lexical/list'
 import { CodeHighlightNode, CodeNode } from '@lexical/code'
 import { AutoLinkNode, LinkNode } from '@lexical/link'
-import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode'
+
 import { $setBlocksType } from '@lexical/selection'
 
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { 
-  Bold, 
-  Italic, 
-  Underline, 
-  Strikethrough, 
-  List, 
-  ListOrdered, 
+import {
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  List,
+  ListOrdered,
   Quote,
   Heading1,
   Heading2,
-  Heading3
+  Heading3,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+// Собственный ErrorBoundary для Lexical
+class LexicalErrorBoundary extends Component<
+  { children: ReactElement; onError: (error: Error) => void },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactElement; onError: (error: Error) => void }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error('Lexical Editor Error:', error, errorInfo)
+    this.props.onError(error)
+  }
+
+  render(): ReactElement {
+    if (this.state.hasError) {
+      return (
+        <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded">
+          Произошла ошибка в редакторе. Попробуйте обновить страницу.
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
 
 // Плагин для обновления значения
 function OnChangeValuePlugin({ onChange }: { onChange: (value: any) => void }) {
@@ -112,11 +149,11 @@ function LexicalToolbar() {
         updateToolbar()
         return false
       },
-      1
+      1,
     )
   }, [editor, updateToolbar])
 
-  const formatText = (format: string) => {
+  const formatText = (format: 'bold' | 'italic' | 'underline' | 'strikethrough') => {
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, format)
   }
 
@@ -185,28 +222,13 @@ function LexicalToolbar() {
       <Separator orientation="vertical" className="h-6 mx-1" />
 
       {/* Заголовки */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => formatHeading('h1')}
-        className="h-8 w-8 p-0"
-      >
+      <Button variant="ghost" size="sm" onClick={() => formatHeading('h1')} className="h-8 w-8 p-0">
         <Heading1 className="h-4 w-4" />
       </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => formatHeading('h2')}
-        className="h-8 w-8 p-0"
-      >
+      <Button variant="ghost" size="sm" onClick={() => formatHeading('h2')} className="h-8 w-8 p-0">
         <Heading2 className="h-4 w-4" />
       </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => formatHeading('h3')}
-        className="h-8 w-8 p-0"
-      >
+      <Button variant="ghost" size="sm" onClick={() => formatHeading('h3')} className="h-8 w-8 p-0">
         <Heading3 className="h-4 w-4" />
       </Button>
 
@@ -324,21 +346,17 @@ export default function LexicalEditorWithToolbar({
       TableRowNode,
       AutoLinkNode,
       LinkNode,
-      HorizontalRuleNode,
     ],
   }
 
   return (
-    <div className={cn('relative border rounded-md overflow-hidden', className)}>
+    <div className={cn('relative border rounded-md overflow-hidden bg-background', className)}>
       <LexicalComposer initialConfig={initialConfig}>
         <LexicalToolbar />
-        <div className="relative">
+        <div className="relative bg-background">
           <RichTextPlugin
             contentEditable={
-              <ContentEditable
-                className="min-h-[150px] resize-none text-sm outline-none p-3 focus:ring-0"
-                placeholder={placeholder}
-              />
+              <ContentEditable className="min-h-[150px] resize-none text-sm outline-none p-3 focus:ring-0 bg-white" />
             }
             placeholder={
               <div className="absolute top-3 left-3 text-muted-foreground text-sm pointer-events-none">

@@ -78,10 +78,7 @@ export const SidebarLeagues: GlobalConfig = {
           required: true,
           admin: {
             description: 'Выберите лигу',
-            sortOptions: {
-              countryName: 'asc',
-              name: 'asc',
-            },
+            sortOptions: 'name',
           },
         },
         {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { $getRoot, $getSelection, EditorState, LexicalEditor } from 'lexical'
+import { $getRoot, $getSelection, EditorState, LexicalEditor as LexicalEditorType } from 'lexical'
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
 import { ContentEditable } from '@lexical/react/LexicalContentEditable'
@@ -13,7 +13,7 @@ import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPl
 import { TRANSFORMERS } from '@lexical/markdown'
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary'
+import { Component, ReactElement } from 'react'
 
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table'
@@ -23,6 +23,38 @@ import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode'
 
 import { cn } from '@/lib/utils'
+
+// Собственный ErrorBoundary для Lexical
+class LexicalErrorBoundary extends Component<
+  { children: ReactElement; onError: (error: Error) => void },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactElement; onError: (error: Error) => void }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error('Lexical Editor Error:', error, errorInfo)
+    this.props.onError(error)
+  }
+
+  render(): ReactElement {
+    if (this.state.hasError) {
+      return (
+        <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded">
+          Произошла ошибка в редакторе. Попробуйте обновить страницу.
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
 
 // Плагин для обновления значения
 function OnChangeValuePlugin({ onChange }: { onChange: (value: any) => void }) {
@@ -169,10 +201,7 @@ export default function LexicalEditor({
         <div className="relative">
           <RichTextPlugin
             contentEditable={
-              <ContentEditable
-                className="min-h-[150px] resize-none text-sm outline-none p-3 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent"
-                placeholder={placeholder}
-              />
+              <ContentEditable className="min-h-[150px] resize-none text-sm outline-none p-3 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent" />
             }
             placeholder={
               <div className="absolute top-3 left-3 text-muted-foreground text-sm pointer-events-none">

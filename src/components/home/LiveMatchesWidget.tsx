@@ -13,59 +13,59 @@ function translateStatus(status: string): string {
     'HALF TIME BREAK': 'Перерыв',
     'HALF TIME': 'Перерыв',
     'ADDED TIME': 'Доп. время',
-    'FINISHED': 'Завершён',
+    FINISHED: 'Завершён',
     'FULL TIME': 'Основное время',
     'EXTRA TIME': 'Дополнительное время',
     'PENALTY SHOOTOUT': 'Пенальти',
-    'POSTPONED': 'Отложен',
-    'CANCELLED': 'Отменён',
-    'SUSPENDED': 'Приостановлен',
+    POSTPONED: 'Отложен',
+    CANCELLED: 'Отменён',
+    SUSPENDED: 'Приостановлен',
     'INSUFFICIENT DATA': 'Нет данных',
   }
-  
+
   return statusMap[status] || status
 }
 
 // Компонент для динамического таймера матча
-function MatchTimer({ 
-  timeStatus, 
-  status, 
-  matchDate, 
-  matchTime 
-}: { 
+function MatchTimer({
+  timeStatus,
+  status,
+  matchDate,
+  matchTime,
+}: {
   timeStatus: string | null
   status?: string
   matchDate?: string
   matchTime?: string
 }) {
   const [currentTime, setCurrentTime] = React.useState(new Date())
-  
+
   React.useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date())
     }, 1000)
-    
+
     return () => clearInterval(timer)
   }, [])
-  
+
   // Функция для расчета времени матча
   const calculateMatchTime = (): string => {
     if (!matchDate || !matchTime) {
       // Если нет данных о времени матча, используем статичные данные из API
       if (!timeStatus) return ''
-      
+
       // Специальные статусы
       const specialStatuses: Record<string, string> = {
-        'HT': 'Перерыв',
-        'FT': 'Завершён',
-        'AET': 'После доп. времени',
-        'AP': 'После пенальти',
+        HT: 'Перерыв',
+        FT: 'Завершён',
+        AET: 'После доп. времени',
+        AP: 'После пенальти',
       }
-      
+
       if (specialStatuses[timeStatus]) {
         return specialStatuses[timeStatus]
       }
-      
+
       // Если это число (минуты), добавляем информацию
       const minutes = parseInt(timeStatus)
       if (!isNaN(minutes)) {
@@ -77,21 +77,21 @@ function MatchTimer({
           return `${minutes}' (${remaining} мин до конца)`
         }
       }
-      
+
       // Если содержит +, это доп. время
       if (timeStatus.includes('+')) {
         return `${timeStatus}' (доп. время)`
       }
-      
+
       return timeStatus
     }
-    
+
     try {
       const matchStart = new Date(`${matchDate}T${matchTime}`)
       const now = currentTime
       const diffMs = now.getTime() - matchStart.getTime()
       const diffMinutes = Math.floor(diffMs / (1000 * 60))
-      
+
       // Специальные статусы
       if (status === 'FINISHED' || status === 'FULL TIME' || timeStatus === 'FT') {
         if (diffMinutes > 90) {
@@ -100,16 +100,16 @@ function MatchTimer({
         }
         return 'Только что закончился'
       }
-      
+
       if (status === 'HALF TIME' || status === 'HALF TIME BREAK' || timeStatus === 'HT') {
         return 'Перерыв'
       }
-      
+
       if (status === 'NOT STARTED' && diffMinutes < 0) {
         const minutesToStart = Math.abs(diffMinutes)
         return `Начнется через ${minutesToStart} мин`
       }
-      
+
       // Если матч идет
       if (status === 'IN PLAY' || status === 'ADDED TIME') {
         if (diffMinutes <= 45) {
@@ -130,22 +130,20 @@ function MatchTimer({
           return `90+${extraMinutes}' (доп. время)`
         }
       }
-      
+
       return ''
     } catch (error) {
       console.error('Ошибка расчета времени матча:', error)
       return ''
     }
   }
-  
+
   const timerText = calculateMatchTime()
-  
+
   if (!timerText) return null
-  
+
   return (
-    <div className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">
-      {timerText}
-    </div>
+    <div className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">{timerText}</div>
   )
 }
 
@@ -177,36 +175,36 @@ function normalize(match: any): LiveItem | null {
   const id = Number(match?.id)
   const fixtureId = Number(match?.fixture_id ?? match?.fixtureId)
   if (!Number.isFinite(id) && !Number.isFinite(fixtureId)) return null
-  
+
   console.log(`[LiveMatchesWidget] Обрабатываем лайв матч ${id}:`, JSON.stringify(match, null, 2))
-  
+
   // Извлекаем информацию о командах
   const homeName = match?.home?.name || 'Команда дома'
   const awayName = match?.away?.name || 'Команда гостей'
   const homeId = match?.home?.id
   const awayId = match?.away?.id
-  
+
   // Извлекаем счёт из строки "2 - 1" в отдельные чис��а
   const scoreString = match?.scores?.score || ''
   let homeScore: number | undefined
   let awayScore: number | undefined
-  
+
   console.log(`[LiveMatchesWidget] Исходный счёт для матча ${id}:`, scoreString)
-  
+
   if (scoreString && typeof scoreString === 'string') {
-    const scoreParts = scoreString.split(' - ').map(s => s.trim())
+    const scoreParts = scoreString.split(' - ').map((s) => s.trim())
     if (scoreParts.length === 2) {
       homeScore = parseInt(scoreParts[0]) || 0
       awayScore = parseInt(scoreParts[1]) || 0
       console.log(`[LiveMatchesWidget] Разобранный счёт: ${homeScore} - ${awayScore}`)
     }
   }
-  
+
   const compName = match?.competition?.name || match?.league?.name
   const status = match?.status
   const time_status = match?.time_status
   const location = match?.location
-  
+
   const result = {
     id: Number.isFinite(id) ? id : fixtureId!,
     fixtureId: Number.isFinite(fixtureId) ? fixtureId : undefined,
@@ -226,9 +224,9 @@ function normalize(match: any): LiveItem | null {
     location,
     scores: match?.scores,
   }
-  
+
   console.log(`[LiveMatchesWidget] Финальный результат для матча ${id}:`, result)
-  
+
   return result
 }
 
@@ -299,11 +297,8 @@ export default function LiveMatchesWidget() {
                 className="border rounded p-3 hover:bg-accent/50 transition-colors relative"
               >
                 {/* Пульсирующая точка в правом верхнем углу */}
-                <LiveIndicator 
-                  size="small" 
-                  className="absolute top-2 right-2 z-10" 
-                />
-                
+                <LiveIndicator size="small" className="absolute top-2 right-2 z-10" />
+
                 <Link href={href} className="block">
                   {/* Заголовок с лигой */}
                   <div className="flex items-center justify-between mb-2 pr-6">
@@ -311,17 +306,13 @@ export default function LiveMatchesWidget() {
                       <span>{m.compName || 'Лайв матч'}</span>
                     </div>
                   </div>
-                  
+
                   {/* Команды со счётом */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <div className="flex-shrink-0">
-                          <TeamLogo 
-                            teamId={m.home.id} 
-                            teamName={m.home.name} 
-                            size="small" 
-                          />
+                          <TeamLogo teamId={m.home.id} teamName={m.home.name} size="small" />
                         </div>
                         <span className="truncate font-medium text-sm">{m.home.name}</span>
                       </div>
@@ -329,15 +320,11 @@ export default function LiveMatchesWidget() {
                         {m.home.score !== undefined ? m.home.score : '—'}
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <div className="flex-shrink-0">
-                          <TeamLogo 
-                            teamId={m.away.id} 
-                            teamName={m.away.name} 
-                            size="small" 
-                          />
+                          <TeamLogo teamId={m.away.id} teamName={m.away.name} size="small" />
                         </div>
                         <span className="truncate font-medium text-sm">{m.away.name}</span>
                       </div>
@@ -346,7 +333,7 @@ export default function LiveMatchesWidget() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Дополнительная информация */}
                   {(m.status || m.scores?.ht_score) && (
                     <div className="mt-2 pt-2 border-t border-border/50">
@@ -357,13 +344,9 @@ export default function LiveMatchesWidget() {
                               {translateStatus(m.status)}
                             </span>
                           )}
-                          <MatchTimer timeStatus={m.time_status} status={m.status} />
+                          <MatchTimer timeStatus={m.time_status || null} status={m.status} />
                         </div>
-                        {m.scores?.ht_score && (
-                          <span>
-                            1-й тайм: {m.scores.ht_score}
-                          </span>
-                        )}
+                        {m.scores?.ht_score && <span>1-й тайм: {m.scores.ht_score}</span>}
                       </div>
                     </div>
                   )}
@@ -383,20 +366,6 @@ export default function LiveMatchesWidget() {
             disabled={loading}
           >
             Показать ещё
-          </button>
-        </div>
-      )}
-
-      {/* Пагинация по API страницам */}
-      {hasMore && (
-        <div className="pt-1">
-          <button
-            type="button"
-            className="inline-flex items-center rounded border px-3 py-1 text-xs hover:bg-accent"
-            onClick={() => void load(page + 1)}
-            disabled={loading}
-          >
-            Загрузить следующую страницу
           </button>
         </div>
       )}

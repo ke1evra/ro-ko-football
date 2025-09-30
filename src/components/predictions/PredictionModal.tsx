@@ -2,7 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -38,17 +44,17 @@ interface PredictionData {
   events: PredictionEvent[]
 }
 
-export default function PredictionModal({ 
-  isOpen, 
-  onClose, 
-  fixtureId, 
-  matchData, 
-  onPredictionCreated 
+export default function PredictionModal({
+  isOpen,
+  onClose,
+  fixtureId,
+  matchData,
+  onPredictionCreated,
 }: PredictionModalProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+
   const [formData, setFormData] = useState<PredictionData>({
     title: `Прогноз на матч ${matchData.home.name} - ${matchData.away.name}`,
     content: null,
@@ -71,7 +77,7 @@ export default function PredictionModal({
       }
 
       const userData = await userResponse.json()
-      
+
       if (!userData.user || !userData.user.id) {
         throw new Error('Не удалось получить информацию о пользователе')
       }
@@ -97,7 +103,7 @@ export default function PredictionModal({
       }
 
       console.log('Sending prediction payload:', predictionPayload)
-      
+
       const response = await fetch('/api/posts', {
         method: 'POST',
         headers: {
@@ -106,7 +112,7 @@ export default function PredictionModal({
         credentials: 'include',
         body: JSON.stringify(predictionPayload),
       })
-      
+
       console.log('Response status:', response.status)
       console.log('Response headers:', response.headers)
 
@@ -119,18 +125,17 @@ export default function PredictionModal({
       }
 
       const result = await response.json()
-      
+
       // Закрываем модальное окно
       onClose()
-      
+
       // Обновляем список прогнозов
       if (onPredictionCreated) {
         onPredictionCreated()
       }
-      
+
       // Показываем уведомление об успехе
       // Можно добавить toast notification здесь
-      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Произошла ошибка')
     } finally {
@@ -139,7 +144,7 @@ export default function PredictionModal({
   }
 
   const updateFormData = (field: keyof PredictionData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   const handleEventsChange = (events: PredictionEvent[]) => {
@@ -154,7 +159,7 @@ export default function PredictionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[90vw] w-[90vw] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
@@ -176,23 +181,25 @@ export default function PredictionModal({
 
           {/* Основная информация */}
           <div className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="title">Заголовок прогноза</Label>
               <Input
                 id="title"
                 value={formData.title}
                 onChange={(e) => updateFormData('title', e.target.value)}
                 placeholder={`Прогноз на матч ${matchData.home.name} - ${matchData.away.name}`}
+                className="bg-white"
                 required
               />
             </div>
 
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="content">Описание и обоснование</Label>
               <LexicalEditorWithToolbar
                 value={formData.content}
                 onChange={(value) => updateFormData('content', value)}
                 placeholder="Опишите ваш прогноз и его обоснование..."
+                className="bg-white"
               />
             </div>
           </div>
