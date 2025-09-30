@@ -3,13 +3,9 @@ import { Container, Section } from '@/components/ds'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { ArrowLeft, AlertCircle, Calendar } from 'lucide-react'
-import {
-  getCompetitionsListJson,
-  getCountriesListJson,
-  getFederationsListJson,
-  getFixturesMatchesJson,
-} from '@/app/(frontend)/client'
+import { ArrowLeft, AlertCircle } from 'lucide-react'
+import { getPayload } from 'payload'
+import config from '@/payload.config'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import LeaguesGroupedSearch from '@/components/league/LeaguesGroupedSearch'
@@ -34,49 +30,27 @@ interface CompetitionItem {
   } | null
 }
 
-// Топ страны (фиксированный порядок) - на английском ка�� в API
-const HIGHLIGHT_COUNTRY_ORDER_EN = [
-  'England',
-  'Italy', 
-  'Spain',
-  'France',
-  'Russia',
-  'Germany',
+// Топ страны (фиксированный порядок) - теперь на русском как в CMS
+const HIGHLIGHT_COUNTRY_ORDER_RU = [
+  'Англия',
+  'Италия', 
+  'Испания',
+  'Франция',
+  'Россия',
+  'Германия',
 ]
 
-const HIGHLIGHT_COUNTRIES_EN = new Set(HIGHLIGHT_COUNTRY_ORDER_EN)
+const HIGHLIGHT_COUNTRIES_RU = new Set(HIGHLIGHT_COUNTRY_ORDER_RU)
 
-// Маппинг английских названий на русские для отображения
-const COUNTRY_NAMES_RU: Record<string, string> = {
-  'England': 'Англия',
-  'Italy': 'Италия',
-  'Spain': 'Испания', 
-  'France': 'Франция',
-  'Russia': 'Россия',
-  'Germany': 'Германия',
-}
-
-// Паттерны для поиска топ-лиг
+// Паттерны для поиска топ-лиг (теперь по русским названиям стран)
 const LEAGUE_PATTERNS: Record<string, RegExp[]> = {
-  England: [/premier\s*league/i, /премьер/i],
-  Italy: [/serie\s*a/i, /серия\s*a/i],
-  Spain: [/(la\s*liga|laliga|примера)/i],
-  France: [/(ligue\s*1|лига\s*1)/i],
-  Russia: [/российская|рпл|rfpl/i],
-  Germany: [/bundesliga|бундеслига/i],
+  'Англия': [/premier\s*league/i, /премьер/i],
+  'Италия': [/serie\s*a/i, /серия\s*a/i],
+  'Испания': [/(la\s*liga|laliga|примера)/i],
+  'Франция': [/(ligue\s*1|лига\s*1)/i],
+  'Россия': [/российская|рпл|rfpl/i],
+  'Германия': [/bundesliga|бундеслига/i],
 }
-
-// Названия еврокубков
-const UEFA_CHAMPIONS_LEAGUE_NAMES = new Set([
-  'UEFA Champions League',
-  'Лига чемпионов УЕФА',
-  'Лига чемпионов',
-])
-const UEFA_EUROPA_LEAGUE_NAMES = new Set([
-  'UEFA Europa League',
-  'Лига Европы УЕФА',
-  'Лига Европы',
-])
 
 function byName(a?: string | null, b?: string | null) {
   return (a || '').localeCompare(b || '', 'ru')
@@ -85,6 +59,45 @@ function byName(a?: string | null, b?: string | null) {
 function matchByPatterns(name?: string, patterns: RegExp[] = []) {
   if (!name) return false
   return patterns.some((re) => re.test(name))
+}
+
+async function getSidebarLeagues(): Promise<CompetitionItem[]> {
+  try {
+    const payload = await getPayload({ config })
+    
+    // Получаем настройки сайдбара
+    const sidebarSettings = await payload.findGlobal({
+      slug: 'sidebarLeagues',
+      depth: 2, // Получаем связанные лиги
+      overrideAccess: true,
+    })
+
+    if (!sidebarSettings?.enabled || !sidebarSettings?.leagues) {
+      return []
+    }
+
+    // Фильтруем и сортируем лиги
+    const enabledLeagues = sidebarSettings.leagues
+      .filter((item: any) => item.enabled && item.league)
+      .sort((a: any, b: any) => (a.priority || 999) - (b.priority || 999))
+      .slice(0, sidebarSettings.maxItems || 15)
+
+    // Преобразуем в формат CompetitionItem
+    const competitions: CompetitionItem[] = enabledLeagues.map((item: any) => ({
+      id: item.league.competitionId,
+      name: item.customName || item.league.name,
+      country: item.league.countryId && item.league.countryName ? {
+        id: item.league.countryId,
+        name: item.league.countryName,
+        flag: null,
+      } : null,
+    }))
+
+    return competitions
+  } catch (error) {
+    console.error('Ошибка загрузки лиг сайдбара:', error)
+    return []
+  }
 }
 
 async function getCompetitions(
@@ -98,91 +111,77 @@ async function getCompetitions(
   federationName?: string
 }> {
   try {
-    // Получаем соревнования (ограничиваем size для избежания таймаутов)
-    const params = {
-      page,
-      size: !countryId && !federationId ? 100 : 50, // Уменьшили с 1000 до 100
-      ...(countryId && { country_id: parseInt(countryId) }),
-      ...(federationId && { federation_id: parseInt(federationId) }),
-    }
-
-    const response = await getCompetitionsListJson(params, {
-      next: { revalidate: 60 },
-      cache: 'no-store', // Отключаем кэш для избежания ошибок
-    })
-
-    const competitionsRaw = (response.data?.data?.competition || []) as Array<{
-      id?: number | string
-      name?: string
-      countries?: Array<{ id?: number | string; name?: string; flag?: string | null }>
-    }>
-    const competitions = competitionsRaw
-      .map((comp): CompetitionItem | null => {
-        if (!comp?.id || !comp?.name) return null
-        const country = comp.countries && comp.countries.length > 0 ? comp.countries[0] : undefined
-        return {
-          id: Number(comp.id),
-          name: comp.name,
-          country: country
-            ? {
-                id: country.id != null ? Number(country.id) : undefined,
-                name: country.name,
-                flag: country.flag ?? null,
-              }
-            : undefined,
-        }
-      })
-      .filter((c): c is CompetitionItem => c !== null)
-
-    // Получаем название страны если указан ID
-    let countryName: string | undefined
+    const payload = await getPayload({ config })
+    
+    // Строим условия фильтрации
+    const where: any = { active: { equals: true } }
+    
     if (countryId) {
-      try {
-        const countryResponse = await getCountriesListJson(
-          {},
-          {
-            next: { revalidate: 300 },
-          },
-        )
-
-        const countriesRaw = (countryResponse.data?.data?.country || []) as Array<{
-          id?: number | string
-          name?: string
-        }>
-        const country = countriesRaw.find((c) => Number(c.id) === Number(countryId))
-        countryName = country?.name
-      } catch (error) {
-        console.error('Ошибка загрузки названия страны:', error)
+      where.countryId = { equals: parseInt(countryId) }
+    }
+    
+    if (federationId) {
+      where.federations = {
+        contains: {
+          id: { equals: parseInt(federationId) }
+        }
       }
     }
 
-    // Получаем название федерации если указан ID
-    let federationName: string | undefined
-    if (federationId) {
-      try {
-        const fedResponse = await getFederationsListJson({
-          next: { revalidate: 300 },
-        })
+    const limit = !countryId && !federationId ? 100 : 50
+    const offset = (page - 1) * limit
 
-        const federationsRaw = (fedResponse.data?.data?.data?.federation || []) as Array<{
-          id?: number | string
-          name?: string
-        }>
-        const federation = federationsRaw.find((f) => String(f.id) === String(federationId))
+    // Получаем лиги из CMS
+    const result = await payload.find({
+      collection: 'leagues',
+      where,
+      limit: limit + 1, // +1 для проверки hasMore
+      page: undefined, // Используем offset вместо page
+      sort: ['priority', 'name'],
+      depth: 0,
+      overrideAccess: true,
+    })
+
+    const hasMore = result.docs.length > limit
+    const leagues = hasMore ? result.docs.slice(0, limit) : result.docs
+
+    // Преобразуем в формат CompetitionItem
+    const competitions: CompetitionItem[] = leagues.map((league) => ({
+      id: league.competitionId,
+      name: league.name,
+      country: league.countryId && league.countryName ? {
+        id: league.countryId,
+        name: league.countryName,
+        flag: null, // Флаги пока не храним в CMS
+      } : null,
+    }))
+
+    // Получаем название страны и федерации для breadcrumbs
+    let countryName: string | undefined
+    let federationName: string | undefined
+
+    if (countryId && competitions.length > 0) {
+      countryName = competitions.find(c => c.country?.id === parseInt(countryId))?.country?.name
+    }
+
+    if (federationId && leagues.length > 0) {
+      const leagueWithFederation = leagues.find(l => 
+        l.federations?.some((f: any) => f.id === parseInt(federationId))
+      )
+      if (leagueWithFederation?.federations) {
+        const federation = leagueWithFederation.federations.find((f: any) => f.id === parseInt(federationId))
         federationName = federation?.name
-      } catch (error) {
-        console.error('Ошибка загрузки названия федерации:', error)
       }
     }
 
     return {
       competitions,
-      hasMore: competitions.length === params.size,
+      hasMore,
       countryName,
       federationName,
     }
   } catch (error) {
-    console.error('Ошибка загрузки соревнований:', error)
+    console.error('Ошибка загрузки лиг из CMS:', error)
     return { competitions: [], hasMore: false }
   }
 }
@@ -192,13 +191,13 @@ function selectTopLeagues(competitions: CompetitionItem[]): CompetitionItem[] {
 
   console.log('=== ОТЛАДКА ВЫБОРА ТОП-ЛИГ ===')
   console.log('Всего соревнований:', competitions.length)
-  console.log('Ищем страны:', HIGHLIGHT_COUNTRY_ORDER_EN)
+  console.log('Ищем страны:', HIGHLIGHT_COUNTRY_ORDER_RU)
   
   // Показываем примеры соревнований по целевым странам
   const byCountryDebug = new Map<string, CompetitionItem[]>()
   for (const c of competitions) {
     const country = (c.country?.name || '').trim()
-    if (HIGHLIGHT_COUNTRIES_EN.has(country)) {
+    if (HIGHLIGHT_COUNTRIES_RU.has(country)) {
       if (!byCountryDebug.has(country)) byCountryDebug.set(country, [])
       byCountryDebug.get(country)!.push(c)
     }
@@ -212,7 +211,7 @@ function selectTopLeagues(competitions: CompetitionItem[]): CompetitionItem[] {
   // Выбираем по паттернам названий
   for (const c of competitions) {
     const country = (c.country?.name || '').trim()
-    if (!HIGHLIGHT_COUNTRIES_EN.has(country)) continue
+    if (!HIGHLIGHT_COUNTRIES_RU.has(country)) continue
     if (byCountry.has(country)) continue
     
     const patterns = LEAGUE_PATTERNS[country]
@@ -225,7 +224,7 @@ function selectTopLeagues(competitions: CompetitionItem[]): CompetitionItem[] {
   // Фолбэк: первый турнир по стране (только с country.id)
   for (const c of competitions) {
     const country = (c.country?.name || '').trim()
-    if (!HIGHLIGHT_COUNTRIES_EN.has(country)) continue
+    if (!HIGHLIGHT_COUNTRIES_RU.has(country)) continue
     if (byCountry.has(country)) continue
     if (c.country?.id) {
       console.log(`✓ Найдена лига фолбэком для ${country}:`, c.name)
@@ -233,38 +232,11 @@ function selectTopLeagues(competitions: CompetitionItem[]): CompetitionItem[] {
     }
   }
 
-  const result = HIGHLIGHT_COUNTRY_ORDER_EN.map((country) => byCountry.get(country)).filter(Boolean) as CompetitionItem[]
+  const result = HIGHLIGHT_COUNTRY_ORDER_RU.map((country) => byCountry.get(country)).filter(Boolean) as CompetitionItem[]
   console.log('=== ИТОГОВЫЕ ТОП-ЛИГИ ===')
   console.log(result.map(c => ({ name: c.name, country: c.country?.name })))
   
   return result
-}
-
-async function getTodayEuropeanFixtures() {
-  try {
-    const today = new Date()
-    const resp = await getFixturesMatchesJson(
-      { date: today, size: 200, lang: 'ru' as any },
-      { next: { revalidate: 60 } },
-    )
-    const fixtures = (resp.data?.data?.fixtures || []) as any[]
-    const byComp: Record<'ucl' | 'uel', any[]> = { ucl: [], uel: [] }
-
-    for (const fx of fixtures) {
-      const compName: string = fx.competition?.name || ''
-      if (UEFA_CHAMPIONS_LEAGUE_NAMES.has(compName) || /champions/i.test(compName)) {
-        byComp.ucl.push(fx)
-      }
-      if (UEFA_EUROPA_LEAGUE_NAMES.has(compName) || /europa/i.test(compName)) {
-        byComp.uel.push(fx)
-      }
-    }
-
-    return byComp
-  } catch (e) {
-    console.error('Ошибка загрузки расписания на сегодня:', e)
-    return { ucl: [], uel: [] }
-  }
 }
 
 export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
@@ -279,13 +251,30 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
     page,
   )
 
+  // Получаем лиги из сайдбара для отображения в верхнем блоке
+  const sidebarLeagues = !countryId && !federationId ? await getSidebarLeagues() : []
+
   // Если нет фильтров, показываем подсвеченные лиги
   let highlight: CompetitionItem[] = []
   let rest: CompetitionItem[] = []
 
   if (!countryId && !federationId) {
-    highlight = selectTopLeagues(competitions)
-    rest = competitions.filter((c) => !highlight.find((h) => h.id === c.id))
+    // Объединяем лиги из сайдбара с автоматически выбранными топ-лигами
+    const autoTopLeagues = selectTopLeagues(competitions)
+    
+    // Создаём Set для быстрой проверки дубликатов
+    const sidebarIds = new Set(sidebarLeagues.map(l => l.id))
+    const autoIds = new Set(autoTopLeagues.map(l => l.id))
+    
+    // Сначала лиги из сайдбара, затем автоматические (без дубликатов)
+    highlight = [
+      ...sidebarLeagues,
+      ...autoTopLeagues.filter(league => !sidebarIds.has(league.id))
+    ]
+    
+    // Исключаем все топ-лиги из общего списка
+    const allTopIds = new Set(highlight.map(l => l.id))
+    rest = competitions.filter((c) => !allTopIds.has(c.id))
   } else {
     // При фильтрации показываем все как обычный список
     rest = competitions
@@ -293,9 +282,6 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
 
   // Сортировка по стране/названию
   rest.sort((a, b) => byName(a.country?.name, b.country?.name) || byName(a.name, b.name))
-
-  // Еврокубки на сегодня
-  const euroToday = !countryId && !federationId ? await getTodayEuropeanFixtures() : { ucl: [], uel: [] }
 
   const getTitle = () => {
     if (countryName && federationName) {
@@ -362,7 +348,7 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
           <h1 className="text-3xl font-bold tracking-tight">{getTitle()}</h1>
           <p className="text-muted-foreground">
             {highlight.length > 0
-              ? 'Сначала — топ‑лиги, затем еврокубки на сегодня (ЛЧ, ЛЕ). Ниже — все лиги с поиском.'
+              ? 'Сначала — топ‑лиги, затем все остальные лиги с поиском и группировкой.'
               : 'Выберите лигу для просмотра сезонов и турнирных таблиц'}
           </p>
         </header>
@@ -403,7 +389,7 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
                             <div className="font-medium truncate">{competition.name}</div>
                             {competition.country?.name && (
                               <div className="text-xs text-muted-foreground truncate">
-                                {COUNTRY_NAMES_RU[competition.country.name] || competition.country.name}
+                                {competition.country.name}
                               </div>
                             )}
                           </div>
@@ -412,65 +398,6 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
                     ))}
                   </div>
                 </div>
-
-                {/* Еврокубки на сегодня (ЛЧ → ЛЕ) */}
-                {(euroToday.ucl.length > 0 || euroToday.uel.length > 0) && (
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4">Еврокубки на сегодня</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* UCL */}
-                      {euroToday.ucl.length > 0 && (
-                        <div className="border rounded-md p-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Calendar className="h-4 w-4" />
-                            <span className="font-semibold">Лига чемпионов — сегодня</span>
-                          </div>
-                          <div className="space-y-2">
-                            {euroToday.ucl.slice(0, 6).map((fx: any) => (
-                              <div key={fx.id} className="flex items-center justify-between text-sm">
-                                <div className="truncate flex-1 text-right pr-2">
-                                  {fx.home?.name || fx.home_team?.name || fx.home_name}
-                                </div>
-                                <div className="px-2 text-muted-foreground">vs</div>
-                                <div className="truncate flex-1 pl-2">
-                                  {fx.away?.name || fx.away_team?.name || fx.away_name}
-                                </div>
-                                <div className="ml-3 text-muted-foreground tabular-nums">
-                                  {fx.time || ''}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {/* UEL */}
-                      {euroToday.uel.length > 0 && (
-                        <div className="border rounded-md p-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Calendar className="h-4 w-4" />
-                            <span className="font-semibold">Лига Европы — сегодня</span>
-                          </div>
-                          <div className="space-y-2">
-                            {euroToday.uel.slice(0, 6).map((fx: any) => (
-                              <div key={fx.id} className="flex items-center justify-between text-sm">
-                                <div className="truncate flex-1 text-right pr-2">
-                                  {fx.home?.name || fx.home_team?.name || fx.home_name}
-                                </div>
-                                <div className="px-2 text-muted-foreground">vs</div>
-                                <div className="truncate flex-1 pl-2">
-                                  {fx.away?.name || fx.away_team?.name || fx.away_name}
-                                </div>
-                                <div className="ml-3 text-muted-foreground tabular-nums">
-                                  {fx.time || ''}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 

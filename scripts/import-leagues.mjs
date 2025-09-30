@@ -80,7 +80,10 @@ async function fetchCompetitions({ countryId, federationId, page = 1, size = 200
   const key = process.env.LIVESCORE_KEY
   const secret = process.env.LIVESCORE_SECRET
   const qs = new URLSearchParams()
-  // Согласно корректному использованию, не передаём page/size/lang — только обязательные ключи и опциональные фильтры
+  // Добавляем обязательные параметры
+  qs.set('lang', 'ru') // Добавляем русский язык
+  qs.set('language', 'ru') // Альтернативный параметр языка
+  qs.set('locale', 'ru') // Ещё один вариант
   if (countryId) qs.set('country_id', String(countryId))
   if (federationId) qs.set('federation_id', String(federationId))
   if (key) qs.set('key', key)
@@ -89,6 +92,14 @@ async function fetchCompetitions({ countryId, federationId, page = 1, size = 200
   const requestJson = async (url) => {
     const shownUrl = maskUrlForLog(url)
     console.log(`[HTTP] → GET ${shownUrl}`)
+    
+    // Проверяем, что lang=ru действительно в URL
+    if (url.includes('lang=ru')) {
+      console.log(`[HTTP] ✅ Параметр lang=ru найден в запросе`)
+    } else {
+      console.log(`[HTTP] ❌ ВНИМАНИЕ: Параметр lang=ru отсутствует в запросе!`)
+      console.log(`[HTTP] Полный URL: ${url}`)
+    }
 
     return new Promise((resolve, reject) => {
       https
@@ -151,9 +162,171 @@ function dumpResponseBrief(resp, max = 1200) {
   }
 }
 
+// Словарь для перевода названий стран на русский язык
+const countryTranslations = {
+  'Finland': 'Финляндия',
+  'Germany': 'Германия', 
+  'England': 'Англия',
+  'Spain': 'Испания',
+  'France': 'Франция',
+  'Italy': 'Италия',
+  'Netherlands': 'Нидерланды',
+  'Portugal': 'Португалия',
+  'Belgium': 'Бельгия',
+  'Austria': 'Австрия',
+  'Switzerland': 'Швейцария',
+  'Poland': 'Польша',
+  'Czech Republic': 'Чехия',
+  'Slovakia': 'Словакия',
+  'Hungary': 'Венгрия',
+  'Croatia': 'Хорватия',
+  'Serbia': 'Сербия',
+  'Slovenia': 'Словения',
+  'Bosnia and Herzegovina': 'Босния и Герцеговина',
+  'Montenegro': 'Черногория',
+  'North Macedonia': 'Северная Македония',
+  'Albania': 'Албания',
+  'Greece': 'Греция',
+  'Bulgaria': 'Болгария',
+  'Romania': 'Румыния',
+  'Moldova': 'Молдова',
+  'Ukraine': 'Украина',
+  'Belarus': 'Беларусь',
+  'Lithuania': 'Литва',
+  'Latvia': 'Латвия',
+  'Estonia': 'Эстония',
+  'Russia': 'Россия',
+  'Turkey': 'Турция',
+  'Cyprus': 'Кипр',
+  'Malta': 'Мальта',
+  'Luxembourg': 'Люксембург',
+  'Liechtenstein': 'Лихтенштейн',
+  'Monaco': 'Монако',
+  'San Marino': 'Сан-Марино',
+  'Andorra': 'Андорра',
+  'Vatican': 'Ватикан',
+  'Iceland': 'Исландия',
+  'Faroe Islands': 'Фарерские острова',
+  'Norway': 'Норвегия',
+  'Sweden': 'Швеция',
+  'Denmark': 'Дания',
+  'Scotland': 'Шотландия',
+  'Wales': 'Уэльс',
+  'Northern Ireland': 'Северная Ирландия',
+  'Ireland': 'Ирландия',
+  'Gibraltar': 'Гибралтар',
+  'Kazakhstan': 'Казахстан',
+  'Azerbaijan': 'Азербайджан',
+  'Armenia': 'Армения',
+  'Georgia': 'Грузия',
+  'Israel': 'Израиль',
+  'Brazil': 'Бразилия',
+  'Argentina': 'Аргентина',
+  'Uruguay': 'Уругвай',
+  'Chile': 'Чили',
+  'Colombia': 'Колумбия',
+  'Peru': 'Перу',
+  'Ecuador': 'Эквадор',
+  'Bolivia': 'Боливия',
+  'Paraguay': 'Парагвай',
+  'Venezuela': 'Венесуэла',
+  'Mexico': 'Мексика',
+  'United States': 'США',
+  'Canada': 'Канада',
+  'Japan': 'Япония',
+  'South Korea': 'Южная Корея',
+  'China': 'Китай',
+  'Australia': 'Австралия',
+  'New Zealand': 'Новая Зеландия',
+  'Saudi Arabia': 'Саудовская Аравия',
+  'United Arab Emirates': 'ОАЭ',
+  'Qatar': 'Катар',
+  'Kuwait': 'Кувейт',
+  'Bahrain': 'Бахрейн',
+  'Oman': 'Оман',
+  'Jordan': 'Иордания',
+  'Lebanon': 'Ливан',
+  'Syria': 'Сирия',
+  'Iraq': 'Ирак',
+  'Iran': 'Иран',
+  'Afghanistan': 'Афганистан',
+  'Pakistan': 'Пакистан',
+  'India': 'Индия',
+  'Bangladesh': 'Бангладеш',
+  'Sri Lanka': 'Шри-Ланка',
+  'Maldives': 'Мальдивы',
+  'Thailand': 'Таиланд',
+  'Vietnam': 'Вьетнам',
+  'Malaysia': 'Мал��йзия',
+  'Singapore': 'Сингапур',
+  'Indonesia': 'Индонезия',
+  'Philippines': 'Филиппины',
+  'South Africa': 'ЮАР',
+  'Egypt': 'Египет',
+  'Morocco': 'Марокко',
+  'Tunisia': 'Тунис',
+  'Algeria': 'Алжир',
+  'Libya': 'Ливия',
+  'Sudan': 'Судан',
+  'Ethiopia': 'Эфиопия',
+  'Kenya': 'Кения',
+  'Tanzania': 'Танзания',
+  'Uganda': 'Уганда',
+  'Rwanda': 'Руанда',
+  'Burundi': 'Бурунди',
+  'Madagascar': 'Мадагаскар',
+  'Mauritius': 'Маврикий',
+  'Seychelles': 'Сейшелы',
+  'Comoros': 'Коморы',
+  'Djibouti': 'Джибути',
+  'Somalia': 'Сомали',
+  'Eritrea': 'Эритрея',
+  'Ghana': 'Гана',
+  'Nigeria': 'Нигерия',
+  'Ivory Coast': 'Кот-д\'Ивуар',
+  'Senegal': 'Сенегал',
+  'Mali': 'Мали',
+  'Burkina Faso': 'Буркина-Фасо',
+  'Niger': 'Нигер',
+  'Chad': 'Чад',
+  'Cameroon': 'Камерун',
+  'Central African Republic': 'ЦАР',
+  'Democratic Republic of Congo': 'ДР Конго',
+  'Republic of Congo': 'Республика Конго',
+  'Gabon': 'Габон',
+  'Equatorial Guinea': 'Экваториальная Гвинея',
+  'Sao Tome and Principe': 'Сан-Томе и Принсипи',
+  'Cape Verde': 'Кабо-Верде',
+  'Guinea-Bissau': 'Гвинея-Бисау',
+  'Guinea': 'Гвинея',
+  'Sierra Leone': 'Сьерра-Леоне',
+  'Liberia': 'Либерия',
+  'Gambia': 'Гамбия',
+  'Mauritania': 'Мавритания',
+  'Western Sahara': 'Западная Сахара',
+  'Angola': 'Ангола',
+  'Zambia': 'Замбия',
+  'Zimbabwe': 'Зимбабве',
+  'Botswana': 'Ботсвана',
+  'Namibia': 'Намибия',
+  'Lesotho': 'Лесото',
+  'Swaziland': 'Эсватини',
+  'Mozambique': 'Мозамбик',
+  'Malawi': 'Малави'
+}
+
+function translateCountryName(englishName) {
+  return countryTranslations[englishName] || englishName
+}
+
 function pickFirstCountry(competition) {
   const c = competition?.countries?.[0]
-  return c ? { id: Number(c.id), name: c.name } : undefined
+  if (!c) return undefined
+  
+  return { 
+    id: Number(c.id), 
+    name: translateCountryName(c.name)
+  }
 }
 
 function toLeagueDoc(competition) {
@@ -171,7 +344,7 @@ function toLeagueDoc(competition) {
     hasGroups: toBool(competition.has_groups),
     active: toBool(competition.active ?? '1'),
     nationalTeamsOnly: toBool(competition.national_teams_only),
-    countries: (competition.countries || []).map((c) => ({ id: Number(c.id), name: c.name })),
+    countries: (competition.countries || []).map((c) => ({ id: Number(c.id), name: translateCountryName(c.name) })),
     federations: (competition.federations || []).map((f) => ({ id: Number(f.id), name: f.name })),
     season: competition.season
       ? {
@@ -186,10 +359,37 @@ function toLeagueDoc(competition) {
 }
 
 function sanitizeLeagueDoc(input) {
+  // Формируем displayName с учётом принадлежности к стране или федерации
+  let displayName = input.name
+  
+  if (input.countryName) {
+    // Если есть страна, добавляем её
+    displayName = `${input.name} (${input.countryName})`
+  } else if (Array.isArray(input.federations) && input.federations.length > 0) {
+    // Если нет страны, но есть федерации, берём первую
+    const primaryFederation = input.federations[0]
+    if (primaryFederation?.name) {
+      displayName = `${input.name} (${primaryFederation.name})`
+    }
+  } else if (Array.isArray(input.countries) && input.countries.length > 1) {
+    // Если нет основной страны, но есть несколько стран, показываем это
+    const countryNames = input.countries.map(c => c.name).filter(Boolean)
+    if (countryNames.length > 1) {
+      displayName = `${input.name} (${countryNames.slice(0, 2).join(', ')}${countryNames.length > 2 ? ' и др.' : ''})`
+    } else if (countryNames.length === 1) {
+      displayName = `${input.name} (${countryNames[0]})`
+    }
+  }
+  
+  // Добавляем информацию о типе соревнования, если это полезно
+  if (input.nationalTeamsOnly && !displayName.includes('(')) {
+    displayName = `${input.name} (сборные)`
+  }
+
   const out = {
     competitionId: input.competitionId,
     name: input.name,
-    displayName: input.countryName ? `${input.name} (${input.countryName})` : input.name,
+    displayName,
     countryId: input.countryId ?? null,
     countryName: input.countryName ?? null,
     isLeague: Boolean(input.isLeague),
@@ -226,10 +426,23 @@ function sanitizeLeagueDoc(input) {
 async function upsertLeague(payload, data) {
   const payloadData = sanitizeLeagueDoc(data)
   
-  console.log(`[DEBUG] Обработка competitionId=${payloadData.competitionId}`)
+  console.log(`[UPSERT] Обработка competitionId=${payloadData.competitionId} "${payloadData.name}"`)
+  
+  // Выводим основные поля для отладки
+  console.log(`[UPSERT] 📝 Данные для сохранения:`)
+  console.log(`         • name: "${payloadData.name}"`)
+  console.log(`         • displayName: "${payloadData.displayName}"`)
+  console.log(`         • countryName: "${payloadData.countryName || 'не указана'}"`)
+  console.log(`         • isLeague: ${payloadData.isLeague}, isCup: ${payloadData.isCup}`)
+  console.log(`         • tier: ${payloadData.tier || 'не указан'}, active: ${payloadData.active}`)
+  console.log(`         • countries: [${payloadData.countries.map(c => c.name).join(', ')}]`)
+  console.log(`         • federations: [${payloadData.federations.map(f => f.name).join(', ')}]`)
+  if (payloadData.season?.name) {
+    console.log(`         • season: "${payloadData.season.name}" (${payloadData.season.start || 'н/д'} - ${payloadData.season.end || 'н/д'})`)
+  }
 
-  // Проверяем по уникальному competitionId
-  const existing = await payload.find({
+  // Сначала ищем по уникальному competitionId
+  let existing = await payload.find({
     collection: 'leagues',
     where: { competitionId: { equals: payloadData.competitionId } },
     limit: 1,
@@ -240,32 +453,89 @@ async function upsertLeague(payload, data) {
   if (existing.docs.length > 0) {
     const doc = existing.docs[0]
     try {
-      console.log(`[DEBUG] Найдена существующая запись ${doc.id}, обновляем`)
-      await payload.update({ collection: 'leagues', id: doc.id, data: payloadData, overrideAccess: true })
-      return { action: 'updated', id: doc.id }
+      console.log(`[UPSERT] Найдена существующая запись ${doc.id}, сравниваем данные`)
+      
+      // Детальная проверка изменений с выводом различий
+      const changes = []
+      if (doc.name !== payloadData.name) changes.push(`name: "${doc.name}" → "${payloadData.name}"`)
+      if (doc.displayName !== payloadData.displayName) changes.push(`displayName: "${doc.displayName}" → "${payloadData.displayName}"`)
+      if (doc.countryId !== payloadData.countryId) changes.push(`countryId: ${doc.countryId} → ${payloadData.countryId}`)
+      if (doc.countryName !== payloadData.countryName) changes.push(`countryName: "${doc.countryName}" → "${payloadData.countryName}"`)
+      if (doc.isLeague !== payloadData.isLeague) changes.push(`isLeague: ${doc.isLeague} → ${payloadData.isLeague}`)
+      if (doc.isCup !== payloadData.isCup) changes.push(`isCup: ${doc.isCup} → ${payloadData.isCup}`)
+      if (doc.tier !== payloadData.tier) changes.push(`tier: ${doc.tier} → ${payloadData.tier}`)
+      if (doc.hasGroups !== payloadData.hasGroups) changes.push(`hasGroups: ${doc.hasGroups} → ${payloadData.hasGroups}`)
+      if (doc.active !== payloadData.active) changes.push(`active: ${doc.active} → ${payloadData.active}`)
+      if (doc.nationalTeamsOnly !== payloadData.nationalTeamsOnly) changes.push(`nationalTeamsOnly: ${doc.nationalTeamsOnly} → ${payloadData.nationalTeamsOnly}`)
+      
+      const oldCountries = JSON.stringify(doc.countries || [])
+      const newCountries = JSON.stringify(payloadData.countries)
+      if (oldCountries !== newCountries) changes.push(`countries: изменены`)
+      
+      const oldFederations = JSON.stringify(doc.federations || [])
+      const newFederations = JSON.stringify(payloadData.federations)
+      if (oldFederations !== newFederations) changes.push(`federations: изменены`)
+      
+      const oldSeason = JSON.stringify(doc.season || null)
+      const newSeason = JSON.stringify(payloadData.season)
+      if (oldSeason !== newSeason) changes.push(`season: изменён`)
+
+      if (changes.length > 0) {
+        console.log(`[UPSERT] 🔄 Обнаружены изменения:`)
+        changes.forEach(change => console.log(`         • ${change}`))
+        
+        await payload.update({ 
+          collection: 'leagues', 
+          id: doc.id, 
+          data: payloadData, 
+          overrideAccess: true 
+        })
+        console.log(`[UPSERT] ✅ Обновлено (payloadId=${doc.id})`)
+        return { action: 'updated', id: doc.id, hasChanges: true }
+      } else {
+        console.log(`[UPSERT] ≡ Без изменений (payloadId=${doc.id})`)
+        return { action: 'skipped', id: doc.id, hasChanges: false }
+      }
     } catch (e) {
       console.error(`[UPSERT][UPDATE] Ошибка при обновлении записи ${doc.id}:`, e.message)
+      if (e.data?.errors) {
+        console.error('[UPSERT][UPDATE] Детали ошибки:', e.data.errors)
+      }
       throw e
     }
   }
 
-  // Дополнительная проверка - может быть запись уже существует, но поиск не нашёл
+  // Если не найдено по competitionId, пытаемся создать новую запись
   try {
-    console.log(`[DEBUG] Создаём новую запись для competitionId=${payloadData.competitionId}`)
-    const created = await payload.create({ collection: 'leagues', data: payloadData, overrideAccess: true })
-    return { action: 'created', id: created.id }
+    console.log(`[UPSERT] ➕ Создаём новую запись для competitionId=${payloadData.competitionId}`)
+    const created = await payload.create({ 
+      collection: 'leagues', 
+      data: payloadData, 
+      overrideAccess: true 
+    })
+    console.log(`[UPSERT] ✅ Создано (payloadId=${created.id})`)
+    return { action: 'created', id: created.id, hasChanges: true }
   } catch (e) {
-    // Если ошибка уникальности по competitionId - пытаемся найти и обновить
-    if (e.message?.includes('duplicate key') || e.message?.includes('unique') || e.data?.errors?.some(err => err.path === 'competitionId')) {
-      console.log(`[DEBUG] Ошибка уникальности для competitionId=${payloadData.competitionId}, пытаемся найти и обновить`)
+    // Если ошибка уникальности - возможно запись была создана между поиском и созданием
+    if (e.message?.includes('duplicate key') || 
+        e.message?.includes('unique') || 
+        e.message?.includes('E11000') ||
+        e.data?.errors?.some(err => err.path === 'competitionId')) {
       
-      // Повторный поиск с более широкими критериями
-      const existingRetry = await payload.find({
+      console.log(`[UPSERT] Конфликт уникальности для competitionId=${payloadData.competitionId}, повторный поиск`)
+      
+      // Повторный поиск с расширенными критериями
+      existing = await payload.find({
         collection: 'leagues',
         where: { 
           or: [
             { competitionId: { equals: payloadData.competitionId } },
-            { name: { equals: payloadData.name }, countryId: { equals: payloadData.countryId } }
+            { 
+              and: [
+                { name: { equals: payloadData.name } },
+                { countryId: { equals: payloadData.countryId } }
+              ]
+            }
           ]
         },
         limit: 5,
@@ -273,17 +543,34 @@ async function upsertLeague(payload, data) {
         overrideAccess: true,
       })
 
-      if (existingRetry.docs.length > 0) {
-        // Берём первую найденную запись
-        const doc = existingRetry.docs[0]
-        console.log(`[DEBUG] Найдена существующая запись при повторном поиске ${doc.id}, обновляем`)
-        await payload.update({ collection: 'leagues', id: doc.id, data: payloadData, overrideAccess: true })
-        return { action: 'updated', id: doc.id }
+      if (existing.docs.length > 0) {
+        // Находим наиболее подходящую запись (сначала по competitionId, потом по имени+стране)
+        let targetDoc = existing.docs.find(doc => doc.competitionId === payloadData.competitionId)
+        if (!targetDoc) {
+          targetDoc = existing.docs.find(doc => 
+            doc.name === payloadData.name && doc.countryId === payloadData.countryId
+          )
+        }
+        if (!targetDoc) {
+          targetDoc = existing.docs[0] // Берём первую найденную
+        }
+
+        console.log(`[UPSERT] Найдена существующая запись при повторном поиске ${targetDoc.id}, обновляем`)
+        await payload.update({ 
+          collection: 'leagues', 
+          id: targetDoc.id, 
+          data: payloadData, 
+          overrideAccess: true 
+        })
+        console.log(`[UPSERT] ✓ Обновлено после конфликта (payloadId=${targetDoc.id})`)
+        return { action: 'updated', id: targetDoc.id, hasChanges: true }
       }
     }
     
-    console.error(`[UPSERT][CREATE] Ошибка при создании записи competitionId=${payloadData.competitionId}:`, e.message)
-    console.error('[UPSERT][CREATE] Детали ошибки:', e.data?.errors)
+    console.error(`[UPSERT][CREATE] Критическая ошибка при создании записи competitionId=${payloadData.competitionId}:`, e.message)
+    if (e.data?.errors) {
+      console.error('[UPSERT][CREATE] Детали ошибки:', e.data.errors)
+    }
     throw e
   }
 }
@@ -449,6 +736,12 @@ async function main() {
   let page = 1
   let total = 0
   let processed = 0
+  let stats = {
+    created: 0,
+    updated: 0,
+    skipped: 0,
+    errors: 0
+  }
 
   while (true) {
     console.log(`Загрузка соревнований: page=${page}, size=${pageSize}...`)
@@ -494,12 +787,23 @@ async function main() {
       const countryLabel = doc.countryName ? ` — ${doc.countryName}` : ''
       console.log(`  • [${ordinal}${total ? `/${total}` : ''}] ${doc.competitionId} ${doc.name}${countryLabel}`)
 
-      const { action, id } = await upsertLeague(payload, doc)
-      console.log(`    ↳ ${action.toUpperCase()} (payloadId=${id})`)
+      try {
+        const { action, id } = await upsertLeague(payload, doc)
+        console.log(`    ↳ ${action.toUpperCase()} (payloadId=${id})`)
+        
+        // Обновляем статистику
+        if (action === 'created') stats.created++
+        else if (action === 'updated') stats.updated++
+        else if (action === 'skipped') stats.skipped++
 
-      processed += 1
-      if (processed % 25 === 0) {
-        console.log(`[PROGRESS] Обработано ${processed}${total ? `/${total}` : ''}`)
+        processed += 1
+        if (processed % 25 === 0) {
+          console.log(`[PROGRESS] Обработано ${processed}${total ? `/${total}` : ''} (создано: ${stats.created}, обновлено: ${stats.updated}, пропущено: ${stats.skipped})`)
+        }
+      } catch (e) {
+        console.error(`[ERROR] Ошибка при обработке ${doc.competitionId} ${doc.name}:`, e.message)
+        stats.errors++
+        processed += 1
       }
     }
 
@@ -522,7 +826,27 @@ async function main() {
     console.log(`[DISCOVERY] Добавлено из обхода: ${discovered}`)
   }
 
-  console.log(`Готово. Импортировано/обновлено записей: ${processed}`)
+  console.log('\n' + '='.repeat(60))
+  console.log('СИНХРОНИЗАЦИЯ ЛИГ ЗАВЕРШЕНА')
+  console.log('='.repeat(60))
+  console.log(`📊 Статистика обработки:`)
+  console.log(`   • Всего обработано: ${processed}`)
+  console.log(`   • ✅ Создано новых: ${stats.created}`)
+  console.log(`   • 🔄 Обновлено: ${stats.updated}`)
+  console.log(`   • ≡ Без изменений: ${stats.skipped}`)
+  console.log(`   • ❌ Ошибок: ${stats.errors}`)
+  console.log('='.repeat(60))
+  
+  if (stats.errors > 0) {
+    console.log(`⚠️  Внимание: ${stats.errors} записей обработаны с ошибками`)
+  }
+  
+  const changesCount = stats.created + stats.updated
+  if (changesCount > 0) {
+    console.log(`✨ Внесено изменений в базу данных: ${changesCount} записей`)
+  } else {
+    console.log(`ℹ️  Все записи актуальны, изменений не требуется`)
+  }
 
   if (payload?.db?.drain) {
     await payload.db.drain()

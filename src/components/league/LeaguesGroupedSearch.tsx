@@ -66,33 +66,28 @@ export default function LeaguesGroupedSearch({ items, className }: LeaguesGroupe
       {nothingFound ? (
         <div className="text-sm text-muted-foreground">Ничего не найдено</div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-6">
           {groups.map(([countryName, leagues]) => (
-            <section key={countryName} className="space-y-3">
-              <h3 className="text-lg font-semibold">{countryName}</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <section key={countryName} className="space-y-2">
+              <h3 className="text-base font-medium text-muted-foreground">{countryName}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                 {leagues.map((competition) => (
                   <Link key={competition.id} href={`/leagues/${competition.id}`} className="block">
-                    <div className="group border rounded-md p-4 flex items-center gap-3 hover:bg-accent transition-colors">
-                      <div className="w-10 h-10 rounded bg-muted flex items-center justify-center overflow-hidden">
+                    <div className="group border rounded-md p-2 flex items-center gap-2 hover:bg-accent transition-colors text-sm">
+                      <div className="w-6 h-6 rounded bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
                         {competition.country?.id ? (
                           <CountryFlagImage
                             countryId={competition.country.id}
                             countryName={competition.country.name || undefined}
-                            size="medium"
+                            size="small"
                             className="w-full h-full object-cover"
                           />)
                           : (
-                          <span className="text-base" aria-hidden>⚽</span>
+                          <span className="text-xs" aria-hidden>⚽</span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium truncate">{competition.name}</div>
-                        {competition.country?.name && (
-                          <div className="text-xs text-muted-foreground truncate">
-                            {competition.country.name}
-                          </div>
-                        )}
                       </div>
                     </div>
                   </Link>
