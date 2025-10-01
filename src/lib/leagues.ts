@@ -155,3 +155,87 @@ export async function getSidebarLeaguesForWidget() {
     leagues,
   }
 }
+
+// === Централизованное получение названия лиги из CMS ===
+const NAME_TTL_MS = 5 * 60 * 1000
+const leagueNameCache = new Map<number, { value: string; expires: number }>()
+
+export function resolveLeagueDisplayName(league: any): string {
+  // Предпочитаем displayName, далее customName, потом оригинальное name
+  const base = league?.displayName || league?.customName || league?.name || ''
+  if (!base) return ''
+
+  // Если в CMS нет displayName, формируем вручную (с добавлением страны)
+  if (!league?.displayName && league?.countryName) {
+    return `${base} (${league.countryName})`
+  }
+  return base
+}
+
+export async function getLeagueDisplayNameById(competitionId: number): Promise<string | null> {
+  if (typeof competitionId !== 'number') return null
+
+  // Кэш
+  const now = Date.now()
+  const cached = leagueNameCache.get(competitionId)
+  if (cached && cached.expires > now) return cached.value
+
+  const payload = await getPayload({ config })
+  const res = await payload.find({
+    collection: 'leagues',
+    where: { competitionId: { equals: competitionId } },
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  })
+
+  if (!res.docs.length) return null
+  const name = resolveLeagueDisplayName(res.docs[0])
+  leagueNameCache.set(competitionId, { value: name, expires: now + NAME_TTL_MS })
+  return name
+}
+
+export async function getLeagueNamesMap(competitionIds: number[]): Promise<Record<number, string>> {
+  const map: Record<number, string> = {}
+  if (!Array.isArray(competitionIds) || competitionIds.length === 0) return map
+
+  const unique = Array.from(new Set(competitionIds.filter((x) => typeof x === 'number')))
+  const now = Date.now()
+
+  const toFetch: number[] = []
+  for (const id of unique) {
+    const cached = leagueNameCache.get(id)
+    if (cached && cached.expires > now) {
+      map[id] = cached.value
+    } else {
+      toFetch.push(id)
+    }
+  }
+
+  if (toFetch.length) {
+    const payload = await getPayload({ config })
+    const res = await payload.find({
+      collection: 'leagues',
+      where: { competitionId: { in: toFetch } },
+      limit: toFetch.length,
+      depth: 0,
+      overrideAccess: true,
+    })
+
+    for (const doc of res.docs) {
+      const name = resolveLeagueDisplayName(doc)
+      leagueNameCache.set(doc.competitionId, { value: name, expires: now + NAME_TTL_MS })
+      map[doc.competitionId] = name
+    }
+
+    // Для тех, кто не найден — оставим пусто (можете подставлять фолбэк при использовании)
+    for (const id of toFetch) {
+      if (!(id in map)) {
+        leagueNameCache.set(id, { value: '', expires: now + 30_000 }) // короткий TTL
+        map[id] = ''
+      }
+    }
+  }
+
+  return map
+}

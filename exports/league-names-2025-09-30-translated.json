@@ -1,5 +1,5 @@
 {
-  "exportDate": "2025-09-30T11:19:04.130Z",
+  "exportDate": "2025-09-30T11:33:27.144Z",
   "totalLeagues": 508,
   "leagues": [
     {
@@ -4290,7 +4290,7 @@
       "id": "68da5157a9ace54b3ec685b6",
       "competitionId": 358,
       "name": "World Cup AFC Qualifiers",
-      "customName": "Кубок",
+      "customName": "Квалификация ЧМ АФК",
       "countryName": null,
       "countryId": null,
       "tier": 0,
@@ -4302,7 +4302,7 @@
       "id": "68da5157a9ace54b3ec685ba",
       "competitionId": 359,
       "name": "World Cup CAF Qualifiers",
-      "customName": "Кубок",
+      "customName": "Квалификация ЧМ КАФ",
       "countryName": null,
       "countryId": null,
       "tier": 0,
@@ -4314,7 +4314,7 @@
       "id": "68da5157a9ace54b3ec685be",
       "competitionId": 360,
       "name": "World Cup CONCACAF Qualifiers",
-      "customName": "Кубок",
+      "customName": "Квалификация ЧМ КОНКАКАФ",
       "countryName": null,
       "countryId": null,
       "tier": 0,
@@ -4326,7 +4326,7 @@
       "id": "68da5157a9ace54b3ec685c2",
       "competitionId": 361,
       "name": "World Cup CONMEBOL Qualifiers",
-      "customName": "Кубок",
+      "customName": "Квалификация ЧМ КОНМЕБОЛ",
       "countryName": null,
       "countryId": null,
       "tier": 0,
@@ -4350,7 +4350,7 @@
       "id": "68da5157a9ace54b3ec685ce",
       "competitionId": 363,
       "name": "World Cup UEFA Qualifiers",
-      "customName": "Кубок",
+      "customName": "Квалификация ЧМ УЕФА",
       "countryName": null,
       "countryId": null,
       "tier": 0,
@@ -4362,7 +4362,7 @@
       "id": "68da5157a9ace54b3ec685ca",
       "competitionId": 364,
       "name": "World Cup OFC Qualifiers",
-      "customName": "Кубок",
+      "customName": "Квалификация ЧМ ОФК",
       "countryName": null,
       "countryId": null,
       "tier": 0,
@@ -4374,7 +4374,7 @@
       "id": "68da5157a9ace54b3ec685c6",
       "competitionId": 365,
       "name": "World Cup Inter-Confederation Play-Off",
-      "customName": "Кубок",
+      "customName": "Межконфедерационный плей-офф ЧМ",
       "countryName": null,
       "countryId": null,
       "tier": 0,
@@ -4830,7 +4830,7 @@
       "id": "68da5156a9ace54b3ec67e96",
       "competitionId": 403,
       "name": "African Nations Championship Qualification",
-      "customName": "Кубок",
+      "customName": "African Nations Championship Квалификация",
       "countryName": null,
       "countryId": null,
       "tier": 0,
@@ -5214,7 +5214,7 @@
       "id": "68da5156a9ace54b3ec68122",
       "competitionId": 435,
       "name": "Gold Cup Qualifiers",
-      "customName": "Кубок",
+      "customName": "Квалификация Золотого кубка",
       "countryName": null,
       "countryId": null,
       "tier": 0,
@@ -6099,5 +6099,5 @@
       "active": true
     }
   ],
-  "translationDate": "2025-09-30T11:19:30.367Z"
+  "translationDate": "2025-09-30T11:33:31.082Z"
 }

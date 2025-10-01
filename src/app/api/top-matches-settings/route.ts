@@ -20,19 +20,32 @@ export async function GET() {
     const leagueIds = await getTopMatchesLeagueIds()
     
     // Формируем список лиг с приоритетами для клиента
-    const leagues = settings.leagues
-      ?.filter((item: any) => item.enabled && item.league && item.league.competitionId)
-      ?.map((item: any) => ({
-        id: item.league.competitionId,
-        name: item.league.name,
-        displayName: item.league.displayName,
-        country: item.league.countryName,
-        priority: item.priority || 999,
-        enabled: item.enabled,
-      }))
-      ?.sort((a, b) => a.priority - b.priority) || []
-    
-    console.log('[API] Processed leagues:', leagues.map(l => `${l.id}: ${l.name} (priority: ${l.priority})`))
+    const leagues =
+      settings.leagues
+        ?.filter((item: any) => item.enabled && item.league && item.league.competitionId)
+        ?.map((item: any) => {
+          // Разрешаем имя лиги из CMS: приоритет — customName из глобала, затем из коллекции, затем displayName, затем оригинал
+          const resolvedName =
+            (typeof item.customName === 'string' && item.customName.trim()) ||
+            (typeof item.league?.customName === 'string' && item.league.customName.trim()) ||
+            (typeof item.league?.displayName === 'string' && item.league.displayName.trim()) ||
+            item.league?.name
+
+          return {
+            id: item.league.competitionId,
+            name: resolvedName,
+            displayName: resolvedName,
+            country: item.league.countryName,
+            priority: item.priority || 999,
+            enabled: item.enabled,
+          }
+        })
+        ?.sort((a: any, b: any) => a.priority - b.priority) || []
+
+    console.log(
+      '[API] Processed leagues:',
+      leagues.map((l: any) => `${l.id}: ${l.name} (priority: ${l.priority})`),
+    )
     
     return NextResponse.json({
       success: true,

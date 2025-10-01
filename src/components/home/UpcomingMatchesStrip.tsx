@@ -7,6 +7,7 @@ import {
   getLeaguePriorityClient,
   isPriorityLeagueClient,
   initializeLeaguesCache,
+  getLeagueInfoClient,
 } from '@/lib/highlight-competitions-client'
 import { TeamLogo } from '@/components/TeamLogo'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
@@ -223,8 +224,11 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
   const [apiResponse, setApiResponse] = React.useState<any>(null)
 
   React.useEffect(() => {
-    // Инициализируем кэш лиг при загрузке компонента
-    initializeLeaguesCache()
+    // Инициализируем кэш лиг при загрузке компонента и дождёмся готовности, чтобы обновить рендер
+    initializeLeaguesCache().then(() => {
+      // Триггерим повторный рендер, чтобы отобразить названия лиг из CMS
+      setItems((prev) => [...prev])
+    })
 
     let mounted = true
     async function refresh() {
@@ -343,7 +347,11 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
                           className="w-3 h-3 rounded-sm object-cover flex-shrink-0"
                         />
                       )}
-                      <span className="truncate">{m.competition?.name || 'Неизвестная лига'}</span>
+                      {(() => {
+                        const leagueInfo = getLeagueInfoClient(m.competition?.id || 0)
+                        const compName = leagueInfo?.name || m.competition?.name || 'Неизвестная лига'
+                        return <span className="truncate">{compName}</span>
+                      })()}
                     </div>
                     <div className="text-[11px] text-muted-foreground">
                       {formatTime(m.date, m.time)}

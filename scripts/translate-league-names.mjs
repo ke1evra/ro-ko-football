@@ -173,6 +173,26 @@ const EXACT = {
   'Torneos de Verano': 'Летние турниры',
   'Torneo Federal A': 'Торнео Федераль А',
   'Paulista A1': 'Паулиста А1',
+  'Gold Cup Qualifiers': 'Квалификация Золотого кубка',
+  'World Cup Inter-Confederation Play-Off': 'Межконфедерационный плей-офф ЧМ',
+}
+
+// Карта конфедераций для квалификаций ЧМ
+const CONFED_MAP = {
+  AFC: 'АФК',
+  CAF: 'КАФ',
+  CONCACAF: 'КОНКАКАФ',
+  CONMEBOL: 'КОНМЕБОЛ',
+  UEFA: 'УЕФА',
+  OFC: 'ОФК',
+}
+
+function translateWorldCupQualifiers(name) {
+  const m = /^World Cup ([A-Z]+) Qualifiers$/i.exec(name)
+  if (!m) return null
+  const code = m[1].toUpperCase()
+  const conf = CONFED_MAP[code] || code
+  return `Квалификация ЧМ ${conf}`
 }
 
 // Двусмысленные названия, требующие уточнения по стране
@@ -183,6 +203,11 @@ const AMBIGUOUS = new Set([
   'Pro League',
   'Professional League',
   'National League',
+  'Primera Division',
+  'Primera División',
+  'Prva Liga',
+  'Segunda Division',
+  'Segunda División',
 ])
 
 // Точные переводы для двусмысленных названий с учётом страны
@@ -205,10 +230,39 @@ const EXACT_BY_COUNTRY = {
   'Premier Division|Ирландия': 'Премьер-дивизион (Ирландия)',
   'Pro League|Иран': 'Про лига (Иран)',
   'National League|Англия': 'Национальная лига (Англия)',
+
+  // Primera Division — разные страны
+  'Primera Division|Чили': 'Примера (Чили)',
+  'Primera Division|Венесуэла': 'Примера (Венесуэла)',
+  'Primera Division|Перу': 'Примера (Перу)',
+  'Primera Division|Уругвай': 'Примера (Уругвай)',
+  'Primera Division|Боливия': 'Примера (Боливия)',
+  'Primera Division|El Salvador': 'Примера (El Salvador)',
+  'Primera División|Costa Rica': 'Примера (Costa Rica)',
+
+  // Prva Liga — несколько стран
+  'Prva Liga|Словения': 'Прва лига (Словения)',
+  'Prva Liga|Северная Македония': 'Прва лига (Северная Македония)',
+  'Prva Liga|Хорватия': 'Прва лига (Хорватия)',
+  'Prva Liga|Сербия': 'Прва лига (Сербия)',
+
+  // Segunda Division — разные страны
+  'Segunda Division|Испания': 'Сегунда (Испания)',
+  'Segunda Division|Перу': 'Сегунда (Перу)',
+  'Segunda Division|Уругвай': 'Сегунда (Уругвай)',
+  'Segunda Division|Венесуэла': 'Сегунда (Венесуэла)',
+  'Segunda Division|Боливия': 'Сегунда (Боливия)',
+  'Segunda Division|Парагвай': 'Сегунда (Парагвай)',
+  'Segunda Division|Эквадор': 'Сегунда (Эквадор)',
+  'Segunda Division|El Salvador': 'Сегунда (El Salvador)',
+  'Segunda División|Испания': 'Сегунда (Испания)',
 }
 
 // Порядковые и общие термины (для подстановки)
 const PATTERN_REPLACEMENTS = [
+  ['Qualification', 'Квалификация'],
+  ['Qualifiers', 'Квалификация'],
+  ['Play-Off', 'Плей-офф'],
   ['National League North / South', 'Национальная лига Север/Юг'],
   ['National Premier leagues', 'Национальные премьер-лиги'],
   ['Premier Soccer League', 'Премьер футбольная лига'],
@@ -273,6 +327,13 @@ function translateGeneric(league) {
   const countryName = normalize(league.countryName)
   const lower = original.toLowerCase()
 
+  // Если это квалификация, не сваливаемся в общий "Кубок", а применяем текстовые замены
+  const isQualifier = /\b(qualifier|qualification)\b/i.test(original)
+  if (isQualifier) {
+    // Применим паттерн-замены (Qualification/Qualifiers/Play-Off и т.д.)
+    return applyOrderedReplacements(original)
+  }
+
   // Кубковые эвристики
   const isCupByName = /\b(cup|copa|coupe|pokal)\b/i.test(original)
 
@@ -306,6 +367,10 @@ function translateGeneric(league) {
 
 function translateLeagueName(league) {
   const name = normalize(league.name)
+
+  // Специальная обработка: квалификации ЧМ по конфедерациям
+  const wcq = translateWorldCupQualifiers(name)
+  if (wcq) return wcq
 
   // Двусмысленные названия: уточняем по стране
   if (AMBIGUOUS.has(name)) {

@@ -102,24 +102,7 @@ export function createCustomFetch({
     }
     ;(init as any).next = (init as any).next ?? { revalidate: 0 }
 
-    // Таймаут и AbortController на все запросы
-    let timeoutHandle: any = null
-    let ac: AbortController | null = null
-    try {
-      if (typeof AbortController !== 'undefined') {
-        ac = new AbortController()
-        const origSignal = (restConfig as any).signal as AbortSignal | undefined
-        if (origSignal && 'addEventListener' in origSignal) {
-          origSignal.addEventListener('abort', () => ac?.abort(), { once: true } as any)
-        }
-        ;(init as any).signal = ac.signal
-        timeoutHandle = setTimeout(() => ac?.abort(), timeoutMs)
-      }
-    } catch {
-      // ignore
-    }
-
-    // Поддержк�� тела запроса для не-GET методов
+    // Поддержка тела запроса для не-GET методов
     if (body !== undefined && String(method).toUpperCase() !== 'GET') {
       if (typeof FormData !== 'undefined' && body instanceof FormData) {
         init.body = body as any
@@ -137,33 +120,75 @@ export function createCustomFetch({
       }
     }
 
-    let response: Response
-    try {
-      response = await fetchImpl(fullUrl.toString(), init)
-    } finally {
-      if (timeoutHandle) clearTimeout(timeoutHandle)
-    }
+    // Повторные попытки и корректная обработка AbortError
+    const maxAttempts = Math.max(1, Number((restConfig as any).retries ?? 2))
+    const baseTimeout = typeof timeoutMs === 'number' ? timeoutMs : 12000
+    let lastError: any = null
 
-    let data: any
-    try {
-      data = await response.json()
-    } catch {
-      data = {}
-    }
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      let timeoutHandle: any = null
+      let ac: AbortController | null = null
 
-    if (!response.ok) {
-      throw {
-        status: response.status,
-        statusText: response.statusText,
-        data,
+      try {
+        // Настраиваем таймаут и AbortController на каждую попытку
+        if (typeof AbortController !== 'undefined') {
+          ac = new AbortController()
+          const origSignal = (restConfig as any).signal as AbortSignal | undefined
+          if (origSignal && 'addEventListener' in origSignal) {
+            origSignal.addEventListener('abort', () => ac?.abort(), { once: true } as any)
+          }
+          ;(init as any).signal = ac.signal
+          const attemptTimeout = attempt === 1 ? baseTimeout : Math.round(baseTimeout * 1.5)
+          timeoutHandle = setTimeout(() => ac?.abort(), attemptTimeout)
+        }
+
+        const response = await fetchImpl(fullUrl.toString(), init)
+
+        let data: any
+        try {
+          data = await response.json()
+        } catch {
+          data = {}
+        }
+
+        if (!response.ok) {
+          lastError = { status: response.status, statusText: response.statusText, data }
+          // Повторяем на 408/429/5xx кроме последней попытки
+          if (attempt < maxAttempts && (response.status === 408 || response.status === 429 || response.status >= 500)) {
+            await new Promise((r) => setTimeout(r, 200 * attempt))
+            continue
+          }
+          throw lastError
+        }
+
+        return {
+          data,
+          status: response.status,
+          statusText: response.statusText,
+        }
+      } catch (e: any) {
+        lastError = e
+        const isAbort = e?.name === 'AbortError'
+        // Повторяем на AbortError или сетевых ошибках
+        if (attempt < maxAttempts && (isAbort || e?.status >= 500 || e?.code === 'ECONNRESET')) {
+          await new Promise((r) => setTimeout(r, 200 * attempt))
+          continue
+        }
+        if (isAbort) {
+          throw {
+            status: 504,
+            statusText: 'Gateway Timeout',
+            data: { error: 'Request aborted by timeout', url: fullUrl.toString() },
+          }
+        }
+        throw e
+      } finally {
+        if (timeoutHandle) clearTimeout(timeoutHandle)
       }
     }
 
-    return {
-      data,
-      status: response.status,
-      statusText: response.statusText,
-    }
+    // Если все попытки исчерпаны
+    throw lastError || { status: 500, statusText: 'Fetch Failed', data: {} }
   }
 }
 
