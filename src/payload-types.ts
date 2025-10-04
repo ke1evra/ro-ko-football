@@ -73,6 +73,8 @@ export interface Config {
     comments: Comment;
     commentVotes: CommentVote;
     leagues: League;
+    matches: Match;
+    matchStats: MatchStat;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -85,6 +87,8 @@ export interface Config {
     comments: CommentsSelect<false> | CommentsSelect<true>;
     commentVotes: CommentVotesSelect<false> | CommentVotesSelect<true>;
     leagues: LeaguesSelect<false> | LeaguesSelect<true>;
+    matches: MatchesSelect<false> | MatchesSelect<true>;
+    matchStats: MatchStatsSelect<false> | MatchStatsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -463,6 +467,483 @@ export interface League {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "matches".
+ */
+export interface Match {
+  id: string;
+  /**
+   * ID матча из внешнего API
+   */
+  matchId: number;
+  /**
+   * ID фикстуры из внешнего API (если отличается от matchId)
+   */
+  fixtureId?: number | null;
+  /**
+   * Дополнительный внешний идентификатор
+   */
+  externalId?: string | null;
+  displayName?: string | null;
+  /**
+   * Дата матча (ISO-8601, UTC)
+   */
+  date: string;
+  status: 'scheduled' | 'live' | 'halftime' | 'finished' | 'cancelled' | 'postponed' | 'suspended';
+  /**
+   * Минута матча (для live)
+   */
+  minute?: number | null;
+  period?: ('not_started' | 'first_half' | 'halftime' | 'second_half' | 'extra_time' | 'penalties' | 'finished') | null;
+  /**
+   * Строка времени из API (например, FT)
+   */
+  time?: string | null;
+  /**
+   * Плановое время начала (например, 00:30)
+   */
+  scheduled?: string | null;
+  /**
+   * Время добавления матча в провайдере
+   */
+  addedAt?: string | null;
+  /**
+   * Время последнего изменения в провайдере
+   */
+  lastChangedAt?: string | null;
+  /**
+   * Название команды хозяев
+   */
+  homeTeam: string;
+  /**
+   * ID команды хозяев из API
+   */
+  homeTeamId?: number | null;
+  /**
+   * URL логотипа хозяев
+   */
+  homeLogo?: string | null;
+  /**
+   * Страна хозяев (ID)
+   */
+  homeCountryId?: number | null;
+  /**
+   * Стадион хозяев (из API)
+   */
+  homeStadium?: string | null;
+  /**
+   * Название команды гостей
+   */
+  awayTeam: string;
+  /**
+   * ID команды гостей из API
+   */
+  awayTeamId?: number | null;
+  /**
+   * URL логотипа гостей
+   */
+  awayLogo?: string | null;
+  /**
+   * Страна гостей (ID)
+   */
+  awayCountryId?: number | null;
+  /**
+   * Стадион гостей (из API)
+   */
+  awayStadium?: string | null;
+  /**
+   * Голы хозяев
+   */
+  homeScore?: number | null;
+  /**
+   * Голы гостей
+   */
+  awayScore?: number | null;
+  /**
+   * Голы хозяев к перерыву
+   */
+  homeScoreHalftime?: number | null;
+  /**
+   * Голы гостей к перерыву
+   */
+  awayScoreHalftime?: number | null;
+  /**
+   * Голы хозяев в доп. время
+   */
+  homeScoreExtraTime?: number | null;
+  /**
+   * Голы гостей в доп. время
+   */
+  awayScoreExtraTime?: number | null;
+  /**
+   * Голы хозяев в серии пенальти
+   */
+  homeScorePenalties?: number | null;
+  /**
+   * Голы гостей в серии пенальти
+   */
+  awayScorePenalties?: number | null;
+  /**
+   * Исходные строковые значения счёта из API
+   */
+  scoresRaw?: {
+    score?: string | null;
+    htScore?: string | null;
+    ftScore?: string | null;
+    etScore?: string | null;
+    psScore?: string | null;
+  };
+  /**
+   * Название соревнования
+   */
+  competition?: string | null;
+  /**
+   * ID соревнования из API
+   */
+  competitionId?: number | null;
+  /**
+   * Доп. детали соревнования из API
+   */
+  competitionDetails?: {
+    isCup?: boolean | null;
+    isLeague?: boolean | null;
+    hasGroups?: boolean | null;
+    nationalTeamsOnly?: boolean | null;
+    active?: boolean | null;
+    tier?: number | null;
+  };
+  /**
+   * Федерация (если есть)
+   */
+  federation?: {
+    federationId?: number | null;
+    name?: string | null;
+  };
+  /**
+   * Страна матча (если есть)
+   */
+  country?: {
+    countryId?: number | null;
+    name?: string | null;
+    flag?: string | null;
+    fifaCode?: string | null;
+    uefaCode?: string | null;
+    isReal?: boolean | null;
+  };
+  /**
+   * Группа/подгруппа (если есть)
+   */
+  groupId?: number | null;
+  /**
+   * Связь с лигой из нашей базы
+   */
+  league?: (string | null) | League;
+  /**
+   * Информация о сезоне
+   */
+  season?: {
+    seasonId?: number | null;
+    name?: string | null;
+    year?: string | null;
+  };
+  /**
+   * Тур/раунд соревнования
+   */
+  round?: string | null;
+  /**
+   * Локация из API (строка)
+   */
+  location?: string | null;
+  /**
+   * Информация о стадионе
+   */
+  venue?: {
+    name?: string | null;
+    city?: string | null;
+    country?: string | null;
+  };
+  /**
+   * Главный судья
+   */
+  referee?: string | null;
+  /**
+   * Исходы из API (строки: 1/X/2)
+   */
+  outcomes?: {
+    halfTime?: string | null;
+    fullTime?: string | null;
+    extraTime?: string | null;
+    penaltyShootout?: string | null;
+  };
+  /**
+   * Коэффициенты
+   */
+  odds?: {
+    pre?: {
+      home?: number | null;
+      draw?: number | null;
+      away?: number | null;
+    };
+    live?: {
+      home?: number | null;
+      draw?: number | null;
+      away?: number | null;
+    };
+  };
+  /**
+   * Ссылки на события/статистику/составы/Н2Н
+   */
+  urls?: {
+    events?: string | null;
+    statistics?: string | null;
+    lineups?: string | null;
+    head2head?: string | null;
+  };
+  /**
+   * Время последней синхронизации
+   */
+  lastSyncAt?: string | null;
+  /**
+   * Источник данных
+   */
+  syncSource?: ('history' | 'live' | 'fixtures' | 'manual') | null;
+  /**
+   * Есть ли статистика матча
+   */
+  hasStats?: boolean | null;
+  /**
+   * Приоритет матча (меньше = выше)
+   */
+  priority?: number | null;
+  /**
+   * Оригинальный объект матча из API
+   */
+  raw?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "matchStats".
+ */
+export interface MatchStat {
+  id: string;
+  /**
+   * ID матча из внешнего API
+   */
+  matchId: number;
+  /**
+   * Связь с матчем
+   */
+  match: string | Match;
+  displayName?: string | null;
+  /**
+   * Владение мячом (%)
+   */
+  possession?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Удары
+   */
+  shots?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Удары в створ
+   */
+  shotsOnTarget?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Удары мимо створа
+   */
+  shotsOffTarget?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Заблокирован��ые удары
+   */
+  shotsBlocked?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Угловые
+   */
+  corners?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Офсайды
+   */
+  offsides?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Фолы
+   */
+  fouls?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Жёлтые карточки
+   */
+  yellowCards?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Красные карточки
+   */
+  redCards?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * ��ейвы вратарей
+   */
+  saves?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Передачи
+   */
+  passes?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Точные передачи
+   */
+  passesAccurate?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Точность передач (%)
+   */
+  passAccuracy?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Атаки
+   */
+  attacks?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Опасные атаки
+   */
+  dangerousAttacks?: {
+    home?: number | null;
+    away?: number | null;
+  };
+  /**
+   * Оригинальный ответ API статистики
+   */
+  additionalStats?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * События матча (голы, карточки, замены)
+   */
+  events?:
+    | {
+        minute: number;
+        type: 'goal' | 'own_goal' | 'penalty' | 'yellow_card' | 'red_card' | 'substitution' | 'var' | 'other';
+        team: 'home' | 'away';
+        player?: string | null;
+        assistPlayer?: string | null;
+        playerOut?: string | null;
+        playerIn?: string | null;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Составы команд
+   */
+  lineups?: {
+    home?: {
+      formation?: string | null;
+      startingXI?:
+        | {
+            number?: number | null;
+            name: string;
+            position?: string | null;
+            id?: string | null;
+          }[]
+        | null;
+      substitutes?:
+        | {
+            number?: number | null;
+            name: string;
+            position?: string | null;
+            id?: string | null;
+          }[]
+        | null;
+    };
+    away?: {
+      formation?: string | null;
+      startingXI?:
+        | {
+            number?: number | null;
+            name: string;
+            position?: string | null;
+            id?: string | null;
+          }[]
+        | null;
+      substitutes?:
+        | {
+            number?: number | null;
+            name: string;
+            position?: string | null;
+            id?: string | null;
+          }[]
+        | null;
+    };
+  };
+  /**
+   * Время последней синхронизации
+   */
+  lastSyncAt?: string | null;
+  /**
+   * Источник данных
+   */
+  syncSource?: ('stats' | 'events' | 'lineups' | 'manual') | null;
+  /**
+   * Качество данных
+   */
+  dataQuality?: ('complete' | 'partial' | 'minimal' | 'none') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -491,6 +972,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'leagues';
         value: string | League;
+      } | null)
+    | ({
+        relationTo: 'matches';
+        value: string | Match;
+      } | null)
+    | ({
+        relationTo: 'matchStats';
+        value: string | MatchStat;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -746,6 +1235,309 @@ export interface LeaguesSelect<T extends boolean = true> {
         end?: T;
       };
   priority?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "matches_select".
+ */
+export interface MatchesSelect<T extends boolean = true> {
+  matchId?: T;
+  fixtureId?: T;
+  externalId?: T;
+  displayName?: T;
+  date?: T;
+  status?: T;
+  minute?: T;
+  period?: T;
+  time?: T;
+  scheduled?: T;
+  addedAt?: T;
+  lastChangedAt?: T;
+  homeTeam?: T;
+  homeTeamId?: T;
+  homeLogo?: T;
+  homeCountryId?: T;
+  homeStadium?: T;
+  awayTeam?: T;
+  awayTeamId?: T;
+  awayLogo?: T;
+  awayCountryId?: T;
+  awayStadium?: T;
+  homeScore?: T;
+  awayScore?: T;
+  homeScoreHalftime?: T;
+  awayScoreHalftime?: T;
+  homeScoreExtraTime?: T;
+  awayScoreExtraTime?: T;
+  homeScorePenalties?: T;
+  awayScorePenalties?: T;
+  scoresRaw?:
+    | T
+    | {
+        score?: T;
+        htScore?: T;
+        ftScore?: T;
+        etScore?: T;
+        psScore?: T;
+      };
+  competition?: T;
+  competitionId?: T;
+  competitionDetails?:
+    | T
+    | {
+        isCup?: T;
+        isLeague?: T;
+        hasGroups?: T;
+        nationalTeamsOnly?: T;
+        active?: T;
+        tier?: T;
+      };
+  federation?:
+    | T
+    | {
+        federationId?: T;
+        name?: T;
+      };
+  country?:
+    | T
+    | {
+        countryId?: T;
+        name?: T;
+        flag?: T;
+        fifaCode?: T;
+        uefaCode?: T;
+        isReal?: T;
+      };
+  groupId?: T;
+  league?: T;
+  season?:
+    | T
+    | {
+        seasonId?: T;
+        name?: T;
+        year?: T;
+      };
+  round?: T;
+  location?: T;
+  venue?:
+    | T
+    | {
+        name?: T;
+        city?: T;
+        country?: T;
+      };
+  referee?: T;
+  outcomes?:
+    | T
+    | {
+        halfTime?: T;
+        fullTime?: T;
+        extraTime?: T;
+        penaltyShootout?: T;
+      };
+  odds?:
+    | T
+    | {
+        pre?:
+          | T
+          | {
+              home?: T;
+              draw?: T;
+              away?: T;
+            };
+        live?:
+          | T
+          | {
+              home?: T;
+              draw?: T;
+              away?: T;
+            };
+      };
+  urls?:
+    | T
+    | {
+        events?: T;
+        statistics?: T;
+        lineups?: T;
+        head2head?: T;
+      };
+  lastSyncAt?: T;
+  syncSource?: T;
+  hasStats?: T;
+  priority?: T;
+  raw?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "matchStats_select".
+ */
+export interface MatchStatsSelect<T extends boolean = true> {
+  matchId?: T;
+  match?: T;
+  displayName?: T;
+  possession?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  shots?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  shotsOnTarget?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  shotsOffTarget?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  shotsBlocked?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  corners?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  offsides?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  fouls?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  yellowCards?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  redCards?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  saves?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  passes?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  passesAccurate?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  passAccuracy?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  attacks?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  dangerousAttacks?:
+    | T
+    | {
+        home?: T;
+        away?: T;
+      };
+  additionalStats?: T;
+  events?:
+    | T
+    | {
+        minute?: T;
+        type?: T;
+        team?: T;
+        player?: T;
+        assistPlayer?: T;
+        playerOut?: T;
+        playerIn?: T;
+        description?: T;
+        id?: T;
+      };
+  lineups?:
+    | T
+    | {
+        home?:
+          | T
+          | {
+              formation?: T;
+              startingXI?:
+                | T
+                | {
+                    number?: T;
+                    name?: T;
+                    position?: T;
+                    id?: T;
+                  };
+              substitutes?:
+                | T
+                | {
+                    number?: T;
+                    name?: T;
+                    position?: T;
+                    id?: T;
+                  };
+            };
+        away?:
+          | T
+          | {
+              formation?: T;
+              startingXI?:
+                | T
+                | {
+                    number?: T;
+                    name?: T;
+                    position?: T;
+                    id?: T;
+                  };
+              substitutes?:
+                | T
+                | {
+                    number?: T;
+                    name?: T;
+                    position?: T;
+                    id?: T;
+                  };
+            };
+      };
+  lastSyncAt?: T;
+  syncSource?: T;
+  dataQuality?: T;
   updatedAt?: T;
   createdAt?: T;
 }

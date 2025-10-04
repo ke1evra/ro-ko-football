@@ -37,7 +37,11 @@
     "leagues:names:export": "node --loader @esbuild-kit/esm-loader scripts/export-league-names.mjs",
     "leagues:names:translate": "node scripts/translate-league-names.mjs",
     "leagues:names:translate:latest": "sh scripts/leagues-names-translate-latest.sh",
-    "leagues:names:import": "node --loader @esbuild-kit/esm-loader scripts/import-league-names.mjs"
+    "leagues:names:import": "node --loader @esbuild-kit/esm-loader scripts/import-league-names.mjs",
+    "matches:import:forward": "node --loader @esbuild-kit/esm-loader scripts/import-matches-forward.mjs",
+    "matches:import:backward": "node --loader @esbuild-kit/esm-loader scripts/import-matches-backward.mjs",
+    "matches:import:forward:loop": "pnpm run matches:import:forward -- --loop --interval=600000",
+    "matches:import:backward:loop": "pnpm run matches:import:backward -- --loop"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

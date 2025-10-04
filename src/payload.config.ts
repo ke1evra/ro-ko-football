@@ -7,15 +7,17 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import path from 'node:path'
 
-import { Users } from '@/collections/Users'
-import { Media } from '@/collections/Media'
-import { Posts } from '@/collections/Posts'
-import { Comments } from '@/collections/Comments'
-import { CommentVotes } from '@/collections/CommentVotes'
-import { Leagues } from '@/collections/Leagues'
+import { Users } from './collections/Users'
+import { Media } from './collections/Media'
+import { Posts } from './collections/Posts'
+import { Comments } from './collections/Comments'
+import { CommentVotes } from './collections/CommentVotes'
+import { Leagues } from './collections/Leagues'
+import { Matches } from './collections/Matches'
+import { MatchStats } from './collections/MatchStats'
 
-import { TopMatchesLeagues } from '@/globals/TopMatchesLeagues'
-import { SidebarLeagues } from '@/globals/SidebarLeagues'
+import { TopMatchesLeagues } from './globals/TopMatchesLeagues'
+import { SidebarLeagues } from './globals/SidebarLeagues'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -27,7 +29,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Posts, Comments, CommentVotes, Leagues],
+  collections: [Users, Media, Posts, Comments, CommentVotes, Leagues, Matches, MatchStats],
   globals: [TopMatchesLeagues, SidebarLeagues],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
