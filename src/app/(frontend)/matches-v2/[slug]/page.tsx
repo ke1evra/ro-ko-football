@@ -6,6 +6,11 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { findMatchByMatchId, findMatchByTeamsAndDate } from '@/lib/payload-client'
+import MatchPageClient from '@/components/matches/MatchPageClient'
+import FixturePageClient from '@/components/fixtures/FixturePageClient'
+import H2HBlock from '@/components/fixtures/H2HBlock'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 export const revalidate = 300
 
@@ -26,7 +31,7 @@ interface MatchParams {
  */
 function parseMatchSlug(slug: string): MatchParams | null {
   const parts = slug.split('_')
-  
+
   if (parts.length < 5) {
     return null
   }
@@ -65,48 +70,10 @@ function parseMatchSlug(slug: string): MatchParams | null {
 }
 
 /**
- * Проверяет, соответствует ли матч параметрам из URL
- */
-function validateMatchParams(match: any, params: MatchParams): boolean {
-  // Проверяем ID команд
-  const matchHomeId = match.homeTeamId || match.home?.id || match.home_team?.id
-  const matchAwayId = match.awayTeamId || match.away?.id || match.away_team?.id
-  
-  if (matchHomeId !== params.homeTeamId || matchAwayId !== params.awayTeamId) {
-    console.log('[validateMatchParams] Team IDs mismatch:', {
-      expected: { home: params.homeTeamId, away: params.awayTeamId },
-      actual: { home: matchHomeId, away: matchAwayId },
-    })
-    return false
-  }
-
-  // Проверяем дату (только день, игнорируем время)
-  const matchDate = new Date(match.date)
-  const paramsDate = new Date(params.date)
-  
-  if (
-    matchDate.getFullYear() !== paramsDate.getFullYear() ||
-    matchDate.getMonth() !== paramsDate.getMonth() ||
-    matchDate.getDate() !== paramsDate.getDate()
-  ) {
-    console.log('[validateMatchParams] Date mismatch:', {
-      expected: params.date,
-      actual: match.date,
-    })
-    return false
-  }
-
-  return true
-}
-
-/**
  * Ищет матч в Payload CMS по matchId (через прямой клиент)
  */
 async function findMatchInPayloadById(matchId: number) {
-  console.log(`[findMatchInPayloadById] Поиск матча matchId=${matchId} через Payload клиент`)
-  
   try {
-    // Используем прямой Payload клиент вместо REST API
     const match = await findMatchByMatchId(matchId)
     return match
   } catch (error) {
@@ -119,10 +86,7 @@ async function findMatchInPayloadById(matchId: number) {
  * Ищет матч в Payload CMS по дате и ID команд (через прямой клиент)
  */
 async function findMatchInPayload(params: MatchParams) {
-  console.log(`[findMatchInPayload] Поиск матча в Payload по дате и командам через клиент`)
-  
   try {
-    // Используем прямой Payload клиент вместо REST API
     const match = await findMatchByTeamsAndDate(params.homeTeamId, params.awayTeamId, params.date)
     return match
   } catch (error) {
@@ -157,18 +121,23 @@ async function findMatchInFixtures(params: MatchParams) {
         (f.home_id === params.homeTeamId && f.away_id === params.awayTeamId),
     )
 
-    return { 
-      match: match || null, 
-      apiUrl, 
-      response: data, 
+    return {
+      match: match || null,
+      apiUrl,
+      response: data,
       error: match ? null : 'Match not found in fixtures list',
-      totalFixtures: data.data.fixtures.length
+      totalFixtures: data.data.fixtures.length,
     }
   } catch (error) {
     console.error('[findMatchInFixtures] Error:', error)
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
     const apiUrl = `${baseUrl}/api/matches/fixtures?date=${params.date}&team_id=${params.homeTeamId}`
-    return { match: null, apiUrl, response: null, error: error instanceof Error ? error.message : 'Unknown error' }
+    return {
+      match: null,
+      apiUrl,
+      response: null,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
   }
 }
 
@@ -244,48 +213,30 @@ async function findMatchInHistory(params: MatchParams) {
  * Ищет матч в LiveScore API по matchId
  */
 async function findMatchInLiveScoreApi(matchId: number) {
-  console.log(`[findMatchInLiveScoreApi] Поиск матча matchId=${matchId} в LiveScore API (резервный источник)`)
   try {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    
-    // Пробуем получить из events API (лучший источник для LiveScore)
-    console.log(`[findMatchInLiveScoreApi] Попытка 1: events API`)
-    const eventsResponse = await fetch(
-      `${baseUrl}/api/matches/events?match_id=${matchId}`,
-      { next: { revalidate: 300 } },
-    )
 
-    console.log(`[findMatchInLiveScoreApi] events API status: ${eventsResponse.status}`)
+    // Попытка 1: events API
+    const eventsResponse = await fetch(`${baseUrl}/api/matches/events?match_id=${matchId}`, {
+      next: { revalidate: 300 },
+    })
 
     if (eventsResponse.ok) {
       const eventsData = await eventsResponse.json()
       if (eventsData.success && eventsData.data?.match) {
         const match = eventsData.data.match
-        console.log(`[findMatchInLiveScoreApi] ✓ Найден в events API:`, {
-          id: match.id,
-          homeTeam: match.home?.name,
-          awayTeam: match.away?.name,
-          score: match.scores?.score,
-          status: match.status,
-        })
         return { source: 'livescore-events', match }
       }
     }
 
-    // Пробуем получить из stats API
-    console.log(`[findMatchInLiveScoreApi] Попытка 2: stats API`)
-    const statsResponse = await fetch(
-      `${baseUrl}/api/matches/stats?match_id=${matchId}`,
-      { next: { revalidate: 300 } },
-    )
-
-    console.log(`[findMatchInLiveScoreApi] stats API status: ${statsResponse.status}`)
+    // Попытка 2: stats API
+    const statsResponse = await fetch(`${baseUrl}/api/matches/stats?match_id=${matchId}`, {
+      next: { revalidate: 300 },
+    })
 
     if (statsResponse.ok) {
       const statsData = await statsResponse.json()
       if (statsData.success && statsData.data) {
-        console.log(`[findMatchInLiveScoreApi] ✓ Найден в stats API`)
-        // Для stats API данные о матче могут быть в другом формате
         const match = {
           id: matchId,
           home: { name: statsData.data.home?.name || 'Команда дома' },
@@ -300,14 +251,10 @@ async function findMatchInLiveScoreApi(matchId: number) {
       }
     }
 
-    // Пробуем получить из history API
-    console.log(`[findMatchInLiveScoreApi] Попытка 3: history API`)
-    const historyResponse = await fetch(
-      `${baseUrl}/api/matches/history?match_id=${matchId}`,
-      { next: { revalidate: 300 } },
-    )
-
-    console.log(`[findMatchInLiveScoreApi] history API status: ${historyResponse.status}`)
+    // Попытка 3: history API
+    const historyResponse = await fetch(`${baseUrl}/api/matches/history?match_id=${matchId}`, {
+      next: { revalidate: 300 },
+    })
 
     if (historyResponse.ok) {
       const historyData = await historyResponse.json()
@@ -316,18 +263,11 @@ async function findMatchInLiveScoreApi(matchId: number) {
           ? historyData.data.matches.find((m: any) => m.id === matchId)
           : historyData.data
         if (match) {
-          console.log(`[findMatchInLiveScoreApi] ✓ Найден в history API:`, {
-            id: match.id,
-            homeId: match.home?.id,
-            awayId: match.away?.id,
-            date: match.date,
-          })
           return { source: 'livescore-history', match }
         }
       }
     }
 
-    console.log(`[findMatchInLiveScoreApi] ✗ Матч не найден ни в одном LiveScore API`)
     return null
   } catch (error) {
     console.error('[findMatchInLiveScoreApi] Error:', error)
@@ -339,111 +279,62 @@ async function findMatchInLiveScoreApi(matchId: number) {
  * Основная логика поиска матча
  */
 async function findMatch(params: MatchParams) {
-  console.log('='.repeat(80))
-  console.log('[findMatch] Начало поиска матча с параметрами:', {
-    date: params.date,
-    homeTeamId: params.homeTeamId,
-    awayTeamId: params.awayTeamId,
-    fixtureId: params.fixtureId,
-    matchId: params.matchId,
-  })
-  console.log('='.repeat(80))
-
-  // Если указан matchId, ищем сначала в Payload (приоритет), затем в LiveScore API
-  // matchId — это гарантия, что матч существует, валидация не нужна
-  if (params.matchId) {
-    console.log(`[findMatch] Режим поиска: по matchId=${params.matchId}`)
-    
-    // ПРИОРИТЕТ 1: Payload CMS (наша база данных)
-    console.log(`[findMatch] Шаг 1: Поиск в Payload CMS (приоритетный источник)`)
-    const payloadMatch = await findMatchInPayloadById(params.matchId)
-    if (payloadMatch) {
-      console.log(`[findMatch] ✓ Матч найден в Payload (приоритетный источник):`, {
-        matchId: payloadMatch.matchId,
-        homeTeam: payloadMatch.homeTeam,
-        awayTeam: payloadMatch.awayTeam,
-        date: payloadMatch.date,
-      })
-      return { source: 'payload', match: payloadMatch }
-    }
-
-    // ПРИОРИТЕТ 2: LiveScore API (резервный источник)
-    console.log(`[findMatch] Шаг 2: Поиск в LiveScore API (резервный источник)`)
-    const liveScoreResult = await findMatchInLiveScoreApi(params.matchId)
-    if (liveScoreResult) {
-      console.log(`[findMatch] ✓ Матч найден в LiveScore API (резервный источник)`)
-      return liveScoreResult
-    }
-
-    console.log(`[findMatch] ✗ Матч с matchId=${params.matchId} не найден ни в Payload, ни в LiveScore API`)
-    return null
-  }
-
-  // Определяем, где искать на основе даты
-  console.log(`[findMatch] Режим поиска: по дате и командам`)
   const matchDate = new Date(params.date)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   matchDate.setHours(0, 0, 0, 0)
 
+  // Если указан matchId → Payload → LiveScore API
+  if (params.matchId) {
+    const payloadMatch = await findMatchInPayloadById(params.matchId)
+    if (payloadMatch) {
+      return { source: 'payload', match: payloadMatch }
+    }
+
+    const liveScoreResult = await findMatchInLiveScoreApi(params.matchId)
+    if (liveScoreResult) {
+      return liveScoreResult
+    }
+
+    return null
+  }
+
   const isFutureOrToday = matchDate >= today
-  console.log(`[findMatch] Дата матча: ${params.date}, сегодня: ${today.toISOString().split('T')[0]}, isFutureOrToday: ${isFutureOrToday}`)
 
   if (isFutureOrToday) {
-    // Дата в будущем или сегодня: fixtures → live → history
-    console.log(`[findMatch] Стратегия: fixtures → live → history`)
-    
-    console.log(`[findMatch] Шаг 1: Поиск в fixtures`)
-    let fixturesResult = await findMatchInFixtures(params)
+    // fixtures → live → history
+    const fixturesResult = await findMatchInFixtures(params)
     if (fixturesResult && fixturesResult.match) {
-      console.log(`[findMatch] ✓ Найден в fixtures`)
       return { source: 'fixtures', match: fixturesResult.match, debug: fixturesResult }
     }
 
-    console.log(`[findMatch] Шаг 2: Поиск в live`)
-    let liveMatch = await findMatchInLive(params)
+    const liveMatch = await findMatchInLive(params)
     if (liveMatch) {
-      console.log(`[findMatch] ✓ Найден в live`)
       return { source: 'live', match: liveMatch }
     }
 
-    console.log(`[findMatch] Шаг 3: Поиск в history`)
-    let historyMatch = await findMatchInHistory(params)
+    const historyMatch = await findMatchInHistory(params)
     if (historyMatch) {
-      console.log(`[findMatch] ✓ Найден в history`)
       return { source: 'history', match: historyMatch }
     }
   } else {
-    // Дата в прошлом: history → live → fixtures (НЕ ищем в Payload для избежания неправильных редиректов)
-    console.log(`[findMatch] Стратегия: history → live → fixtures`)
-    
-    console.log(`[findMatch] Шаг 1: Поиск в history`)
-    let historyMatch = await findMatchInHistory(params)
+    // history → live → fixtures
+    const historyMatch = await findMatchInHistory(params)
     if (historyMatch) {
-      console.log(`[findMatch] ✓ Найден в history`)
       return { source: 'history', match: historyMatch }
     }
 
-    console.log(`[findMatch] Шаг 2: Поиск в live`)
-    let liveMatch = await findMatchInLive(params)
+    const liveMatch = await findMatchInLive(params)
     if (liveMatch) {
-      console.log(`[findMatch] ✓ Найден в live`)
       return { source: 'live', match: liveMatch }
     }
 
-    console.log(`[findMatch] Шаг 3: Поиск в fixtures`)
-    let fixturesResult = await findMatchInFixtures(params)
+    const fixturesResult = await findMatchInFixtures(params)
     if (fixturesResult && fixturesResult.match) {
-      console.log(`[findMatch] ✓ Найден в fixtures`)
       return { source: 'fixtures', match: fixturesResult.match, debug: fixturesResult }
     }
-
-    // НЕ ищем в Payload без matchId - это может привести к неправильным редиректам
-    console.log(`[findMatch] ✗ Payload пропущен - поиск только по matchId`)
   }
 
-  console.log(`[findMatch] ✗ Матч не найден ни в одном источнике`)
-  console.log('='.repeat(80))
   return null
 }
 
@@ -452,6 +343,46 @@ async function findMatch(params: MatchParams) {
  */
 function generateSlugWithMatchId(params: MatchParams, matchId: number): string {
   return `${params.homeTeamSlug}-${params.awayTeamSlug}_${params.date}_${params.homeTeamId}_${params.awayTeamId}_${params.fixtureId}_${matchId}`
+}
+
+// Прогнозы по fixtureId (скопировано из страницы фикстур)
+async function getPredictionsForFixture(fixtureId: number) {
+  try {
+    const payload = await getPayload({ config: await configPromise })
+
+    const predictionsRes = await payload.find({
+      collection: 'posts',
+      where: {
+        and: [{ postType: { equals: 'prediction' } }, { fixtureId: { equals: fixtureId } }],
+      },
+      sort: '-publishedAt',
+      limit: 10,
+      depth: 1,
+    })
+
+    // Подсчёт комментариев для каждого прогноза
+    const withCounts = await Promise.all(
+      predictionsRes.docs.map(async (post) => {
+        try {
+          const commentsRes = await payload.find({
+            collection: 'comments',
+            where: { post: { equals: post.id } },
+            limit: 1,
+            depth: 0,
+          })
+          const commentsCount = commentsRes?.totalDocs ?? 0
+          return { post, commentsCount, rating: 0 }
+        } catch {
+          return { post, commentsCount: 0, rating: 0 }
+        }
+      }),
+    )
+
+    return withCounts
+  } catch (error) {
+    console.error('Ошибка загрузки прогнозов:', error)
+    return []
+  }
 }
 
 export async function generateMetadata({
@@ -536,134 +467,119 @@ export default async function MatchV2Page({ params }: { params: Promise<{ slug: 
   }
 
   const match = result.match
-  
-  // Получаем реальный matchId из результата поиска (НЕ fixtureId!)
-  const realMatchId = match.id || match.matchId
-  
-  // Редирект только если:
-  // 1. Найден реальный matchId из LiveScore API
-  // 2. В URL нет matchId 
-  // 3. realMatchId отличается от fixtureId (чтобы не было циклических редиректов)
-  if (realMatchId && !parsed.matchId && realMatchId !== parsed.fixtureId) {
-    console.log(`[MatchV2Page] Делаем редирект с matchId:`, {
-      realMatchId,
-      fixtureId: parsed.fixtureId,
-      source: result.source,
-    })
-    const newSlug = generateSlugWithMatchId(parsed, realMatchId)
+  const source = (result as any).source as string | undefined
+
+  // Получаем валидный matchId (реальный ID матча, не равный fixtureId и не из fixtures)
+  const rawMatchId = Number(match.id ?? match.matchId ?? NaN)
+  const hasValidMatchId =
+    Number.isFinite(rawMatchId) && rawMatchId !== parsed.fixtureId && source !== 'fixtures'
+
+  // Редирект только если в URL нет matchId и мы нашли валидный реальный matchId
+  if (hasValidMatchId && !parsed.matchId) {
+    const newSlug = generateSlugWithMatchId(parsed, rawMatchId)
     redirect(`/matches-v2/${newSlug}`)
   }
-  
-  // Используем realMatchId для отображения
-  const matchId = realMatchId
 
-  const homeTeam = match.home?.name || match.home_team?.name || match.homeTeam || 'Команда 1'
-  const awayTeam = match.away?.name || match.away_team?.name || match.awayTeam || 'Команда 2'
-  const status = match.status || match.time || 'scheduled'
-  const score = match.scores?.score || match.score || null
-  const competition = match.competition?.name || match.competition || null
+  // Используем валидный matchId для отображения (если есть)
+  const matchId = hasValidMatchId ? rawMatchId : undefined
+
+  const homeTeamName =
+    match.home?.name || match.home_team?.name || match.homeTeam || parsed.homeTeamSlug
+  const awayTeamName =
+    match.away?.name || match.away_team?.name || match.awayTeam || parsed.awayTeamSlug
+
+  // Если есть matchId — используем страницу матчей (шапка + события + статистика) и добавляем H2H
+  if (matchId) {
+    const initialMatchInfo = {
+      id: matchId,
+      home: {
+        id: match.home?.id || match.home_team?.id || parsed.homeTeamId,
+        name: homeTeamName,
+      },
+      away: {
+        id: match.away?.id || match.away_team?.id || parsed.awayTeamId,
+        name: awayTeamName,
+      },
+      competition:
+        match.competition?.id || match.competition?.name
+          ? {
+              id: String(match.competition.id || ''),
+              name: match.competition.name || String(match.competition),
+            }
+          : undefined,
+      date: match.date || parsed.date,
+      time: match.time,
+      status: match.status,
+      score: match.scores?.score || match.score,
+    }
+
+    return (
+      <Section>
+        <Container className="space-y-6">
+          <MatchPageClient matchId={matchId} initialMatchInfo={initialMatchInfo as any} />
+
+          {/* H2H блок под виджетом матча */}
+          <H2HBlock
+            homeTeamId={parsed.homeTeamId}
+            awayTeamId={parsed.awayTeamId}
+            homeTeamName={homeTeamName}
+            awayTeamName={awayTeamName}
+          />
+
+          {/* Навигация */}
+          <div className="flex items-center gap-2">
+            <Link href="/leagues">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="mr-2 h-4 w-4" />К лигам
+              </Button>
+            </Link>
+          </div>
+        </Container>
+      </Section>
+    )
+  }
+
+  // Иначе — используем виджет фикстур (детали + прогнозы + H2H внутри)
+  const fx = {
+    id: parsed.fixtureId,
+    date: match.date || parsed.date,
+    time: match.time || '',
+    home: { id: parsed.homeTeamId, name: homeTeamName },
+    away: { id: parsed.awayTeamId, name: awayTeamName },
+    competition: match.competition
+      ? {
+          id: Number(match.competition.id || 0),
+          name: match.competition.name || String(match.competition),
+        }
+      : undefined,
+    location: typeof match.location === 'string' ? match.location : match.venue?.name || null,
+    round:
+      typeof match.round === 'string'
+        ? match.round
+        : match.round != null
+          ? String(match.round)
+          : undefined,
+    group_id: match.group_id != null ? Number(match.group_id) : null,
+    odds: match.odds,
+    h2h: match.urls?.head2head || undefined,
+    status: match.status,
+    time_status: match.time_status ?? null,
+    match_id: Number(match.id || match.matchId || 0) || undefined,
+    scores: match.scores,
+    added: match.added,
+    last_changed: match.last_changed,
+    outcomes: match.outcomes,
+    urls: match.urls,
+  }
+
+  const predictions = await getPredictionsForFixture(parsed.fixtureId)
 
   return (
     <Section>
       <Container className="space-y-6">
-        <div className="rounded-lg border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-          <h1 className="mb-4 text-2xl font-semibold tracking-tight">
-            {homeTeam} - {awayTeam}
-          </h1>
+        <FixturePageClient fx={fx} initialPredictions={predictions} />
 
-          <div className="space-y-4">
-            {/* Основная информация о матче */}
-            <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-6 py-6">
-              {/* Команда дома */}
-              <div className="text-center">
-                <div className="font-semibold text-lg">{homeTeam}</div>
-                <div className="text-sm text-muted-foreground">Дома</div>
-              </div>
-
-              {/* Счет */}
-              <div className="text-center">
-                {score ? (
-                  <div className="text-4xl font-bold font-mono">{score}</div>
-                ) : (
-                  <div className="text-2xl font-bold text-muted-foreground">vs</div>
-                )}
-                <div className="text-sm text-muted-foreground mt-2">
-                  {parsed.date}
-                </div>
-              </div>
-
-              {/* Команда гостей */}
-              <div className="text-center">
-                <div className="font-semibold text-lg">{awayTeam}</div>
-                <div className="text-sm text-muted-foreground">В гостях</div>
-              </div>
-            </div>
-
-            {/* Дополнительная информация */}
-            <div className="border-t pt-4 space-y-2 text-sm text-neutral-600 dark:text-neutral-300">
-              {competition && (
-                <p>
-                  <strong>Турнир:</strong> {competition}
-                </p>
-              )}
-              <p>
-                <strong>Статус:</strong> {status}
-              </p>
-              <p>
-                <strong>Источник:</strong> {result.source}
-              </p>
-              {matchId && (
-                <p>
-                  <strong>Match ID:</strong> {matchId}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Отладочная информация */}
-          {result.debug && (
-            <div className="mt-6 space-y-4">
-              <h3 className="text-lg font-semibold">Отладочная информация API</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <h4 className="font-medium">Запрос к API:</h4>
-                  <code className="block p-2 bg-neutral-100 dark:bg-neutral-800 rounded text-xs break-all">
-                    {result.debug.apiUrl}
-                  </code>
-                </div>
-                
-                <div className="space-y-2">
-                  <h4 className="font-medium">Результат поиска:</h4>
-                  <div className="text-sm space-y-1">
-                    <p><strong>Найдено фикстур:</strong> {result.debug.totalFixtures}</p>
-                    <p><strong>Матч найден:</strong> {result.debug.match ? '✅ Да' : '❌ Нет'}</p>
-                    {result.debug.error && (
-                      <p><strong>Ошибка:</strong> <span className="text-red-600">{result.debug.error}</span></p>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              {result.debug.response && (
-                <div className="space-y-2">
-                  <h4 className="font-medium">Полный ответ API:</h4>
-                  <pre className="overflow-auto rounded bg-neutral-100 p-4 text-xs dark:bg-neutral-800 max-h-96">
-                    {JSON.stringify(result.debug.response, null, 2)}
-                  </pre>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-2">Данные матча</h3>
-            <pre className="overflow-auto rounded bg-neutral-100 p-4 text-xs dark:bg-neutral-800">
-              {JSON.stringify(match, null, 2)}
-            </pre>
-          </div>
-        </div>
-
+        {/* Навигация */}
         <div className="flex items-center gap-2">
           <Link href="/leagues">
             <Button variant="outline" size="sm">
