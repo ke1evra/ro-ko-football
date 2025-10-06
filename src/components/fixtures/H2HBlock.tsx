@@ -191,7 +191,7 @@ function FormIndicator({
           // Если есть ID матча, оборачиваем в ссылку
           if (matchId) {
             return (
-              <Link key={index} href={`/matches/${matchId}`}>
+              <Link key={index} href={`/matches-v2/match_${match.date || new Date().toISOString().split('T')[0]}_${match.home?.id || 0}_${match.away?.id || 0}_${matchId}_${matchId}`}>
                 {FormCircle}
               </Link>
             )

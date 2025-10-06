@@ -162,7 +162,7 @@ function LiveMatchCard({ match }: { match: any }) {
 
       {/* Ссылка на детали матча */}
       <div className="mt-2">
-        <Link href={`/matches/${match.id}`} className="text-xs text-primary hover:underline">
+        <Link href={`/matches-v2/match_${match.date || new Date().toISOString().split('T')[0]}_${match.homeTeam?.id || 0}_${match.awayTeam?.id || 0}_${match.id}_${match.id}`} className="text-xs text-primary hover:underline">
           Подробнее →
         </Link>
       </div>

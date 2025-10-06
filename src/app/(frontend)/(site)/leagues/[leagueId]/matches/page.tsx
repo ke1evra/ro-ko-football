@@ -311,7 +311,8 @@ function MatchCard({ match, isExactDay = false }: { match: Match; isExactDay?: b
   const isScheduled = match.status.toLowerCase() === 'scheduled' || match.status.toLowerCase() === 'ns'
   
   // Определяем URL для перехода к матчу
-  const matchUrl = played ? `/matches/${match.id}` : `/fixtures/${match.id}`
+  // Генерируем правильный URL для matches-v2
+  const matchUrl = `/matches-v2/match_${match.date}_${match.home_team?.id || 0}_${match.away_team?.id || 0}_${match.id}${played && match.id ? `_${match.id}` : ''}`
 
   return (
     <div

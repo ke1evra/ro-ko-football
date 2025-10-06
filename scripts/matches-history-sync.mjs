@@ -36,11 +36,25 @@ export async function requestJson(url) {
         res.on('data', (chunk) => (data += chunk))
         res.on('end', () => {
           console.log(`[HTTP] ← ${statusCode} ${shownUrl}`)
+          
+          // Проверяем HTTP статус код
+          if (statusCode >= 400) {
+            const error = new Error(`HTTP ${statusCode}: ${data.slice(0, 200)}`)
+            error.statusCode = statusCode
+            error.responseBody = data
+            reject(error)
+            return
+          }
+          
           try {
             resolve(JSON.parse(data))
           } catch (e) {
             console.error('[HTTP] JSON parse error:', e.message)
-            reject(e)
+            console.error('[HTTP] Response body preview:', data.slice(0, 200))
+            const error = new Error(`JSON parse error: ${e.message}`)
+            error.statusCode = statusCode
+            error.responseBody = data
+            reject(error)
           }
         })
       })
@@ -664,12 +678,38 @@ function buildStatsUrl(matchId) {
   if (secret) qs.set('secret', secret)
   return `${base}/matches/stats.json?${qs.toString()}`
 }
-async function fetchMatchStatsDTO(matchId) {
+async function fetchMatchStatsDTO(matchId, retries = 3) {
   const url = buildStatsUrl(matchId)
-  const json = await requestJson(url)
-  if (json && json.success === false) {
-    const msg = json?.error?.message || json?.error || json?.message || 'unknown error'
-    throw new Error(`API error for match ${matchId}: ${msg}`)
+  let json
+  
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      json = await requestJson(url)
+      if (json && json.success === false) {
+        const msg = json?.error?.message || json?.error || json?.message || 'unknown error'
+        throw new Error(`API error for match ${matchId}: ${msg}`)
+      }
+      
+      // Если дошли сюда, запрос успешен
+      break
+    } catch (error) {
+      const isLastAttempt = attempt === retries
+      const isRetryableError = 
+        error.statusCode >= 500 || // 5xx ошибки сервера
+        error.statusCode === 429 || // Too Many Requests
+        error.message.includes('JSON parse error') || // HTML вместо JSON
+        error.message.includes('network error') // сетевые ошибки
+      
+      if (isRetryableError && !isLastAttempt) {
+        const delay = Math.pow(2, attempt - 1) * 1000 // 1s, 2s, 4s
+        console.warn(`[STATS][RETRY] Попытка ${attempt}/${retries} для matchId=${matchId} неудачна (${error.message}), повтор через ${delay}мс`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+        continue
+      }
+      
+      // Если это последняя попытка или ошибка не подлежит повтору
+      throw error
+    }
   }
   const d = json?.data || json || {}
   const stats = d.stats || d.statistics || {}
@@ -768,32 +808,38 @@ async function fetchMatchStatsDTO(matchId) {
   if (!result.events || result.events.length === 0) delete result.events
   if (!result.lineups || (!result.lineups.home && !result.lineups.away)) delete result.lineups
 
-  // Логгирование маппинга метрик
+  // ��омпактное логирование метрик
   const pairs = [
-    ['possession', result.possession],
-    ['corners', result.corners],
-    ['offsides', result.offsides],
+    ['poss', result.possession],
+    ['corn', result.corners],
+    ['offs', result.offsides],
     ['fouls', result.fouls],
-    ['yellowCards', result.yellowCards],
-    ['redCards', result.redCards],
+    ['yc', result.yellowCards],
+    ['rc', result.redCards],
     ['saves', result.saves],
-    ['attacks', result.attacks],
-    ['dangerousAttacks', result.dangerousAttacks],
-    ['shotsOnTarget', result.shotsOnTarget],
-    ['shotsOffTarget', result.shotsOffTarget],
-    ['shotsBlocked', result.shotsBlocked],
+    ['att', result.attacks],
+    ['dang', result.dangerousAttacks],
+    ['sot', result.shotsOnTarget],
+    ['soff', result.shotsOffTarget],
+    ['sblk', result.shotsBlocked],
     ['shots', result.shots],
   ]
+  
+  const metrics = []
   let mapped = 0
+  
   for (const [name, val] of pairs) {
     if (val && (val.home != null || val.away != null)) {
       mapped++
-      console.log(`[STATS][MAP] ${name}=${val.home ?? '∅'}:${val.away ?? '∅'}`)
-    } else {
-      console.log(`[STATS][MAP] ${name}=empty`)
+      metrics.push(`${name}=${val.home ?? '∅'}:${val.away ?? '∅'}`)
     }
   }
-  console.log(`[STATS][SUMMARY] metricsMapped=${mapped}/${pairs.length}`)
+  
+  if (metrics.length > 0) {
+    console.log(`    [STATS] ${metrics.join(' • ')}`)
+  } else {
+    console.log(`    [STATS] нет данных`)
+  }
 
   return result
 }
@@ -860,8 +906,8 @@ function* iterateDays(from, to) {
   }
 }
 
-async function processDay(payload, { day, pageSize = 30, competitionIds, teamIds }) {
-  console.log(`[DAY] ${day}`)
+async function processDay(payload, { day, pageSize = 30, competitionIds, teamIds, withStats = true }) {
+  console.log(`[DAY] ${day} (withStats=${withStats})`)
   let page = 1
   let processed = 0
   const stats = { created: 0, skipped: 0, errors: 0 }
@@ -917,33 +963,59 @@ async function processDay(payload, { day, pageSize = 30, competitionIds, teamIds
       break
     }
 
-    for (const apiMatch of fresh) {
-      const doc = toMatchDoc(apiMatch, 'history')
-      const ordinal = processed + 1
-      const dateStr = new Date(doc.date).toLocaleDateString('ru-RU')
-      console.log(`  • [${ordinal}] ${doc.matchId} ${doc.homeTeam} - ${doc.awayTeam} (${dateStr})`)
-      try {
-        // Лог маппинга основных полей матча
-        console.log(
-          `    [MATCH][MAP] fixture=${doc.fixtureId ?? '∅'} round=${doc.round ?? '∅'} groupId=${doc.groupId ?? '∅'} sched=${doc.scheduled ?? '∅'} time=${doc.time ?? '∅'} venue=${doc.venue?.name ?? '∅'} loc=${doc.location ?? '∅'}`,
-        )
-        const { action, id } = await upsertMatch(payload, doc)
-        console.log(`    ↳ ${action.toUpperCase()}${id ? ` (payloadId=${id})` : ''}`)
-        if (action === 'created') stats.created++
-        else if (action === 'skipped') stats.skipped++
-        else if (action === 'updated') { /* обновили существующий */ }
+    // Обрабатываем матчи параллельно пачками по 30
+    const BATCH_SIZE = 30
+    const batches = []
+    for (let i = 0; i < fresh.length; i += BATCH_SIZE) {
+      batches.push(fresh.slice(i, i + BATCH_SIZE))
+    }
 
-        // Подтягиваем статистику для завершённых матчей
-        if (doc.status === 'finished' && id) {
-          await fetchAndUpsertStatsForMatch(payload, id, doc.matchId)
+    console.log(`[PARALLEL] Обработка ${fresh.length} матчей в ${batches.length} пачках по ${BATCH_SIZE}`)
+
+    for (const [batchIndex, batch] of batches.entries()) {
+      console.log(`[BATCH] ${batchIndex + 1}/${batches.length}: обработка ${batch.length} матчей`)
+      
+      const batchPromises = batch.map(async (apiMatch, index) => {
+        const doc = toMatchDoc(apiMatch, 'history')
+        const ordinal = processed + index + 1
+        const dateStr = new Date(doc.date).toLocaleDateString('ru-RU')
+        
+        try {
+          console.log(`  ��� [${ordinal}] ${doc.matchId} ${doc.homeTeam} - ${doc.awayTeam} (${dateStr})`)
+          
+          // Лог маппинга основных полей матча
+          console.log(
+            `    [MATCH][MAP] fixture=${doc.fixtureId ?? '∅'} round=${doc.round ?? '∅'} groupId=${doc.groupId ?? '∅'} sched=${doc.scheduled ?? '∅'} time=${doc.time ?? '∅'} venue=${doc.venue?.name ?? '∅'} loc=${doc.location ?? '∅'}`,
+          )
+          
+          const { action, id } = await upsertMatch(payload, doc)
+          console.log(`    ↳ ${action.toUpperCase()}${id ? ` (payloadId=${id})` : ''}`)
+          
+          // Подтягиваем статистику для завершённых матчей (только если включено)
+          if (withStats && doc.status === 'finished' && id) {
+            await fetchAndUpsertStatsForMatch(payload, id, doc.matchId)
+          }
+
+          return { action, matchId: doc.matchId }
+        } catch (e) {
+          console.error(`[ERROR] Ошибка при обработке ${doc.matchId}:`, e?.message || e)
+          return { action: 'error', matchId: doc.matchId, error: e?.message || e }
         }
+      })
 
-        processed++
-      } catch (e) {
-        console.error(`[ERROR] Ошибка при обработке ${doc.matchId}:`, e?.message || e)
-        stats.errors++
+      // Ждём завершения всех матчей в пачке
+      const batchResults = await Promise.all(batchPromises)
+      
+      // Подсчитываем результаты пачки
+      for (const result of batchResults) {
+        if (result.action === 'created') stats.created++
+        else if (result.action === 'skipped') stats.skipped++
+        else if (result.action === 'updated') { /* обновили существующий */ }
+        else if (result.action === 'error') stats.errors++
         processed++
       }
+
+      console.log(`[BATCH] ${batchIndex + 1}/${batches.length} завершена: создано=${batchResults.filter(r => r.action === 'created').length}, обновлено=${batchResults.filter(r => r.action === 'updated').length}, пропущено=${batchResults.filter(r => r.action === 'skipped').length}, ошибок=${batchResults.filter(r => r.action === 'error').length}`)
     }
 
     if (list.length < pageSize) {
@@ -958,7 +1030,7 @@ async function processDay(payload, { day, pageSize = 30, competitionIds, teamIds
 
 export async function processHistoryPeriod(
   payload,
-  { from, to, pageSize = 30, competitionIds, teamIds } = {},
+  { from, to, pageSize = 30, competitionIds, teamIds, withStats = true } = {},
 ) {
   console.log(`[SYNC] Синхронизация матчей по периоду: ${from} - ${to}`)
   let totalProcessed = 0
@@ -970,6 +1042,7 @@ export async function processHistoryPeriod(
       pageSize,
       competitionIds,
       teamIds,
+      withStats,
     })
     totalProcessed += processed
     totalStats.created += stats.created

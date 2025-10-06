@@ -4,6 +4,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { TeamLogo } from '@/components/TeamLogo'
 import { LiveIndicator } from '@/components/ui/live-indicator'
+import { generateMatchUrlFromApiMatch, generateLegacyMatchUrl, generateLegacyFixtureUrl } from '@/lib/match-url-utils'
 
 // Функция для перевода статусов матча на русский язык
 function translateStatus(status: string): string {
@@ -150,6 +151,7 @@ function MatchTimer({
 type LiveItem = {
   id: number
   fixtureId?: number
+  date?: string
   compName?: string
   home: {
     name: string
@@ -176,7 +178,13 @@ function normalize(match: any): LiveItem | null {
   const fixtureId = Number(match?.fixture_id ?? match?.fixtureId)
   if (!Number.isFinite(id) && !Number.isFinite(fixtureId)) return null
 
-  console.log(`[LiveMatchesWidget] Обрабатываем лайв матч ${id}:`, JSON.stringify(match, null, 2))
+  console.log(`[LiveMatchesWidget] Обрабатываем лайв матч ${id}:`, {
+    id: match?.id,
+    fixture_id: match?.fixture_id,
+    date: match?.date,
+    home: { id: match?.home?.id, name: match?.home?.name },
+    away: { id: match?.away?.id, name: match?.away?.name },
+  })
 
   // Извлекаем информацию о командах
   const homeName = match?.home?.name || 'Команда дома'
@@ -208,6 +216,7 @@ function normalize(match: any): LiveItem | null {
   const result = {
     id: Number.isFinite(id) ? id : fixtureId!,
     fixtureId: Number.isFinite(fixtureId) ? fixtureId : undefined,
+    date: match?.date, // Добавляем дату из API
     compName,
     home: {
       name: homeName,
@@ -225,7 +234,13 @@ function normalize(match: any): LiveItem | null {
     scores: match?.scores,
   }
 
-  console.log(`[LiveMatchesWidget] Финальный результат для матча ${id}:`, result)
+  console.log(`[LiveMatchesWidget] Финальный результат для матча ${id}:`, {
+    id: result.id,
+    fixtureId: result.fixtureId,
+    date: result.date,
+    homeId: result.home.id,
+    awayId: result.away.id,
+  })
 
   return result
 }
@@ -285,12 +300,29 @@ export default function LiveMatchesWidget() {
       ) : (
         <ul className="space-y-3">
           {visibleItems.map((m, idx) => {
-            const href =
-              m.id && !m.fixtureId
-                ? `/matches/${m.id}`
-                : m.fixtureId
-                  ? `/fixtures/${m.fixtureId}`
-                  : '#'
+            // Генерируем новый URL для matches-v2
+            let href = '#'
+            try {
+              // Пробуем сгенерировать новый URL
+              const matchData = {
+                home: { name: m.home.name, id: m.home.id },
+                away: { name: m.away.name, id: m.away.id },
+                date: m.date || new Date().toISOString(), // используем дату из API или текущую
+                fixture_id: m.fixtureId,
+                id: m.id,
+              }
+              console.log(`[LiveMatchesWidget] Генерация URL для матча ${m.id}:`, matchData)
+              href = generateMatchUrlFromApiMatch(matchData)
+              console.log(`[LiveMatchesWidget] Сгенерирован URL:`, href)
+            } catch (error) {
+              console.error(`[LiveMatchesWidget] Ошибка генерации URL для матча ${m.id}:`, error)
+              // Fallback на старый формат
+              if (m.id && !m.fixtureId) {
+                href = generateLegacyMatchUrl(m.id)
+              } else if (m.fixtureId) {
+                href = generateLegacyFixtureUrl(m.fixtureId)
+              }
+            }
             return (
               <li
                 key={`${m.id}-${idx}`}

@@ -9,6 +9,7 @@ import {
   initializeLeaguesCache,
   getLeagueInfoClient,
 } from '@/lib/highlight-competitions-client'
+import { generateFixtureUrl } from '@/lib/match-urls'
 import { TeamLogo } from '@/components/TeamLogo'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import type { Fixture } from '@/app/(frontend)/client/types/Fixture'
@@ -192,7 +193,10 @@ function normalizeFixture(fx: any): StripMatch | null {
     ]
     const randomCountry = testCountries[id % testCountries.length]
     result.country = randomCountry
-    console.log(`[UpcomingMatchesStrip] Добавлены тестовые данные страны для матча ${id}:`, randomCountry)
+    console.log(
+      `[UpcomingMatchesStrip] Добавлены тестовые данные страны для матча ${id}:`,
+      randomCountry,
+    )
   }
 
   if (id && !normalizedOdds) {
@@ -329,68 +333,81 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
       <div className="overflow-x-auto">
         <div className="flex gap-3 py-2 min-w-max">
           {sorted.length > 0 ? (
-            sorted.map((m) => (
-              <Link key={m.id} href={`/fixtures/${m.id}`} className="flex-shrink-0">
-                <div className="w-64 border rounded-lg p-3 bg-card hover:bg-accent transition-colors relative">
-                  {/* Мини-плашка с датой */}
-                  <div className="absolute -top-2 left-2 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-medium rounded-full">
-                    {formatDateLabel(m.date)}
-                  </div>
+            sorted.map((m) => {
+              // Генерируем SEO-friendly URL для matches-v2
+              const matchUrl = generateFixtureUrl(
+                m.home?.name || 'Команда дома',
+                m.away?.name || 'Команда гостей',
+                m.date,
+                m.home?.id || 0,
+                m.away?.id || 0,
+                m.id, // fixtureId
+              )
 
-                  <div className="flex items-center justify-between mb-2 mt-1">
-                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground truncate">
-                      {m.country?.id && (
-                        <CountryFlagImage
-                          countryId={m.country.id}
-                          countryName={m.country.name || ''}
-                          size="small"
-                          className="w-3 h-3 rounded-sm object-cover flex-shrink-0"
-                        />
-                      )}
-                      {(() => {
-                        const leagueInfo = getLeagueInfoClient(m.competition?.id || 0)
-                        const compName = leagueInfo?.name || m.competition?.name || 'Неизвестная лига'
-                        return <span className="truncate">{compName}</span>
-                      })()}
+              return (
+                <Link key={m.id} href={matchUrl} className="flex-shrink-0">
+                  <div className="w-64 border rounded-lg p-3 bg-card hover:bg-accent transition-colors relative">
+                    {/* Мини-плашка с датой */}
+                    <div className="absolute -top-2 left-2 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-medium rounded-full">
+                      {formatDateLabel(m.date)}
                     </div>
-                    <div className="text-[11px] text-muted-foreground">
-                      {formatTime(m.date, m.time)}
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-[24px_1fr] gap-2 mb-2">
-                    <TeamLogo teamId={m.home?.id} teamName={m.home?.name} size="small" />
-                    <div className="text-sm font-medium truncate">{m.home?.name}</div>
-                    <TeamLogo teamId={m.away?.id} teamName={m.away?.name} size="small" />
-                    <div className="text-sm font-medium truncate">{m.away?.name}</div>
-                  </div>
-
-                  {/* Коэффициенты */}
-                  {m.odds && (m.odds.home || m.odds.draw || m.odds.away) && (
-                    <div className="flex justify-between items-center text-[10px] bg-muted/30 rounded px-2 py-1">
-                      <div className="flex items-center gap-1">
-                        <span className="text-muted-foreground">1</span>
-                        <span className="font-medium">
-                          {m.odds.home ? Number(m.odds.home).toFixed(2) : '—'}
-                        </span>
+                    <div className="flex items-center justify-between mb-2 mt-1">
+                      <div className="flex items-center gap-1 text-[11px] text-muted-foreground truncate">
+                        {m.country?.id && (
+                          <CountryFlagImage
+                            countryId={m.country.id}
+                            countryName={m.country.name || ''}
+                            size="small"
+                            className="w-3 h-3 rounded-sm object-cover flex-shrink-0"
+                          />
+                        )}
+                        {(() => {
+                          const leagueInfo = getLeagueInfoClient(m.competition?.id || 0)
+                          const compName =
+                            leagueInfo?.name || m.competition?.name || 'Неизвестная лига'
+                          return <span className="truncate">{compName}</span>
+                        })()}
                       </div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-muted-foreground">X</span>
-                        <span className="font-medium">
-                          {m.odds.draw ? Number(m.odds.draw).toFixed(2) : '—'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-muted-foreground">2</span>
-                        <span className="font-medium">
-                          {m.odds.away ? Number(m.odds.away).toFixed(2) : '—'}
-                        </span>
+                      <div className="text-[11px] text-muted-foreground">
+                        {formatTime(m.date, m.time)}
                       </div>
                     </div>
-                  )}
-                </div>
-              </Link>
-            ))
+
+                    <div className="grid grid-cols-[24px_1fr] gap-2 mb-2">
+                      <TeamLogo teamId={m.home?.id} teamName={m.home?.name} size="small" />
+                      <div className="text-sm font-medium truncate">{m.home?.name}</div>
+                      <TeamLogo teamId={m.away?.id} teamName={m.away?.name} size="small" />
+                      <div className="text-sm font-medium truncate">{m.away?.name}</div>
+                    </div>
+
+                    {/* Коэффициенты */}
+                    {m.odds && (m.odds.home || m.odds.draw || m.odds.away) && (
+                      <div className="flex justify-between items-center text-[10px] bg-muted/30 rounded px-2 py-1">
+                        <div className="flex items-center gap-1">
+                          <span className="text-muted-foreground">1</span>
+                          <span className="font-medium">
+                            {m.odds.home ? Number(m.odds.home).toFixed(2) : '—'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-muted-foreground">X</span>
+                          <span className="font-medium">
+                            {m.odds.draw ? Number(m.odds.draw).toFixed(2) : '—'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-muted-foreground">2</span>
+                          <span className="font-medium">
+                            {m.odds.away ? Number(m.odds.away).toFixed(2) : '—'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              )
+            })
           ) : isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="w-64 border rounded-lg p-3 bg-card">

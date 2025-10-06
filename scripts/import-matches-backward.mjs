@@ -16,6 +16,7 @@
  *   --startDate=...  Начать с этой даты (если не задана — earliestInDB - 1 день)
  *   --competitions   CSV ids соревнований (competition_id)
  *   --teams          CSV ids команд (team_id)
+ *   --no-stats       Отключить загрузку статистики (по умолчанию статистика загружается)
  *   --loop           Фоновый режим
  *   --interval=ms    Интервал между итерациями в loop (по умолчанию 24ч)
  */
@@ -75,7 +76,7 @@ async function getEarliestMatchDate(payload) {
   return null
 }
 
-async function runOnce(payload, { days, pageSize, maxDays, startDate, competitions, teams }) {
+async function runOnce(payload, { days, pageSize, maxDays, startDate, competitions, teams, withStats = true }) {
   console.log('\n' + '='.repeat(60))
   console.log('РЕТРОСПЕКТИВНАЯ СИНХРОНИЗАЦИЯ МАТЧЕЙ')
   console.log('='.repeat(60))
@@ -121,6 +122,7 @@ async function runOnce(payload, { days, pageSize, maxDays, startDate, competitio
       pageSize: Number(pageSize),
       competitionIds: competitions,
       teamIds: teams,
+      withStats,
     })
 
     totalProcessed += processed
@@ -179,6 +181,7 @@ async function main() {
   const startDate = parseArg('startDate')
   const competitions = parseArg('competitions') // CSV строка
   const teams = parseArg('teams') // CSV строка
+  const withStats = !hasFlag('no-stats') // по умолчанию true, отключается флагом --no-stats
   const loop = hasFlag('loop')
   const interval = Number(parseArg('interval', 86400000))
 
@@ -198,7 +201,8 @@ async function main() {
   const { default: config } = await import('../src/payload.config.ts')
   const payload = await getPayload({ config })
 
-  const options = { days, pageSize, maxDays, startDate, competitions, teams }
+  console.log(`[CONFIG] days=${days}, pageSize=${pageSize}, withStats=${withStats}`)
+  const options = { days, pageSize, maxDays, startDate, competitions, teams, withStats }
 
   if (loop) {
     await runLoop(payload, options, interval)
