@@ -4,7 +4,7 @@ import { Container, Section } from '@/components/ds'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 import { Button } from '@/components/ui/button'
-import { Calendar, MessageSquare, ThumbsUp, Newspaper, Activity, TrendingUp } from 'lucide-react'
+import { Calendar, MessageSquare, ThumbsUp, TrendingUp } from 'lucide-react'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import PredictionButton from '@/components/predictions/PredictionButton'
@@ -29,6 +29,7 @@ import { getSidebarLeaguesForWidget } from '@/lib/leagues'
 import WeekFixturesGrouped from '@/components/home/WeekFixturesGrouped'
 import LiveMatchesWidget from '@/components/home/LiveMatchesWidget'
 import { LiveIndicator } from '@/components/ui/live-indicator'
+import YesterdaysMatchesWidget from '@/components/home/YesterdaysMatchesWidget'
 
 export const revalidate = 120
 
@@ -107,23 +108,8 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Левая колонка — Новости (заглушка) */}
           <aside className="lg:col-span-3 space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Newspaper className="h-5 w-5" /> Новости
-                </CardTitle>
-                <CardDescription>Редакционная лента (UI-заглушка)</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 text-sm">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <li key={i} className="border rounded p-2 bg-muted/30">
-                      Новость {i}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            {/* Последние матчи из Payload */}
+            <YesterdaysMatchesWidget />
 
             {/* Виджет лиг из CMS */}
             <Card>

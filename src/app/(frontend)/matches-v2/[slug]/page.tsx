@@ -484,9 +484,21 @@ export default async function MatchV2Page({ params }: { params: Promise<{ slug: 
   const matchId = hasValidMatchId ? rawMatchId : undefined
 
   const homeTeamName =
-    match.home?.name || match.home_team?.name || match.homeTeam || parsed.homeTeamSlug
+    match.home_name ||
+    match.homeName ||
+    match.home?.name ||
+    match.home_team?.name ||
+    match.homeTeam?.name ||
+    match.homeTeam ||
+    parsed.homeTeamSlug
   const awayTeamName =
-    match.away?.name || match.away_team?.name || match.awayTeam || parsed.awayTeamSlug
+    match.away_name ||
+    match.awayName ||
+    match.away?.name ||
+    match.away_team?.name ||
+    match.awayTeam?.name ||
+    match.awayTeam ||
+    parsed.awayTeamSlug
 
   // Если есть matchId — используем страницу матчей (шапка + события + статистика) и добавляем H2H
   if (matchId) {

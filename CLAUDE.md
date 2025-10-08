@@ -174,6 +174,15 @@ MVP: launch fast → start with **live stats pages**, then switch to Directus, t
 
 ---
 
+## 4.1. Домашняя страница — левый сайдбар
+
+- Вместо блока «Новости» на главной странице добавлен виджет «Матчи вчера».
+- Компонент: `src/components/home/YesterdaysMatchesWidget.tsx` (client component).
+- Источник лиг: берём competitionId из Payload (как в UpcomingMatchesStrip) через `getTopMatchesLeagueIds()`.
+- Данные матчей: клиент вызывает наш серверный маршрут `/api/matches/history?date=YYYY-MM-DD&competition_id=...` для каждой лиги.
+- Безопасность ключей: серверный маршрут использует обёртку над fetch `src/lib/http/livescore/customFetch.ts` (совместимую с kubb), ключи берутся из env (LIVESCORE_*).
+- Группировка: матчи отображаются по лигам, с ссылками, временем и счётом.
+
 ## 5. Client Data Reference
 
 ### User Roles

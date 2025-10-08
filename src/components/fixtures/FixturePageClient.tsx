@@ -61,7 +61,8 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
   }
 
   // Проверяем, является ли матч запланированным (будущим)
-  const isScheduled = !fx.status || fx.status.toLowerCase() === 'scheduled' || fx.status.toLowerCase() === 'ns'
+  const isScheduled =
+    !fx.status || fx.status.toLowerCase() === 'scheduled' || fx.status.toLowerCase() === 'ns'
 
   // Отладочная информация
   console.log('[FixturePageClient] Fixture data:', {
@@ -71,8 +72,50 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
     awayId: fx.away.id,
     awayName: fx.away.name,
     status: fx.status,
-    isScheduled
+    isScheduled,
   })
+
+  // Предматчевые коэффициенты (нормализация)
+  const preOdds = fx?.odds?.pre || fx?.odds?.Pre || null
+  const oHome =
+    preOdds?.['1'] != null
+      ? Number(preOdds['1'])
+      : preOdds?.home != null
+        ? Number(preOdds.home)
+        : NaN
+  const oDraw =
+    preOdds?.['X'] != null
+      ? Number(preOdds['X'])
+      : preOdds?.draw != null
+        ? Number(preOdds.draw)
+        : NaN
+  const oAway =
+    preOdds?.['2'] != null
+      ? Number(preOdds['2'])
+      : preOdds?.away != null
+        ? Number(preOdds.away)
+        : NaN
+
+  const fmtOdd = (n: number) => (Number.isFinite(n) ? n.toFixed(2) : '—')
+
+  function computeWidths(h: number, d: number, a: number) {
+    const inv = [h, d, a].map((x) => (Number.isFinite(x) && x > 0 ? 1 / x : 0))
+    const total = inv[0] + inv[1] + inv[2]
+    if (total <= 0) return { wh: 0, wd: 0, wa: 0 }
+    return { wh: inv[0] / total, wd: inv[1] / total, wa: inv[2] / total }
+  }
+
+  const widths = computeWidths(oHome, oDraw, oAway)
+  const minOdd = Math.min(...[oHome, oDraw, oAway].filter((x) => Number.isFinite(x)))
+  const fav = {
+    home: Number.isFinite(oHome) && oHome === minOdd,
+    draw: Number.isFinite(oDraw) && oDraw === minOdd,
+    away: Number.isFinite(oAway) && oAway === minOdd,
+  }
+  // Проценты ширины сегментов для позиционирования подписи X (минимум 6%)
+  const whPct = Math.max(6, widths.wh * 100)
+  const wdPct = Math.max(6, widths.wd * 100)
+  const waPct = Math.max(6, widths.wa * 100)
 
   return (
     <>
@@ -107,14 +150,16 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
           </div>
           <div className="flex items-center gap-2">
             <div className="text-sm text-muted-foreground inline-flex items-center gap-2">
-              {fx.status ? <Badge variant="secondary">{statusRu(fx.status) || fx.status}</Badge> : null}
+              {fx.status ? (
+                <Badge variant="secondary">{statusRu(fx.status) || fx.status}</Badge>
+              ) : null}
               <Clock className="h-4 w-4" />
               <LocalDateTime date={fx.date} time={fx.time} utc showDate={false} />
             </div>
             {isScheduled && (
-              <PredictionButton 
-                fixtureId={fx.id} 
-                size="default" 
+              <PredictionButton
+                fixtureId={fx.id}
+                size="default"
                 mode="modal"
                 onModalOpen={() => setIsPredictionModalOpen(true)}
               />
@@ -160,19 +205,11 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                   >
                     {fx.home.name}
                   </Link>
-                  <TeamLogo 
-                    teamId={fx.home.id} 
-                    teamName={fx.home.name} 
-                    size="large" 
-                  />
+                  <TeamLogo teamId={fx.home.id} teamName={fx.home.name} size="large" />
                 </div>
                 <div className="text-center text-muted-foreground font-bold text-xl">vs</div>
                 <div className="flex items-center justify-start gap-3">
-                  <TeamLogo 
-                    teamId={fx.away.id} 
-                    teamName={fx.away.name} 
-                    size="large" 
-                  />
+                  <TeamLogo teamId={fx.away.id} teamName={fx.away.name} size="large" />
                   <Link
                     href={`/teams/${fx.away.id}`}
                     className="text-lg font-semibold hover:text-primary"
@@ -181,6 +218,47 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                   </Link>
                 </div>
               </div>
+
+              {/* Предматчевые коэффициенты — заметная линия распределения на отдельной строке */}
+              {(Number.isFinite(oHome) || Number.isFinite(oDraw) || Number.isFinite(oAway)) && (
+                <div className="mt-3 space-y-1">
+                  <div className="h-3 rounded-full overflow-hidden border border-border bg-muted/40 flex">
+                    <div
+                      className={`${fav.home ? 'bg-primary' : 'bg-primary/60'} h-full`}
+                      style={{ width: `${whPct}%` }}
+                    />
+                    <div
+                      className={`${fav.draw ? 'bg-amber-500' : 'bg-amber-400'} h-full`}
+                      style={{ width: `${wdPct}%` }}
+                    />
+                    <div
+                      className={`${fav.away ? 'bg-blue-600' : 'bg-blue-400'} h-full`}
+                      style={{ width: `${waPct}%` }}
+                    />
+                  </div>
+                  <div className="relative mt-1 text-xs text-muted-foreground">
+                    {/* Левые/правые подписи у краёв линии */}
+                    <div className="flex items-center justify-between">
+                      <div className="text-left">
+                        <span className="font-medium"></span> {fmtOdd(oHome)}
+                      </div>
+                      <div className="text-right">
+                        <span className="font-medium"></span> {fmtOdd(oAway)}
+                      </div>
+                    </div>
+                    {/* Центровка X относительно жёлтого сегмента линии */}
+                    <div
+                      className="absolute left-0 top-0 w-0 translate-x-[-50%] pointer-events-none"
+                      style={{ left: `${whPct + wdPct / 2}%` }}
+                    >
+                      <div className="text-center">
+                        <span className="font-medium opacity-30">X&nbsp;</span>
+                        <span className="font-medium">{fmtOdd(oDraw)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Место проведения */}
               {fx.location ? (
@@ -200,24 +278,6 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                     {fx.scores.ft_score ? <span>FT: {fx.scores.ft_score}</span> : null}
                     {fx.scores.et_score ? <span>ET: {fx.scores.et_score}</span> : null}
                     {fx.scores.ps_score ? <span>PS: {fx.scores.ps_score}</span> : null}
-                  </div>
-                </div>
-              ) : null}
-
-              {/* Коэффициенты */}
-              {fx.odds?.pre && (fx.odds.pre['1'] || fx.odds.pre.X || fx.odds.pre['2']) ? (
-                <div className="text-sm">
-                  <div className="font-medium mb-1">Прематчевые коэффициенты</div>
-                  <div className="flex items-center gap-3 text-muted-foreground">
-                    {fx.odds.pre['1'] != null ? (
-                      <Badge variant="outline">1 {fx.odds.pre['1']}</Badge>
-                    ) : null}
-                    {fx.odds.pre.X != null ? (
-                      <Badge variant="outline">X {fx.odds.pre.X}</Badge>
-                    ) : null}
-                    {fx.odds.pre['2'] != null ? (
-                      <Badge variant="outline">2 {fx.odds.pre['2']}</Badge>
-                    ) : null}
                   </div>
                 </div>
               ) : null}
@@ -257,13 +317,15 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
               </CardTitle>
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
-                  {predictions.length > 0 ? `${predictions.length} прогнозов` : 'Пока нет прогнозов'}
+                  {predictions.length > 0
+                    ? `${predictions.length} прогнозов`
+                    : 'Пока нет прогнозов'}
                 </p>
                 {isScheduled && (
-                  <PredictionButton 
-                    fixtureId={fx.id} 
-                    size="sm" 
-                    variant="outline" 
+                  <PredictionButton
+                    fixtureId={fx.id}
+                    size="sm"
+                    variant="outline"
                     mode="modal"
                     onModalOpen={() => setIsPredictionModalOpen(true)}
                   />
@@ -274,8 +336,14 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
               {predictions.length > 0 ? (
                 <div className="space-y-4">
                   {predictions.map(({ post, commentsCount, rating }) => (
-                    <article key={post.id} className="border rounded-lg p-3 hover:bg-accent/50 transition-colors">
-                      <Link href={post.slug ? `/posts/${post.slug}` : `/posts?pid=${post.id}`} className="block">
+                    <article
+                      key={post.id}
+                      className="border rounded-lg p-3 hover:bg-accent/50 transition-colors"
+                    >
+                      <Link
+                        href={post.slug ? `/posts/${post.slug}` : `/posts?pid=${post.id}`}
+                        className="block"
+                      >
                         <h4 className="font-medium text-sm line-clamp-2 mb-2">{post.title}</h4>
                         {post.publishedAt && (
                           <div className="text-xs text-muted-foreground mb-2">
@@ -283,45 +351,56 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                           </div>
                         )}
                       </Link>
-                      
+
                       {/* Краткая информация о прогнозе */}
                       {(post as any).prediction && (
                         <div className="mb-3 p-2 bg-muted/50 rounded text-xs space-y-1">
                           {(post as any).prediction.outcome && (
                             <div>
-                              <strong>Исход:</strong> {
-                                (post as any).prediction.outcome === 'home' ? 'Победа хозяев' :
-                                (post as any).prediction.outcome === 'draw' ? 'Ничья' :
-                                (post as any).prediction.outcome === 'away' ? 'Победа гостей' : 'Не указан'
-                              }
+                              <strong>Исход:</strong>{' '}
+                              {(post as any).prediction.outcome === 'home'
+                                ? 'Победа хозяев'
+                                : (post as any).prediction.outcome === 'draw'
+                                  ? 'Ничья'
+                                  : (post as any).prediction.outcome === 'away'
+                                    ? 'Победа гостей'
+                                    : 'Не указан'}
                             </div>
                           )}
-                          {(post as any).prediction.score?.home !== undefined && 
-                           (post as any).prediction.score?.away !== undefined && (
-                            <div>
-                              <strong>Счет:</strong> {(post as any).prediction.score.home}:{(post as any).prediction.score.away}
-                            </div>
-                          )}
-                          {(post as any).prediction.events && (post as any).prediction.events.length > 0 && (
-                            <div>
-                              <strong>События:</strong>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {(post as any).prediction.events.slice(0, 3).map((event: any, idx: number) => (
-                                  <Badge key={idx} variant="outline" className="text-xs px-1 py-0">
-                                    {event.event} {event.coefficient}
-                                  </Badge>
-                                ))}
-                                {(post as any).prediction.events.length > 3 && (
-                                  <Badge variant="outline" className="text-xs px-1 py-0">
-                                    +{(post as any).prediction.events.length - 3}
-                                  </Badge>
-                                )}
+                          {(post as any).prediction.score?.home !== undefined &&
+                            (post as any).prediction.score?.away !== undefined && (
+                              <div>
+                                <strong>Счет:</strong> {(post as any).prediction.score.home}:
+                                {(post as any).prediction.score.away}
                               </div>
-                            </div>
-                          )}
+                            )}
+                          {(post as any).prediction.events &&
+                            (post as any).prediction.events.length > 0 && (
+                              <div>
+                                <strong>События:</strong>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {(post as any).prediction.events
+                                    .slice(0, 3)
+                                    .map((event: any, idx: number) => (
+                                      <Badge
+                                        key={idx}
+                                        variant="outline"
+                                        className="text-xs px-1 py-0"
+                                      >
+                                        {event.event} {event.coefficient}
+                                      </Badge>
+                                    ))}
+                                  {(post as any).prediction.events.length > 3 && (
+                                    <Badge variant="outline" className="text-xs px-1 py-0">
+                                      +{(post as any).prediction.events.length - 3}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                         </div>
                       )}
-                      
+
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <div className="flex items-center gap-3">
                           <span className="inline-flex items-center gap-1">
@@ -331,7 +410,13 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                             <ThumbsUp className="h-3 w-3" /> {rating}
                           </span>
                         </div>
-                        <Link href={post.slug ? `/posts/${post.slug}#comments` : `/posts?pid=${post.id}#comments`}>
+                        <Link
+                          href={
+                            post.slug
+                              ? `/posts/${post.slug}#comments`
+                              : `/posts?pid=${post.id}#comments`
+                          }
+                        >
                           <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
                             Обсудить
                           </Button>
@@ -339,7 +424,7 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                       </div>
                     </article>
                   ))}
-                  
+
                   {predictions.length >= 10 && (
                     <div className="text-center">
                       <Link href={`/predictions?fixtureId=${fx.id}`}>
@@ -357,9 +442,9 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                     Пока никто не сделал прогноз на этот матч
                   </p>
                   {isScheduled && (
-                    <PredictionButton 
-                      fixtureId={fx.id} 
-                      size="default" 
+                    <PredictionButton
+                      fixtureId={fx.id}
+                      size="default"
                       mode="modal"
                       onModalOpen={() => setIsPredictionModalOpen(true)}
                     />

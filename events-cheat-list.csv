@@ -1,0 +1,118 @@
+Таб,Событие,Значение по умолчанию,Условие
+Основные,П1,-,match.match.homeScore > match.match.awayScore
+Основные,Х,-,match.match.homeScore == match.match.awayScore
+Основные,П2,-,match.match.awayScore > match.match.homeScore
+,,,
+Двойной шанс,1X,-,match.match.homeScore >= match.match.awayScore
+Двойной шанс,12,-,match.match.homeScore != match.match.awayScore
+Двойной шанс,2X,-,match.match.awayScore >= match.match.homeScore
+,,,
+Тотал,ТБ,2.5,(match.match.homeScore + match.match.awayScore) > total_line
+Тотал,ТМ,2.5,(match.match.homeScore + match.match.awayScore) < total_line
+,,,
+Инд.тотал,ИТБ1,"0,5",
+Инд.тотал,ИТМ1,"0,5",
+Инд.тотал,ИТБ2,"0,5",
+Инд.тотал,ИТМ2,"0,5",
+,,,
+Фора,Ф1,0,(match.match.homeScore - match.match.awayScore) > handicap_line
+Фора,Ф2,0,(match.match.awayScore - match.match.homeScore) > handicap_line
+,,,
+Комбо,1Х и ТБ,0,
+Комбо,1Х и ТМ,0,
+,,,
+Обе забьют,ОЗ Да,-,match.match.homeScore > 0 and match.match.awayScore > 0
+Обе забьют,ОЗ Нет,-,match.match.homeScore == 0 or match.match.awayScore == 0
+,,,
+1-й тайм,П1,-,match.match.homeScoreHalftime > match.match.awayScoreHalftime
+1-й тайм,Х,-,match.match.homeScoreHalftime == match.match.awayScoreHalftime
+1-й тайм,П2,-,match.match.awayScoreHalftime > match.match.homeScoreHalftime
+1-й тайм,ТБ,1.0,(match.match.homeScoreHalftime + match.match.awayScoreHalftime) > total_line
+1-й тайм,ТМ,1.0,(match.match.homeScoreHalftime + match.match.awayScoreHalftime) < total_line
+,,,
+2-й тайм,П1,-,(match.match.homeScore - match.match.homeScoreHalftime) > (match.match.awayScore - match.match.awayScoreHalftime)
+2-й тайм,Х,-,(match.match.homeScore - match.match.homeScoreHalftime) == (match.match.awayScore - match.match.awayScoreHalftime)
+2-й тайм,П2,-,(match.match.awayScore - match.match.awayScoreHalftime) > (match.match.homeScore - match.match.homeScoreHalftime)
+2-й тайм,ТБ,1.0,((match.match.homeScore - match.match.homeScoreHalftime) + (match.match.awayScore - match.match.awayScoreHalftime)) > total_line
+2-й тайм,ТМ,1.0,((match.match.homeScore - match.match.homeScoreHalftime) + (match.match.awayScore - match.match.awayScoreHalftime)) < total_line
+,,,
+Угловые,ТБ,9.5,(match.corners.home + match.corners.away) > total_line
+Угловые,ТМ,9.5,(match.corners.home + match.corners.away) < total_line
+Угловые,П1,-,match.corners.home > match.corners.away
+Угловые,П2,-,match.corners.away > match.corners.home
+Угловые,1Х,-,
+Угловые,Х2,-,
+Угловые,Ф1,0.5,(match.corners.home - match.corners.away) > handicap_line
+Угловые,Ф2,0.5,(match.corners.away - match.corners.home) > handicap_line
+Угловые,ИТ1Б,4.5,match.corners.home > team_total_line
+Угловые,ИТ1М,4.5,match.corners.home < team_total_line
+Угловые,ИТ2Б,4.5,match.corners.away > team_total_line
+Угловые,ИТ2М,4.5,match.corners.away < team_total_line
+,,,
+,,,
+Желтые карточки,ТБ,3.5,(match.yellowCards.home + match.yellowCards.away) > total_line
+Желтые карточки,ТМ,3.5,(match.yellowCards.home + match.yellowCards.away) < total_line
+Желтые карточки,П1,-,match.yellowCards.home > match.yellowCards.away
+Желтые карточки,П2,-,match.yellowCards.away > match.yellowCards.home
+Желтые карточки,Ф1,0.5,(match.yellowCards.home - match.yellowCards.away) > handicap_line
+Желтые карточки,Ф2,0.5,(match.yellowCards.away - match.yellowCards.home) > handicap_line
+Желтые карточки,ИТ1Б,1.5,match.yellowCards.home > team_total_line
+Желтые карточки,ИТ1М,1.5,match.yellowCards.home < team_total_line
+Желтые карточки,ИТ2Б,1.5,match.yellowCards.away > team_total_line
+Желтые карточки,ИТ2М,1.5,match.yellowCards.away < team_total_line
+,,,
+Красные карточки,ТБ,0.5,(match.redCards.home + match.redCards.away) > total_line
+Красные карточки,ТМ,0.5,(match.redCards.home + match.redCards.away) < total_line
+Красные карточки,П1,-,match.redCards.home > match.redCards.away
+Красные карточки,П2,-,match.redCards.away > match.redCards.home
+,,,
+Фолы,ТБ,25.5,(match.fouls.home + match.fouls.away) > total_line
+Фолы,ТМ,25.5,(match.fouls.home + match.fouls.away) < total_line
+Фолы,П1,-,match.fouls.home > match.fouls.away
+Фолы,П2,-,match.fouls.away > match.fouls.home
+Фолы,ИТ1Б,12.5,match.fouls.home > team_total_line
+Фолы,ИТ1М,12.5,match.fouls.home < team_total_line
+Фолы,ИТ2Б,12.5,match.fouls.away > team_total_line
+Фолы,ИТ2М,12.5,match.fouls.away < team_total_line
+Фолы,1Х,-,
+Фолы,Х2,-,
+Ауты,ТБ,20.5,(parseInt(match.additionalStats.throw_ins.split(':')[0]) + parseInt(match.additionalStats.throw_ins.split(':')[1])) > total_line
+Ауты,ТМ,20.5,(parseInt(match.additionalStats.throw_ins.split(':')[0]) + parseInt(match.additionalStats.throw_ins.split(':')[1])) < total_line
+Ауты,П1,,parseInt(match.additionalStats.throw_ins.split(':')[0]) > parseInt(match.additionalStats.throw_ins.split(':')[1])
+Ауты,П2,,parseInt(match.additionalStats.throw_ins.split(':')[1]) > parseInt(match.additionalStats.throw_ins.split(':')[0])
+,,,
+Удары от ворот,ТБ,12.5,(parseInt(match.additionalStats.goal_kicks?.split(':')?.[0] || 0) + parseInt(match.additionalStats.goal_kicks?.split(':')?.[1] || 0)) > total_line
+Удары от ворот,ТМ,12.5,(parseInt(match.additionalStats.goal_kicks?.split(':')?.[0] || 0) + parseInt(match.additionalStats.goal_kicks?.split(':')?.[1] || 0)) < total_line
+Удары от ворот,П1,-,parseInt(match.additionalStats.goal_kicks?.split(':')?.[0] || 0) > parseInt(match.additionalStats.goal_kicks?.split(':')?.[1] || 0)
+Удары от ворот,П2,-,parseInt(match.additionalStats.goal_kicks?.split(':')?.[1] || 0) > parseInt(match.additionalStats.goal_kicks?.split(':')?.[0] || 0)
+,,,
+Удары в створ,ТБ,9.5,(match.shotsOnTarget.home + match.shotsOnTarget.away) > total_line
+Удары в створ,ТМ,9.5,(match.shotsOnTarget.home + match.shotsOnTarget.away) < total_line
+Удары в створ,П1,-,match.shotsOnTarget.home > match.shotsOnTarget.away
+Удары в створ,П2,-,match.shotsOnTarget.away > match.shotsOnTarget.home
+Удары в створ,ИТ1Б,4.5,match.shotsOnTarget.home > team_total_line
+Удары в створ,ИТ1М,4.5,match.shotsOnTarget.home < team_total_line
+Удары в створ,ИТ2Б,4.5,match.shotsOnTarget.away > team_total_line
+Удары в створ,ИТ2М,4.5,match.shotsOnTarget.away < team_total_line
+,,,
+Всего ударов,ТБ,24.5,(match.shots.home + match.shots.away) > total_line
+Всего ударов,ТМ,24.5,(match.shots.home + match.shots.away) < total_line
+Всего ударов,П1,-,match.shots.home > match.shots.away
+Всего ударов,П2,-,match.shots.away > match.shots.home
+,,,
+Сейвы,ТБ,7.5,(match.saves.home + match.saves.away) > total_line
+Сейвы,ТМ,7.5,(match.saves.home + match.saves.away) < total_line
+Сейвы,П1,-,match.saves.home > match.saves.away
+Сейвы,П2,-,match.saves.away > match.saves.home
+,,,
+Офсайды,ТБ,4.5,(match.offsides.home + match.offsides.away) > total_line
+Офсайды,ТМ,4.5,(match.offsides.home + match.offsides.away) < total_line
+Офсайды,П1,-,match.offsides.home > match.offsides.away
+Офсайды,П2,-,match.offsides.away > match.offsides.home
+Офсайды,ИТ1Б,-,
+Офсайды,ИТ1М,-,
+Офсайды,ИТ2Б,-,
+Офсайды,ИТ2М,-,
+,,,
+Замены,ТБ,4.5,(parseInt(match.additionalStats.substitutions?.split(':')?.[0] || 0) + parseInt(match.additionalStats.substitutions?.split(':')?.[1] || 0)) > total_line
+Замены,ТМ,4.5,(parseInt(match.additionalStats.substitutions?.split(':')?.[0] || 0) + parseInt(match.additionalStats.substitutions?.split(':')?.[1] || 0)) < total_line

@@ -385,7 +385,7 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
                     {m.odds && (m.odds.home || m.odds.draw || m.odds.away) && (
                       <div className="flex justify-between items-center text-[10px] bg-muted/30 rounded px-2 py-1">
                         <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground">1</span>
+                          <span className="text-muted-foreground"></span>
                           <span className="font-medium">
                             {m.odds.home ? Number(m.odds.home).toFixed(2) : '—'}
                           </span>
@@ -397,7 +397,7 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
                           </span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground">2</span>
+                          <span className="text-muted-foreground"></span>
                           <span className="font-medium">
                             {m.odds.away ? Number(m.odds.away).toFixed(2) : '—'}
                           </span>

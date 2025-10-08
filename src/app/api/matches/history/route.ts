@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-const API_KEY = 'JFSoWhkq1FIky8SS'
-const API_SECRET = 'qbjc7aeuFAJo1E5KjX8fetGg9oAIxtBY'
-const BASE_URL = 'https://livescore-api.com/api-client'
+import customFetch from '@/lib/http/livescore/customFetch'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const date = searchParams.get('date')
-    const teamId = searchParams.get('team_id')
-    const matchId = searchParams.get('match_id')
-    const competitionId = searchParams.get('competition_id')
-    const size = searchParams.get('size') || '50'
+    const date = searchParams.get('date') || undefined
+    const teamId = searchParams.get('team_id') || undefined
+    const matchId = searchParams.get('match_id') || undefined
+    const competitionId = searchParams.get('competition_id') || undefined
+    const sizeParam = searchParams.get('size') || '50'
+
+    const size = Math.max(1, Math.min(100, Number(sizeParam) || 50))
 
     console.log(`[History API] Параметры запроса:`, {
       date,
@@ -21,72 +20,43 @@ export async function GET(request: NextRequest) {
       size,
     })
 
-    // Формируем URL для запроса истории матчей
-    const params = new URLSearchParams()
-    params.set('lang', 'ru')
-    params.set('size', size)
-    params.set('key', API_KEY)
-    params.set('secret', API_SECRET)
-
-    if (date) {
-      params.set('date', date)
+    // Собираем параметры запроса
+    const params: Record<string, any> = {
+      lang: 'ru',
+      size,
     }
-    if (teamId) {
-      params.set('team_id', teamId)
-    }
-    if (matchId) {
-      params.set('match_id', matchId)
-    }
-    if (competitionId) {
-      params.set('competition_id', competitionId)
-    }
+    if (date) params.date = date
+    if (teamId) params.team_id = teamId
+    if (matchId) params.match_id = matchId
+    if (competitionId) params.competition_id = competitionId
 
-    const historyUrl = `${BASE_URL}/matches/history.json?${params.toString()}`
-
-    console.log(`[History API] Запрос к LiveScore API:`, historyUrl.replace(API_SECRET, '***'))
-
-    const response = await fetch(historyUrl, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'User-Agent': 'LiveScore-Client/1.0',
-      },
-      // Добавляем таймаут
-      signal: AbortSignal.timeout(10000), // 10 секунд
+    // Вызываем LiveScore API через kubb-совместимый клиент с таймаутом/ретраями
+    const { data } = await customFetch<any>({
+      url: '/matches/history.json',
+      params,
+      timeoutMs: 10000,
+      // cache/no-store и next.revalidate выставляются обёрткой по умолчанию
     })
-
-    if (!response.ok) {
-      console.error(`[History API] HTTP error: ${response.status} ${response.statusText}`)
-      return NextResponse.json(
-        {
-          success: false,
-          message: `Ошибка API: ${response.status} ${response.statusText}`,
-        },
-        { status: response.status },
-      )
-    }
-
-    const data = await response.json()
 
     console.log(`[History API] Ответ получен:`, {
-      success: data.success,
-      hasData: !!data.data,
-      matchesCount: data.data?.match?.length || 0,
+      success: data?.success,
+      hasData: !!data?.data,
+      matchesCount: data?.data?.match?.length || data?.data?.matches?.length || 0,
     })
 
-    if (!data.success) {
+    if (!data?.success) {
       console.error(`[History API] API вернул ошибку:`, data)
       return NextResponse.json(
         {
           success: false,
-          message: data.message || 'API вернул ошибку',
+          message: data?.message || 'API вернул ошибку',
         },
         { status: 400 },
       )
     }
 
     // Нормализуем ответ для совместимости
-    const matches = data.data?.match || []
+    const matches = (data?.data?.match || data?.data?.matches || []) as any[]
 
     console.log(`[History API] Возвращаем ${matches.length} матчей`)
 
@@ -96,28 +66,31 @@ export async function GET(request: NextRequest) {
         matches,
         total: matches.length,
         page: 1,
-        size: parseInt(size, 10),
+        size,
       },
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('[History API] Ошибка:', error)
 
-    if (error instanceof Error) {
-      if (error.name === 'AbortError') {
-        return NextResponse.json(
-          { success: false, message: 'Превышено время ожидания запроса' },
-          { status: 408 },
-        )
-      }
-
+    // Ошибки от customFetch содержат status/statusText
+    if (error && typeof error === 'object' && 'status' in error) {
+      const status = Number(error.status) || 500
+      const message = error?.data?.message || error?.statusText || 'Ошибка сервера'
       return NextResponse.json(
-        { success: false, message: `Ошибка сервера: ${error.message}` },
-        { status: 500 },
+        { success: false, message },
+        { status },
+      )
+    }
+
+    if (error instanceof Error && error.name === 'AbortError') {
+      return NextResponse.json(
+        { success: false, message: 'Превышено время ожидания запроса' },
+        { status: 408 },
       )
     }
 
     return NextResponse.json(
-      { success: false, message: 'Неизвестная ошибка сервера' },
+      { success: false, message: error instanceof Error ? error.message : 'Неизвестная ошибка сервера' },
       { status: 500 },
     )
   }
