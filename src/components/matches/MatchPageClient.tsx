@@ -192,18 +192,28 @@ const getStatsLabel = (key: string): string => {
 }
 
 // Компактные элеме��ты событий
-function CompactEventRow({ event, homeName, awayName }: { event: MatchEvent; homeName: string; awayName: string }) {
+function CompactEventRow({
+  event,
+  homeName,
+  awayName,
+}: {
+  event: MatchEvent
+  homeName: string
+  awayName: string
+}) {
   const isHome = event.team === homeName
   return (
     <div className="flex items-center justify-between gap-2 py-1.5">
       <div className="flex items-center gap-2 min-w-0">
         <span className="inline-flex items-center justify-center rounded px-1.5 h-5 text-[10px] font-semibold bg-muted text-muted-foreground tabular-nums">
-          {event.minute}'
+          {event.minute}
         </span>
         <span className="text-base leading-none">{getEventIcon(event.type)}</span>
         <span className={`truncate text-sm ${getEventColor(event.type)}`}>{event.player}</span>
       </div>
-      <span className="text-[10px] text-muted-foreground whitespace-nowrap ml-2">{isHome ? homeName : awayName}</span>
+      <span className="text-[10px] text-muted-foreground whitespace-nowrap ml-2">
+        {isHome ? homeName : awayName}
+      </span>
     </div>
   )
 }
@@ -211,10 +221,89 @@ function CompactEventRow({ event, homeName, awayName }: { event: MatchEvent; hom
 function EventChip({ event, homeName }: { event: MatchEvent; homeName: string }) {
   const isHome = event.team === homeName
   return (
-    <div className={`shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] ${isHome ? 'bg-blue-50 dark:bg-blue-950/20' : 'bg-red-50 dark:bg-red-950/20'}`}>
-      <span className="tabular-nums font-mono font-semibold">{event.minute}'</span>
+    <div
+      className={`shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] ${isHome ? 'bg-blue-50 dark:bg-blue-950/20' : 'bg-red-50 dark:bg-red-950/20'}`}
+    >
+      <span className="tabular-nums font-mono font-semibold">{event.minute}</span>
       <span>{getEventIcon(event.type)}</span>
       <span className={`max-w-[140px] truncate ${getEventColor(event.type)}`}>{event.player}</span>
+    </div>
+  )
+}
+
+// Парсит минуту из строки вида "45", "45+2", "90+3"
+function parseMinuteValue(minute?: string): number {
+  if (!minute) return 0
+  const s = String(minute).trim()
+  if (/^\d+(\.\d+)?$/.test(s)) return parseFloat(s)
+  const parts = s.split('+')
+  const base = parseFloat(parts[0] || '0')
+  const extra = parseFloat(parts[1] || '0')
+  const val = (Number.isFinite(base) ? base : 0) + (Number.isFinite(extra) ? extra : 0)
+  return Math.min(Math.max(val, 0), 90)
+}
+
+// Кольцо минуты: два полуокружья (1-й тайм справа, 2-й тайм слева) с заполнением по времени
+function EventMinuteRing({ minute }: { minute: string }) {
+  const m = parseMinuteValue(minute)
+  const p1 = m <= 45 ? m / 45 : 1 // доля 1-го тайма
+  const p2 = m <= 45 ? 0 : Math.min(1, (m - 45) / 45) // доля 2-го тайма
+  const strokeW = 4
+
+  return (
+    <div className="relative w-10 h-10">
+      <svg viewBox="0 0 40 40" className="absolute inset-0">
+        {/* Трек: правая полуокружность */}
+        <path
+          d="M20 2 A 18 18 0 0 1 20 38"
+          fill="none"
+          stroke="currentColor"
+          className="text-muted-foreground"
+          strokeOpacity={0.25}
+          strokeWidth={strokeW}
+          strokeLinecap="round"
+          pathLength={50}
+        />
+        {/* Трек: левая полуокружность */}
+        <path
+          d="M20 38 A 18 18 0 0 1 20 2"
+          fill="none"
+          stroke="currentColor"
+          className="text-muted-foreground"
+          strokeOpacity={0.25}
+          strokeWidth={strokeW}
+          strokeLinecap="round"
+          pathLength={50}
+        />
+
+        {/* Заполнение: правая полуокружность (1-й тайм) */}
+        <path
+          d="M20 2 A 18 18 0 0 1 20 38"
+          fill="none"
+          stroke="currentColor"
+          className="text-primary"
+          strokeWidth={strokeW}
+          strokeLinecap="round"
+          pathLength={50}
+          strokeDasharray={`${50 * p1} ${50}`}
+          strokeDashoffset={0}
+        />
+        {/* Заполнение: левая полуокружность (2-й тайм) */}
+        <path
+          d="M20 38 A 18 18 0 0 1 20 2"
+          fill="none"
+          stroke="currentColor"
+          className="text-primary"
+          strokeWidth={strokeW}
+          strokeLinecap="round"
+          pathLength={50}
+          strokeDasharray={`${50 * p2} ${50}`}
+          strokeDashoffset={0}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-xs font-bold text-primary tabular-nums">{minute}</span>
+      </div>
     </div>
   )
 }
@@ -527,9 +616,27 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                     События матча
                   </CardTitle>
                   <div className="flex items-center gap-1">
-                    <Button variant={eventsView === 'timeline' ? 'secondary' : 'outline'} size="xs" onClick={() => setEventsView('timeline')}>Лента</Button>
-                    <Button variant={eventsView === 'compact' ? 'secondary' : 'outline'} size="xs" onClick={() => setEventsView('compact')}>Список</Button>
-                    <Button variant={eventsView === 'horizontal' ? 'secondary' : 'outline'} size="xs" onClick={() => setEventsView('horizontal')}>Горизонтально</Button>
+                    <Button
+                      variant={eventsView === 'timeline' ? 'secondary' : 'outline'}
+                      size="sm"
+                      onClick={() => setEventsView('timeline')}
+                    >
+                      Лента
+                    </Button>
+                    <Button
+                      variant={eventsView === 'compact' ? 'secondary' : 'outline'}
+                      size="sm"
+                      onClick={() => setEventsView('compact')}
+                    >
+                      Список
+                    </Button>
+                    <Button
+                      variant={eventsView === 'horizontal' ? 'secondary' : 'outline'}
+                      size="sm"
+                      onClick={() => setEventsView('horizontal')}
+                    >
+                      Горизонтально
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
@@ -540,7 +647,11 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                       {events
                         .sort((a, b) => parseInt(a.minute) - parseInt(b.minute))
                         .map((event) => (
-                          <EventChip key={event.id} event={event} homeName={matchInfo.home?.name || 'Дома'} />
+                          <EventChip
+                            key={event.id}
+                            event={event}
+                            homeName={matchInfo.home?.name || 'Дома'}
+                          />
                         ))}
                     </div>
                   ) : eventsView === 'compact' ? (
@@ -548,7 +659,12 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                       {events
                         .sort((a, b) => parseInt(a.minute) - parseInt(b.minute))
                         .map((event) => (
-                          <CompactEventRow key={event.id} event={event} homeName={matchInfo.home?.name || 'Дома'} awayName={matchInfo.away?.name || 'Гости'} />
+                          <CompactEventRow
+                            key={event.id}
+                            event={event}
+                            homeName={matchInfo.home?.name || 'Дома'}
+                            awayName={matchInfo.away?.name || 'Гости'}
+                          />
                         ))}
                     </div>
                   ) : (
@@ -557,8 +673,12 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                         .sort((a, b) => parseInt(a.minute) - parseInt(b.minute))
                         .map((event) => {
                           const isHome = event.team === (matchInfo.home?.name || 'Дома')
-                          const teamName = isHome ? (matchInfo.home?.name || 'Дома') : (matchInfo.away?.name || 'Гости')
-                          const teamId = isHome ? parseInt(String(matchInfo.home?.id || '0')) : parseInt(String(matchInfo.away?.id || '0'))
+                          const teamName = isHome
+                            ? matchInfo.home?.name || 'Дома'
+                            : matchInfo.away?.name || 'Гости'
+                          const teamId = isHome
+                            ? parseInt(String(matchInfo.home?.id || '0'))
+                            : parseInt(String(matchInfo.away?.id || '0'))
                           return (
                             <div key={event.id} className="flex items-center">
                               {/* Левая сторона (домашние) */}
@@ -567,11 +687,22 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                                   <div className="flex items-center gap-2 justify-end">
                                     <TeamLogo teamId={teamId} teamName={teamName} size="small" />
                                     <CountryFlagImage size="small" className="w-4 h-3" />
-                                    <span className="truncate text-xs text-muted-foreground max-w-[140px]">{teamName}</span>
+                                    <span className="truncate text-xs text-muted-foreground max-w-[140px]">
+                                      {teamName}
+                                    </span>
                                     <span className="text-muted-foreground">—</span>
-                                    <span className={`truncate text-sm ${getEventColor(event.type)}`}>{event.player}</span>
+                                    <span
+                                      className={`truncate text-sm ${getEventColor(event.type)}`}
+                                    >
+                                      {event.player}
+                                    </span>
                                     <span className="text-muted-foreground">—</span>
-                                    <span className="font-semibold text-sm">{getEventLabel(event.type)}</span>
+                                    <span className="text-base leading-none">
+                                      {getEventIcon(event.type)}
+                                    </span>
+                                    <span className="font-semibold text-sm">
+                                      {getEventLabel(event.type)}
+                                    </span>
                                   </div>
                                 </div>
                               ) : (
@@ -580,22 +711,31 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
 
                               {/* Минута по центру */}
                               <div className="flex-shrink-0 mx-1">
-                                <div className="bg-background border border-primary/50 rounded-full w-10 h-10 flex items-center justify-center">
-                                  <span className="text-xs font-bold text-primary tabular-nums">{event.minute}'</span>
-                                </div>
+                                <EventMinuteRing minute={event.minute} />
                               </div>
 
                               {/* Правая сторона (гости) */}
                               {!isHome ? (
                                 <div className="flex-1 pl-3">
                                   <div className="flex items-center gap-2 justify-start">
-                                    <span className="font-semibold text-sm">{getEventLabel(event.type)}</span>
+                                    <span className="text-base leading-none">
+                                      {getEventIcon(event.type)}
+                                    </span>
+                                    <span className="font-semibold text-sm">
+                                      {getEventLabel(event.type)}
+                                    </span>
                                     <span className="text-muted-foreground">—</span>
-                                    <span className={`truncate text-sm ${getEventColor(event.type)}`}>{event.player}</span>
+                                    <span
+                                      className={`truncate text-sm ${getEventColor(event.type)}`}
+                                    >
+                                      {event.player}
+                                    </span>
                                     <span className="text-muted-foreground">—</span>
                                     <TeamLogo teamId={teamId} teamName={teamName} size="small" />
                                     <CountryFlagImage size="small" className="w-4 h-3" />
-                                    <span className="truncate text-xs text-muted-foreground max-w-[140px]">{teamName}</span>
+                                    <span className="truncate text-xs text-muted-foreground max-w-[140px]">
+                                      {teamName}
+                                    </span>
                                   </div>
                                 </div>
                               ) : (
