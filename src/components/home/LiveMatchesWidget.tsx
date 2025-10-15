@@ -563,7 +563,7 @@ export default function LiveMatchesWidget() {
             return (
               <li
                 key={`${m.id}-${idx}`}
-                className="border rounded p-3 hover:bg-accent/50 transition-colors relative"
+                className="border rounded-lg p-3 hover:bg-accent/50 transition-colors relative"
               >
                 <Link href={href} className="block">
                   {/* Заголовок с лигой */}
@@ -580,33 +580,42 @@ export default function LiveMatchesWidget() {
                   </div>
 
                   <div className="flex">
-                    <div className="flex items-center"></div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col w-full">
                       {/* Команды со счётом */}
                       <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 w-full overflow-hidden">
+                          <div className="flex items-center gap-2 min-w-0">
                             <div className="flex-shrink-0">
                               <TeamLogo teamId={m.home.id} teamName={m.home.name} size="small" />
                             </div>
-                            <span className="truncate font-medium text-sm">{m.home.name}</span>
+                            <span
+                              className="block min-w-0 truncate font-medium text-sm"
+                              title={m.home.name}
+                            >
+                              {m.home.name}
+                            </span>
                           </div>
-                          {started ? (
-                            <div className="text-lg font-bold text-primary ml-2 flex-shrink-0">
+                          {started || finished ? (
+                            <div className="justify-self-end text-lg font-bold text-primary flex-shrink-0 tabular-nums text-right">
                               {typeof m.home.score === 'number' ? m.home.score : '—'}
                             </div>
                           ) : null}
                         </div>
 
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 w-full overflow-hidden">
+                          <div className="flex items-center gap-2 min-w-0">
                             <div className="flex-shrink-0">
                               <TeamLogo teamId={m.away.id} teamName={m.away.name} size="small" />
                             </div>
-                            <span className="truncate font-medium text-sm">{m.away.name}</span>
+                            <span
+                              className="block min-w-0 truncate font-medium text-sm"
+                              title={m.away.name}
+                            >
+                              {m.away.name}
+                            </span>
                           </div>
-                          {started ? (
-                            <div className="text-lg font-bold text-primary ml-2 flex-shrink-0">
+                          {started || finished ? (
+                            <div className="justify-self-end text-lg font-bold text-primary flex-shrink-0 tabular-nums text-right">
                               {typeof m.away.score === 'number' ? m.away.score : '—'}
                             </div>
                           ) : null}
