@@ -286,31 +286,39 @@ function LiveMinuteBadge({
     const up = (s?: string | null) => (s ? String(s).toUpperCase().trim() : '')
     const s = up(status)
     const ts = up(timeStatus)
+    const tRaw = typeof time === 'string' ? time.trim() : ''
+    const tU = tRaw.toUpperCase()
 
-    // В приоритете поле live time из ответа (минуты/HT/FT/90+X)
-    if (typeof time === 'string' && time.trim().length > 0) {
-      const t = time.trim()
-      const tU = t.toUpperCase()
-      if (/^\d+\+\d+$/.test(t)) return `${t}'`
-      const n = parseInt(t, 10)
-      if (!Number.isNaN(n)) return `${n}'`
-      if (tU === 'HT') return "45'"
-      if (tU === 'FT') return "90'"
-    }
+    // Завершён — не показываем
+    const finished = s.includes('FINISH') || s === 'FULL TIME' || ts === 'FT' || tU === 'FT'
+    if (finished) return ''
 
-    // Завершён — бейдж не показываем
-    const isFinished = s.includes('FINISH') || s === 'FULL TIME' || ts === 'FT'
-    if (isFinished) return ''
+    // Определяем, начался ли матч
+    const minuteLike = /^\d+(\+\d+)?$/.test(tRaw)
+    const startedByTime = minuteLike || ['HT', 'AET', 'AP'].includes(tU)
+    const startedByStatus =
+      s.includes('IN PLAY') ||
+      s.includes('ADDED TIME') ||
+      s.includes('LIVE') ||
+      s.includes('1ST') ||
+      s.includes('2ND') ||
+      s.includes('EXTRA TIME') ||
+      s.includes('HALF TIME')
+    const startedByTS = /^\d+(\+\d+)?$/.test(ts) || ['HT', 'AET', 'AP'].includes(ts)
+    const started = startedByTime || startedByStatus || startedByTS
+    if (!started) return ''
 
-    // Перерыв
-    const isHT = s.includes('HALF TIME') || ts === 'HT'
-    if (isHT) return "45'"
+    // Перерыв — показываем 45'
+    if (s.includes('HALF TIME') || ts === 'HT' || tU === 'HT') return "45'"
 
-    // Если API сразу даёт минуты или добавленное время вида 45+2
+    // Используем live time (минуты/90+X)
+    if (minuteLike) return `${tRaw}'`
+
+    // В time_status может быть минуты/90+X
     if (ts) {
       if (/^\d+\+\d+$/.test(ts)) return `${ts}'`
-      const n = parseInt(ts, 10)
-      if (!Number.isNaN(n)) return `${n}'`
+      const n2 = parseInt(ts, 10)
+      if (!Number.isNaN(n2)) return `${n2}'`
     }
 
     // Считаем по времени начала при лайв-статусах
@@ -350,7 +358,7 @@ function LiveMinuteBadge({
   if (!label) return null
 
   return (
-    <span className="inline-flex justify-center px-1 text-[11px] font-semibold text-red-600 tabular-nums">
+    <span className="inline-flex justify-center px-1 text-[11px] font-semibold text-red-600 tabular-nums animate-pulse">
       {label}
     </span>
   )

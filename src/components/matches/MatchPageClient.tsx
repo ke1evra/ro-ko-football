@@ -20,6 +20,7 @@ import {
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { TeamLogo } from '@/components/TeamLogo'
+import { CountryFlagImage } from '@/components/CountryFlagImage'
 import PredictionModal from '@/components/predictions/PredictionModal'
 
 interface MatchInfo {
@@ -143,6 +144,26 @@ const getEventColor = (type: string) => {
   }
 }
 
+// Человекочитаемое название события (RU)
+const getEventLabel = (type: string): string => {
+  const t = String(type || '').toLowerCase()
+  const map: Record<string, string> = {
+    goal: 'Гол',
+    penalty: 'Пенальти',
+    goal_penalty: 'Гол (пенальти)',
+    missed_penalty: 'Нереализованный пенальти',
+    yellow_card: 'Жёлтая карточка',
+    red_card: 'Красная карто��ка',
+    substitution: 'Замена',
+    substitution_in: 'Выход на замену',
+    substitution_out: 'Смена игрока',
+    corner: 'Угловой',
+    offside: 'Офсайд',
+    var: 'VAR',
+  }
+  return map[t] || t.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase())
+}
+
 // Утилита для русскоязычных названий статистики
 const getStatsLabel = (key: string): string => {
   const statsLabels: Record<string, string> = {
@@ -170,25 +191,30 @@ const getStatsLabel = (key: string): string => {
   return statsLabels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
 }
 
-// Компонент для отображения события матча
-function EventItem({ event }: { event: MatchEvent }) {
+// Компактные элеме��ты событий
+function CompactEventRow({ event, homeName, awayName }: { event: MatchEvent; homeName: string; awayName: string }) {
+  const isHome = event.team === homeName
   return (
-    <div className="flex items-center gap-3 p-3 border rounded-lg">
-      <div className="flex items-center gap-2 min-w-0 flex-1">
-        <span className="text-sm font-mono font-bold text-muted-foreground min-w-[30px]">
-          {event.minute}&#39;
+    <div className="flex items-center justify-between gap-2 py-1.5">
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="inline-flex items-center justify-center rounded px-1.5 h-5 text-[10px] font-semibold bg-muted text-muted-foreground tabular-nums">
+          {event.minute}'
         </span>
-        <span className="text-lg">{getEventIcon(event.type)}</span>
-        <div className="min-w-0 flex-1">
-          <div className={`font-medium ${getEventColor(event.type)}`}>{event.player}</div>
-          {event.description && (
-            <div className="text-xs text-muted-foreground">{event.description}</div>
-          )}
-        </div>
+        <span className="text-base leading-none">{getEventIcon(event.type)}</span>
+        <span className={`truncate text-sm ${getEventColor(event.type)}`}>{event.player}</span>
       </div>
-      <Badge variant="outline" className="text-xs">
-        {event.team}
-      </Badge>
+      <span className="text-[10px] text-muted-foreground whitespace-nowrap ml-2">{isHome ? homeName : awayName}</span>
+    </div>
+  )
+}
+
+function EventChip({ event, homeName }: { event: MatchEvent; homeName: string }) {
+  const isHome = event.team === homeName
+  return (
+    <div className={`shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] ${isHome ? 'bg-blue-50 dark:bg-blue-950/20' : 'bg-red-50 dark:bg-red-950/20'}`}>
+      <span className="tabular-nums font-mono font-semibold">{event.minute}'</span>
+      <span>{getEventIcon(event.type)}</span>
+      <span className={`max-w-[140px] truncate ${getEventColor(event.type)}`}>{event.player}</span>
     </div>
   )
 }
@@ -245,6 +271,7 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isPredictionModalOpen, setIsPredictionModalOpen] = useState(false)
+  const [eventsView, setEventsView] = useState<'timeline' | 'compact' | 'horizontal'>('timeline')
 
   const fetchMatchData = async () => {
     setLoading(true)
@@ -307,28 +334,46 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
   const isScheduled =
     !statusStr || statusStr.includes('NOT') || statusStr === 'NS' || statusStr.includes('SCHEDULED')
 
-  // Преобразуем события в нужный формат
-  const events =
-    eventsData?.data?.event?.map((event) => ({
-      id: String(event.id),
-      minute: String(event.time),
-      type: event.event,
-      player: event.player.name,
-      team: event.is_home ? matchInfo.home?.name || 'Дома' : matchInfo.away?.name || 'Гости',
-      description: event.label,
-    })) || []
+  // Преобразуем события в нужный формат (учитываем разные форматы ответа API)
+  const events = (() => {
+    const raw: any[] = Array.isArray((eventsData as any)?.data?.events)
+      ? ((eventsData as any).data.events as any[])
+      : Array.isArray((eventsData as any)?.data?.event)
+        ? ((eventsData as any).data.event as any[])
+        : []
+
+    return raw.map((ev: any) => {
+      const playerName = ev?.player?.name ?? ev?.player_name ?? ev?.player ?? ''
+      const minuteVal = ev?.time ?? ev?.minute ?? ''
+      const typeVal = ev?.event ?? ev?.type ?? ev?.label ?? 'event'
+      const isHome =
+        typeof ev?.is_home === 'boolean'
+          ? ev.is_home
+          : ev?.team === 'home' || ev?.side === 'home' || ev?.isHome === true
+
+      return {
+        id: String(ev?.id ?? `${typeVal}-${minuteVal}-${playerName}`),
+        minute: String(minuteVal),
+        type: String(typeVal),
+        player: String(playerName),
+        team: isHome ? matchInfo.home?.name || 'Дома' : matchInfo.away?.name || 'Гости',
+        description: ev?.label,
+      }
+    })
+  })()
 
   // Преобразуем статистику в нужный формат
-  const stats = statsData?.data
-    ? Object.entries(statsData.data).reduce((acc, [key, value]) => {
-        const [homeValue, awayValue] = String(value).split(':')
-        acc[key] = {
-          home: homeValue || '0',
-          away: awayValue || '0',
-        }
-        return acc
-      }, {} as MatchStats)
-    : {}
+  const stats = (() => {
+    if (!statsData?.data) return {}
+    // Livescore API оборачивает метрики внутрь data.stats
+    const raw: Record<string, unknown> = (statsData.data as any).stats || (statsData.data as any)
+    return Object.entries(raw).reduce((acc, [key, value]) => {
+      const pair = String(value)
+      const [homeValue, awayValue] = pair.includes(':') ? pair.split(':') : ['0', '0']
+      acc[key] = { home: homeValue || '0', away: awayValue || '0' }
+      return acc
+    }, {} as MatchStats)
+  })()
 
   if (loading) {
     return (
@@ -476,115 +521,91 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
           <TabsContent value="events" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  События матча
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    События матча
+                  </CardTitle>
+                  <div className="flex items-center gap-1">
+                    <Button variant={eventsView === 'timeline' ? 'secondary' : 'outline'} size="xs" onClick={() => setEventsView('timeline')}>Лента</Button>
+                    <Button variant={eventsView === 'compact' ? 'secondary' : 'outline'} size="xs" onClick={() => setEventsView('compact')}>Список</Button>
+                    <Button variant={eventsView === 'horizontal' ? 'secondary' : 'outline'} size="xs" onClick={() => setEventsView('horizontal')}>Горизонтально</Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 {events && events.length > 0 ? (
-                  <div className="space-y-4">
-                    {/* Таймлайн событий */}
-                    <div className="relative">
-                      {/* Центральная линия */}
-                      <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-border transform -translate-x-0.5"></div>
-
-                      {/* События */}
-                      <div className="space-y-6">
-                        {events
-                          .sort((a, b) => parseInt(a.minute) - parseInt(b.minute))
-                          .map((event, index) => {
-                            const isHome = event.team === matchInfo.home?.name
-                            return (
-                              <div
-                                key={event.id}
-                                className={`flex items-center ${isHome ? 'justify-start' : 'justify-end'}`}
-                              >
-                                {/* Событие для домашней команды (слева) */}
-                                {isHome && (
-                                  <>
-                                    <div className="flex-1 max-w-[45%] mr-4">
-                                      <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                                        <div className="flex items-center gap-2 mb-1">
-                                          <span className="text-lg">
-                                            {getEventIcon(event.type)}
-                                          </span>
-                                          <span
-                                            className={`font-medium text-sm ${getEventColor(event.type)}`}
-                                          >
-                                            {event.player}
-                                          </span>
-                                        </div>
-                                        {event.description && (
-                                          <div className="text-xs text-muted-foreground">
-                                            {event.description}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    {/* Время в центре */}
-                                    <div className="relative z-10 bg-background border-2 border-primary rounded-full w-12 h-12 flex items-center justify-center">
-                                      <span className="text-xs font-bold text-primary">
-                                        {event.minute}&#39;
-                                      </span>
-                                    </div>
-
-                                    <div className="flex-1 max-w-[45%] ml-4"></div>
-                                  </>
-                                )}
-
-                                {/* Событие для гостевой команды (справа) */}
-                                {!isHome && (
-                                  <>
-                                    <div className="flex-1 max-w-[45%] mr-4"></div>
-
-                                    {/* Время в центре */}
-                                    <div className="relative z-10 bg-background border-2 border-primary rounded-full w-12 h-12 flex items-center justify-center">
-                                      <span className="text-xs font-bold text-primary">
-                                        {event.minute}&#39;
-                                      </span>
-                                    </div>
-
-                                    <div className="flex-1 max-w-[45%] ml-4">
-                                      <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-                                        <div className="flex items-center gap-2 mb-1 justify-end">
-                                          <span
-                                            className={`font-medium text-sm ${getEventColor(event.type)}`}
-                                          >
-                                            {event.player}
-                                          </span>
-                                          <span className="text-lg">
-                                            {getEventIcon(event.type)}
-                                          </span>
-                                        </div>
-                                        {event.description && (
-                                          <div className="text-xs text-muted-foreground text-right">
-                                            {event.description}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-                            )
-                          })}
-                      </div>
-                    </div>
-
-                    {/* Альтернативный простой список */}
-                    <div className="mt-8">
-                      <h4 className="font-medium mb-4 text-sm text-muted-foreground">
-                        Все события (список)
-                      </h4>
-                      <div className="space-y-2">
-                        {events.map((event) => (
-                          <EventItem key={`list-${event.id}`} event={event} />
+                  eventsView === 'horizontal' ? (
+                    <div className="flex items-center gap-2 overflow-x-auto py-1">
+                      {events
+                        .sort((a, b) => parseInt(a.minute) - parseInt(b.minute))
+                        .map((event) => (
+                          <EventChip key={event.id} event={event} homeName={matchInfo.home?.name || 'Дома'} />
                         ))}
-                      </div>
                     </div>
-                  </div>
+                  ) : eventsView === 'compact' ? (
+                    <div className="divide-y">
+                      {events
+                        .sort((a, b) => parseInt(a.minute) - parseInt(b.minute))
+                        .map((event) => (
+                          <CompactEventRow key={event.id} event={event} homeName={matchInfo.home?.name || 'Дома'} awayName={matchInfo.away?.name || 'Гости'} />
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {events
+                        .sort((a, b) => parseInt(a.minute) - parseInt(b.minute))
+                        .map((event) => {
+                          const isHome = event.team === (matchInfo.home?.name || 'Дома')
+                          const teamName = isHome ? (matchInfo.home?.name || 'Дома') : (matchInfo.away?.name || 'Гости')
+                          const teamId = isHome ? parseInt(String(matchInfo.home?.id || '0')) : parseInt(String(matchInfo.away?.id || '0'))
+                          return (
+                            <div key={event.id} className="flex items-center">
+                              {/* Левая сторона (домашние) */}
+                              {isHome ? (
+                                <div className="flex-1 pr-3">
+                                  <div className="flex items-center gap-2 justify-end">
+                                    <TeamLogo teamId={teamId} teamName={teamName} size="small" />
+                                    <CountryFlagImage size="small" className="w-4 h-3" />
+                                    <span className="truncate text-xs text-muted-foreground max-w-[140px]">{teamName}</span>
+                                    <span className="text-muted-foreground">—</span>
+                                    <span className={`truncate text-sm ${getEventColor(event.type)}`}>{event.player}</span>
+                                    <span className="text-muted-foreground">—</span>
+                                    <span className="font-semibold text-sm">{getEventLabel(event.type)}</span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex-1 pr-3" />
+                              )}
+
+                              {/* Минута по центру */}
+                              <div className="flex-shrink-0 mx-1">
+                                <div className="bg-background border border-primary/50 rounded-full w-10 h-10 flex items-center justify-center">
+                                  <span className="text-xs font-bold text-primary tabular-nums">{event.minute}'</span>
+                                </div>
+                              </div>
+
+                              {/* Правая сторона (гости) */}
+                              {!isHome ? (
+                                <div className="flex-1 pl-3">
+                                  <div className="flex items-center gap-2 justify-start">
+                                    <span className="font-semibold text-sm">{getEventLabel(event.type)}</span>
+                                    <span className="text-muted-foreground">—</span>
+                                    <span className={`truncate text-sm ${getEventColor(event.type)}`}>{event.player}</span>
+                                    <span className="text-muted-foreground">—</span>
+                                    <TeamLogo teamId={teamId} teamName={teamName} size="small" />
+                                    <CountryFlagImage size="small" className="w-4 h-3" />
+                                    <span className="truncate text-xs text-muted-foreground max-w-[140px]">{teamName}</span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex-1 pl-3" />
+                              )}
+                            </div>
+                          )
+                        })}
+                    </div>
+                  )
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <Activity className="h-12 w-12 mx-auto mb-2 opacity-50" />
