@@ -470,7 +470,15 @@ export default async function MatchV2Page({ params }: { params: Promise<{ slug: 
   const source = (result as any).source as string | undefined
 
   // Получаем валидный matchId (реальный ID матча, не равный fixtureId и не из fixtures)
-  const rawMatchId = Number(match.id ?? match.matchId ?? NaN)
+  const rawMatchId = (() => {
+    const mid: unknown = (match as any)?.matchId
+    if (typeof mid === 'number') return mid
+    if (typeof mid === 'string' && /^\d+$/.test(mid)) return Number(mid)
+    const rid: unknown = (match as any)?.id
+    if (typeof rid === 'number') return rid
+    if (typeof rid === 'string' && /^\d+$/.test(rid)) return Number(rid)
+    return NaN
+  })()
   const hasValidMatchId =
     Number.isFinite(rawMatchId) && rawMatchId !== parsed.fixtureId && source !== 'fixtures'
 

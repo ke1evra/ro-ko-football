@@ -20,6 +20,7 @@ import {
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { TeamLogo } from '@/components/TeamLogo'
+import PredictionModal from '@/components/predictions/PredictionModal'
 
 interface MatchInfo {
   id: number
@@ -243,6 +244,7 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
   const [statsData, setStatsData] = useState<MatchStatsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isPredictionModalOpen, setIsPredictionModalOpen] = useState(false)
 
   const fetchMatchData = async () => {
     setLoading(true)
@@ -301,6 +303,9 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
 
   // Получаем актуальную информацию о матче
   const matchInfo = eventsData?.data?.match || initialMatchInfo
+  const statusStr = String(matchInfo.status || '').toUpperCase()
+  const isScheduled =
+    !statusStr || statusStr.includes('NOT') || statusStr === 'NS' || statusStr.includes('SCHEDULED')
 
   // Преобразуем события в нужный формат
   const events =
@@ -354,11 +359,18 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                 )}
               </div>
             </div>
-            {(eventsData?.data?.match?.status || matchInfo.status) && (
-              <Badge variant="secondary">
-                {eventsData?.data?.match?.status || matchInfo.status}
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {(eventsData?.data?.match?.status || matchInfo.status) && (
+                <Badge variant="secondary">
+                  {eventsData?.data?.match?.status || matchInfo.status}
+                </Badge>
+              )}
+              {isScheduled && (
+                <Button variant="outline" size="sm" onClick={() => setIsPredictionModalOpen(true)}>
+                  Прогноз
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -616,6 +628,20 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
             </Card>
           </TabsContent>
         </Tabs>
+      )}
+      {isScheduled && (
+        <PredictionModal
+          isOpen={isPredictionModalOpen}
+          onClose={() => setIsPredictionModalOpen(false)}
+          matchId={matchId}
+          matchData={{
+            home: { name: matchInfo.home.name },
+            away: { name: matchInfo.away.name },
+            competition: matchInfo.competition,
+            date: matchInfo.date || '',
+            time: matchInfo.time || '',
+          }}
+        />
       )}
     </div>
   )

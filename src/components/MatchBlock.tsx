@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CalendarIcon } from 'lucide-react'
-import PredictionButton from '@/components/predictions/PredictionButton'
+
 import { TeamLogo } from '@/components/TeamLogo'
 import { generateMatchUrl, generateLegacyMatchUrl, generateLegacyFixtureUrl } from '@/lib/match-url-utils'
 
@@ -116,13 +116,7 @@ const MatchBlock: React.FC<MatchBlockProps> = ({ match }) => {
                 timeStyle: 'short',
               })}
             </div>
-            {match.status === 'scheduled' && (
-              <PredictionButton 
-                matchId={match.matchId}
-                fixtureId={match.fixtureId}
-                size="sm"
-              />
-            )}
+
           </div>
         </CardContent>
       </Card>

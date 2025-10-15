@@ -3,7 +3,6 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import PredictionButton from '@/components/predictions/PredictionButton'
 import { TeamLogo } from '@/components/TeamLogo'
 
 type SimpleFixture = {
@@ -141,9 +140,7 @@ export default function UpcomingAllMatchesWidget() {
                   </div>
                 </div>
               </Link>
-              <div className="mt-2 flex justify-end">
-                <PredictionButton fixtureId={m.id} size="sm" />
-              </div>
+
             </li>
           ))}
         </ul>

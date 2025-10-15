@@ -251,20 +251,130 @@ export const Posts: CollectionConfig = {
             },
           ],
         },
+
         {
           name: 'events',
           type: 'array',
+          label: 'События (структурированные)',
           admin: {
-            description: 'Динамические события прогноза с коэффициентами',
+            description: 'Рекомендуется: структурированное хранение событий с энумами',
           },
           fields: [
             {
-              name: 'event',
-              type: 'text',
+              name: 'market',
+              type: 'select',
               required: true,
-              admin: {
-                description: 'Название события (например, "П1", "ТБ 2.5", "УГ ТБ 8.5")',
-              },
+              options: [
+                { label: 'Основные исходы', value: 'main' },
+                { label: 'Двойной шанс', value: 'doubleChance' },
+                { label: 'Обе забьют', value: 'btts' },
+                { label: 'Тотал', value: 'total' },
+                { label: 'Исход (статистика)', value: 'statOutcome' },
+                { label: 'Двойной шанс (статистика)', value: 'statDoubleChance' },
+                { label: 'Индивидуальный тотал', value: 'teamTotal' },
+                { label: 'Фора', value: 'handicap' },
+                { label: 'Комбо', value: 'combo' },
+              ],
+            },
+            {
+              name: 'scope',
+              type: 'select',
+              options: [
+                { label: 'Полный матч', value: 'ft' },
+                { label: '1-й тайм', value: '1h' },
+                { label: '2-й тайм', value: '2h' },
+              ],
+              admin: { description: 'Область применения (для голов и основных рынков)' },
+            },
+            {
+              name: 'stat',
+              type: 'select',
+              options: [
+                { label: 'Голы', value: 'goals' },
+                { label: 'Угловые', value: 'corners' },
+                { label: 'ЖК', value: 'yellowCards' },
+                { label: 'КК', value: 'redCards' },
+                { label: 'Фолы', value: 'fouls' },
+                { label: 'Ауты', value: 'throw_ins' },
+                { label: 'От ворот', value: 'goal_kicks' },
+                { label: 'Удары в створ', value: 'shotsOnTarget' },
+                { label: 'Удары', value: 'shots' },
+                { label: 'Сейвы', value: 'saves' },
+                { label: 'Офсайды', value: 'offsides' },
+                { label: 'Замены', value: 'substitutions' },
+              ],
+              admin: { description: 'Показатель (для статистических рынков)' },
+            },
+            {
+              name: 'outcome',
+              type: 'select',
+              options: [
+                { label: 'П1', value: 'P1' },
+                { label: 'Х', value: 'X' },
+                { label: 'П2', value: 'P2' },
+              ],
+              admin: { description: 'Для market=main' },
+            },
+            {
+              name: 'dc',
+              type: 'select',
+              options: [
+                { label: '1X', value: '1X' },
+                { label: '12', value: '12' },
+                { label: 'X2', value: 'X2' },
+              ],
+              admin: { description: 'Для market=doubleChance/statDoubleChance' },
+            },
+            {
+              name: 'btts',
+              type: 'select',
+              options: [
+                { label: 'Да', value: 'yes' },
+                { label: 'Нет', value: 'no' },
+              ],
+              admin: { description: 'Для market=btts' },
+            },
+            {
+              name: 'kind',
+              type: 'select',
+              options: [
+                { label: 'ТБ (over)', value: 'over' },
+                { label: 'ТМ (under)', value: 'under' },
+              ],
+              admin: { description: 'Для тоталов: market=total/teamTotal/combo' },
+            },
+            {
+              name: 'line',
+              type: 'number',
+              admin: { description: 'Линия (если требуется рынком)' },
+            },
+            {
+              name: 'team',
+              type: 'select',
+              options: [
+                { label: 'Хозяева', value: 'home' },
+                { label: 'Гости', value: 'away' },
+              ],
+              admin: { description: 'Для ИТ/фор' },
+            },
+            // Комбо-поля: "1X и ТБ/ТМ <линия>" (по голам)
+            {
+              name: 'comboDc',
+              type: 'select',
+              options: [
+                { label: '1X', value: '1X' },
+                { label: 'X2', value: 'X2' },
+              ],
+              admin: { description: 'Для market=combo' },
+            },
+            {
+              name: 'comboKind',
+              type: 'select',
+              options: [
+                { label: 'ТБ (over)', value: 'over' },
+                { label: 'ТМ (under)', value: 'under' },
+              ],
+              admin: { description: 'Для market=combo' },
             },
             {
               name: 'coefficient',
@@ -274,6 +384,11 @@ export const Posts: CollectionConfig = {
               admin: {
                 description: 'Коэффициент на событие',
               },
+            },
+            {
+              name: 'label',
+              type: 'text',
+              admin: { description: 'Человекочитаемое представление события (опционально)' },
             },
           ],
         },

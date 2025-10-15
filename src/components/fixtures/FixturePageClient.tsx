@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Calendar, Clock, MapPin, Trophy, TrendingUp, MessageSquare, ThumbsUp } from 'lucide-react'
 import { LocalDateTime } from '@/components/LocalDateTime'
-import PredictionButton from '@/components/predictions/PredictionButton'
 import PredictionModal from '@/components/predictions/PredictionModal'
+
 import { TeamLogo } from '@/components/TeamLogo'
 import H2HBlock from '@/components/fixtures/H2HBlock'
 
@@ -48,7 +48,6 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
   const [isPredictionModalOpen, setIsPredictionModalOpen] = useState(false)
 
   const handlePredictionCreated = async () => {
-    // Перезагружаем прогнозы после создания нового
     try {
       const response = await fetch(`/api/predictions?fixtureId=${fx.id}`)
       if (response.ok) {
@@ -56,7 +55,7 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
         setPredictions(data)
       }
     } catch (error) {
-      console.error('Ошибка обновления прогнозов:', error)
+      console.error('Ошибк�� обновления прогнозов:', error)
     }
   }
 
@@ -95,6 +94,41 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
       : preOdds?.away != null
         ? Number(preOdds.away)
         : NaN
+
+  // Разбор основного счёта в виде "H - A" или "H:A"
+  const scoreStr = typeof fx?.scores?.score === 'string' ? fx.scores.score : ''
+  const scoreMatch = scoreStr.match(/(\d+)\s*[-:]\s*(\d+)/)
+  const homeScoreBig: string | null = scoreMatch ? scoreMatch[1] : null
+  const awayScoreBig: string | null = scoreMatch ? scoreMatch[2] : null
+
+  // Лайв-статус и метка минут/периода
+  const statusUpper = String(fx?.status || '').toUpperCase()
+  const isLive =
+    statusUpper.includes('IN PLAY') ||
+    statusUpper === 'LIVE' ||
+    /^\d+(\+\d+)?$/.test(String(fx?.time_status || ''))
+  const minuteLabel = timeStatusRu(fx?.time_status) || undefined
+
+  // Countdown до начала матча (для запланированных)
+  let countdownText: string | undefined
+  try {
+    if (isScheduled && fx?.date) {
+      const baseDate = String(fx.date)
+      const rawTime = typeof fx?.time === 'string' ? fx.time : '00:00'
+      const timeWithSec = /^\d{2}:\d{2}$/.test(rawTime) ? `${rawTime}:00` : rawTime
+      const isoStart = `${baseDate}T${timeWithSec}Z`
+      const startMs = new Date(isoStart).getTime()
+      const diffMs = startMs - Date.now()
+      if (Number.isFinite(diffMs) && diffMs > 0) {
+        const totalMin = Math.floor(diffMs / 60000)
+        const h = Math.floor(totalMin / 60)
+        const m = totalMin % 60
+        countdownText = h > 0 ? `Через ${h} ч ${m} мин` : `Через ${m} мин`
+      }
+    }
+  } catch {
+    // no-op
+  }
 
   const fmtOdd = (n: number) => (Number.isFinite(n) ? n.toFixed(2) : '—')
 
@@ -157,33 +191,42 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
               <LocalDateTime date={fx.date} time={fx.time} utc showDate={false} />
             </div>
             {isScheduled && (
-              <PredictionButton
-                fixtureId={fx.id}
-                size="default"
-                mode="modal"
-                onModalOpen={() => setIsPredictionModalOpen(true)}
-              />
+              <Button variant="outline" size="sm" onClick={() => setIsPredictionModalOpen(true)}>
+                Оставить прогноз
+              </Button>
             )}
           </div>
         </div>
 
-        {/* Время и обновления */}
-        <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
-          <span>
-            <span className="font-medium">Начало:</span>{' '}
-            <LocalDateTime date={fx.date} time={fx.time} utc />
-          </span>
-          {typeof fx.time_status !== 'undefined' ? (
-            <span>
-              <span className="font-medium">Сейчас:</span> {timeStatusRu(fx.time_status) || '—'}
-            </span>
-          ) : null}
-          {fx.last_changed ? (
-            <span>
-              <span className="font-medium">Обновлено:</span>{' '}
-              <LocalDateTime dateTime={fx.last_changed.replace(' ', 'T')} utc />
-            </span>
-          ) : null}
+        {/* Время и обновления — мини‑виджеты */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Дата (локально) */}
+          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-[11px]">
+            <Calendar className="h-3 w-3" />
+            <LocalDateTime date={fx.date} time={fx.time} utc showTime={false} />
+          </div>
+
+          {/* Время (локально) */}
+          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-[11px]">
+            <Clock className="h-3 w-3" />
+            <LocalDateTime date={fx.date} time={fx.time} utc showDate={false} />
+          </div>
+
+          {/* До начала (для запланированных) */}
+          {countdownText && (
+            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px]">
+              <Clock className="h-3 w-3" />
+              <span>{countdownText}</span>
+            </div>
+          )}
+
+          {/* Обновлено */}
+          {fx.last_changed && (
+            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-[10px] text-muted-foreground">
+              <span>Обновлено:</span>
+              <LocalDateTime dateTime={fx.last_changed.replace(' ', 'T')} utc showDate={false} />
+            </div>
+          )}
         </div>
       </header>
 
@@ -196,23 +239,50 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
               <CardTitle>Детали матча</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Команды */}
-              <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-3">
+              {/* Главный ряд: команды слева/справа и крупный счёт по центру */}
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-4">
+                {/* Домашняя команда */}
                 <div className="flex items-center justify-end gap-3">
                   <Link
                     href={`/teams/${fx.home.id}`}
-                    className="text-lg font-semibold hover:text-primary"
+                    className="text-lg font-semibold hover:text-primary truncate"
                   >
                     {fx.home.name}
                   </Link>
                   <TeamLogo teamId={fx.home.id} teamName={fx.home.name} size="large" />
                 </div>
-                <div className="text-center text-muted-foreground font-bold text-xl">vs</div>
+
+                {/* Центральный счёт и минуты */}
+                <div className="flex items-center justify-center">
+                  <div
+                    className="text-5xl md:text-6xl font-extrabold tabular-nums leading-none"
+                    aria-live={isLive ? 'polite' : undefined}
+                  >
+                    {homeScoreBig != null && awayScoreBig != null ? (
+                      <>
+                        <span className="opacity-90">{homeScoreBig}</span>
+                        <span className="opacity-3врк0 mx-3">-</span>
+                        <span className="opacity-90">{awayScoreBig}</span>
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">vs</span>
+                    )}
+                  </div>
+                  {minuteLabel && (
+                    <span
+                      className={`${isLive ? 'bg-red-50 text-red-700' : minuteLabel === 'Перерыв' ? 'bg-amber-50 text-amber-700' : minuteLabel === 'Завершён' ? 'bg-muted text-muted-foreground' : 'bg-muted text-muted-foreground'} ml-3 text-[10px] px-2 py-1 rounded`}
+                    >
+                      {minuteLabel}
+                    </span>
+                  )}
+                </div>
+
+                {/* Гостевая команда */}
                 <div className="flex items-center justify-start gap-3">
                   <TeamLogo teamId={fx.away.id} teamName={fx.away.name} size="large" />
                   <Link
                     href={`/teams/${fx.away.id}`}
-                    className="text-lg font-semibold hover:text-primary"
+                    className="text-lg font-semibold hover:text-primary truncate"
                   >
                     {fx.away.name}
                   </Link>
@@ -268,17 +338,16 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                 </div>
               ) : null}
 
-              {/* Текущий счёт (если матч live/завершён) */}
-              {fx.scores?.score ? (
-                <div className="text-sm">
-                  <div className="font-medium mb-1">Счёт</div>
-                  <div className="text-muted-foreground">{fx.scores.score}</div>
-                  <div className="text-xs text-muted-foreground mt-1 grid grid-cols-2 gap-2">
-                    {fx.scores.ht_score ? <span>HT: {fx.scores.ht_score}</span> : null}
-                    {fx.scores.ft_score ? <span>FT: {fx.scores.ft_score}</span> : null}
-                    {fx.scores.et_score ? <span>ET: {fx.scores.et_score}</span> : null}
-                    {fx.scores.ps_score ? <span>PS: {fx.scores.ps_score}</span> : null}
-                  </div>
+              {/* Дополнительные детали счёта */}
+              {fx.scores?.ht_score ||
+              fx.scores?.ft_score ||
+              fx.scores?.et_score ||
+              fx.scores?.ps_score ? (
+                <div className="text-xs text-muted-foreground mt-1 grid grid-cols-2 gap-2">
+                  {fx.scores.ht_score ? <span>HT: {fx.scores.ht_score}</span> : null}
+                  {fx.scores.ft_score ? <span>FT: {fx.scores.ft_score}</span> : null}
+                  {fx.scores.et_score ? <span>ET: {fx.scores.et_score}</span> : null}
+                  {fx.scores.ps_score ? <span>PS: {fx.scores.ps_score}</span> : null}
                 </div>
               ) : null}
 
@@ -322,13 +391,13 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                     : 'Пока нет прогнозов'}
                 </p>
                 {isScheduled && (
-                  <PredictionButton
-                    fixtureId={fx.id}
-                    size="sm"
+                  <Button
                     variant="outline"
-                    mode="modal"
-                    onModalOpen={() => setIsPredictionModalOpen(true)}
-                  />
+                    size="sm"
+                    onClick={() => setIsPredictionModalOpen(true)}
+                  >
+                    Оставить прогноз
+                  </Button>
                 )}
               </div>
             </CardHeader>
@@ -442,12 +511,13 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                     Пока никто не сделал прогноз на этот матч
                   </p>
                   {isScheduled && (
-                    <PredictionButton
-                      fixtureId={fx.id}
-                      size="default"
-                      mode="modal"
-                      onModalOpen={() => setIsPredictionModalOpen(true)}
-                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsPredictionModalOpen(true)}
+                    >
+                      Оставить прогноз
+                    </Button>
                   )}
                 </div>
               )}

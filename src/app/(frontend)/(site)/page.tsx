@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 import { Button } from '@/components/ui/button'
 import { Calendar, MessageSquare, ThumbsUp, TrendingUp } from 'lucide-react'
+import Script from 'next/script'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import PredictionButton from '@/components/predictions/PredictionButton'
+
 import UpcomingAllMatchesWidget from '@/components/home/UpcomingAllMatchesWidget'
 import LeaguesListWidget from '@/components/home/LeaguesListWidget'
 import PredictionPreview from '@/components/posts/PredictionPreview'
@@ -168,7 +169,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                         <h3 className="text-lg font-semibold">{post.title}</h3>
                         {post.publishedAt ? (
                           <div className="text-xs text-muted-foreground mt-1">
-                            {new Date(post.publishedAt).toLocaleDateString('ru-RU')}
+                            {new Date(post.publishedAt).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}
                           </div>
                         ) : null}
                       </Link>
@@ -259,7 +260,58 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                   <LiveIndicator size="small" />
                   Матчи
                 </CardTitle>
-                <CardDescription>Топ‑10 текущих матчей</CardDescription>
+                <div className="flex items-center justify-between">
+                  <CardDescription>Топ‑10 текущих матчей</CardDescription>
+                  <div
+                    id="live-refresh-widget"
+                    className="flex items-center gap-1 rounded border bg-background/80 backdrop-blur-sm px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                  >
+                    <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                    <button
+                      type="button"
+                      aria-label="Обновить"
+                      id="live-refresh-btn"
+                      className="hover:text-foreground transition-colors"
+                    >
+                      ↻
+                    </button>
+                    <span id="live-refresh-timer" className="tabular-nums">01:00</span>
+                  </div>
+                </div>
+                <Script id="live-refresh-script" strategy="afterInteractive">{`
+                  (function(){
+                    try{
+                      var nextAt = Date.now() + 60000;
+                      var timerEl = document.getElementById('live-refresh-timer');
+                      var btnEl = document.getElementById('live-refresh-btn');
+                      function update(){
+                        var s = Math.max(0, Math.ceil((nextAt - Date.now())/1000));
+                        var mm = String(Math.floor(s/60)).padStart(2,'0');
+                        var ss = String(s%60).padStart(2,'0');
+                        if (timerEl) timerEl.textContent = mm+':'+ss;
+                      }
+                      var tick = setInterval(update, 1000);
+                      function fire(){
+                        try{ window.dispatchEvent(new CustomEvent('live:refresh-matches')); }catch(e){}
+                      }
+                      var poll = setInterval(function(){
+                        nextAt = Date.now() + 60000;
+                        fire();
+                      }, 60000);
+                      if (btnEl){
+                        btnEl.addEventListener('click', function(){
+                          nextAt = Date.now() + 60000;
+                          fire();
+                        });
+                      }
+                      update();
+                      window.addEventListener('beforeunload', function(){
+                        clearInterval(tick);
+                        clearInterval(poll);
+                      });
+                    }catch(e){}
+                  })();
+                `}</Script>
               </CardHeader>
               <CardContent>
                 <LiveMatchesWidget />

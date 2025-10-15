@@ -27,7 +27,8 @@ interface PredictionEvent {
 interface PredictionModalProps {
   isOpen: boolean
   onClose: () => void
-  fixtureId: number
+  fixtureId?: number
+  matchId?: number
   matchData: {
     home: { name: string }
     away: { name: string }
@@ -48,6 +49,7 @@ export default function PredictionModal({
   isOpen,
   onClose,
   fixtureId,
+  matchId,
   matchData,
   onPredictionCreated,
 }: PredictionModalProps) {
@@ -87,6 +89,7 @@ export default function PredictionModal({
         content: formData.content,
         postType: 'prediction',
         fixtureId,
+        matchId,
         author: userData.user.id, // Добавляем ID автора
         prediction: {
           events: formData.events,

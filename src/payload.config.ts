@@ -15,6 +15,7 @@ import { CommentVotes } from './collections/CommentVotes'
 import { Leagues } from './collections/Leagues'
 import { Matches } from './collections/Matches'
 import { MatchStats } from './collections/MatchStats'
+import { PredictionStats } from './collections/PredictionStats'
 
 import { TopMatchesLeagues } from './globals/TopMatchesLeagues'
 import { SidebarLeagues } from './globals/SidebarLeagues'
@@ -29,7 +30,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Posts, Comments, CommentVotes, Leagues, Matches, MatchStats],
+  collections: [Users, Media, Posts, Comments, CommentVotes, Leagues, Matches, MatchStats, PredictionStats],
   globals: [TopMatchesLeagues, SidebarLeagues],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

@@ -47,6 +47,21 @@ export default async function UserPublicPage({ params }: { params: Promise<{ use
     limit: 10,
   })
 
+  // Получаем рассчитанные статистики прогнозов
+  const predStats = await payload.find({
+    collection: 'predictionStats',
+    where: { author: { equals: userId } },
+    sort: '-evaluatedAt',
+    limit: 10,
+    depth: 1,
+  })
+
+  // Суммарный рейтинг по очкам (MVP: outcome=2, exact=5)
+  const totalPoints = predStats.docs.reduce(
+    (acc: number, s: any) => acc + (Number(s?.scoring?.points) || 0),
+    0,
+  )
+
   const avatar = pickAvatar(user)
 
   return (
@@ -61,7 +76,7 @@ export default async function UserPublicPage({ params }: { params: Promise<{ use
         <div>
           <h1 className="text-2xl font-bold">{user.name || user.username}</h1>
           <div className="text-sm text-muted-foreground">@{user.username}</div>
-          <div className="mt-1">Рейтинг: {user.rating ?? 0}</div>
+          <div className="mt-1">Рейтинг: {totalPoints}</div>
         </div>
       </div>
 
@@ -71,6 +86,57 @@ export default async function UserPublicPage({ params }: { params: Promise<{ use
           <p className="text-muted-foreground whitespace-pre-line">{user.bio}</p>
         </div>
       )}
+
+      <div>
+        <h2 className="text-xl font-semibold mb-2">Прогнозы — статистика</h2>
+        <div className="space-y-2">
+          {predStats.docs.map((s: any) => {
+            const post = s?.post as any
+            const title = post?.title || 'Прогноз'
+            const href = post?.slug ? `/posts/${post.slug}` : undefined
+            const sum = s?.summary || {}
+            const hitRate = typeof sum?.hitRate === 'number' ? `${Math.round(sum.hitRate * 100)}%` : '—'
+            const roi = typeof sum?.roi === 'number' ? `${Math.round(sum.roi * 100)}%` : '—'
+            return (
+              <div key={s.id} className="border rounded p-3">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    {href ? (
+                      <Link href={href} className="font-medium hover:underline">
+                        {title}
+                      </Link>
+                    ) : (
+                      <span className="font-medium">{title}</span>
+                    )}
+                    <div className="text-xs text-muted-foreground">
+                      {s.evaluatedAt ? new Date(s.evaluatedAt).toLocaleString() : ''}
+                    </div>
+                  </div>
+                  <div className="text-sm grid grid-cols-2 gap-x-6 gap-y-1 text-right min-w-[320px]">
+                    <div className="text-muted-foreground">Событий</div>
+                    <div>{sum?.total ?? '—'}</div>
+                    <div className="text-muted-foreground">Выиграло</div>
+                    <div>{sum?.won ?? '—'}</div>
+                    <div className="text-muted-foreground">Проиграло</div>
+                    <div>{sum?.lost ?? '—'}</div>
+                    <div className="text-muted-foreground">Не определено</div>
+                    <div>{sum?.undecided ?? '—'}</div>
+                    <div className="text-muted-foreground">Hit‑rate</div>
+                    <div>{hitRate}</div>
+                    <div className="text-muted-foreground">ROI</div>
+                    <div>{roi}</div>
+                    <div className="text-muted-foreground">Очков</div>
+                    <div>{s?.scoring?.points ?? 0}</div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+          {predStats.docs.length === 0 && (
+            <div className="text-muted-foreground">Нет рассчитанных прогнозов</div>
+          )}
+        </div>
+      </div>
 
       <div>
         <h2 className="text-xl font-semibold mb-2">Посты</h2>

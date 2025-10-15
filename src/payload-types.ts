@@ -75,6 +75,7 @@ export interface Config {
     leagues: League;
     matches: Match;
     matchStats: MatchStat;
+    predictionStats: PredictionStat;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -89,6 +90,7 @@ export interface Config {
     leagues: LeaguesSelect<false> | LeaguesSelect<true>;
     matches: MatchesSelect<false> | MatchesSelect<true>;
     matchStats: MatchStatsSelect<false> | MatchStatsSelect<true>;
+    predictionStats: PredictionStatsSelect<false> | PredictionStatsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -308,18 +310,83 @@ export interface Post {
       away?: number | null;
     };
     /**
-     * Динамические события прогноза с коэффициентами
+     * Рекомендуется: структурированное хранение событий с энумами
      */
     events?:
       | {
+          market:
+            | 'main'
+            | 'doubleChance'
+            | 'btts'
+            | 'total'
+            | 'statOutcome'
+            | 'statDoubleChance'
+            | 'teamTotal'
+            | 'handicap'
+            | 'combo';
           /**
-           * Название события (например, "П1", "ТБ 2.5", "УГ ТБ 8.5")
+           * Область применения (для голов и основных рынков)
            */
-          event: string;
+          scope?: ('ft' | '1h' | '2h') | null;
+          /**
+           * Показатель (для статистических рынков)
+           */
+          stat?:
+            | (
+                | 'goals'
+                | 'corners'
+                | 'yellowCards'
+                | 'redCards'
+                | 'fouls'
+                | 'throw_ins'
+                | 'goal_kicks'
+                | 'shotsOnTarget'
+                | 'shots'
+                | 'saves'
+                | 'offsides'
+                | 'substitutions'
+              )
+            | null;
+          /**
+           * Для market=main
+           */
+          outcome?: ('P1' | 'X' | 'P2') | null;
+          /**
+           * Для market=doubleChance/statDoubleChance
+           */
+          dc?: ('1X' | '12' | 'X2') | null;
+          /**
+           * Для market=btts
+           */
+          btts?: ('yes' | 'no') | null;
+          /**
+           * Для тоталов: market=total/teamTotal/combo
+           */
+          kind?: ('over' | 'under') | null;
+          /**
+           * Линия (если требуется рынком)
+           */
+          line?: number | null;
+          /**
+           * Для ИТ/фор
+           */
+          team?: ('home' | 'away') | null;
+          /**
+           * Для market=combo
+           */
+          comboDc?: ('1X' | 'X2') | null;
+          /**
+           * Для market=combo
+           */
+          comboKind?: ('over' | 'under') | null;
           /**
            * Коэффициент на событие
            */
           coefficient: number;
+          /**
+           * Человекочитаемое представление события (опционально)
+           */
+          label?: string | null;
           id?: string | null;
         }[]
       | null;
@@ -944,6 +1011,111 @@ export interface MatchStat {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "predictionStats".
+ */
+export interface PredictionStat {
+  id: string;
+  displayName?: string | null;
+  /**
+   * Пост-прогноз, к которому относится статистика
+   */
+  post: string | Post;
+  /**
+   * Автор прогноза
+   */
+  author: string | User;
+  /**
+   * ID матча (из API)
+   */
+  matchId?: number | null;
+  /**
+   * ID фикстуры (из API)
+   */
+  fixtureId?: number | null;
+  status: 'pending' | 'settled';
+  /**
+   * Время расчёта прогноза
+   */
+  evaluatedAt?: string | null;
+  /**
+   * Сводная статистика по событиям прогноза
+   */
+  summary?: {
+    /**
+     * Всего событий
+     */
+    total?: number | null;
+    /**
+     * Выиграло
+     */
+    won?: number | null;
+    /**
+     * Проиграло
+     */
+    lost?: number | null;
+    /**
+     * Не определено (нет данных/матч не окончен)
+     */
+    undecided?: number | null;
+    /**
+     * Процент попаданий (0..1)
+     */
+    hitRate?: number | null;
+    /**
+     * ROI по коэффициентам (если заданы), например 0.12 = +12%
+     */
+    roi?: number | null;
+  };
+  /**
+   * Результаты по отдельным событиям
+   */
+  details?:
+    | {
+        /**
+         * Строка события (например, "ТБ 2.5", "УГ ТМ 9.5")
+         */
+        event: string;
+        /**
+         * Коэффициент (если есть)
+         */
+        coefficient?: number | null;
+        /**
+         * Итог по событию
+         */
+        result: 'won' | 'lost' | 'undecided';
+        /**
+         * Причина, если результат не определён
+         */
+        reason?: ('unsupported_event' | 'match_not_finished' | 'no_score' | 'stat_unavailable' | 'unreachable') | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Начисленные очки по прогнозу
+   */
+  scoring?: {
+    /**
+     * Сумма очков
+     */
+    points?: number | null;
+    /**
+     * Детализация расчёта (JSON)
+     */
+    breakdown?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -980,6 +1152,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'matchStats';
         value: string | MatchStat;
+      } | null)
+    | ({
+        relationTo: 'predictionStats';
+        value: string | PredictionStat;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1151,8 +1327,19 @@ export interface PostsSelect<T extends boolean = true> {
         events?:
           | T
           | {
-              event?: T;
+              market?: T;
+              scope?: T;
+              stat?: T;
+              outcome?: T;
+              dc?: T;
+              btts?: T;
+              kind?: T;
+              line?: T;
+              team?: T;
+              comboDc?: T;
+              comboKind?: T;
               coefficient?: T;
+              label?: T;
               id?: T;
             };
         matchInfo?:
@@ -1538,6 +1725,46 @@ export interface MatchStatsSelect<T extends boolean = true> {
   lastSyncAt?: T;
   syncSource?: T;
   dataQuality?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "predictionStats_select".
+ */
+export interface PredictionStatsSelect<T extends boolean = true> {
+  displayName?: T;
+  post?: T;
+  author?: T;
+  matchId?: T;
+  fixtureId?: T;
+  status?: T;
+  evaluatedAt?: T;
+  summary?:
+    | T
+    | {
+        total?: T;
+        won?: T;
+        lost?: T;
+        undecided?: T;
+        hitRate?: T;
+        roi?: T;
+      };
+  details?:
+    | T
+    | {
+        event?: T;
+        coefficient?: T;
+        result?: T;
+        reason?: T;
+        id?: T;
+      };
+  scoring?:
+    | T
+    | {
+        points?: T;
+        breakdown?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

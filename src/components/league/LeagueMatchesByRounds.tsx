@@ -7,7 +7,6 @@ import {
   getMatchesHistoryJson,
   getFixturesMatchesJson,
 } from '@/app/(frontend)/client'
-import PredictionButton from '@/components/predictions/PredictionButton'
 import { TeamLogo } from '@/components/TeamLogo'
 
 interface Match {
@@ -253,17 +252,7 @@ function MatchCard({ match }: { match: Match }) {
         </div>
       </Link>
       
-      {/* Кнопка прогноза для запланированных матчей */}
-      {isScheduled && (
-        <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <PredictionButton 
-            fixtureId={match.id}
-            size="sm"
-            variant="ghost"
-            className="h-6 w-6 p-0"
-          />
-        </div>
-      )}
+
     </div>
   )
 }

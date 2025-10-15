@@ -12,7 +12,7 @@ import {
 } from '@/app/(frontend)/client'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { YearSelector } from '@/components/YearSelector'
-import PredictionButton from '@/components/predictions/PredictionButton'
+
 
 export const revalidate = 300 // 5 минут
 
@@ -362,17 +362,7 @@ function MatchCard({ match, isExactDay = false }: { match: Match; isExactDay?: b
         </div>
       </Link>
       
-      {/* Кнопка прогноза для запланированных матчей */}
-      {isScheduled && (
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <PredictionButton 
-            fixtureId={match.id}
-            size="sm"
-            variant="secondary"
-            className="shadow-sm"
-          />
-        </div>
-      )}
+
     </div>
   )
 }
