@@ -12,7 +12,7 @@ import {
 import { generateFixtureUrl } from '@/lib/match-urls'
 import { TeamLogo } from '@/components/TeamLogo'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
-import type { Fixture } from '@/app/(frontend)/client/types/Fixture'
+import { Button } from '@/components/ui/button'
 
 export type StripMatch = {
   id: number
@@ -49,21 +49,14 @@ function formatDateLabel(date: string): string {
     const tomorrow = new Date(today)
     tomorrow.setDate(today.getDate() + 1)
 
-    // Сравниваем только даты, игнорируя время
     const matchDateStr = matchDate.toDateString()
     const todayStr = today.toDateString()
     const tomorrowStr = tomorrow.toDateString()
 
-    if (matchDateStr === todayStr) {
-      return 'Сегодня'
-    } else if (matchDateStr === tomorrowStr) {
-      return 'Завтра'
-    } else {
-      return matchDate.toLocaleDateString('ru-RU', {
-        day: 'numeric',
-        month: 'short',
-      })
-    }
+    if (matchDateStr === todayStr) return 'Сегодня'
+    if (matchDateStr === tomorrowStr) return 'Завтра'
+
+    return matchDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
   } catch {
     return date
   }
@@ -74,9 +67,6 @@ function normalizeFixture(fx: any): StripMatch | null {
   const id = Number(rawId)
   if (!Number.isFinite(id)) return null
 
-  console.log(`[UpcomingMatchesStrip] Обрабатываем матч ${id}:`, JSON.stringify(fx, null, 2))
-
-  // Извлекаем данные из разных возможных форматов API
   const home = {
     id: Number(fx?.home_id || fx?.home?.id || fx?.homeTeam?.id || 0),
     name: String(
@@ -113,59 +103,35 @@ function normalizeFixture(fx: any): StripMatch | null {
           ? fx.fixtureTime
           : undefined
 
-  // Извлекаем коэффициенты из разных возможных форматов
   const odds = fx?.odds || fx?.betting_odds || fx?.pre_odds || undefined
   let normalizedOdds = undefined
-
-  console.log(`[UpcomingMatchesStrip] Исходные коэффициенты для матча ${id}:`, odds)
-
   if (odds) {
-    // Пробуем разные форматы коэффициентов
     if (odds.pre) {
-      // Формат: { pre: { "1": "2.50", "X": "3.20", "2": "2.80" } }
       normalizedOdds = {
         home: odds.pre['1'] || odds.pre.home,
         draw: odds.pre['X'] || odds.pre.draw,
         away: odds.pre['2'] || odds.pre.away,
       }
-      console.log(`[UpcomingMatchesStrip] Коэффициенты из odds.pre:`, normalizedOdds)
     } else if (odds['1'] || odds.home) {
-      // Прямой формат: { "1": "2.50", "X": "3.20", "2": "2.80" }
       normalizedOdds = {
         home: odds['1'] || odds.home,
         draw: odds['X'] || odds.draw,
         away: odds['2'] || odds.away,
       }
-      console.log(`[UpcomingMatchesStrip] Коэффициенты прямые:`, normalizedOdds)
-    } else {
-      console.log(`[UpcomingMatchesStrip] Неизвестный формат коэффициентов:`, Object.keys(odds))
     }
-  } else {
-    console.log(`[UpcomingMatchesStrip] Коэффициенты отсутствуют для матча ${id}`)
   }
 
-  // Извлекаем информацию о стране
   const country = fx?.country || fx?.competition?.country || fx?.league?.country
   let normalizedCountry = undefined
-
-  console.log(`[UpcomingMatchesStrip] Исходная информация о стране для матча ${id}:`, country)
-
   if (country) {
     if (typeof country === 'object') {
       normalizedCountry = {
         id: Number(country.id || country.country_id || 0),
         name: String(country.name || country.country_name || 'Неизвестная страна'),
       }
-      console.log(`[UpcomingMatchesStrip] Страна из объекта:`, normalizedCountry)
     } else if (typeof country === 'string') {
-      normalizedCountry = {
-        id: 0,
-        name: country,
-      }
-      console.log(`[UpcomingMatchesStrip] Страна из строки:`, normalizedCountry)
+      normalizedCountry = { id: 0, name: country }
     }
-  } else {
-    console.log(`[UpcomingMatchesStrip] Информация о стране отсутствует для матча ${id}`)
   }
 
   const result = {
@@ -179,11 +145,7 @@ function normalizeFixture(fx: any): StripMatch | null {
     odds: normalizedOdds,
   }
 
-  console.log(`[UpcomingMatchesStrip] Финальный результат для матча ${id}:`, result)
-
-  // Временно добавляем тестовые данные для первого матча
   if (id && !normalizedCountry) {
-    // Используем разные ID стран для тестирования
     const testCountries = [
       { id: 42, name: 'Англия' },
       { id: 73, name: 'Испания' },
@@ -191,21 +153,11 @@ function normalizeFixture(fx: any): StripMatch | null {
       { id: 74, name: 'Италия' },
       { id: 75, name: 'Франция' },
     ]
-    const randomCountry = testCountries[id % testCountries.length]
-    result.country = randomCountry
-    console.log(
-      `[UpcomingMatchesStrip] Добавлены тестовые данные страны для матча ${id}:`,
-      randomCountry,
-    )
+    result.country = testCountries[id % testCountries.length]
   }
 
   if (id && !normalizedOdds) {
-    result.odds = {
-      home: '2.50',
-      draw: '3.20',
-      away: '2.80',
-    }
-    console.log(`[UpcomingMatchesStrip] Добавлены тестовые коэффициенты для матча ${id}`)
+    result.odds = { home: '2.50', draw: '3.20', away: '2.80' }
   }
 
   return result
@@ -220,64 +172,129 @@ function sortByPriorityAndTime(a: StripMatch, b: StripMatch) {
   return ta - tb
 }
 
+function MatchCard({ m }: { m: StripMatch }) {
+  const matchUrl = generateFixtureUrl(
+    m.home?.name || 'Команда дома',
+    m.away?.name || 'Команда гостей',
+    m.date,
+    m.home?.id || 0,
+    m.away?.id || 0,
+    m.id,
+  )
+
+  return (
+    <Link href={matchUrl} className="block">
+      <div className="w-64 border rounded-lg p-3 bg-card hover:bg-accent transition-colors relative">
+        <div className="absolute -top-2 left-2 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-medium rounded-full">
+          {formatDateLabel(m.date)}
+        </div>
+
+        <div className="flex items-center justify-between mb-2 mt-1">
+          <div className="flex items-center gap-1 text-[11px] text-muted-foreground truncate">
+            {m.country?.id && (
+              <CountryFlagImage
+                countryId={m.country.id}
+                countryName={m.country.name || ''}
+                size="small"
+                className="w-3 h-3 rounded-sm object-cover flex-shrink-0"
+              />
+            )}
+            {(() => {
+              const leagueInfo = getLeagueInfoClient(m.competition?.id || 0)
+              const compName = leagueInfo?.name || m.competition?.name || 'Неизвестная лига'
+              return <span className="truncate">{compName}</span>
+            })()}
+          </div>
+          <div className="text-[11px] text-muted-foreground">{formatTime(m.date, m.time)}</div>
+        </div>
+
+        <div className="grid grid-cols-[24px_1fr] gap-2 mb-2">
+          <TeamLogo teamId={m.home?.id} teamName={m.home?.name} size="small" />
+          <div className="text-sm font-medium truncate">{m.home?.name}</div>
+          <TeamLogo teamId={m.away?.id} teamName={m.away?.name} size="small" />
+          <div className="text-sm font-medium truncate">{m.away?.name}</div>
+        </div>
+
+        {m.odds && (m.odds.home || m.odds.draw || m.odds.away) && (
+          <div className="flex justify-between items-center text-[10px] bg-muted/30 rounded px-2 py-1">
+            <div className="flex items-center gap-1">
+              <span className="text-muted-foreground"></span>
+              <span className="font-medium">
+                {m.odds.home ? Number(m.odds.home).toFixed(2) : '—'}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-muted-foreground">X</span>
+              <span className="font-medium">
+                {m.odds.draw ? Number(m.odds.draw).toFixed(2) : '—'}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-muted-foreground"></span>
+              <span className="font-medium">
+                {m.odds.away ? Number(m.odds.away).toFixed(2) : '—'}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    </Link>
+  )
+}
+
+// Фазы: idle → fade → slide-pre → slide-run
+
+type Phase = 'idle' | 'fade' | 'slide-pre' | 'slide-run'
+
 export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
   const [items, setItems] = React.useState<StripMatch[]>(
     () => initial.map(normalizeFixture).filter(Boolean) as StripMatch[],
   )
   const [isLoading, setIsLoading] = React.useState(false)
-  const [apiResponse, setApiResponse] = React.useState<any>(null)
+
+  // Геометрия и тайминги
+  const VISIBLE = 5
+  const STEP = 4
+  const SLOT_W = 256 // w-64
+  const GAP = 12 // gap-3
+  const STEP_PX = SLOT_W + GAP
+  const VIEW_W = VISIBLE * SLOT_W + (VISIBLE - 1) * GAP
+
+  const D_FADE = 150
+  const D_SLIDE = 700
+  const easing = 'cubic-bezier(0.22, 1, 0.36, 1)'
+
+  // Пагинация и анимация
+  const [pageStart, setPageStart] = React.useState(0)
+  const [pendingStart, setPendingStart] = React.useState(0)
+  const [direction, setDirection] = React.useState<'next' | 'prev'>('next')
+  const [phase, setPhase] = React.useState<Phase>('idle')
 
   React.useEffect(() => {
-    // Инициализируем кэш лиг при загрузке компонента и дождёмся готовности, чтобы обновить рендер
-    initializeLeaguesCache().then(() => {
-      // Триггерим повторный рендер, чтобы отобразить названия лиг из CMS
-      setItems((prev) => [...prev])
-    })
+    initializeLeaguesCache().then(() => setItems((prev) => [...prev]))
 
     let mounted = true
     async function refresh() {
       try {
         setIsLoading(true)
-        console.log('[UpcomingMatchesStrip] fetching fixtures for 7-day range')
-
-        // Добавляем таймаут для запроса
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 секунд таймаут
-
-        // Используем новый API с диапазоном 7 дней
-        const res = await fetch('/api/fixtures?size=60', {
-          signal: controller.signal,
-        })
+        const timeoutId = setTimeout(() => controller.abort(), 5000)
+        const res = await fetch('/api/fixtures?size=60', { signal: controller.signal })
         clearTimeout(timeoutId)
-
-        console.log('[UpcomingMatchesStrip] API response status:', res.status)
-        if (!res.ok) {
-          console.error('[UpcomingMatchesStrip] API error:', res.status, res.statusText)
-          return
-        }
+        if (!res.ok) return
         const data = await res.json()
-        console.log('[UpcomingMatchesStrip] API response data:', data)
-
-        // Сохраняем сырой ответ для отладки
-        if (mounted) setApiResponse(data)
-
         const list: any[] = data.fixtures || data.data?.fixtures || []
-        console.log('[UpcomingMatchesStrip] extracted fixtures list:', list.length, 'items')
         if (!mounted) return
         const normalized = list.map(normalizeFixture).filter(Boolean) as StripMatch[]
-        console.log('[UpcomingMatchesStrip] normalized fixtures:', normalized.length, 'items')
         setItems(normalized)
-      } catch (e) {
-        if (e instanceof Error && e.name === 'AbortError') {
-          console.warn('[UpcomingMatchesStrip] Request timed out')
-        } else {
-          console.error('[UpcomingMatchesStrip] fetch error:', e)
-        }
+        setPageStart(0)
+      } catch {
+        // noop
       } finally {
         if (mounted) setIsLoading(false)
       }
     }
-    // Отложенная загрузка, чтобы не блокировать рендер
+
     setTimeout(refresh, 100)
     const t = setInterval(refresh, 120000)
     return () => {
@@ -286,131 +303,151 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
     }
   }, [])
 
-  // Фильтруем только будущие матчи и сортируем по приоритету лиг и времени
+  // Данные
   const futureMatches = React.useMemo(() => {
     const now = Date.now()
-    console.log('[UpcomingMatchesStrip] Current time:', new Date(now).toISOString())
-
-    return items.filter((m) => {
-      const matchTime = new Date(`${m.date}T${m.time || '00:00'}Z`).getTime()
-      const isFuture = matchTime > now
-      console.log(
-        `[UpcomingMatchesStrip] Match ${m.id} (${m.home?.name} vs ${m.away?.name}): ${m.date}T${m.time || '00:00'}Z -> ${new Date(matchTime).toISOString()} -> Future: ${isFuture}`,
-      )
-      return isFuture
-    })
+    return items.filter((m) => new Date(`${m.date}T${m.time || '00:00'}Z`).getTime() > now)
   }, [items])
 
-  const priorityMatches = React.useMemo(() => {
-    const priority = futureMatches.filter((m) => {
-      const isPriority = isPriorityLeagueClient(m.competition?.id || 0)
-      console.log(
-        `[UpcomingMatchesStrip] Match ${m.id} (${m.competition?.name}, ID: ${m.competition?.id}): Priority = ${isPriority}`,
-      )
-      return isPriority
-    })
-    console.log(
-      `[UpcomingMatchesStrip] Priority matches: ${priority.length}, Future matches: ${futureMatches.length}`,
-    )
-    return priority
-  }, [futureMatches])
+  const priorityMatches = React.useMemo(
+    () => futureMatches.filter((m) => isPriorityLeagueClient(m.competition?.id || 0)),
+    [futureMatches],
+  )
 
   const sorted = React.useMemo(() => {
     const arr = priorityMatches.length > 0 ? priorityMatches : futureMatches
-    console.log(
-      `[UpcomingMatchesStrip] Using ${priorityMatches.length > 0 ? 'priority' : 'all future'} matches (${arr.length} total)`,
-    )
-    const sortedArr = [...arr].sort(sortByPriorityAndTime)
-    console.log(
-      `[UpcomingMatchesStrip] Final sorted matches:`,
-      sortedArr.map((m) => `${m.id}: ${m.home?.name} vs ${m.away?.name} (${m.competition?.name})`),
-    )
-    return sortedArr
+    return [...arr].sort(sortByPriorityAndTime)
   }, [futureMatches, priorityMatches])
+
+  const maxStart = Math.max(0, sorted.length - VISIBLE)
+  const canPrev = pageStart - STEP >= 0
+  const canNext = pageStart + STEP <= maxStart
+
+  const currentItems = React.useMemo(
+    () => sorted.slice(pageStart, pageStart + VISIBLE),
+    [sorted, pageStart],
+  )
+
+  const nextItems = React.useMemo(
+    () => sorted.slice(pageStart + STEP, pageStart + STEP + VISIBLE),
+    [sorted, pageStart],
+  )
+
+  const prevItems = React.useMemo(
+    () => sorted.slice(pageStart - STEP, pageStart - STEP + VISIBLE),
+    [sorted, pageStart],
+  )
+
+  // Построение трека из 9 элементов и смещений
+  let trackItems: StripMatch[] = currentItems
+  let trackTranslate = 0
+
+  if (phase === 'slide-pre' || phase === 'slide-run') {
+    if (direction === 'next') {
+      // 5 старых + 4 новых (пропускаем якорь, берём элементы 1..4 следующей страницы)
+      trackItems = currentItems.concat(nextItems.slice(1, STEP + 1))
+      trackTranslate = phase === 'slide-run' ? -STEP * STEP_PX : 0
+    } else {
+      // 4 новых (последние 4 из предыдущей страницы) + 5 старых
+      const prevFour = prevItems.slice(0, STEP)
+      trackItems = prevFour.concat(currentItems)
+      trackTranslate = phase === 'slide-run' ? 0 : -STEP * STEP_PX
+    }
+  }
+
+  const disableButtons = phase !== 'idle'
+
+  // Запуск анимации по фазам
+  const startAnim = React.useCallback((dir: 'next' | 'prev', target: number) => {
+    setDirection(dir)
+    setPendingStart(target)
+    setPhase('fade')
+
+    window.setTimeout(() => {
+      setPhase('slide-pre')
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setPhase('slide-run'))
+      })
+    }, D_FADE)
+
+    window.setTimeout(() => {
+      setPageStart(target)
+      setPhase('idle')
+    }, D_FADE + D_SLIDE)
+  }, [])
+
+  const handleNext = () => {
+    if (!canNext || disableButtons) return
+    startAnim('next', Math.min(pageStart + STEP, maxStart))
+  }
+
+  const handlePrev = () => {
+    if (!canPrev || disableButtons) return
+    startAnim('prev', Math.max(0, pageStart - STEP))
+  }
 
   return (
     <div className="w-full">
-      <div className="overflow-x-auto">
-        <div className="flex gap-3 py-2 min-w-max">
-          {sorted.length > 0 ? (
-            sorted.map((m) => {
-              // Генерируем SEO-friendly URL для matches-v2
-              const matchUrl = generateFixtureUrl(
-                m.home?.name || 'Команда дома',
-                m.away?.name || 'Команда гостей',
-                m.date,
-                m.home?.id || 0,
-                m.away?.id || 0,
-                m.id, // fixtureId
-              )
+      <div className="relative">
+        <div className="flex justify-end gap-2 mb-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handlePrev}
+            disabled={!canPrev || disableButtons}
+            aria-label="Предыдущие матчи"
+          >
+            ‹
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleNext}
+            disabled={!canNext || disableButtons}
+            aria-label="Следующие матчи"
+          >
+            ›
+          </Button>
+        </div>
 
-              return (
-                <Link key={m.id} href={matchUrl} className="flex-shrink-0">
-                  <div className="w-64 border rounded-lg p-3 bg-card hover:bg-accent transition-colors relative">
-                    {/* Мини-плашка с датой */}
-                    <div className="absolute -top-2 left-2 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-medium rounded-full">
-                      {formatDateLabel(m.date)}
-                    </div>
-
-                    <div className="flex items-center justify-between mb-2 mt-1">
-                      <div className="flex items-center gap-1 text-[11px] text-muted-foreground truncate">
-                        {m.country?.id && (
-                          <CountryFlagImage
-                            countryId={m.country.id}
-                            countryName={m.country.name || ''}
-                            size="small"
-                            className="w-3 h-3 rounded-sm object-cover flex-shrink-0"
-                          />
-                        )}
-                        {(() => {
-                          const leagueInfo = getLeagueInfoClient(m.competition?.id || 0)
-                          const compName =
-                            leagueInfo?.name || m.competition?.name || 'Неизвестная лига'
-                          return <span className="truncate">{compName}</span>
-                        })()}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {formatTime(m.date, m.time)}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-[24px_1fr] gap-2 mb-2">
-                      <TeamLogo teamId={m.home?.id} teamName={m.home?.name} size="small" />
-                      <div className="text-sm font-medium truncate">{m.home?.name}</div>
-                      <TeamLogo teamId={m.away?.id} teamName={m.away?.name} size="small" />
-                      <div className="text-sm font-medium truncate">{m.away?.name}</div>
-                    </div>
-
-                    {/* Коэффициенты */}
-                    {m.odds && (m.odds.home || m.odds.draw || m.odds.away) && (
-                      <div className="flex justify-between items-center text-[10px] bg-muted/30 rounded px-2 py-1">
-                        <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground"></span>
-                          <span className="font-medium">
-                            {m.odds.home ? Number(m.odds.home).toFixed(2) : '—'}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground">X</span>
-                          <span className="font-medium">
-                            {m.odds.draw ? Number(m.odds.draw).toFixed(2) : '—'}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground"></span>
-                          <span className="font-medium">
-                            {m.odds.away ? Number(m.odds.away).toFixed(2) : '—'}
-                          </span>
-                        </div>
-                      </div>
-                    )}
+        {sorted.length > 0 ? (
+          <div className="relative overflow-hidden" style={{ width: VIEW_W }}>
+            {/* Трек из 9 карточек */}
+            <div
+              className="flex gap-3 will-change-transform"
+              style={{
+                width:
+                  phase === 'slide-pre' || phase === 'slide-run' ? VIEW_W + STEP * STEP_PX : VIEW_W,
+                transform: `translate3d(${trackTranslate}px,0,0)`,
+                transitionProperty: phase === 'slide-run' ? 'transform' : 'none',
+                transitionDuration: phase === 'slide-run' ? `${D_SLIDE}ms` : '0ms',
+                transitionTimingFunction: easing,
+                pointerEvents: 'none',
+              }}
+            >
+              {trackItems.map((m, i) => {
+                // Полупрозрачность только для 5 старых
+                const isOld = direction === 'next' ? i < VISIBLE : i >= STEP
+                const itemOpacity =
+                  phase === 'fade'
+                    ? 0.5
+                    : phase === 'slide-pre' || phase === 'slide-run'
+                      ? isOld
+                        ? 0.5
+                        : 1
+                      : 1
+                return (
+                  <div key={`${m.id}-${i}`} style={{ width: SLOT_W, opacity: itemOpacity }}>
+                    <MatchCard m={m} />
                   </div>
-                </Link>
-              )
-            })
-          ) : isLoading ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="w-64 border rounded-lg p-3 bg-card">
+                )
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className="w-64 border rounded-lg p-3 bg-card">
+            {isLoading ? (
+              <>
                 <div className="h-3 w-40 bg-muted animate-pulse rounded mb-2" />
                 <div className="grid grid-cols-[24px_1fr] gap-2">
                   <div className="w-6 h-6 bg-muted rounded animate-pulse" />
@@ -418,18 +455,20 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
                   <div className="w-6 h-6 bg-muted rounded animate-pulse" />
                   <div className="h-4 bg-muted rounded w-28 animate-pulse" />
                 </div>
-              </div>
-            ))
-          ) : (
-            <div className="w-64 border rounded-lg p-3 bg-card">
-              <div className="text-[11px] text-muted-foreground mb-1">Ближайшие матчи</div>
-              <div className="text-sm text-muted-foreground">
-                Нет матчей в ближайшие 7 дней из приоритетных лиг
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">Настройте лиги в админке CMS</div>
-            </div>
-          )}
-        </div>
+              </>
+            ) : (
+              <>
+                <div className="text-[11px] text-muted-foreground mb-1">Ближайшие матчи</div>
+                <div className="text-sm text-muted-foreground">
+                  Нет матчей в ближайшие 7 дней из приоритетных лиг
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Настройте лиги в админке CMS
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
