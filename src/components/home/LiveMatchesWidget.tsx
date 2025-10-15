@@ -4,7 +4,11 @@ import * as React from 'react'
 import Link from 'next/link'
 import { TeamLogo } from '@/components/TeamLogo'
 import { LiveIndicator } from '@/components/ui/live-indicator'
-import { generateMatchUrlFromApiMatch, generateLegacyMatchUrl, generateLegacyFixtureUrl } from '@/lib/match-url-utils'
+import {
+  generateMatchUrlFromApiMatch,
+  generateLegacyMatchUrl,
+  generateLegacyFixtureUrl,
+} from '@/lib/match-url-utils'
 
 // Функция для перевода статусов матча на русский язык
 function translateStatus(status: string): string {
@@ -152,6 +156,7 @@ type LiveItem = {
   id: number
   fixtureId?: number
   date?: string
+  time?: string
   compName?: string
   home: {
     name: string
@@ -192,7 +197,7 @@ function normalize(match: any): LiveItem | null {
   const homeId = match?.home?.id
   const awayId = match?.away?.id
 
-  // Извлекаем счёт из строки "2 - 1" в отдельные чис��а
+  // Извлекаем счёт из строки "2 - 1" в отдельные числа
   const scoreString = match?.scores?.score || ''
   let homeScore: number | undefined
   let awayScore: number | undefined
@@ -210,13 +215,14 @@ function normalize(match: any): LiveItem | null {
 
   const compName = match?.competition?.name || match?.league?.name
   const status = match?.status
-  const time_status = match?.time_status
+  const time_status = match?.time_status != null ? String(match?.time_status) : null
   const location = match?.location
 
   const result = {
     id: Number.isFinite(id) ? id : fixtureId!,
     fixtureId: Number.isFinite(fixtureId) ? fixtureId : undefined,
-    date: match?.date, // Добавляем дату из API
+    date: match?.date,
+    time: match?.time,
     compName,
     home: {
       name: homeName,
@@ -245,24 +251,188 @@ function normalize(match: any): LiveItem | null {
   return result
 }
 
+// Безопасный парсер времени начала матча
+function parseDateMs(input?: string): number | null {
+  if (!input) return null
+  const s = String(input).trim()
+  if (/^\d{13}$/.test(s)) return Number(s)
+  if (/^\d{10}$/.test(s)) return Number(s) * 1000
+  const withT = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(s) ? s.replace(' ', 'T') : s
+  let t = Date.parse(withT)
+  if (!Number.isFinite(t)) t = Date.parse(withT + 'Z')
+  return Number.isFinite(t) ? t : null
+}
+
+// Бейдж текущей минуты слева от логотипа команды
+function LiveMinuteBadge({
+  timeStatus,
+  status,
+  date,
+  time,
+}: {
+  timeStatus?: string | null
+  status?: string
+  date?: string
+  time?: string
+}) {
+  const [now, setNow] = React.useState(Date.now())
+
+  React.useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(t)
+  }, [])
+
+  const label = React.useMemo(() => {
+    const up = (s?: string | null) => (s ? String(s).toUpperCase().trim() : '')
+    const s = up(status)
+    const ts = up(timeStatus)
+
+    // В приоритете поле live time из ответа (минуты/HT/FT/90+X)
+    if (typeof time === 'string' && time.trim().length > 0) {
+      const t = time.trim()
+      const tU = t.toUpperCase()
+      if (/^\d+\+\d+$/.test(t)) return `${t}'`
+      const n = parseInt(t, 10)
+      if (!Number.isNaN(n)) return `${n}'`
+      if (tU === 'HT') return "45'"
+      if (tU === 'FT') return "90'"
+    }
+
+    // Завершён — бейдж не показываем
+    const isFinished = s.includes('FINISH') || s === 'FULL TIME' || ts === 'FT'
+    if (isFinished) return ''
+
+    // Перерыв
+    const isHT = s.includes('HALF TIME') || ts === 'HT'
+    if (isHT) return "45'"
+
+    // Если API сразу даёт минуты или добавленное время вида 45+2
+    if (ts) {
+      if (/^\d+\+\d+$/.test(ts)) return `${ts}'`
+      const n = parseInt(ts, 10)
+      if (!Number.isNaN(n)) return `${n}'`
+    }
+
+    // Считаем по времени начала при лайв-статусах
+    const isLiveByStatus =
+      s.includes('IN PLAY') ||
+      s.includes('ADDED TIME') ||
+      s === 'LIVE' ||
+      s.includes('1ST HALF') ||
+      s.includes('FIRST HALF') ||
+      s.includes('2ND HALF') ||
+      s.includes('SECOND HALF') ||
+      s.includes('EXTRA TIME') ||
+      ts === '1H' ||
+      ts === '2H' ||
+      ts.includes('IN PLAY') ||
+      ts.includes('LIVE') ||
+      ts.includes('1ST HALF') ||
+      ts.includes('FIRST HALF') ||
+      ts.includes('2ND HALF') ||
+      ts.includes('SECOND HALF') ||
+      ts.includes('ADDED TIME') ||
+      ts.includes('EXTRA TIME')
+
+    if (date && isLiveByStatus) {
+      const startMs = parseDateMs(date)
+      if (!startMs) return ''
+      const diffMin = Math.max(0, Math.floor((now - startMs) / 60000))
+      if (diffMin <= 45) return `${Math.max(1, diffMin)}'`
+      if (diffMin <= 60) return "45'"
+      if (diffMin <= 105) return `${Math.max(46, diffMin - 15)}'`
+      return `90+${diffMin - 105}'`
+    }
+
+    return ''
+  }, [timeStatus, status, date, time, now])
+
+  if (!label) return null
+
+  return (
+    <span className="inline-flex justify-center px-1 text-[11px] font-semibold text-red-600 tabular-nums">
+      {label}
+    </span>
+  )
+}
+
+function RefreshWidget({
+  nextRefreshAt,
+  onRefresh,
+}: {
+  nextRefreshAt: number
+  onRefresh: () => void
+}) {
+  const [now, setNow] = React.useState(Date.now())
+  React.useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(t)
+  }, [nextRefreshAt])
+  const seconds = Math.max(0, Math.ceil((nextRefreshAt - now) / 1000))
+  const mm = String(Math.floor(seconds / 60)).padStart(2, '0')
+  const ss = String(seconds % 60).padStart(2, '0')
+  return (
+    <div className="absolute top-2 right-2 z-10 flex items-center gap-1 rounded border bg-background/80 backdrop-blur-sm  py-0.5 text-[10px] text-muted-foreground">
+      <LiveIndicator size="small" />
+      <button
+        type="button"
+        aria-label="Обновить"
+        className="hover:text-foreground transition-colors"
+        onClick={onRefresh}
+      >
+        ↻
+      </button>
+      <span className="tabular-nums">{`${mm}:${ss}`}</span>
+    </div>
+  )
+}
+
 export default function LiveMatchesWidget() {
   const [items, setItems] = React.useState<LiveItem[]>([])
   const [visible, setVisible] = React.useState(5)
   const [page, setPage] = React.useState(1)
   const [loading, setLoading] = React.useState(false)
   const [hasMore, setHasMore] = React.useState(true)
+  const [nextRefreshAt, setNextRefreshAt] = React.useState<number>(Date.now() + 60000)
 
   const load = React.useCallback(async (nextPage: number) => {
     try {
       setLoading(true)
       const controller = new AbortController()
       const to = setTimeout(() => controller.abort(), 8000)
-      const res = await fetch(`/api/fixtures?live=true&all=true&page=${nextPage}`, {
+      const url = `/api/fixtures?live=true&all=true&page=${nextPage}`
+      console.log('[LiveMatchesWidget] Fetch:', url)
+      const res = await fetch(url, {
         signal: controller.signal,
       })
+      console.log('[LiveMatchesWidget] HTTP status:', res.status)
       clearTimeout(to)
-      if (!res.ok) return
-      const data = await res.json()
+      if (!res.ok) {
+        console.error('[LiveMatchesWidget] Fetch failed:', res.status, res.statusText)
+        return
+      }
+      let data: any
+      try {
+        data = await res.json()
+      } catch (e) {
+        console.error('[LiveMatchesWidget] JSON parse error:', e)
+        throw e
+      }
+      console.log('[LiveMatchesWidget] API JSON:', data)
+      if (Array.isArray(data?.matches)) {
+        console.log(
+          '[LiveMatchesWidget] Matches sample:',
+          data.matches.slice(0, 5).map((m: any) => ({
+            id: m?.id,
+            fixture_id: m?.fixture_id,
+            status: m?.status,
+            time_status: m?.time_status,
+            date: m?.date,
+            time: m?.time,
+            score: m?.scores?.score,
+          })),
+        )
+      }
       const raw = (data?.matches || []) as any[]
       const normalized = raw.map(normalize).filter(Boolean) as LiveItem[]
       if (normalized.length === 0) {
@@ -275,24 +445,61 @@ export default function LiveMatchesWidget() {
         return Array.from(map.values())
       })
       setPage(nextPage)
-    } catch {
-      // no-op
+    } catch (e) {
+      console.error('[LiveMatchesWidget] load error:', e)
     } finally {
       setLoading(false)
     }
   }, [])
 
+  const handleManualRefresh = React.useCallback(() => {
+    void load(1)
+    setNextRefreshAt(Date.now() + 60000)
+  }, [load])
+
   React.useEffect(() => {
     // первая загрузка
     void load(1)
-    const t = setInterval(() => void load(1), 60000) // обновляем из источника раз в минуту
-    return () => clearInterval(t)
+    setNextRefreshAt(Date.now() + 60000)
+    const poll = setInterval(() => {
+      void load(1)
+      setNextRefreshAt(Date.now() + 60000)
+    }, 60000) // обновляем из источника ��аз в минуту
+    return () => clearInterval(poll)
   }, [load])
 
   const visibleItems = items.slice(0, visible)
 
+  const [isDebug, setIsDebug] = React.useState(false)
+  React.useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search)
+      setIsDebug(sp.get('debugLive') === '1')
+    } catch {
+      // no-op
+    }
+  }, [])
+
   return (
-    <div className="space-y-3 text-sm">
+    <div className="relative space-y-3 text-sm">
+      {/* Глобальный мини‑виджет обновления для всего виджета */}
+
+      {isDebug && (
+        <div className="rounded border p-2 text-[11px] text-muted-foreground whitespace-pre-wrap break-words">
+          {JSON.stringify(
+            items.slice(0, 8).map((m) => ({
+              id: m.id,
+              status: m.status,
+              time_status: m.time_status,
+              date: m.date,
+              time: m.time,
+              score: m.scores?.score,
+            })),
+            null,
+            2,
+          )}
+        </div>
+      )}
       {loading && items.length === 0 ? (
         <div className="text-sm text-muted-foreground">Загрузка…</div>
       ) : visibleItems.length === 0 ? (
@@ -323,45 +530,79 @@ export default function LiveMatchesWidget() {
                 href = generateLegacyFixtureUrl(m.fixtureId)
               }
             }
+            const sUp = String(m.status || '').toUpperCase()
+            const tsUp = String(m.time_status || '').toUpperCase()
+            const timeStr = String(m.time || '').trim()
+            const finished =
+              sUp.includes('FINISH') ||
+              sUp === 'FULL TIME' ||
+              tsUp === 'FT' ||
+              timeStr.toUpperCase() === 'FT'
+            const timeIsMinute = /^\d+(\+\d+)?$/.test(timeStr)
+            const startedByTime =
+              timeIsMinute || ['HT', 'AET', 'AP'].includes(timeStr.toUpperCase())
+            const startedByStatus =
+              sUp.includes('IN PLAY') ||
+              sUp.includes('ADDED TIME') ||
+              sUp.includes('1ST') ||
+              sUp.includes('2ND') ||
+              sUp.includes('LIVE') ||
+              sUp.includes('EXTRA TIME') ||
+              sUp.includes('HALF TIME')
+            const startedByTS = /^\d+(\+\d+)?$/.test(tsUp) || ['HT', 'AET', 'AP'].includes(tsUp)
+            const started = (startedByTime || startedByStatus || startedByTS) && !finished
+
             return (
               <li
                 key={`${m.id}-${idx}`}
                 className="border rounded p-3 hover:bg-accent/50 transition-colors relative"
               >
-                {/* Пульсирующая точка в правом верхнем углу */}
-                <LiveIndicator size="small" className="absolute top-2 right-2 z-10" />
-
                 <Link href={href} className="block">
                   {/* Заголовок с лигой */}
                   <div className="flex items-center justify-between mb-2 pr-6">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground truncate">
+                      <LiveMinuteBadge
+                        timeStatus={m.time_status}
+                        status={m.status}
+                        date={m.date}
+                        time={m.time}
+                      />
                       <span>{m.compName || 'Лайв матч'}</span>
                     </div>
                   </div>
 
-                  {/* Команды со счётом */}
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <div className="flex-shrink-0">
-                          <TeamLogo teamId={m.home.id} teamName={m.home.name} size="small" />
+                  <div className="flex">
+                    <div className="flex items-center"></div>
+                    <div className="flex flex-col">
+                      {/* Команды со счётом */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <div className="flex-shrink-0">
+                              <TeamLogo teamId={m.home.id} teamName={m.home.name} size="small" />
+                            </div>
+                            <span className="truncate font-medium text-sm">{m.home.name}</span>
+                          </div>
+                          {started ? (
+                            <div className="text-lg font-bold text-primary ml-2 flex-shrink-0">
+                              {typeof m.home.score === 'number' ? m.home.score : '—'}
+                            </div>
+                          ) : null}
                         </div>
-                        <span className="truncate font-medium text-sm">{m.home.name}</span>
-                      </div>
-                      <div className="text-lg font-bold text-primary ml-2 flex-shrink-0">
-                        {m.home.score !== undefined ? m.home.score : '—'}
-                      </div>
-                    </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <div className="flex-shrink-0">
-                          <TeamLogo teamId={m.away.id} teamName={m.away.name} size="small" />
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <div className="flex-shrink-0">
+                              <TeamLogo teamId={m.away.id} teamName={m.away.name} size="small" />
+                            </div>
+                            <span className="truncate font-medium text-sm">{m.away.name}</span>
+                          </div>
+                          {started ? (
+                            <div className="text-lg font-bold text-primary ml-2 flex-shrink-0">
+                              {typeof m.away.score === 'number' ? m.away.score : '—'}
+                            </div>
+                          ) : null}
                         </div>
-                        <span className="truncate font-medium text-sm">{m.away.name}</span>
-                      </div>
-                      <div className="text-lg font-bold text-primary ml-2 flex-shrink-0">
-                        {m.away.score !== undefined ? m.away.score : '—'}
                       </div>
                     </div>
                   </div>
