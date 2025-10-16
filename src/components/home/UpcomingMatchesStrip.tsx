@@ -184,7 +184,7 @@ function MatchCard({ m }: { m: StripMatch }) {
 
   return (
     <Link href={matchUrl} className="block">
-      <div className="w-64 border rounded-lg p-3 bg-card hover:bg-accent transition-colors relative">
+      <div className="w-full border rounded-lg p-3 bg-card hover:bg-accent transition-colors relative">
         <div className="absolute -top-2 left-2 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-medium rounded-full">
           {formatDateLabel(m.date)}
         </div>
@@ -252,13 +252,37 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
   )
   const [isLoading, setIsLoading] = React.useState(false)
 
-  // Геометрия и тайминги
+  // Геометрия контейнера и слотов: ровно 5 карточек без скролла
   const VISIBLE = 5
   const STEP = 4
-  const SLOT_W = 256 // w-64
-  const GAP = 12 // gap-3
-  const STEP_PX = SLOT_W + GAP
-  const VIEW_W = VISIBLE * SLOT_W + (VISIBLE - 1) * GAP
+  const GAP = 12 // px между карточками
+
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
+  const [containerW, setContainerW] = React.useState(0)
+  const [slotW, setSlotW] = React.useState(0)
+
+  React.useEffect(() => {
+    const measure = () => {
+      const w = containerRef.current?.offsetWidth || 0
+      setContainerW(w)
+      const totalGaps = (VISIBLE - 1) * GAP
+      const sw = w > totalGaps ? Math.floor((w - totalGaps) / VISIBLE) : 0
+      setSlotW(sw)
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [])
+
+  const [animWidthPx, setAnimWidthPx] = React.useState<number | null>(null)
+  const [animViewW, setAnimViewW] = React.useState<number | null>(null)
+
+  const totalGaps = (VISIBLE - 1) * GAP
+  const baseWidthPx = slotW || (containerW > 0 ? Math.floor((containerW - totalGaps) / VISIBLE) : 0)
+  const widthPxEff = animWidthPx ?? baseWidthPx
+  const viewWEff = animViewW ?? (widthPxEff > 0 ? widthPxEff * VISIBLE + totalGaps : containerW)
+  const trackBaseW = viewWEff > 0 ? viewWEff : containerW
+  const stepPxEff = widthPxEff > 0 ? widthPxEff + GAP : 0
 
   const D_FADE = 150
   const D_SLIDE = 700
@@ -346,35 +370,49 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
     if (direction === 'next') {
       // 5 старых + 4 новых (пропускаем якорь, берём элементы 1..4 следующей страницы)
       trackItems = currentItems.concat(nextItems.slice(1, STEP + 1))
-      trackTranslate = phase === 'slide-run' ? -STEP * STEP_PX : 0
+      trackTranslate = phase === 'slide-run' ? -STEP * stepPxEff : 0
     } else {
       // 4 новых (последние 4 из предыдущей страницы) + 5 старых
       const prevFour = prevItems.slice(0, STEP)
       trackItems = prevFour.concat(currentItems)
-      trackTranslate = phase === 'slide-run' ? 0 : -STEP * STEP_PX
+      trackTranslate = phase === 'slide-run' ? 0 : -STEP * stepPxEff
     }
   }
 
   const disableButtons = phase !== 'idle'
 
   // Запуск анимации по фазам
-  const startAnim = React.useCallback((dir: 'next' | 'prev', target: number) => {
-    setDirection(dir)
-    setPendingStart(target)
-    setPhase('fade')
+  const startAnim = React.useCallback(
+    (dir: 'next' | 'prev', target: number) => {
+      // Заморозим геометрию на время анимации
+      const cw = containerRef.current?.offsetWidth || containerW
+      const total = (VISIBLE - 1) * GAP
+      const wpx = cw > 0 ? Math.floor((cw - total) / VISIBLE) : baseWidthPx
+      const freezeW = wpx && wpx > 0 ? wpx : baseWidthPx
+      if (!freezeW || freezeW <= 0) return // нет валидной ширины — не запускаем
+      setAnimWidthPx(freezeW)
+      setAnimViewW(freezeW * VISIBLE + total)
 
-    window.setTimeout(() => {
-      setPhase('slide-pre')
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => setPhase('slide-run'))
-      })
-    }, D_FADE)
+      setDirection(dir)
+      setPendingStart(target)
+      setPhase('fade')
 
-    window.setTimeout(() => {
-      setPageStart(target)
-      setPhase('idle')
-    }, D_FADE + D_SLIDE)
-  }, [])
+      window.setTimeout(() => {
+        setPhase('slide-pre')
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => setPhase('slide-run'))
+        })
+      }, D_FADE)
+
+      window.setTimeout(() => {
+        setPageStart(target)
+        setPhase('idle')
+        setAnimWidthPx(null)
+        setAnimViewW(null)
+      }, D_FADE + D_SLIDE)
+    },
+    [containerW, baseWidthPx],
+  )
 
   const handleNext = () => {
     if (!canNext || disableButtons) return
@@ -411,13 +449,17 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
         </div>
 
         {sorted.length > 0 ? (
-          <div className="relative overflow-hidden" style={{ width: VIEW_W }}>
+          <div className="relative overflow-hidden" ref={containerRef} style={{ width: '100%' }}>
             {/* Трек из 9 карточек */}
             <div
               className="flex gap-3 will-change-transform"
               style={{
                 width:
-                  phase === 'slide-pre' || phase === 'slide-run' ? VIEW_W + STEP * STEP_PX : VIEW_W,
+                  phase === 'slide-pre' || phase === 'slide-run'
+                    ? trackBaseW
+                      ? trackBaseW + STEP * stepPxEff
+                      : '100%'
+                    : trackBaseW || '100%',
                 transform: `translate3d(${trackTranslate}px,0,0)`,
                 transitionProperty: phase === 'slide-run' ? 'transform' : 'none',
                 transitionDuration: phase === 'slide-run' ? `${D_SLIDE}ms` : '0ms',
@@ -437,7 +479,22 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
                         : 1
                       : 1
                 return (
-                  <div key={`${m.id}-${i}`} style={{ width: SLOT_W, opacity: itemOpacity }}>
+                  <div
+                    key={`${m.id}-${i}`}
+                    className="flex-none"
+                    style={{
+                      width: widthPxEff
+                        ? widthPxEff
+                        : `calc((100% - ${(VISIBLE - 1) * GAP}px) / ${VISIBLE})`,
+                      minWidth: widthPxEff
+                        ? widthPxEff
+                        : `calc((100% - ${(VISIBLE - 1) * GAP}px) / ${VISIBLE})`,
+                      flex: widthPxEff
+                        ? `0 0 ${widthPxEff}px`
+                        : `0 0 calc((100% - ${(VISIBLE - 1) * GAP}px) / ${VISIBLE})`,
+                      opacity: itemOpacity,
+                    }}
+                  >
                     <MatchCard m={m} />
                   </div>
                 )
