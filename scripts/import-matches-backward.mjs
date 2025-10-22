@@ -3,12 +3,12 @@
 /**
  * Ретроспективная синхронизация матчей (от текущей даты назад), через общий модуль.
  * Использует посуточную пагинацию (from/to + page, size=30) и корректные параметры API.
- * 
+ *
  * Запуск:
  *   node scripts/import-matches-backward.mjs \
  *     [--days=30] [--pageSize=30] [--maxDays=3650] [--loop] [--interval=86400000] \
- *     [--startDate=YYYY-MM-DD] [--competitions=1,2] [--teams=19,7] [--withStats]
- * 
+ *     [--startDate=YYYY-MM-DD] [--competitions=1,2] [--teams=19,7] [--withStats] [--maxRequests=45000]
+ *
  * Параметры:
  *   --days=N         Размер блока дней за одну итерацию (по умолчанию 30)
  *   --pageSize=N     Размер страницы API (по умолчанию 30)
@@ -19,13 +19,14 @@
  *   --no-stats       Отключить загрузку статистики (по умолчанию статистика загружается)
  *   --loop           Фоновый режим
  *   --interval=ms    Интервал между итерациями в loop (по умолчанию 24ч)
+ *   --maxRequests=N  Лимит HTTP-запросов к API за запуск (по умолчанию 45000)
  */
 
 import dotenv from 'dotenv'
 import { getPayload } from 'payload'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { processHistoryPeriod } from './matches-history-sync.mjs'
+import { processHistoryPeriod, setRequestBudget } from './matches-history-sync.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -41,7 +42,8 @@ const envCandidates = [
 ]
 for (const p of envCandidates) dotenv.config({ path: p })
 
-const mask = (v) => (typeof v === 'string' && v.length > 6 ? `${v.slice(0, 3)}***${v.slice(-2)}` : v ? 'set' : 'empty')
+const mask = (v) =>
+  typeof v === 'string' && v.length > 6 ? `${v.slice(0, 3)}***${v.slice(-2)}` : v ? 'set' : 'empty'
 
 function parseArg(name, def = undefined) {
   const k = `--${name}=`
@@ -76,10 +78,18 @@ async function getEarliestMatchDate(payload) {
   return null
 }
 
-async function runOnce(payload, { days, pageSize, maxDays, startDate, competitions, teams, withStats = true }) {
+async function runOnce(
+  payload,
+  { days, pageSize, maxDays, startDate, competitions, teams, withStats = true, maxRequests },
+) {
   console.log('\n' + '='.repeat(60))
   console.log('РЕТРОСПЕКТИВНАЯ СИНХРОНИЗАЦИЯ МАТЧЕЙ')
   console.log('='.repeat(60))
+
+  // Устанавливаем бюджет HTTP-запросов на этот запуск
+  const budget = Number(maxRequests)
+  setRequestBudget(budget)
+  console.log(`[INFO] Лимит запросов: ${Number.isFinite(budget) ? budget : '∞'}`)
 
   // Определяем «текущую» дату, с которой начнём идти назад
   let current = startDate ? new Date(startDate) : new Date()
@@ -116,7 +126,7 @@ async function runOnce(payload, { days, pageSize, maxDays, startDate, competitio
     console.log(`\n[SYNC] === Итерация ${iteration} ===`)
     console.log(`[SYNC] Период: ${from} - ${to}`)
 
-    const { processed, stats } = await processHistoryPeriod(payload, {
+    const { processed, stats, exhausted } = await processHistoryPeriod(payload, {
       from,
       to,
       pageSize: Number(pageSize),
@@ -130,7 +140,14 @@ async function runOnce(payload, { days, pageSize, maxDays, startDate, competitio
     totalStats.skipped += stats.skipped
     totalStats.errors += stats.errors
 
-    console.log(`[SYNC] Итерация ${iteration} завершена: обработано=${processed}, создано=${stats.created}, пропущено=${stats.skipped}, ошибок=${stats.errors}`)
+    console.log(
+      `[SYNC] Итерация ${iteration} завершена: обработано=${processed}, создано=${stats.created}, пропущено=${stats.skipped}, ошибок=${stats.errors}`,
+    )
+
+    if (exhausted) {
+      console.warn('[SYNC] Останов по лимиту запросов')
+      break
+    }
 
     // Сдвигаем курсор назад на целый блок (на день до начала текущего блока)
     current = new Date(blockStart)
@@ -184,6 +201,7 @@ async function main() {
   const withStats = !hasFlag('no-stats') // по умолчанию true, отключается флагом --no-stats
   const loop = hasFlag('loop')
   const interval = Number(parseArg('interval', 86400000))
+  const maxRequests = Number(parseArg('maxRequests', 10000))
 
   if (!process.env.DATABASE_URI) {
     console.error('Ошибка: не задан DATABASE_URI в .env')
@@ -194,15 +212,28 @@ async function main() {
     process.exit(1)
   }
   if (!process.env.LIVESCORE_KEY || !process.env.LIVESCORE_SECRET) {
-    console.warn('[WARN] Не заданы LIVESCORE_KEY/LIVESCORE_SECRET — API может вернуть пустой ответ или ошибку авторизации')
+    console.warn(
+      '[WARN] Не заданы LIVESCORE_KEY/LIVESCORE_SECRET — API может вернуть пустой ответ или ошибку авторизации',
+    )
   }
 
   console.log('[STEP] Подключение к базе и подготовка Payload Local API')
   const { default: config } = await import('../src/payload.config.ts')
   const payload = await getPayload({ config })
 
-  console.log(`[CONFIG] days=${days}, pageSize=${pageSize}, withStats=${withStats}`)
-  const options = { days, pageSize, maxDays, startDate, competitions, teams, withStats }
+  console.log(
+    `[CONFIG] days=${days}, pageSize=${pageSize}, withStats=${withStats}, maxRequests=${maxRequests}`,
+  )
+  const options = {
+    days,
+    pageSize,
+    maxDays,
+    startDate,
+    competitions,
+    teams,
+    withStats,
+    maxRequests,
+  }
 
   if (loop) {
     await runLoop(payload, options, interval)

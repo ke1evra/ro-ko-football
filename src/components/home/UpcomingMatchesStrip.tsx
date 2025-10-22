@@ -449,7 +449,7 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
         </div>
 
         {sorted.length > 0 ? (
-          <div className="relative overflow-hidden" ref={containerRef} style={{ width: '100%' }}>
+          <div className="relative" ref={containerRef} style={{ width: '100%' }}>
             {/* Трек из 9 карточек */}
             <div
               className="flex gap-3 will-change-transform"
@@ -464,7 +464,7 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
                 transitionProperty: phase === 'slide-run' ? 'transform' : 'none',
                 transitionDuration: phase === 'slide-run' ? `${D_SLIDE}ms` : '0ms',
                 transitionTimingFunction: easing,
-                pointerEvents: 'none',
+                pointerEvents: phase === 'slide-pre' || phase === 'slide-run' ? 'none' : 'auto',
               }}
             >
               {trackItems.map((m, i) => {

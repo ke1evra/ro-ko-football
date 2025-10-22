@@ -153,7 +153,7 @@ const getEventLabel = (type: string): string => {
     goal_penalty: 'Гол (пенальти)',
     missed_penalty: 'Нереализованный пенальти',
     yellow_card: 'Жёлтая карточка',
-    red_card: 'Красная карто��ка',
+    red_card: 'Красная карточка',
     substitution: 'Замена',
     substitution_in: 'Выход на замену',
     substitution_out: 'Смена игрока',
@@ -167,28 +167,206 @@ const getEventLabel = (type: string): string => {
 // Утилита для русскоязычных названий статистики
 const getStatsLabel = (key: string): string => {
   const statsLabels: Record<string, string> = {
-    yellow_cards: 'Желтые карточки',
-    red_cards: 'Красные карточки',
-    substitutions: 'Замены',
-    possesion: 'Владение мячом (%)',
-    free_kicks: 'Штрафные удары',
-    goal_kicks: 'Удары от ворот',
-    throw_ins: 'Вбрасывания',
-    offsides: 'Офсайды',
-    corners: 'Угловые',
+    // Базовые
+    possession: 'Владение мячом',
+    possesion: 'Владение мячом',
+    shots_total: 'Всего ударов',
     shots_on_target: 'Удары в створ',
     shots_off_target: 'Удары мимо',
-    attempts_on_goal: 'Попытки на ворота',
-    saves: 'Сейвы',
+    shots_blocked: 'Ударов заблокировано',
+    goals: 'Голы',
+    corners: 'Угловые',
+    offsides: 'Офсайды',
+    throw_ins: 'Вбрасывания',
+    free_kicks: 'Штрафные',
+    passes: 'Передачи',
+    long_passes: 'Длинные передачи',
+    final_third_passes: 'Передачи в последней трети',
+    crosses: 'Навесы',
+    fouls: 'Фолы',
     fauls: 'Фолы',
+    tackles: 'Отборы',
+    duels_won: 'Выиграно дуэлей',
+    clearances: 'Выносы',
+    interceptions: 'Перехваты',
+    yellow_cards: 'Желтые карточки',
+    red_cards: 'Красные карточки',
+    saves: 'Сэйвы вратаря',
+
+    // xG метрики
+    xg: 'Ожидаемые голы (xG)',
+    xa: 'Ожидаемые ассисты (xA)',
+    xgot: 'xG в створ (xGOT)',
+    xgot_after_shots_on_target: 'xGOT после ударов в створ',
+    goals_prevented: 'Предотвращённые голы',
+
+    // Продвинутые удары и моменты
+    big_chances: 'Голевые моменты',
+    shots_inside_box: 'Удары из пределов штрафной',
+    shots_outside_box: 'Удары из-за штрафной',
+    hit_woodwork: 'Попадание в штангу',
+
+    // Продвинутые действия с мячом
+    touches_in_opposition_box: 'Касания мяча в штрафной соперника',
+    successful_through_balls: 'Успешные передачи в разрез',
+
+    // Прочее из API
+    substitutions: 'Замены',
+    goal_kicks: 'Удары от ворот',
+    attempts_on_goal: 'Попытки на ворота',
     treatments: 'Лечения',
     penalties: 'Пенальти',
-    shots_blocked: 'Заблокированные удары',
     dangerous_attacks: 'Опасные атаки',
     attacks: 'Атаки',
+    // Ошибки
+    errors_leading_to_shot: 'Ошибки, приведшие к удару',
+    errors_leading_to_goal: 'Ошибки, приведшие к голу',
   }
 
   return statsLabels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+}
+
+// Карта алиасов и порядок метрик для упорядочивания статистики
+const ORDERED_STATS_KEYS: string[] = [
+  // Сводка
+  'xg',
+  'possession',
+  'shots_total',
+  'shots_on_target',
+  'big_chances',
+  'corners',
+  'passes',
+  'yellow_cards',
+  // Детализация
+  'xgot',
+  'shots_off_target',
+  'shots_blocked',
+  'shots_inside_box',
+  'shots_outside_box',
+  'hit_woodwork',
+  'goals',
+  'big_chances',
+  'corners',
+  'touches_in_opposition_box',
+  'successful_through_balls',
+  'offsides',
+  'free_kicks',
+  'passes',
+  'long_passes',
+  'final_third_passes',
+  'crosses',
+  'xa',
+  'throw_ins',
+  'fouls',
+  'tackles',
+  'duels_won',
+  'clearances',
+  'interceptions',
+  'errors_leading_to_shot',
+  'errors_leading_to_goal',
+  'saves',
+  'xgot_after_shots_on_target',
+  'goals_prevented',
+]
+
+const STAT_ALIASES: Record<string, string[]> = {
+  xg: ['xg', 'expected_goals', 'exp_goals'],
+  xa: ['xa', 'expected_assists', 'exp_assists'],
+  xgot: ['xgot', 'xg_on_target', 'post_shot_xg', 'psxg'],
+  xgot_after_shots_on_target: ['xgot_after_shots_on_target', 'psxg_on_target'],
+  goals_prevented: ['goals_prevented', 'prevented_goals'],
+
+  possession: ['possession', 'possesion', 'ball_possession', 'possession_percent'],
+  shots_total: ['shots_total', 'shots', 'total_shots', 'attempts_on_goal', 'shots_total_attempts'],
+  shots_on_target: ['shots_on_target', 'on_target', 'shots_ongoal'],
+  shots_off_target: ['shots_off_target', 'off_target'],
+  shots_blocked: ['shots_blocked', 'blocked_shots'],
+  shots_inside_box: ['shots_insidebox', 'shots_inside_box', 'shots_in_box'],
+  shots_outside_box: ['shots_outsidebox', 'shots_outside_box', 'shots_out_box'],
+  hit_woodwork: ['hit_woodwork', 'woodwork', 'hit_post'],
+  goals: ['goals', 'goals_scored', 'scored', 'goals_for'],
+  big_chances: ['big_chances', 'goal_chances', 'big_scoring_chances'],
+  corners: ['corners', 'corner_kicks'],
+  passes: ['passes', 'total_passes', 'passes_total'],
+  yellow_cards: ['yellow_cards'],
+  offsides: ['offsides', 'offside'],
+  throw_ins: ['throw_ins', 'throw_in'],
+  free_kicks: ['free_kicks', 'freekicks'],
+  long_passes: ['long_passes', 'long_balls'],
+  final_third_passes: ['passes_in_final_third', 'final_third_passes', 'passes_third'],
+  crosses: ['crosses'],
+  fouls: ['fouls', 'fauls'],
+  tackles: ['tackles'],
+  duels_won: ['duels_won', 'won_duels'],
+  clearances: ['clearances'],
+  interceptions: ['interceptions'],
+  errors_leading_to_shot: ['errors_leading_to_shot'],
+  errors_leading_to_goal: ['errors_leading_to_goal'],
+  saves: ['saves', 'goalkeeper_saves'],
+}
+
+function normalizeKey(key: string): string {
+  return String(key)
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^a-z0-9_]/g, '_')
+    .replace(/__+/g, '_')
+    .replace(/^_+|_+$/g, '')
+}
+
+function resolveOrderedStats(
+  stats: MatchStats,
+): Array<{ key: string; stat: { home: string | number; away: string | number } }> {
+  if (!stats || Object.keys(stats).length === 0) return []
+
+  // Нормализованный доступ к исходным ключам
+  const normalized: Record<string, { home: string | number; away: string | number }> = {}
+  for (const [k, v] of Object.entries(stats)) {
+    normalized[normalizeKey(k)] = v
+  }
+
+  const getByCanon = (canon: string): { home: string | number; away: string | number } | null => {
+    const aliases = STAT_ALIASES[canon] || [canon]
+    for (const a of aliases) {
+      const n = normalizeKey(a)
+      if (normalized[n]) return normalized[n]
+    }
+
+    // Производная метрика: всего ударов = в створ + мимо + заблокировано
+    if (canon === 'shots_total') {
+      const on = getByCanon('shots_on_target')
+      const off = getByCanon('shots_off_target')
+      const bl = getByCanon('shots_blocked')
+      if (on || off || bl) {
+        const h =
+          (parseFloat(String(on?.home ?? '0')) || 0) +
+          (parseFloat(String(off?.home ?? '0')) || 0) +
+          (parseFloat(String(bl?.home ?? '0')) || 0)
+        const a =
+          (parseFloat(String(on?.away ?? '0')) || 0) +
+          (parseFloat(String(off?.away ?? '0')) || 0) +
+          (parseFloat(String(bl?.away ?? '0')) || 0)
+        if (h > 0 || a > 0) return { home: h, away: a }
+      }
+    }
+
+    return null
+  }
+
+  // Дедупликация при сохранении первого появления
+  const seen = new Set<string>()
+  const result: Array<{ key: string; stat: { home: string | number; away: string | number } }> = []
+
+  for (const key of ORDERED_STATS_KEYS) {
+    if (seen.has(key)) continue
+    const stat = getByCanon(key)
+    if (stat) {
+      seen.add(key)
+      result.push({ key, stat })
+    }
+  }
+
+  return result
 }
 
 // Компактные элеме��ты событий
@@ -768,16 +946,27 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
               <CardContent>
                 {stats && Object.keys(stats).length > 0 ? (
                   <div className="space-y-6">
-                    {Object.entries(stats).map(([key, stat]) => (
-                      <StatsItem
-                        key={key}
-                        label={getStatsLabel(key)}
-                        homeValue={stat.home}
-                        awayValue={stat.away}
-                        homeTeam={matchInfo.home?.name || 'Дома'}
-                        awayTeam={matchInfo.away?.name || 'Гости'}
-                      />
-                    ))}
+                    {(() => {
+                      const ordered = resolveOrderedStats(stats)
+                      if (ordered.length === 0) {
+                        return (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                            <p>Статистика матча не найдена</p>
+                          </div>
+                        )
+                      }
+                      return ordered.map(({ key, stat }) => (
+                        <StatsItem
+                          key={key}
+                          label={getStatsLabel(key)}
+                          homeValue={stat.home}
+                          awayValue={stat.away}
+                          homeTeam={matchInfo.home?.name || 'Дома'}
+                          awayTeam={matchInfo.away?.name || 'Гости'}
+                        />
+                      ))
+                    })()}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">

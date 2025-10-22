@@ -7,6 +7,22 @@
 
 import https from 'https'
 
+// ===== Request budget limiter =====
+let REQUEST_BUDGET = Infinity
+export function setRequestBudget(limit) {
+  const n = Number(limit)
+  REQUEST_BUDGET = Number.isFinite(n) && n > 0 ? Math.floor(n) : Infinity
+}
+function ensureBudgetOrThrow() {
+  if (!(REQUEST_BUDGET > 0)) {
+    const err = new Error('Request budget exhausted')
+    err.code = 'REQUEST_BUDGET_EXHAUSTED'
+    throw err
+  }
+  REQUEST_BUDGET -= 1
+  console.log(`[BUDGET] remaining=${REQUEST_BUDGET}`)
+}
+
 // ===== Utils =====
 export function maskUrlForLog(rawUrl) {
   try {
@@ -28,6 +44,7 @@ export function maskUrlForLog(rawUrl) {
 export async function requestJson(url) {
   const shownUrl = maskUrlForLog(url)
   console.log(`[HTTP] → GET ${shownUrl}`)
+  ensureBudgetOrThrow()
   return new Promise((resolve, reject) => {
     https
       .get(url, (res) => {
@@ -884,6 +901,7 @@ async function fetchAndUpsertStatsForMatch(payload, payloadMatchId, matchId) {
       overrideAccess: true,
     })
   } catch (e) {
+    if (e?.code === 'REQUEST_BUDGET_EXHAUSTED') throw e
     console.warn(`[STATS] Ошибка для matchId=${matchId}:`, e?.message || e)
   }
 }
@@ -916,14 +934,23 @@ async function processDay(payload, { day, pageSize = 30, competitionIds, teamIds
   while (true) {
     console.log(`[PAGE] day=${day} page=${page} size=${pageSize}`)
     const startedAt = Date.now()
-    const response = await fetchMatchesHistory({
-      from: day,
-      to: day,
-      page,
-      size: pageSize,
-      competitionIds,
-      teamIds,
-    })
+    let response
+    try {
+      response = await fetchMatchesHistory({
+        from: day,
+        to: day,
+        page,
+        size: pageSize,
+        competitionIds,
+        teamIds,
+      })
+    } catch (e) {
+      if (e?.code === 'REQUEST_BUDGET_EXHAUSTED') {
+        console.warn(`[BUDGET] Лимит запросов исчерпан — прерываем day=${day}`)
+        return { processed, stats, exhausted: true }
+      }
+      throw e
+    }
     if (response && response.success === false) {
       const msg =
         response?.error?.message || response?.error || response?.message || 'unknown error'
@@ -998,24 +1025,47 @@ async function processDay(payload, { day, pageSize = 30, competitionIds, teamIds
 
           return { action, matchId: doc.matchId }
         } catch (e) {
+          if (e?.code === 'REQUEST_BUDGET_EXHAUSTED') throw e
           console.error(`[ERROR] Ошибка при обработке ${doc.matchId}:`, e?.message || e)
           return { action: 'error', matchId: doc.matchId, error: e?.message || e }
         }
       })
 
       // Ждём завершения всех матчей в пачке
-      const batchResults = await Promise.all(batchPromises)
-      
-      // Подсчитываем результаты пачки
-      for (const result of batchResults) {
-        if (result.action === 'created') stats.created++
-        else if (result.action === 'skipped') stats.skipped++
-        else if (result.action === 'updated') { /* обновили существующий */ }
-        else if (result.action === 'error') stats.errors++
-        processed++
+      const settled = await Promise.allSettled(batchPromises)
+
+      // Подсчитываем результаты пачки, учитывая возможное исчерпание бюджета
+      let budgetExhausted = false
+      let countCreated = 0
+      let countUpdated = 0
+      let countSkipped = 0
+      let countErrors = 0
+
+      for (const r of settled) {
+        if (r.status === 'fulfilled') {
+          const result = r.value
+          if (result.action === 'created') { stats.created++; countCreated++ }
+          else if (result.action === 'skipped') { stats.skipped++; countSkipped++ }
+          else if (result.action === 'updated') { countUpdated++ }
+          else if (result.action === 'error') { stats.errors++; countErrors++ }
+          processed++
+        } else {
+          if (r.reason?.code === 'REQUEST_BUDGET_EXHAUSTED') {
+            budgetExhausted = true
+          } else {
+            stats.errors++
+            countErrors++
+          }
+          processed++
+        }
       }
 
-      console.log(`[BATCH] ${batchIndex + 1}/${batches.length} завершена: создано=${batchResults.filter(r => r.action === 'created').length}, обновлено=${batchResults.filter(r => r.action === 'updated').length}, пропущено=${batchResults.filter(r => r.action === 'skipped').length}, ошибок=${batchResults.filter(r => r.action === 'error').length}`)
+      console.log(`[BATCH] ${batchIndex + 1}/${batches.length} завершена: создано=${countCreated}, обновлено=${countUpdated}, пропущено=${countSkipped}, ошибок=${countErrors}`)
+
+      if (budgetExhausted) {
+        console.warn('[BUDGET] Лимит запросов исчерпан — прерываем дальнейшую обработку матчей в этом дне')
+        return { processed, stats, exhausted: true }
+      }
     }
 
     if (list.length < pageSize) {
@@ -1025,7 +1075,7 @@ async function processDay(payload, { day, pageSize = 30, competitionIds, teamIds
     page += 1
   }
 
-  return { processed, stats }
+  return { processed, stats, exhausted: false }
 }
 
 export async function processHistoryPeriod(
@@ -1035,20 +1085,25 @@ export async function processHistoryPeriod(
   console.log(`[SYNC] Синхронизация матчей по периоду: ${from} - ${to}`)
   let totalProcessed = 0
   const totalStats = { created: 0, skipped: 0, errors: 0 }
+  let exhausted = false
 
   for (const day of iterateDays(from, to)) {
-    const { processed, stats } = await processDay(payload, {
+    const dayRes = await processDay(payload, {
       day,
       pageSize,
       competitionIds,
       teamIds,
       withStats,
     })
-    totalProcessed += processed
-    totalStats.created += stats.created
-    totalStats.skipped += stats.skipped
-    totalStats.errors += stats.errors
+    totalProcessed += dayRes.processed
+    totalStats.created += dayRes.stats.created
+    totalStats.skipped += dayRes.stats.skipped
+    totalStats.errors += dayRes.stats.errors
+    if (dayRes.exhausted) {
+      exhausted = true
+      break
+    }
   }
 
-  return { processed: totalProcessed, stats: totalStats }
+  return { processed: totalProcessed, stats: totalStats, exhausted }
 }
