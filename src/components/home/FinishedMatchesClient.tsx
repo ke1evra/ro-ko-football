@@ -77,24 +77,8 @@ export default function FinishedMatchesClient({
                   {formatDateLabel(m.date)}
                 </div>
 
-                {/* Шапка карточки: флаг + лига слева, время справа */}
-                <div className="flex items-center justify-between mb-2 mt-1">
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground truncate">
-                    {m.countryId && (
-                      <CountryFlagImage
-                        countryId={m.countryId}
-                        countryName={m.countryName || ''}
-                        size="small"
-                        className="w-3 h-3 rounded-sm object-cover flex-shrink-0"
-                      />
-                    )}
-                    <span className="truncate">{m.leagueTitle}</span>
-                  </div>
-                  <div className="text-[11px] text-muted-foreground">{formatTime(m.date)}</div>
-                </div>
-
-                {/* Команды + счёт напротив (как в лайв‑виджете) */}
-                <div className="space-y-1">
+                {/* Команды + счёт напротив */}
+                <div className="space-y-1 mt-3">
                   {/* Домашняя */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">

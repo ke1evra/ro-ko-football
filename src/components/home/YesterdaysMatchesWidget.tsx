@@ -118,9 +118,6 @@ export default async function YesterdaysMatchesWidget({ limit = 200 }: { limit?:
     <Card>
       <CardHeader>
         <CardTitle>Последние матчи</CardTitle>
-        <CardDescription>
-          {flat.length > 0 ? `Всего: ${flat.length}` : 'Нет данных'}
-        </CardDescription>
       </CardHeader>
       <CardContent>
         {flat.length === 0 ? (

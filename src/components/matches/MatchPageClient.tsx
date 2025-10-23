@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+// tabs удалены
 import { Separator } from '@/components/ui/separator'
 import {
   Calendar,
@@ -422,16 +422,21 @@ function parseMinuteValue(minute?: string): number {
 }
 
 // Кольцо минуты: два полуокружья (1-й тайм справа, 2-й тайм слева) с заполнением по времени
-function EventMinuteRing({ minute }: { minute: string }) {
-  const m = parseMinuteValue(minute)
-  const p1 = m <= 45 ? m / 45 : 1 // доля 1-го тайма
-  const p2 = m <= 45 ? 0 : Math.min(1, (m - 45) / 45) // доля 2-го тайма
+// Базовое кольцо по таймам и овертайму
+function OvertimeMinuteRing({ minute }: { minute: number }) {
+  const m = Math.max(0, minute)
   const strokeW = 4
+  // прогресс 1-го тайма (0..45)
+  const p1 = Math.min(1, m / 45)
+  // прогресс 2-го тайма (46..90)
+  const p2 = m <= 45 ? 0 : Math.min(1, (Math.min(m, 90) - 45) / 45)
+  // овертайм (m>90): рисуем дополнительную голубую дугу поверх
+  const ot = m > 90 ? Math.min(1, (m - 90) / 15) : 0 // нормализация 0..1 для 15' овертайма визуально
 
   return (
     <div className="relative w-10 h-10">
       <svg viewBox="0 0 40 40" className="absolute inset-0">
-        {/* Трек: правая полуокружность */}
+        {/* треки */}
         <path
           d="M20 2 A 18 18 0 0 1 20 38"
           fill="none"
@@ -442,7 +447,6 @@ function EventMinuteRing({ minute }: { minute: string }) {
           strokeLinecap="round"
           pathLength={50}
         />
-        {/* Трек: левая полуокружность */}
         <path
           d="M20 38 A 18 18 0 0 1 20 2"
           fill="none"
@@ -454,33 +458,48 @@ function EventMinuteRing({ minute }: { minute: string }) {
           pathLength={50}
         />
 
-        {/* Заполнение: правая полуокружность (1-й тайм) */}
+        {/* 1-й тайм: правая полуокружность, оранжевый прогресс */}
         <path
           d="M20 2 A 18 18 0 0 1 20 38"
           fill="none"
           stroke="currentColor"
-          className="text-primary"
+          className="text-orange-500"
           strokeWidth={strokeW}
           strokeLinecap="round"
           pathLength={50}
           strokeDasharray={`${50 * p1} ${50}`}
           strokeDashoffset={0}
         />
-        {/* Заполнение: левая полуокружность (2-й тайм) */}
+        {/* 2-й тайм: левая полуокружность, оранжевый прогресс */}
         <path
           d="M20 38 A 18 18 0 0 1 20 2"
           fill="none"
           stroke="currentColor"
-          className="text-primary"
+          className="text-orange-500"
           strokeWidth={strokeW}
           strokeLinecap="round"
           pathLength={50}
           strokeDasharray={`${50 * p2} ${50}`}
           strokeDashoffset={0}
         />
+
+        {/* Овертайм: поверх полных 90 рисуем голубую дугу на верхушке окружности */}
+        {m > 90 && (
+          <path
+            d="M20 2 A 18 18 0 0 1 20 38"
+            fill="none"
+            stroke="currentColor"
+            className="text-sky-500"
+            strokeWidth={strokeW}
+            strokeLinecap="round"
+            pathLength={50}
+            strokeDasharray={`${50 * Math.min(1, p1)} ${50}`}
+            strokeDashoffset={0}
+          />
+        )}
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-xs font-bold text-primary tabular-nums">{minute}</span>
+        <span className="text-xs font-bold text-primary tabular-nums">{m}</span>
       </div>
     </div>
   )
@@ -491,14 +510,10 @@ function StatsItem({
   label,
   homeValue,
   awayValue,
-  homeTeam,
-  awayTeam,
 }: {
   label: string
   homeValue: string | number
   awayValue: string | number
-  homeTeam: string
-  awayTeam: string
 }) {
   const homeNum = typeof homeValue === 'number' ? homeValue : parseFloat(String(homeValue)) || 0
   const awayNum = typeof awayValue === 'number' ? awayValue : parseFloat(String(awayValue)) || 0
@@ -524,10 +539,6 @@ function StatsItem({
           style={{ width: `${awayPercent}%` }}
         />
       </div>
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{homeTeam}</span>
-        <span>{awayTeam}</span>
-      </div>
     </div>
   )
 }
@@ -538,7 +549,7 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isPredictionModalOpen, setIsPredictionModalOpen] = useState(false)
-  const [eventsView, setEventsView] = useState<'timeline' | 'compact' | 'horizontal'>('timeline')
+  // оставляем только ленту событий
 
   const fetchMatchData = async () => {
     setLoading(true)
@@ -772,109 +783,67 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
           </CardContent>
         </Card>
       ) : (
-        <Tabs defaultValue="events" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="events" className="flex items-center gap-2">
-              <Activity className="h-4 w-4" />
-              События
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Статистика
-            </TabsTrigger>
-          </TabsList>
-
-          {/* События матча */}
-          <TabsContent value="events" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
-                    События матча
-                  </CardTitle>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant={eventsView === 'timeline' ? 'secondary' : 'outline'}
-                      size="sm"
-                      onClick={() => setEventsView('timeline')}
-                    >
-                      Лента
-                    </Button>
-                    <Button
-                      variant={eventsView === 'compact' ? 'secondary' : 'outline'}
-                      size="sm"
-                      onClick={() => setEventsView('compact')}
-                    >
-                      Список
-                    </Button>
-                    <Button
-                      variant={eventsView === 'horizontal' ? 'secondary' : 'outline'}
-                      size="sm"
-                      onClick={() => setEventsView('horizontal')}
-                    >
-                      Горизонтально
-                    </Button>
+        <div
+          className={`relative grid gap-4 ${events && events.length > 0 ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}
+        >
+          {/* Левая колонка: события (2/3) — рендерим только если есть события */}
+          {events && events.length > 0 ? (
+            <div className="lg:col-span-2 order-1">
+              <Card className="sticky top-24">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="h-5 w-5" />
+                      События матча
+                    </CardTitle>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {events && events.length > 0 ? (
-                  eventsView === 'horizontal' ? (
-                    <div className="flex items-center gap-2 overflow-x-auto py-1">
-                      {events
-                        .sort((a, b) => parseInt(a.minute) - parseInt(b.minute))
-                        .map((event) => (
-                          <EventChip
-                            key={event.id}
-                            event={event}
-                            homeName={matchInfo.home?.name || 'Дома'}
-                          />
-                        ))}
-                    </div>
-                  ) : eventsView === 'compact' ? (
-                    <div className="divide-y">
-                      {events
-                        .sort((a, b) => parseInt(a.minute) - parseInt(b.minute))
-                        .map((event) => (
-                          <CompactEventRow
-                            key={event.id}
-                            event={event}
-                            homeName={matchInfo.home?.name || 'Дома'}
-                            awayName={matchInfo.away?.name || 'Гости'}
-                          />
-                        ))}
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {events
-                        .sort((a, b) => parseInt(a.minute) - parseInt(b.minute))
-                        .map((event) => {
-                          const isHome = event.team === (matchInfo.home?.name || 'Дома')
-                          const teamName = isHome
-                            ? matchInfo.home?.name || 'Дома'
-                            : matchInfo.away?.name || 'Гости'
-                          const teamId = isHome
-                            ? parseInt(String(matchInfo.home?.id || '0'))
-                            : parseInt(String(matchInfo.away?.id || '0'))
-                          return (
-                            <div key={event.id} className="flex items-center">
-                              {/* Левая сторона (домашние) */}
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {events
+                      .sort((a, b) => parseInt(a.minute) - parseInt(b.minute))
+                      .map((event, idx, arr) => {
+                        const isHome = event.team === (matchInfo.home?.name || 'Дома')
+                        const minuteNum = (() => {
+                          const m = parseMinuteValue(event.minute)
+                          // если в исходных данных формат 90+2 — превращаем в 92 для подписи
+                          return m
+                        })()
+                        const prevMinute = idx > 0 ? parseMinuteValue(arr[idx - 1].minute) : 0
+                        const needHTLine = prevMinute < 45 && minuteNum >= 45
+                        const needFTLine = prevMinute < 90 && minuteNum >= 90
+                        const overtime = minuteNum > 90
+
+                        return (
+                          <div key={event.id} className="flex flex-col">
+                            {/* Разделители таймов */}
+                            {needHTLine && (
+                              <div className="relative my-2">
+                                <div className="h-px bg-muted" />
+                                <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 text-[10px] text-muted-foreground bg-background">
+                                  2й тайм
+                                </div>
+                              </div>
+                            )}
+                            {needFTLine && (
+                              <div className="relative my-2">
+                                <div className="h-px bg-muted" />
+                                <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 text-[10px] text-muted-foreground bg-background">
+                                  доп время
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex items-center">
+                              {/* Левая сторона (домашние) - без названий команд */}
                               {isHome ? (
                                 <div className="flex-1 pr-3">
                                   <div className="flex items-center gap-2 justify-end">
-                                    <TeamLogo teamId={teamId} teamName={teamName} size="small" />
-                                    <CountryFlagImage size="small" className="w-4 h-3" />
-                                    <span className="truncate text-xs text-muted-foreground max-w-[140px]">
-                                      {teamName}
-                                    </span>
-                                    <span className="text-muted-foreground">—</span>
                                     <span
                                       className={`truncate text-sm ${getEventColor(event.type)}`}
                                     >
                                       {event.player}
                                     </span>
-                                    <span className="text-muted-foreground">—</span>
                                     <span className="text-base leading-none">
                                       {getEventIcon(event.type)}
                                     </span>
@@ -887,12 +856,12 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                                 <div className="flex-1 pr-3" />
                               )}
 
-                              {/* Минута по центру */}
+                              {/* Минута по центру: кольцо таймов/овертайма */}
                               <div className="flex-shrink-0 mx-1">
-                                <EventMinuteRing minute={event.minute} />
+                                <OvertimeMinuteRing minute={minuteNum} />
                               </div>
 
-                              {/* Правая сторона (гости) */}
+                              {/* Правая сторона (гости) - без названий команд */}
                               {!isHome ? (
                                 <div className="flex-1 pl-3">
                                   <div className="flex items-center gap-2 justify-start">
@@ -902,17 +871,10 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                                     <span className="font-semibold text-sm">
                                       {getEventLabel(event.type)}
                                     </span>
-                                    <span className="text-muted-foreground">—</span>
                                     <span
                                       className={`truncate text-sm ${getEventColor(event.type)}`}
                                     >
                                       {event.player}
-                                    </span>
-                                    <span className="text-muted-foreground">—</span>
-                                    <TeamLogo teamId={teamId} teamName={teamName} size="small" />
-                                    <CountryFlagImage size="small" className="w-4 h-3" />
-                                    <span className="truncate text-xs text-muted-foreground max-w-[140px]">
-                                      {teamName}
                                     </span>
                                   </div>
                                 </div>
@@ -920,23 +882,20 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                                 <div className="flex-1 pl-3" />
                               )}
                             </div>
-                          )
-                        })}
-                    </div>
-                  )
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Activity className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>События матча не найдены</p>
+                          </div>
+                        )
+                      })}
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </div>
+          ) : null}
 
-          {/* Статистика матча */}
-          <TabsContent value="stats" className="space-y-4">
-            <Card>
+          {/* Правая колонка: статистика (1/3, а если нет событий — на всю ширину) */}
+          <div
+            className={`${events && events.length > 0 ? 'lg:col-span-1' : 'lg:col-span-3'} order-2`}
+          >
+            <Card className="sticky top-24">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5" />
@@ -945,39 +904,64 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
               </CardHeader>
               <CardContent>
                 {stats && Object.keys(stats).length > 0 ? (
-                  <div className="space-y-6">
-                    {(() => {
-                      const ordered = resolveOrderedStats(stats)
-                      if (ordered.length === 0) {
-                        return (
-                          <div className="text-center py-8 text-muted-foreground">
-                            <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                            <p>Статистика матча не найдена</p>
-                          </div>
-                        )
-                      }
-                      return ordered.map(({ key, stat }) => (
-                        <StatsItem
-                          key={key}
-                          label={getStatsLabel(key)}
-                          homeValue={stat.home}
-                          awayValue={stat.away}
-                          homeTeam={matchInfo.home?.name || 'Дома'}
-                          awayTeam={matchInfo.away?.name || 'Гости'}
-                        />
-                      ))
-                    })()}
+                  <div className="relative">
+                    {/* Шапка названий команд */}
+                    <div className="mb-2">
+                      <div className="grid grid-cols-3 items-center">
+                        <div className="text-xs text-left truncate pr-2">
+                          {matchInfo.home?.name || 'Дома'}
+                        </div>
+                        <div className="text-xs text-center text-muted-foreground">Показатель</div>
+                        <div className="text-xs text-right truncate pl-2">
+                          {matchInfo.away?.name || 'Гости'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Список метрик с прокруткой */}
+                    <div className="max-h-[70vh] overflow-auto pr-1">
+                      <div className="space-y-6">
+                        {(() => {
+                          const ordered = resolveOrderedStats(stats)
+                          if (ordered.length === 0) {
+                            return (
+                              <div className="text-center py-8 text-muted-foreground">
+                                <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                <p>Статистика матча не найдена</p>
+                              </div>
+                            )
+                          }
+                          return ordered
+                            .filter(({ stat }) => {
+                              const hv = Number(String(stat.home).replace('%', ''))
+                              const av = Number(String(stat.away).replace('%', ''))
+                              const hvOk = Number.isFinite(hv)
+                              const avOk = Number.isFinite(av)
+                              if (!hvOk && !avOk) return false
+                              return (hvOk ? hv : 0) !== 0 || (avOk ? av : 0) !== 0
+                            })
+                            .map(({ key, stat }) => (
+                              <StatsItem
+                                key={key}
+                                label={getStatsLabel(key)}
+                                homeValue={stat.home}
+                                awayValue={stat.away}
+                              />
+                            ))
+                        })()}
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Статистика матча не найдена</p>
+                    <p>Статистика матча не най��ена</p>
                   </div>
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       )}
       {isScheduled && (
         <PredictionModal
