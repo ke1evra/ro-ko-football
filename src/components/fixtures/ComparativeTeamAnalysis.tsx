@@ -445,6 +445,7 @@ function MiniStatsPopover({ stats }: { stats?: MatchStatsData }): JSX.Element {
 }
 
 type MatchFilter = 'all' | 'head-to-head'
+type VenueFilter = 'all' | 'home' | 'away'
 
 export default function ComparativeTeamAnalysis({
   home,
@@ -462,6 +463,7 @@ export default function ComparativeTeamAnalysis({
   const [selectedMetric, setSelectedMetric] = useState<StatMetric>('goals')
   const [limit, setLimit] = useState(initialLimit)
   const [matchFilter, setMatchFilter] = useState<MatchFilter>('all')
+  const [venueFilter, setVenueFilter] = useState<VenueFilter>('all')
 
   useEffect(() => {
     let aborted = false
@@ -695,14 +697,27 @@ export default function ComparativeTeamAnalysis({
       }
     }
 
-    // Сортировка матчей по дате (от новых к старым)
+    // Фильтрация по месту проведения и сортировка по дате
     const sortedRows = useMemo(() => {
-      return [...rows].sort((a, b) => {
+      let filtered = rows
+      if (venueFilter === 'home') {
+        // Показываем только матчи, где команда играет дома
+        filtered = rows.filter((r) =>
+          side === 'home' ? r.homeTeamId === home.id : r.homeTeamId === away.id,
+        )
+      } else if (venueFilter === 'away') {
+        // Показываем только матчи, где команда играет в гостях
+        filtered = rows.filter((r) =>
+          side === 'home' ? r.awayTeamId === home.id : r.awayTeamId === away.id,
+        )
+      }
+      // Сортируем по дате (от новых к старым)
+      return [...filtered].sort((a, b) => {
         const aDate = new Date(a.date).getTime()
         const bDate = new Date(b.date).getTime()
         return bDate - aDate
       })
-    }, [rows])
+    }, [rows, venueFilter, side, home.id, away.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
       <Card className="rounded-lg shadow-sm">
@@ -1167,7 +1182,7 @@ export default function ComparativeTeamAnalysis({
       ) : (
         <>
           {/* Фильтр: Все матчи / Личные матчи */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => setMatchFilter('all')}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
@@ -1187,6 +1202,40 @@ export default function ComparativeTeamAnalysis({
               }`}
             >
               Личные матчи
+            </button>
+          </div>
+
+          {/* Фильтр: Хозяева / Гости / Все */}
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => setVenueFilter('all')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                venueFilter === 'all'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              Все матчи
+            </button>
+            <button
+              onClick={() => setVenueFilter('home')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                venueFilter === 'home'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              Дома
+            </button>
+            <button
+              onClick={() => setVenueFilter('away')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                venueFilter === 'away'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              В гостях
             </button>
           </div>
 
