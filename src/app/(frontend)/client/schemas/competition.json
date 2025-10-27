@@ -1,1 +1,158 @@
-{"type":"object","properties":{"id":{"type":"integer","description":"Уникальный ID соревнования (лиги или кубка)","example":67},"name":{"type":"string","description":"Название соревнования","example":"Hyundai A-League"},"is_league":{"type":"boolean","description":"Признак лиги (true, если это лиговый турнир, false для кубка)","example":true},"is_cup":{"type":"boolean","description":"Признак кубкового турнира (обратен is_league: true для кубков, false для лиг)","example":false},"tier":{"type":"integer","description":"Уровень (дивизион) соревнования. Например, 1 – высший дивизион страны, 2 – второй и т.д. Международные турниры могут иметь tier = 0.","example":1},"has_groups":{"type":"boolean","description":"Имеет ли турнир групповой этап (true, если соревнование разбито на группы)","example":true},"active":{"type":"boolean","description":"Активно ли соревнование (true – поддерживается в текущем сезоне; false – данные есть лишь в архиве)","example":true},"national_teams_only":{"type":"boolean","description":"Флаг, обозначающий, что в турнире участвуют только национальные сборные (true для турниров сборных, false для клубных)","example":false},"countries":{"type":"array","description":"Список стран, к которым относится соревнование (может быть пустым для международных турниров)","items":{"type":"object","properties":{"id":{"type":"integer","description":"Уникальный ID страны","example":71},"name":{"type":"string","description":"Название страны","example":"Australia"},"is_real":{"type":"boolean","description":"Флаг реальной страны (true, если страна реально существует, false – например, для условных объединений вроде «World» или континентов)","example":true},"fifa_code":{"type":"string","nullable":true,"description":"Код FIFA (если есть)","example":"AUS"},"uefa_code":{"type":"string","nullable":true,"description":"Код UEFA (если есть)","example":""},"flag":{"type":"string","nullable":true,"description":"Название файла флага страны (PNG) на CDN. Например, `AUS.png`. Для получения самого изображения используется отдельный эндпоинт флагов.","example":"AUS.png"},"federation":{"type":"object","nullable":true,"description":"Объект федерации, к которой относится страна (если применимо; для реальных стран указывается соответствующая конфедерация, например UEFA). Содержит поля `id` и `name` федерации.","properties":{"id":{"type":"integer","description":"ID федерации","example":3},"name":{"type":"string","description":"Название федерации","example":"CAF"}}},"national_team":{"type":"object","nullable":true,"description":"Объект национальной сборной этой страны (если информация доступна и страна реальная). Содержит сведения о национальной команде.","properties":{"id":{"type":"integer","description":"ID команды (национальной сборной)","example":1440},"name":{"type":"string","description":"Название национальной команды","example":"Australia"},"stadium":{"type":"string","description":"Название домашнего стадиона сборной (если есть данные)","example":"Stadium Australia"},"location":{"type":"string","description":"Локация (город/стадион) национальной команды (если есть данные)","example":"Sydney"}}}},"x-readme-ref-name":"Country"}},"federations":{"type":"array","description":"Список федераций, к которым относится соревнование (например, UEFA для Лиги Чемпионов; может быть пустым для национальных лиг)","items":{"type":"object","properties":{"id":{"type":"integer","description":"ID футбольной федерации (конфедерации), например 1 для FIFA","example":1},"name":{"type":"string","description":"Название федерации","example":"FIFA"}},"x-readme-ref-name":"Federation"}},"season":{"type":"object","nullable":true,"description":"Текущий сезон соревнования (последний на момент запроса). Содержит идентификатор и временные рамки сезона.","properties":{"id":{"type":"integer","description":"ID сезона","example":13},"name":{"type":"string","description":"Название сезона (например, \"2021/2022\" или \"2023\")","example":"2021/2022"},"start":{"type":"string","format":"date","description":"Дата начала сезона (календарная)","example":"2021-07-01"},"end":{"type":"string","format":"date","description":"Дата окончания сезона","example":"2022-06-30"}}}},"x-readme-ref-name":"Competition"}
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Уникальный ID соревнования (лиги или кубка)",
+      "example": 67
+    },
+    "name": {
+      "type": "string",
+      "description": "Название соревнования",
+      "example": "Hyundai A-League"
+    },
+    "is_league": {
+      "type": "boolean",
+      "description": "Признак лиги (true, если это лиговый турнир, false для кубка)",
+      "example": true
+    },
+    "is_cup": {
+      "type": "boolean",
+      "description": "Признак кубкового турнира (обратен is_league: true для кубков, false для лиг)",
+      "example": false
+    },
+    "tier": {
+      "type": "integer",
+      "description": "Уровень (дивизион) соревнования. Например, 1 – высший дивизион страны, 2 – второй и т.д. Международные турниры могут иметь tier = 0.",
+      "example": 1
+    },
+    "has_groups": {
+      "type": "boolean",
+      "description": "Имеет ли турнир групповой этап (true, если соревнование разбито на группы)",
+      "example": true
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Активно ли соревнование (true – поддерживается в текущем сезоне; false – данные есть лишь в архиве)",
+      "example": true
+    },
+    "national_teams_only": {
+      "type": "boolean",
+      "description": "Флаг, обозначающий, что в турнире участвуют только национальные сборные (true для турниров сборных, false для клубных)",
+      "example": false
+    },
+    "countries": {
+      "type": "array",
+      "description": "Список стран, к которым относится соревнование (может быть пустым для международных турниров)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "description": "Уникальный ID страны", "example": 71 },
+          "name": { "type": "string", "description": "Название страны", "example": "Australia" },
+          "is_real": {
+            "type": "boolean",
+            "description": "Флаг реальной страны (true, если страна реально существует, false – например, для условных объединений вроде «World» или континентов)",
+            "example": true
+          },
+          "fifa_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Код FIFA (если есть)",
+            "example": "AUS"
+          },
+          "uefa_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Код UEFA (если есть)",
+            "example": ""
+          },
+          "flag": {
+            "type": "string",
+            "nullable": true,
+            "description": "Название файла флага страны (PNG) на CDN. Например, `AUS.png`. Для получения самого изображения используется отдельный эндпоинт флагов.",
+            "example": "AUS.png"
+          },
+          "federation": {
+            "type": "object",
+            "nullable": true,
+            "description": "Объект федерации, к которой относится страна (если применимо; для реальных стран указывается соответствующая конфедерация, например UEFA). Содержит поля `id` и `name` федерации.",
+            "properties": {
+              "id": { "type": "integer", "description": "ID федерации", "example": 3 },
+              "name": { "type": "string", "description": "Название федерации", "example": "CAF" }
+            }
+          },
+          "national_team": {
+            "type": "object",
+            "nullable": true,
+            "description": "Объект национальной сборной этой страны (если информация доступна и страна реальная). Содержит сведения о национальной команде.",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "description": "ID команды (национальной сборной)",
+                "example": 1440
+              },
+              "name": {
+                "type": "string",
+                "description": "Название национальной команды",
+                "example": "Australia"
+              },
+              "stadium": {
+                "type": "string",
+                "description": "Название домашнего стадиона сборной (если есть данные)",
+                "example": "Stadium Australia"
+              },
+              "location": {
+                "type": "string",
+                "description": "Локация (город/стадион) национальной команды (если есть данные)",
+                "example": "Sydney"
+              }
+            }
+          }
+        },
+        "x-readme-ref-name": "Country"
+      }
+    },
+    "federations": {
+      "type": "array",
+      "description": "Список федераций, к которым относится соревнование (например, UEFA для Лиги Чемпионов; может быть пустым для национальных лиг)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID футбольной федерации (конфедерации), например 1 для FIFA",
+            "example": 1
+          },
+          "name": { "type": "string", "description": "Название федерации", "example": "FIFA" }
+        },
+        "x-readme-ref-name": "Federation"
+      }
+    },
+    "season": {
+      "type": "object",
+      "nullable": true,
+      "description": "Текущий сезон соревнования (последний на момент запроса). Содержит идентификатор и временные рамки сезона.",
+      "properties": {
+        "id": { "type": "integer", "description": "ID сезона", "example": 13 },
+        "name": {
+          "type": "string",
+          "description": "Название сезона (например, \"2021/2022\" или \"2023\")",
+          "example": "2021/2022"
+        },
+        "start": {
+          "type": "string",
+          "format": "date",
+          "description": "Дата начала сезона (календарная)",
+          "example": "2021-07-01"
+        },
+        "end": {
+          "type": "string",
+          "format": "date",
+          "description": "Дата окончания сезона",
+          "example": "2022-06-30"
+        }
+      }
+    }
+  },
+  "x-readme-ref-name": "Competition"
+}

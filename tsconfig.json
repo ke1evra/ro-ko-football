@@ -26,5 +26,11 @@
     "allowImportingTsExtensions": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "src/app/(frontend)/client/**/*", ".next/types/app/(frontend)/(site)/test-avatar/**/*", ".next/types/app/api/test-media/**/*", ".next/types/app/api/test-user-update/**/*"]
+  "exclude": [
+    "node_modules",
+    "src/app/(frontend)/client/**/*",
+    ".next/types/app/(frontend)/(site)/test-avatar/**/*",
+    ".next/types/app/api/test-media/**/*",
+    ".next/types/app/api/test-user-update/**/*"
+  ]
 }

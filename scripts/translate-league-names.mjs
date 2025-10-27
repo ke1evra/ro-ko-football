@@ -14,21 +14,21 @@ const EXACT = {
   'Premier League': 'Премьер-лига',
   'LaLiga Santander': 'Ла Лига',
   'Serie A': 'Серия А',
-  'Bundesliga': 'Бундеслига',
+  Bundesliga: 'Бундеслига',
   'Ligue 1': 'Лига 1',
   'Primeira Liga': 'Примейра лига',
-  'Eredivisie': 'Эредивизи',
+  Eredivisie: 'Эредивизи',
   'Super Lig': 'Суперлига',
-  'Superliga': 'Суперлига',
-  'Premiership': 'Премьершип',
-  'Championship': 'Чемпионшип',
+  Superliga: 'Суперлига',
+  Premiership: 'Премьершип',
+  Championship: 'Чемпионшип',
   'Major League Soccer': 'Главная лига футбола',
 
   // Национальные уникальные
-  'Allsvenskan': 'Альсвенскан',
-  'Eliteserien': 'Элитсерия',
-  'Veikkausliiga': 'Вейккауслига',
-  'Ekstraklasa': 'Экстракласа',
+  Allsvenskan: 'Альсвенскан',
+  Eliteserien: 'Элитсерия',
+  Veikkausliiga: 'Вейккауслига',
+  Ekstraklasa: 'Экстракласа',
   'Liga MX': 'Лига MX',
   'J. League': 'Джей-лига',
   'K-League 1': 'К-лига 1',
@@ -39,7 +39,7 @@ const EXACT = {
   'Leumit League': 'Леумит лига',
   'Erovnuli Liga': 'Эровнули лига',
   'Erovnuli Liga 2': 'Эровнули лига 2',
-  'Urvalsdeild': 'Урвальсдейлд',
+  Urvalsdeild: 'Урвальсдейлд',
   'A Lyga': 'А лига',
   'NB I': 'НБ I',
   'NB II': 'НБ II',
@@ -65,10 +65,10 @@ const EXACT = {
   '1st Liga': '1st Liga (Польша)',
   '2nd Liga': '2nd Liga (Польша)',
   '3rd Liga': '3rd Liga (Германия)',
-  'Regionalliga': 'Региональлига',
+  Regionalliga: 'Региональлига',
   'Gamma Ethniki': 'Гамма этники',
-  'Ykkonen': 'Юккёнен',
-  'Kakkonen': 'Каккёнен',
+  Ykkonen: 'Юккёнен',
+  Kakkonen: 'Каккёнен',
   'Eerste Divisie': 'Эрсте дивизи',
   'KNVB Beker': 'Кубок Нидерландов',
   'Birinci Dasta': 'Бирынджи даста',
@@ -76,7 +76,7 @@ const EXACT = {
   'Sg. Premier League': 'Сингапурская премьер-лига',
   'Qatar Stars League': 'Катарская лига звёзд',
   'UAE Pro League': 'ОАЭ про лига',
-  'NPFL': 'НПФЛ',
+  NPFL: 'НПФЛ',
   'Botola Pro': 'Ботола Про',
 
   // Испанские и португальские названия
@@ -303,10 +303,10 @@ function translateAmbiguous(league, defaultTranslated) {
   const key = country ? `${name}|${country}` : null
   if (key && EXACT_BY_COUNTRY[key]) return EXACT_BY_COUNTRY[key]
   if (country) {
-    const base = defaultTranslated || (EXACT[name] || applyOrderedReplacements(name))
+    const base = defaultTranslated || EXACT[name] || applyOrderedReplacements(name)
     return `${base} (${country})`
   }
-  return defaultTranslated || (EXACT[name] || name)
+  return defaultTranslated || EXACT[name] || name
 }
 
 function normalize(str) {
@@ -316,7 +316,10 @@ function normalize(str) {
 function applyOrderedReplacements(name) {
   let out = name
   for (const [src, dst] of PATTERN_REPLACEMENTS) {
-    const re = new RegExp(`(^|[^A-Za-z])${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=$|[^A-Za-z])`, 'g')
+    const re = new RegExp(
+      `(^|[^A-Za-z])${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=$|[^A-Za-z])`,
+      'g',
+    )
     out = out.replace(re, (m) => m.replace(src, dst))
   }
   return out
@@ -396,7 +399,9 @@ function translateLeagueName(league) {
 async function main() {
   const input = process.argv[2]
   if (!input) {
-    console.error('❌ Укажите файл экспорта: node scripts/translate-league-names.mjs exports/league-names-YYYY-MM-DD.json')
+    console.error(
+      '❌ Укажите файл экспорта: node scripts/translate-league-names.mjs exports/league-names-YYYY-MM-DD.json',
+    )
     process.exit(1)
   }
 

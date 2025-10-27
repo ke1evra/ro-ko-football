@@ -9,6 +9,7 @@
 Управляет настройками виджета топ матчей на главной странице.
 
 ### Основные поля:
+
 - `enabled` - включить/выключить виджет
 - `title` - заголовок виджета (по умолчанию "Топ матчи")
 - `maxMatches` - максимальное количество матчей (1-50, по умолчанию 10)
@@ -18,13 +19,19 @@
   - `enabled` - включена ли ли��а
 
 ### Настройки фильтрации:
+
 - `showOnlyActive` - показывать только активные лиги
 - `timeRange` - временной диапазон (сегодня/завтра/неделя/месяц)
 - `excludeFinished` - исключить завершённые матчи
 
 ### Использование в коде:
+
 ```typescript
-import { getTopMatchesLeagues, getFilteredTopMatchesLeagues, getTopMatchesLeagueIds } from '@/lib/leagues'
+import {
+  getTopMatchesLeagues,
+  getFilteredTopMatchesLeagues,
+  getTopMatchesLeagueIds,
+} from '@/lib/leagues'
 
 // Получить все настройки
 const settings = await getTopMatchesLeagues()
@@ -43,6 +50,7 @@ const leagueIds = await getTopMatchesLeagueIds()
 Управляет списком лиг в левом сайдбаре сайта.
 
 ### Основные поля:
+
 - `enabled` - показывать лиги в сайдбаре
 - `title` - заголовок секции (по умолчанию "Лиги")
 - `maxItems` - максимальное количество лиг (1-50, по умолчанию 15)
@@ -57,12 +65,14 @@ const leagueIds = await getTopMatchesLeagueIds()
   - `showMatchCount` - показывать количество матчей
 
 ### Настройки отображения:
+
 - `showOnlyActive` - только активные лиги
 - `showTiers` - показывать уровень лиги
 - `compactMode` - компактный режим
 - `showLogos` - показывать логотипы лиг
 
 ### Использование в коде:
+
 ```typescript
 import { getSidebarLeagues, getFilteredSidebarLeagues, getSidebarLeagueIds } from '@/lib/leagues'
 
@@ -79,6 +89,7 @@ const leagueIds = await getSidebarLeagueIds()
 ## Доступ в админке
 
 После создания глобалов они будут доступны в админке Payload по адресам:
+
 - `/admin/globals/topMatchesLeagues` - настройки топ матчей
 - `/admin/globals/sidebarLeagues` - настройки сайдбара
 
@@ -91,7 +102,7 @@ const leagueIds = await getSidebarLeagueIds()
 ```typescript
 import { LeaguesPreview } from '@/components/admin/LeaguesPreview'
 
-<LeaguesPreview 
+<LeaguesPreview
   leagues={leagues}
   title="Предварительный просмотр"
   maxItems={10}
@@ -103,9 +114,11 @@ import { LeaguesPreview } from '@/components/admin/LeaguesPreview'
 ## API endpoints
 
 Глобалы доступны через REST API:
+
 - `GET /api/globals/topMatchesLeagues` - настройки топ матчей
 - `GET /api/globals/sidebarLeagues` - настройки сайдбара
 
 Для обновления нужны права администратора:
+
 - `POST /api/globals/topMatchesLeagues` - обновить настройки топ матчей
 - `POST /api/globals/sidebarLeagues` - обновить настройки сайдбара

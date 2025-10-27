@@ -1,1 +1,94 @@
-{"type":"object","description":"Статистика матча: к��ючи объекта – наименования статистических показателей, значения – строки вида `\"Дома:Гости\"` (либо `null`, если данные недоступны).","properties":{"attacks":{"type":"string","description":"Количество атак (home:away)","example":"82:91"},"dangerous_attacks":{"type":"string","description":"Количество опасных атак (home:away)","example":"33:56"},"possession":{"type":"string","description":"Владение мячом в процентах (home:away, сумма = 100%)","example":"48:52"},"shots_on_target":{"type":"string","description":"Удары в створ ворот (home:away)","example":"5:3"},"shots_off_target":{"type":"string","description":"Удары мимо ворот (home:away)","example":"4:8"},"shots_blocked":{"type":"string","description":"Заблокированные удары (home:away)","example":"3:8"},"attempts_on_goal":{"type":"string","description":"Все попытки удара по воротам (home:away), сумма ударов в створ и мимо","example":"9:11"},"corners":{"type":"string","description":"Угловые удары (home:away)","example":"4:13"},"offsides":{"type":"string","description":"Офсайды (положения «вне игры») (home:away)","example":"3:5"},"yellow_cards":{"type":"string","description":"Жёлтые карточки (home:away)","example":"0:1"},"red_cards":{"type":"string","description":"Красные карточки (home:away)","example":"0:0"},"substitutions":{"type":"string","description":"Проведённые замены (home:away)","example":"3:1"},"fouls":{"type":"string","description":"Нарушения правил (фолы) (home:away)","example":"10:5"},"free_kicks":{"type":"string","description":"Штрафные удары (home:away)","example":"10:13"},"goal_kicks":{"type":"string","description":"Удары от ворот (home:away)","example":"11:6"},"throw_ins":{"type":"string","description":"Вбрасывания (ауты) (home:away)","example":"21:18"},"saves":{"type":"string","description":"Сэйвы вратаря (home:away)","example":"2:2"},"treatments":{"type":"string","description":"Оказания медицинской помощи на поле (home:away)","example":"1:0"},"penalties":{"type":"string","description":"Пенальти (назначенные) (home:away)","example":"0:0"}},"x-readme-ref-name":"MatchStats"}
+{
+  "type": "object",
+  "description": "Статистика матча: к��ючи объекта – наименования статистических показателей, значения – строки вида `\"Дома:Гости\"` (либо `null`, если данные недоступны).",
+  "properties": {
+    "attacks": {
+      "type": "string",
+      "description": "Количество атак (home:away)",
+      "example": "82:91"
+    },
+    "dangerous_attacks": {
+      "type": "string",
+      "description": "Количество опасных атак (home:away)",
+      "example": "33:56"
+    },
+    "possession": {
+      "type": "string",
+      "description": "Владение мячом в процентах (home:away, сумма = 100%)",
+      "example": "48:52"
+    },
+    "shots_on_target": {
+      "type": "string",
+      "description": "Удары в створ ворот (home:away)",
+      "example": "5:3"
+    },
+    "shots_off_target": {
+      "type": "string",
+      "description": "Удары мимо ворот (home:away)",
+      "example": "4:8"
+    },
+    "shots_blocked": {
+      "type": "string",
+      "description": "Заблокированные удары (home:away)",
+      "example": "3:8"
+    },
+    "attempts_on_goal": {
+      "type": "string",
+      "description": "Все попытки удара по воротам (home:away), сумма ударов в створ и мимо",
+      "example": "9:11"
+    },
+    "corners": { "type": "string", "description": "Угловые удары (home:away)", "example": "4:13" },
+    "offsides": {
+      "type": "string",
+      "description": "Офсайды (положения «вне игры») (home:away)",
+      "example": "3:5"
+    },
+    "yellow_cards": {
+      "type": "string",
+      "description": "Жёлтые карточки (home:away)",
+      "example": "0:1"
+    },
+    "red_cards": {
+      "type": "string",
+      "description": "Красные карточки (home:away)",
+      "example": "0:0"
+    },
+    "substitutions": {
+      "type": "string",
+      "description": "Проведённые замены (home:away)",
+      "example": "3:1"
+    },
+    "fouls": {
+      "type": "string",
+      "description": "Нарушения правил (фолы) (home:away)",
+      "example": "10:5"
+    },
+    "free_kicks": {
+      "type": "string",
+      "description": "Штрафные удары (home:away)",
+      "example": "10:13"
+    },
+    "goal_kicks": {
+      "type": "string",
+      "description": "Удары от ворот (home:away)",
+      "example": "11:6"
+    },
+    "throw_ins": {
+      "type": "string",
+      "description": "Вбрасывания (ауты) (home:away)",
+      "example": "21:18"
+    },
+    "saves": { "type": "string", "description": "Сэйвы вратаря (home:away)", "example": "2:2" },
+    "treatments": {
+      "type": "string",
+      "description": "Оказания медицинской помощи на поле (home:away)",
+      "example": "1:0"
+    },
+    "penalties": {
+      "type": "string",
+      "description": "Пенальти (назначенные) (home:away)",
+      "example": "0:0"
+    }
+  },
+  "x-readme-ref-name": "MatchStats"
+}

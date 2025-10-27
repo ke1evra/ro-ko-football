@@ -18,6 +18,42 @@ import Link from 'next/link'
 import { generateMatchUrl } from '@/lib/match-url-utils'
 
 type TeamSide = 'home' | 'away'
+type StatMetric =
+  | 'goals'
+  | 'possession'
+  | 'shots'
+  | 'shotsOnTarget'
+  | 'shotsOffTarget'
+  | 'shotsBlocked'
+  | 'corners'
+  | 'offsides'
+  | 'fouls'
+  | 'yellowCards'
+  | 'redCards'
+  | 'saves'
+  | 'passes'
+  | 'passesAccurate'
+  | 'passAccuracy'
+  | 'attacks'
+  | 'dangerousAttacks'
+  | 'shotsInsideBox'
+  | 'shotsOutsideBox'
+  | 'hitWoodwork'
+  | 'bigChances'
+  | 'freeKicks'
+  | 'longPasses'
+  | 'finalThirdPasses'
+  | 'crosses'
+  | 'xa'
+  | 'throwIns'
+  | 'tackles'
+  | 'duelsWon'
+  | 'clearances'
+  | 'interceptions'
+  | 'errorsLeadingToShot'
+  | 'errorsLeadingToGoal'
+  | 'xgotAfterShotsOnTarget'
+  | 'goalsPrevented'
 
 interface TeamInfo {
   id: number
@@ -41,6 +77,7 @@ interface MatchStatsData {
   passAccuracy?: { home: number; away: number }
   attacks?: { home: number; away: number }
   dangerousAttacks?: { home: number; away: number }
+  additionalStats?: Record<string, unknown>
 }
 
 interface MatchRow {
@@ -83,7 +120,34 @@ interface AggregateStats {
   avgITCon: number
   avgT: number
   count: number
+  maxStat: number
+  minStat: number
+  maxStatCon: number
+  minStatCon: number
+  avgStat: number
+  avgStatCon: number
 }
+
+// Доступные метрики для вкладок (в порядке приоритета)
+const STAT_METRICS: Array<{ key: StatMetric; label: string }> = [
+  { key: 'goals', label: 'Голы' },
+  { key: 'corners', label: 'Угловые' },
+  { key: 'yellowCards', label: 'Жёлтые карточки' },
+  { key: 'shotsOnTarget', label: 'У��ары в створ' },
+  { key: 'fouls', label: 'Фолы' },
+  { key: 'shots', label: 'Удары' },
+  { key: 'offsides', label: 'Офсайды' },
+  { key: 'saves', label: 'Сэйвы' },
+  { key: 'redCards', label: 'Красные карточки' },
+  { key: 'shotsOffTarget', label: 'Удары мимо' },
+  { key: 'shotsBlocked', label: 'Заблокированные удары' },
+  { key: 'passes', label: 'Передачи' },
+  { key: 'passesAccurate', label: 'Точные передачи' },
+  { key: 'passAccuracy', label: 'Точность передач' },
+  { key: 'possession', label: 'Владение' },
+  { key: 'attacks', label: 'Атаки' },
+  { key: 'dangerousAttacks', label: 'Опасные атаки' },
+]
 
 async function fetchTeamLastMatches(teamId: number, limit = 10): Promise<unknown[]> {
   try {
@@ -136,7 +200,19 @@ function normalizeRows(rows: unknown[]): MatchRow[] {
   })
 }
 
-function aggregate(rows: MatchRow[]): AggregateStats {
+function getStatValue(row: MatchRow, metric: StatMetric, side: TeamSide): number {
+  // Специальная обработка для голов
+  if (metric === 'goals') {
+    return side === 'home' ? row.gf : row.ga
+  }
+
+  if (!row.stats) return 0
+  const stat = row.stats[metric as keyof MatchStatsData]
+  if (!stat || typeof stat !== 'object' || !('home' in stat) || !('away' in stat)) return 0
+  return side === 'home' ? (stat.home as number) : (stat.away as number)
+}
+
+function aggregateByMetric(rows: MatchRow[], metric: StatMetric): AggregateStats {
   const n = rows.length || 1
   const wins = rows.filter((r) => r.result === 'W').length
   const draws = rows.filter((r) => r.result === 'D').length
@@ -144,6 +220,8 @@ function aggregate(rows: MatchRow[]): AggregateStats {
   const gfArr = rows.map((r) => r.gf)
   const gaArr = rows.map((r) => r.ga)
   const totals = rows.map((r) => r.total)
+  const statArr = rows.map((r) => getStatValue(r, metric, 'home'))
+  const statConArr = rows.map((r) => getStatValue(r, metric, 'away'))
 
   const avg = (arr: number[]): number =>
     arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0
@@ -161,6 +239,12 @@ function aggregate(rows: MatchRow[]): AggregateStats {
     avgITCon: avg(gaArr),
     avgT: avg(totals),
     count: n,
+    maxStat: Math.max(...(statArr.length ? statArr : [0])),
+    minStat: Math.min(...(statArr.length ? statArr : [0])),
+    maxStatCon: Math.max(...(statConArr.length ? statConArr : [0])),
+    minStatCon: Math.min(...(statConArr.length ? statConArr : [0])),
+    avgStat: avg(statArr),
+    avgStatCon: avg(statConArr),
   }
 }
 
@@ -343,6 +427,7 @@ export default function ComparativeTeamAnalysis({
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedMetric, setSelectedMetric] = useState<StatMetric>('goals')
 
   useEffect(() => {
     let aborted = false
@@ -365,8 +450,15 @@ export default function ComparativeTeamAnalysis({
         console.log('[ComparativeTeamAnalysis] Матчи home:', JSON.stringify(hRaw, null, 2))
         console.log('[ComparativeTeamAnalysis] Матчи away:', JSON.stringify(aRaw, null, 2))
         if (aborted) return
-        setHomeRows(normalizeRows(hRaw))
-        setAwayRows(normalizeRows(aRaw))
+        const normalizedHome = normalizeRows(hRaw)
+        const normalizedAway = normalizeRows(aRaw)
+        setHomeRows(normalizedHome)
+        setAwayRows(normalizedAway)
+        // Выбрать все матчи по умолчанию
+        setSelectedIds({
+          home: new Set(normalizedHome.map((r) => r.id)),
+          away: new Set(normalizedAway.map((r) => r.id)),
+        })
       } catch (e: unknown) {
         const error = e as Record<string, unknown>
         console.error('[ComparativeTeamAnalysis] Ошибка:', error)
@@ -381,8 +473,15 @@ export default function ComparativeTeamAnalysis({
     }
   }, [home.id, home.name, away.id, away.name, limit])
 
-  const aggHome = useMemo(() => aggregate(homeRows), [homeRows])
-  const aggAway = useMemo(() => aggregate(awayRows), [awayRows])
+  const aggHome = useMemo(() => {
+    const selectedHomeRows = homeRows.filter((r) => selectedIds.home.has(r.id))
+    return aggregateByMetric(selectedHomeRows, selectedMetric)
+  }, [homeRows, selectedIds.home, selectedMetric])
+
+  const aggAway = useMemo(() => {
+    const selectedAwayRows = awayRows.filter((r) => selectedIds.away.has(r.id))
+    return aggregateByMetric(selectedAwayRows, selectedMetric)
+  }, [awayRows, selectedIds.away, selectedMetric])
 
   function toggle(side: TeamSide, id: string) {
     setSelectedIds((prev) => {
@@ -465,52 +564,48 @@ export default function ComparativeTeamAnalysis({
         </CardHeader>
         <CardContent className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1">
-            {/* Группа A: Макс/Мин ИТ */}
+            {/* Группа A: Макс/Мин показателя */}
             <div className="flex items-center justify-between min-w-0">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="text-xs text-muted-foreground truncate cursor-help">
-                      Макс ИТ
-                    </span>
+                    <span className="text-xs text-muted-foreground truncate cursor-help">Макс</span>
                   </TooltipTrigger>
-                  <TooltipContent>Максимум забитых голов в одном матче</TooltipContent>
+                  <TooltipContent>Максимум в одном матче</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <span className="text-sm font-semibold tabular-nums text-right ml-2">
-                {formatValue(agg.maxIT)}
+                {formatValue(agg.maxStat)}
               </span>
             </div>
             <div className="flex items-center justify-between min-w-0">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="text-xs text-muted-foreground truncate cursor-help">
-                      Мин ИТ
-                    </span>
+                    <span className="text-xs text-muted-foreground truncate cursor-help">Мин</span>
                   </TooltipTrigger>
-                  <TooltipContent>Минимум забитых голов в одном матче</TooltipContent>
+                  <TooltipContent>Минимум в одном матче</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <span className="text-sm font-semibold tabular-nums text-right ml-2">
-                {formatValue(agg.minIT)}
+                {formatValue(agg.minStat)}
               </span>
             </div>
 
-            {/* Группа B: Макс/Мин ИТ Кон */}
+            {/* Группа B: Макс/Мин противника */}
             <div className="flex items-center justify-between min-w-0">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="text-xs text-muted-foreground truncate cursor-help">
-                      Макс ИТ Кон
+                      Макс Пр
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent>Максимум пропущенных голов в одном матче</TooltipContent>
+                  <TooltipContent>Максимум противника в одном матче</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <span className="text-sm font-semibold tabular-nums text-right ml-2">
-                {formatValue(agg.maxITCon)}
+                {formatValue(agg.maxStatCon)}
               </span>
             </div>
             <div className="flex items-center justify-between min-w-0">
@@ -518,63 +613,44 @@ export default function ComparativeTeamAnalysis({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="text-xs text-muted-foreground truncate cursor-help">
-                      Мин ИТ Кон
+                      Мин Пр
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent>Минимум пропущенных голов в одном матче</TooltipContent>
+                  <TooltipContent>Минимум противника в одном матче</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <span className="text-sm font-semibold tabular-nums text-right ml-2">
-                {formatValue(agg.minITCon)}
-              </span>
-            </div>
-
-            {/* Группа C: Ср ИТ / Ср ИТ Кон */}
-            <div className="flex items-center justify-between min-w-0">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="text-xs text-muted-foreground truncate cursor-help">
-                      Ср ИТ
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>Среднее количество забитых голов за матч</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <span className="text-sm font-semibold tabular-nums text-right ml-2">
-                {formatValue(agg.avgIT)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between min-w-0">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="text-xs text-muted-foreground truncate cursor-help">
-                      Ср ИТ Кон
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>Среднее количество пропущенных голов за матч</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <span className="text-sm font-semibold tabular-nums text-right ml-2">
-                {formatValue(agg.avgITCon)}
+                {formatValue(agg.minStatCon)}
               </span>
             </div>
 
-            {/* Группа D: Ср Т (растянуть на 2 колонки) */}
-            <div className="col-span-1 md:col-span-2 flex items-center justify-between min-w-0">
+            {/* Группа C: Средние значения */}
+            <div className="flex items-center justify-between min-w-0">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="text-xs text-muted-foreground truncate cursor-help">Ср Т</span>
+                    <span className="text-xs text-muted-foreground truncate cursor-help">Ср</span>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    Средний тотал голов (забитых + пропущенных) за матч
-                  </TooltipContent>
+                  <TooltipContent>Среднее значение за матч</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <span className="text-sm font-semibold tabular-nums text-right ml-2">
-                {formatValue(agg.avgT)}
+                {formatValue(agg.avgStat)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between min-w-0">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-xs text-muted-foreground truncate cursor-help">
+                      Ср Пр
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>Среднее значение противника за матч</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <span className="text-sm font-semibold tabular-nums text-right ml-2">
+                {formatValue(agg.avgStatCon)}
               </span>
             </div>
           </div>
@@ -603,6 +679,15 @@ export default function ComparativeTeamAnalysis({
       }
     }
 
+    // Сортировка матчей по дате (от новых к старым)
+    const sortedRows = useMemo(() => {
+      return [...rows].sort((a, b) => {
+        const aDate = new Date(a.date).getTime()
+        const bDate = new Date(b.date).getTime()
+        return bDate - aDate
+      })
+    }, [rows])
+
     return (
       <Card className="rounded-lg shadow-sm">
         <CardHeader className="pb-3">
@@ -617,8 +702,11 @@ export default function ComparativeTeamAnalysis({
                     <input
                       type="checkbox"
                       className="accent-primary cursor-pointer"
-                      checked={rows.length > 0 && rows.every((r) => selectedIds[side].has(r.id))}
-                      onChange={() => toggleAll(side, rows)}
+                      checked={
+                        sortedRows.length > 0 &&
+                        sortedRows.every((r) => selectedIds[side].has(r.id))
+                      }
+                      onChange={() => toggleAll(side, sortedRows)}
                     />
                   </TableHead>
                   <TableHead>Дата</TableHead>
@@ -632,14 +720,14 @@ export default function ComparativeTeamAnalysis({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.length === 0 ? (
+                {sortedRows.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={10} className="text-center text-muted-foreground py-6">
                       Нет данных
                     </TableCell>
                   </TableRow>
                 ) : (
-                  rows.map((r) => {
+                  sortedRows.map((r) => {
                     const checked = selectedIds[side].has(r.id)
                     const rowClass = getResultColor(r.result)
                     return (
@@ -664,16 +752,39 @@ export default function ComparativeTeamAnalysis({
                             year: '2-digit',
                           })}
                         </TableCell>
-                        <TableCell className="truncate text-xs">{r.homeName}</TableCell>
-                        <TableCell className="text-center font-semibold text-xs">
-                          {r.homeScore}
+                        <TableCell className="text-xs">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="cursor-help block w-24 truncate overflow-hidden text-ellipsis">
+                                  {r.homeName}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>{r.homeName}</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </TableCell>
                         <TableCell className="text-center font-semibold text-xs">
-                          {r.awayScore}
+                          {getStatValue(r, selectedMetric, 'home')}
                         </TableCell>
-                        <TableCell className="truncate text-xs">{r.awayName}</TableCell>
                         <TableCell className="text-center font-semibold text-xs">
-                          {r.total}
+                          {getStatValue(r, selectedMetric, 'away')}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="cursor-help block w-24 truncate overflow-hidden text-ellipsis">
+                                  {r.awayName}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>{r.awayName}</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </TableCell>
+                        <TableCell className="text-center font-semibold text-xs">
+                          {getStatValue(r, selectedMetric, 'home') +
+                            getStatValue(r, selectedMetric, 'away')}
                         </TableCell>
                         <TableCell className="text-center">
                           <div className="inline-flex items-center gap-1">
@@ -806,6 +917,23 @@ export default function ComparativeTeamAnalysis({
         <div className="text-sm text-muted-foreground py-8 text-center">Загрузка…</div>
       ) : (
         <>
+          {/* Вкладки для выбора метрики */}
+          <div className="flex gap-2 flex-wrap">
+            {STAT_METRICS.map((metric) => (
+              <button
+                key={metric.key}
+                onClick={() => setSelectedMetric(metric.key)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  selectedMetric === metric.key
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                {metric.label}
+              </button>
+            ))}
+          </div>
+
           {/* 1. Сводная статистика команд */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AggBlock title={home.name} agg={aggHome} />

@@ -102,7 +102,7 @@ async function getLatestMatchDate(payload) {
 async function syncMatches(payload, { days = 7, pageSize = 30, withStats = true } = {}) {
   // Определяем стартовую дату: последняя дата в БД или сегодня
   let startDate = new Date()
-  
+
   const latestDate = await getLatestMatchDate(payload)
   if (latestDate) {
     startDate = new Date(latestDate)

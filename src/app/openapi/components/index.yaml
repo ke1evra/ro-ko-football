@@ -25,4 +25,8 @@ responses:
           type: object
           properties:
             success: { type: boolean, example: false }
-            error: { type: string, example: "You must provide an API key. You must use a GET parameter 'key'" }
+            error:
+              {
+                type: string,
+                example: "You must provide an API key. You must use a GET parameter 'key'",
+              }

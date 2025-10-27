@@ -2,7 +2,7 @@
 
 /**
  * Скрипт настройки переменных окружения
- * 
+ *
  * Создаёт .env файл из .env.example с интерактивными подсказками
  * или просто копирует шаблон, если запущен без флагов.
  */
@@ -92,105 +92,82 @@ async function interactiveSetup() {
     console.log('📋 Настройка основных параметров:\n')
 
     // DATABASE_URI
-    const dbUri = await question(
-      'MongoDB URI (по умолчанию: mongodb://localhost:27017/payload): '
-    )
+    const dbUri = await question('MongoDB URI (по умолчанию: mongodb://localhost:27017/payload): ')
     if (dbUri.trim()) {
       envContent = envContent.replace(
         'DATABASE_URI=mongodb://localhost:27017/payload',
-        `DATABASE_URI=${dbUri.trim()}`
+        `DATABASE_URI=${dbUri.trim()}`,
       )
     }
 
     // PAYLOAD_SECRET
-    const useGeneratedSecret = await question(
-      'Сгенерировать новый PAYLOAD_SECRET? (y/N): '
-    )
+    const useGeneratedSecret = await question('Сгенерировать новый PAYLOAD_SECRET? (y/N): ')
     if (useGeneratedSecret.toLowerCase() === 'y' || useGeneratedSecret.toLowerCase() === 'yes') {
       const newSecret = generateSecret()
       envContent = envContent.replace(
         'PAYLOAD_SECRET=your-secret-key-here',
-        `PAYLOAD_SECRET=${newSecret}`
+        `PAYLOAD_SECRET=${newSecret}`,
       )
       console.log('✅ Сгенерирован новый PAYLOAD_SECRET')
     }
 
     // NODE_ENV
-    const nodeEnv = await question(
-      'Окружение (development/production) [development]: '
-    )
+    const nodeEnv = await question('Окружение (development/production) [development]: ')
     if (nodeEnv.trim()) {
-      envContent = envContent.replace(
-        'NODE_ENV=development',
-        `NODE_ENV=${nodeEnv.trim()}`
-      )
+      envContent = envContent.replace('NODE_ENV=development', `NODE_ENV=${nodeEnv.trim()}`)
     }
 
     // APP_URL
-    const appUrl = await question(
-      'URL приложения [http://localhost:3001]: '
-    )
+    const appUrl = await question('URL приложения [http://localhost:3001]: ')
     if (appUrl.trim()) {
-      envContent = envContent.replace(
-        'APP_URL=http://localhost:3001',
-        `APP_URL=${appUrl.trim()}`
-      )
+      envContent = envContent.replace('APP_URL=http://localhost:3001', `APP_URL=${appUrl.trim()}`)
     }
 
     console.log('\n📧 Настройка email (опционально):')
 
     // EMAIL_FROM
-    const emailFrom = await question(
-      'Email отправителя [noreply@yourdomain.com]: '
-    )
+    const emailFrom = await question('Email отправителя [noreply@yourdomain.com]: ')
     if (emailFrom.trim()) {
       envContent = envContent.replace(
         'EMAIL_FROM=noreply@yourdomain.com',
-        `EMAIL_FROM=${emailFrom.trim()}`
+        `EMAIL_FROM=${emailFrom.trim()}`,
       )
     }
 
     // RESEND_API_KEY
-    const resendKey = await question(
-      'Resend API ключ (оставьте пустым для пропуска): '
-    )
+    const resendKey = await question('Resend API ключ (оставьте пустым для пропуска): ')
     if (resendKey.trim()) {
       envContent = envContent.replace(
         'RESEND_API_KEY=re_xxxxxxxx',
-        `RESEND_API_KEY=${resendKey.trim()}`
+        `RESEND_API_KEY=${resendKey.trim()}`,
       )
     }
 
     console.log('\n⚽ Настройка LiveScore API (опционально):')
 
     // LIVESCORE_KEY
-    const livescoreKey = await question(
-      'LiveScore API ключ (оставьте пустым для пропуска): '
-    )
+    const livescoreKey = await question('LiveScore API ключ (оставьте пустым для пропуска): ')
     if (livescoreKey.trim()) {
       envContent = envContent.replace(
         'LIVESCORE_KEY=your-livescore-api-key-here',
-        `LIVESCORE_KEY=${livescoreKey.trim()}`
+        `LIVESCORE_KEY=${livescoreKey.trim()}`,
       )
     }
 
     // LIVESCORE_SECRET
-    const livescoreSecret = await question(
-      'LiveScore API секрет (оставьте пустым для пропуска): '
-    )
+    const livescoreSecret = await question('LiveScore API секрет (оставьте пустым для пропуска): ')
     if (livescoreSecret.trim()) {
       envContent = envContent.replace(
         'LIVESCORE_SECRET=your-livescore-api-secret-here',
-        `LIVESCORE_SECRET=${livescoreSecret.trim()}`
+        `LIVESCORE_SECRET=${livescoreSecret.trim()}`,
       )
     }
 
     // Сохраняем файл
     fs.writeFileSync(envPath, envContent)
-    
+
     console.log('\n✅ Файл .env успешно создан и настроен!')
     console.log('🚀 Теперь вы можете запустить приложение командой: pnpm dev')
-
   } catch (error) {
     console.error('\n❌ Ошибка при настройке:', error.message)
     process.exit(1)

@@ -41,7 +41,7 @@
                       type: string
                       nullable: true
                       description: Ссылка (URL) на следующую страницу результатов (если есть следующая)
-                      example: "https://livescore-api.com/api-client/fixtures/matches.json?key=...&secret=...&page=2"
+                      example: 'https://livescore-api.com/api-client/fixtures/matches.json?key=...&secret=...&page=2'
                     prev_page:
                       type: string
                       nullable: true

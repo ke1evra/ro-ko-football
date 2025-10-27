@@ -25,7 +25,7 @@
         schema:
           type: string
         description: Имя группы, если нужно standings конкретной группы (для много-групповых соревнований, напр. "A")
-        example: "A"
+        example: 'A'
       - name: group_id
         in: query
         schema:
@@ -75,14 +75,14 @@
     description: |
       Возвращает турнирную таблицу (позиции команд) для указанного соревнования и сезона через рабочий endpoint /competitions/standings.json.
       Этот endpoint реально работает в отличие от /tables/standings.json который возвращает "Invalid module specified".
-      
+
       **Параметры:**  
       - `competition_id` (обязательный) – ID соревнования, для которого запрашивается турнирная таблица.  
       - `season` (опциональный) – ID сезона. Если не указан, берётся текущий сезон соревнования.  
       - `group` или `group_id` (опционально) – можно указать имя группы или ID группы для турниров с группами.  
       - `include_form` (опциональный, 0/1) – если =1, в ответе для каждой команды будет добавлена форма (W/D/L результаты последних матчей).  
       - `lang` – код языка для локализации названий команд.  
-      
+
       **Пример запроса (таблица РФПЛ, сезон 56):**  
       `GET /competitions/standings.json?competition_id=7&season=56&include_form=1&key=YOUR_KEY&secret=YOUR_SECRET`
     parameters:
@@ -98,7 +98,7 @@
         schema:
           type: string
         description: Имя группы, если нужно standings конкретной группы (для много-групповых соревнований, напр. "A")
-        example: "A"
+        example: 'A'
       - name: group_id
         in: query
         schema:
@@ -180,9 +180,9 @@
                       description: Объект сезона соревнования
                       properties:
                         id: { type: integer, example: 26 }
-                        name: { type: string, example: "2023/2024" }
-                        start: { type: string, format: date, example: "2023-07-01" }
-                        end: { type: string, format: date, example: "2024-06-30" }
+                        name: { type: string, example: '2023/2024' }
+                        start: { type: string, format: date, example: '2023-07-01' }
+                        end: { type: string, format: date, example: '2024-06-30' }
                     topscorers:
                       type: array
                       description: Список топ-бомбардиров
@@ -236,9 +236,9 @@
                       type: object
                       properties:
                         id: { type: integer, example: 11 }
-                        name: { type: string, example: "2022" }
-                        start: { type: string, format: date, example: "2022-01-01" }
-                        end: { type: string, format: date, example: "2022-12-31" }
+                        name: { type: string, example: '2022' }
+                        start: { type: string, format: date, example: '2022-01-01' }
+                        end: { type: string, format: date, example: '2022-12-31' }
                     topcards:
                       type: array
                       description: Список игроков и их карточки

@@ -1,1 +1,35 @@
-{"type":"object","description":"Строка турнирной таблицы из реального API /competitions/standings.json","properties":{"league_id":{"type":"string","description":"ID лиги","example":"0"},"season_id":{"type":"string","description":"ID сезона","example":"56"},"name":{"type":"string","description":"Название команды","example":"ЦСКА Москва"},"rank":{"type":"string","description":"Позиция в таблице","example":"1"},"points":{"type":"string","description":"Очки","example":"21"},"matches":{"type":"string","description":"Количество матчей","example":"10"},"goal_diff":{"type":"string","description":"Разность мячей","example":"11"},"goals_scored":{"type":"string","description":"Забитые голы","example":"19"},"goals_conceded":{"type":"string","description":"Пропущенные голы","example":"8"},"lost":{"type":"string","description":"Поражения","example":"1"},"drawn":{"type":"string","description":"Ничьи","example":"3"},"won":{"type":"string","description":"Победы","example":"6"},"team_id":{"type":"string","description":"ID команды","example":"132"},"competition_id":{"type":"string","description":"ID соревнования","example":"7"},"group_id":{"type":"string","description":"ID группы","example":"4048"},"group_name":{"type":"string","description":"Название группы","example":"A"},"stage_name":{"type":"string","description":"Название стадии","example":"Regular Season"},"stage_id":{"type":"string","description":"ID стадии","example":"3504"},"form":{"type":"string","nullable":true,"description":"Форма команды (последние результаты): W - победа, D - ничья, L - поражение","example":"WWDWL"}},"x-readme-ref-name":"CompetitionsStandingsTableRow"}
+{
+  "type": "object",
+  "description": "Строка турнирной таблицы из реального API /competitions/standings.json",
+  "properties": {
+    "league_id": { "type": "string", "description": "ID лиги", "example": "0" },
+    "season_id": { "type": "string", "description": "ID сезона", "example": "56" },
+    "name": { "type": "string", "description": "Название команды", "example": "ЦСКА Москва" },
+    "rank": { "type": "string", "description": "Позиция в таблице", "example": "1" },
+    "points": { "type": "string", "description": "Очки", "example": "21" },
+    "matches": { "type": "string", "description": "Количество матчей", "example": "10" },
+    "goal_diff": { "type": "string", "description": "Разность мячей", "example": "11" },
+    "goals_scored": { "type": "string", "description": "Забитые голы", "example": "19" },
+    "goals_conceded": { "type": "string", "description": "Пропущенные голы", "example": "8" },
+    "lost": { "type": "string", "description": "Поражения", "example": "1" },
+    "drawn": { "type": "string", "description": "Ничьи", "example": "3" },
+    "won": { "type": "string", "description": "Победы", "example": "6" },
+    "team_id": { "type": "string", "description": "ID команды", "example": "132" },
+    "competition_id": { "type": "string", "description": "ID соревнования", "example": "7" },
+    "group_id": { "type": "string", "description": "ID группы", "example": "4048" },
+    "group_name": { "type": "string", "description": "Название группы", "example": "A" },
+    "stage_name": {
+      "type": "string",
+      "description": "Название стадии",
+      "example": "Regular Season"
+    },
+    "stage_id": { "type": "string", "description": "ID стадии", "example": "3504" },
+    "form": {
+      "type": "string",
+      "nullable": true,
+      "description": "Форма команды (последние результаты): W - победа, D - ничья, L - поражение",
+      "example": "WWDWL"
+    }
+  },
+  "x-readme-ref-name": "CompetitionsStandingsTableRow"
+}

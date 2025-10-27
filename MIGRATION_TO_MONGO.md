@@ -3,20 +3,24 @@
 ## Выполненные изменения
 
 ### 1. Обновлены зависимости
+
 - Заменён `@payloadcms/db-postgres` на `@payloadcms/db-mongodb` в `package.json`
 
 ### 2. Обновлена конфигурация Payload
+
 - В `src/payload.config.ts`:
   - Заменён импорт `postgresAdapter` на `mongooseAdapter`
   - Обновлена конфигурация базы данных с `postgresAdapter` на `mongooseAdapter`
 
 ### 3. Обновлены переменные окружения
+
 - В `.env` и `.env.docker`:
   - `DATABASE_URI` изменён с PostgreSQL на MongoDB URI
   - Локальная разработка: `mongodb://localhost:27017/payload`
   - Docker: `mongodb://mongodb:27017/payload`
 
 ### 4. Обновлён Docker Compose
+
 - В `docker-compose.yml`:
   - Заменён сервис `postgres` на `mongodb`
   - Используется образ `mongo:7-jammy`
@@ -26,11 +30,13 @@
 ## Запуск проекта
 
 ### Локальная разработка
+
 1. Убедитесь, что MongoDB запущен локально на порту 27017
 2. Установите зависимости: `pnpm install`
 3. Запустите проект: `pnpm dev`
 
 ### Docker
+
 1. Запустите контейнеры: `docker-compose up`
 2. Проект будет доступен на `http://localhost:3000`
 
@@ -50,6 +56,7 @@
 ## Тестирование миграции
 
 ### ✅ Выполнено
+
 1. **Зависимости обновлены** - `@payloadcms/db-mongodb` установлен
 2. **Конфигурация обновлена** - `mongooseAdapter` настроен
 3. **Docker Compose обновлён** - MongoDB контейнер запущен

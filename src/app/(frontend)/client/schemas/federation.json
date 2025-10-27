@@ -1,1 +1,12 @@
-{"type":"object","properties":{"id":{"type":"integer","description":"ID футбольной федерации (конфедерации), например 1 для FIFA","example":1},"name":{"type":"string","description":"Название федерации","example":"FIFA"}},"x-readme-ref-name":"Federation"}
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "ID футбольной федерации (конфедерации), например 1 для FIFA",
+      "example": 1
+    },
+    "name": { "type": "string", "description": "Название федерации", "example": "FIFA" }
+  },
+  "x-readme-ref-name": "Federation"
+}

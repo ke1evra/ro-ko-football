@@ -53,7 +53,7 @@ export async function requestJson(url) {
         res.on('data', (chunk) => (data += chunk))
         res.on('end', () => {
           console.log(`[HTTP] ← ${statusCode} ${shownUrl}`)
-          
+
           // Проверяем HTTP статус код
           if (statusCode >= 400) {
             const error = new Error(`HTTP ${statusCode}: ${data.slice(0, 200)}`)
@@ -62,7 +62,7 @@ export async function requestJson(url) {
             reject(error)
             return
           }
-          
+
           try {
             resolve(JSON.parse(data))
           } catch (e) {
@@ -495,12 +495,43 @@ export function sanitizeMatchDoc(input) {
 
   // Дополнительно чистим пустые группы, оставшиеся после нормализации
   if (out.federation && !out.federation.federationId && !out.federation.name) delete out.federation
-  if (out.country && !out.country.countryId && !out.country.name && !out.country.flag && !out.country.fifaCode && !out.country.uefaCode && out.country.isReal == null) delete out.country
+  if (
+    out.country &&
+    !out.country.countryId &&
+    !out.country.name &&
+    !out.country.flag &&
+    !out.country.fifaCode &&
+    !out.country.uefaCode &&
+    out.country.isReal == null
+  )
+    delete out.country
   if (out.season && !out.season.seasonId && !out.season.name && !out.season.year) delete out.season
   if (out.venue && !out.venue.name && !out.venue.city && !out.venue.country) delete out.venue
-  if (out.outcomes && !out.outcomes.halfTime && !out.outcomes.fullTime && !out.outcomes.extraTime && !out.outcomes.penaltyShootout) delete out.outcomes
-  if (out.scoresRaw && !out.scoresRaw.score && !out.scoresRaw.htScore && !out.scoresRaw.ftScore && !out.scoresRaw.etScore && !out.scoresRaw.psScore) delete out.scoresRaw
-  if (out.urls && !out.urls.events && !out.urls.statistics && !out.urls.lineups && !out.urls.head2head) delete out.urls
+  if (
+    out.outcomes &&
+    !out.outcomes.halfTime &&
+    !out.outcomes.fullTime &&
+    !out.outcomes.extraTime &&
+    !out.outcomes.penaltyShootout
+  )
+    delete out.outcomes
+  if (
+    out.scoresRaw &&
+    !out.scoresRaw.score &&
+    !out.scoresRaw.htScore &&
+    !out.scoresRaw.ftScore &&
+    !out.scoresRaw.etScore &&
+    !out.scoresRaw.psScore
+  )
+    delete out.scoresRaw
+  if (
+    out.urls &&
+    !out.urls.events &&
+    !out.urls.statistics &&
+    !out.urls.lineups &&
+    !out.urls.head2head
+  )
+    delete out.urls
   if (out.odds) {
     const pre = out.odds.pre
     const live = out.odds.live
@@ -536,7 +567,9 @@ export async function upsertMatch(payload, doc) {
       const leagueId = await resolveLeague(payload, payloadData.competitionId)
       if (leagueId) {
         payloadData.league = leagueId
-        console.log(`[MATCH][LINK] league by competitionId=${payloadData.competitionId} → ${leagueId}`)
+        console.log(
+          `[MATCH][LINK] league by competitionId=${payloadData.competitionId} → ${leagueId}`,
+        )
       } else {
         console.log(`[MATCH][LINK] league not found for competitionId=${payloadData.competitionId}`)
       }
@@ -566,7 +599,9 @@ export async function upsertMatch(payload, doc) {
       const leagueId = await resolveLeague(payload, payloadData.competitionId)
       if (leagueId) {
         payloadData.league = leagueId
-        console.log(`[MATCH][LINK] league by competitionId=${payloadData.competitionId} → ${leagueId}`)
+        console.log(
+          `[MATCH][LINK] league by competitionId=${payloadData.competitionId} → ${leagueId}`,
+        )
       } else {
         console.log(`[MATCH][LINK] league not found for competitionId=${payloadData.competitionId}`)
       }
@@ -648,11 +683,20 @@ function parsePair(str) {
   return { home: Number.isFinite(a) ? a : null, away: Number.isFinite(b) ? b : null }
 }
 function sumPairs(...pairs) {
-  let ah = 0, aa = 0, hasH = false, hasA = false
+  let ah = 0,
+    aa = 0,
+    hasH = false,
+    hasA = false
   for (const p of pairs) {
     if (p && typeof p === 'object') {
-      if (p.home != null) { ah += Number(p.home); hasH = true }
-      if (p.away != null) { aa += Number(p.away); hasA = true }
+      if (p.home != null) {
+        ah += Number(p.home)
+        hasH = true
+      }
+      if (p.away != null) {
+        aa += Number(p.away)
+        hasA = true
+      }
     }
   }
   return { home: hasH ? ah : null, away: hasA ? aa : null }
@@ -698,7 +742,7 @@ function buildStatsUrl(matchId) {
 async function fetchMatchStatsDTO(matchId, retries = 3) {
   const url = buildStatsUrl(matchId)
   let json
-  
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       json = await requestJson(url)
@@ -706,24 +750,26 @@ async function fetchMatchStatsDTO(matchId, retries = 3) {
         const msg = json?.error?.message || json?.error || json?.message || 'unknown error'
         throw new Error(`API error for match ${matchId}: ${msg}`)
       }
-      
+
       // Если дошли сюда, запрос успешен
       break
     } catch (error) {
       const isLastAttempt = attempt === retries
-      const isRetryableError = 
+      const isRetryableError =
         error.statusCode >= 500 || // 5xx ошибки сервера
         error.statusCode === 429 || // Too Many Requests
         error.message.includes('JSON parse error') || // HTML вместо JSON
         error.message.includes('network error') // сетевые ошибки
-      
+
       if (isRetryableError && !isLastAttempt) {
         const delay = Math.pow(2, attempt - 1) * 1000 // 1s, 2s, 4s
-        console.warn(`[STATS][RETRY] Попытка ${attempt}/${retries} для matchId=${matchId} неудачна (${error.message}), повтор через ${delay}мс`)
-        await new Promise(resolve => setTimeout(resolve, delay))
+        console.warn(
+          `[STATS][RETRY] Попытка ${attempt}/${retries} для matchId=${matchId} неудачна (${error.message}), повтор через ${delay}мс`,
+        )
+        await new Promise((resolve) => setTimeout(resolve, delay))
         continue
       }
-      
+
       // Если это последняя попытка или ошибка не подлежит повтору
       throw error
     }
@@ -746,10 +792,18 @@ async function fetchMatchStatsDTO(matchId, retries = 3) {
   const mapLineup = (side) => {
     if (!side) return null
     const sXI = Array.isArray(side.starting_xi)
-      ? side.starting_xi.map((p) => ({ number: toNumOrNull(p.number), name: p.name, position: p.position || null }))
+      ? side.starting_xi.map((p) => ({
+          number: toNumOrNull(p.number),
+          name: p.name,
+          position: p.position || null,
+        }))
       : []
     const subs = Array.isArray(side.substitutes)
-      ? side.substitutes.map((p) => ({ number: toNumOrNull(p.number), name: p.name, position: p.position || null }))
+      ? side.substitutes.map((p) => ({
+          number: toNumOrNull(p.number),
+          name: p.name,
+          position: p.position || null,
+        }))
       : []
     return { formation: side.formation || null, startingXI: sXI, substitutes: subs }
   }
@@ -774,7 +828,7 @@ async function fetchMatchStatsDTO(matchId, retries = 3) {
     dangerousAttacks: mapSide(stats.dangerous_attacks),
     events,
     lineups: { home: mapLineup(lx.home), away: mapLineup(lx.away) },
-    additionalStats: (d.statistics || d),
+    additionalStats: d.statistics || d,
     lastSyncAt: now,
     syncSource: 'stats',
     dataQuality: deriveQuality(stats, events, lx),
@@ -804,24 +858,43 @@ async function fetchMatchStatsDTO(matchId, retries = 3) {
   }
 
   // Очистка пустых групп (home/away оба null)
-  const clean = (g) => (g && typeof g === 'object' && (g.home != null || g.away != null) ? g : undefined)
-  const drop = (k) => { if (result[k] === undefined) delete result[k] }
-  result.possession = clean(result.possession); drop('possession')
-  result.shots = clean(result.shots); drop('shots')
-  result.shotsOnTarget = clean(result.shotsOnTarget); drop('shotsOnTarget')
-  result.shotsOffTarget = clean(result.shotsOffTarget); drop('shotsOffTarget')
-  result.shotsBlocked = clean(result.shotsBlocked); drop('shotsBlocked')
-  result.corners = clean(result.corners); drop('corners')
-  result.offsides = clean(result.offsides); drop('offsides')
-  result.fouls = clean(result.fouls); drop('fouls')
-  result.yellowCards = clean(result.yellowCards); drop('yellowCards')
-  result.redCards = clean(result.redCards); drop('redCards')
-  result.saves = clean(result.saves); drop('saves')
-  result.passes = clean(result.passes); drop('passes')
-  result.passesAccurate = clean(result.passesAccurate); drop('passesAccurate')
-  result.passAccuracy = clean(result.passAccuracy); drop('passAccuracy')
-  result.attacks = clean(result.attacks); drop('attacks')
-  result.dangerousAttacks = clean(result.dangerousAttacks); drop('dangerousAttacks')
+  const clean = (g) =>
+    g && typeof g === 'object' && (g.home != null || g.away != null) ? g : undefined
+  const drop = (k) => {
+    if (result[k] === undefined) delete result[k]
+  }
+  result.possession = clean(result.possession)
+  drop('possession')
+  result.shots = clean(result.shots)
+  drop('shots')
+  result.shotsOnTarget = clean(result.shotsOnTarget)
+  drop('shotsOnTarget')
+  result.shotsOffTarget = clean(result.shotsOffTarget)
+  drop('shotsOffTarget')
+  result.shotsBlocked = clean(result.shotsBlocked)
+  drop('shotsBlocked')
+  result.corners = clean(result.corners)
+  drop('corners')
+  result.offsides = clean(result.offsides)
+  drop('offsides')
+  result.fouls = clean(result.fouls)
+  drop('fouls')
+  result.yellowCards = clean(result.yellowCards)
+  drop('yellowCards')
+  result.redCards = clean(result.redCards)
+  drop('redCards')
+  result.saves = clean(result.saves)
+  drop('saves')
+  result.passes = clean(result.passes)
+  drop('passes')
+  result.passesAccurate = clean(result.passesAccurate)
+  drop('passesAccurate')
+  result.passAccuracy = clean(result.passAccuracy)
+  drop('passAccuracy')
+  result.attacks = clean(result.attacks)
+  drop('attacks')
+  result.dangerousAttacks = clean(result.dangerousAttacks)
+  drop('dangerousAttacks')
   if (!result.events || result.events.length === 0) delete result.events
   if (!result.lineups || (!result.lineups.home && !result.lineups.away)) delete result.lineups
 
@@ -841,17 +914,17 @@ async function fetchMatchStatsDTO(matchId, retries = 3) {
     ['sblk', result.shotsBlocked],
     ['shots', result.shots],
   ]
-  
+
   const metrics = []
   let mapped = 0
-  
+
   for (const [name, val] of pairs) {
     if (val && (val.home != null || val.away != null)) {
       mapped++
       metrics.push(`${name}=${val.home ?? '∅'}:${val.away ?? '∅'}`)
     }
   }
-  
+
   if (metrics.length > 0) {
     console.log(`    [STATS] ${metrics.join(' • ')}`)
   } else {
@@ -873,9 +946,19 @@ async function fetchAndUpsertStatsForMatch(payload, payloadMatchId, matchId) {
     // Подсчет непустых метрик перед з��писью
     const isPair = (p) => p && typeof p === 'object' && (p.home != null || p.away != null)
     const metricsPresent = [
-      dto.possession, dto.corners, dto.offsides, dto.fouls, dto.yellowCards,
-      dto.redCards, dto.saves, dto.attacks, dto.dangerousAttacks,
-      dto.shotsOnTarget, dto.shotsOffTarget, dto.shotsBlocked, dto.shots,
+      dto.possession,
+      dto.corners,
+      dto.offsides,
+      dto.fouls,
+      dto.yellowCards,
+      dto.redCards,
+      dto.saves,
+      dto.attacks,
+      dto.dangerousAttacks,
+      dto.shotsOnTarget,
+      dto.shotsOffTarget,
+      dto.shotsBlocked,
+      dto.shots,
     ].filter(isPair).length
 
     if (existing.docs.length > 0) {
@@ -885,14 +968,18 @@ async function fetchAndUpsertStatsForMatch(payload, payloadMatchId, matchId) {
         data: { ...dto, match: payloadMatchId },
         overrideAccess: true,
       })
-      console.log(`[STATS] UPDATED (statsId=${upd.id}) для matchId=${matchId}; metrics=${metricsPresent}`)
+      console.log(
+        `[STATS] UPDATED (statsId=${upd.id}) для matchId=${matchId}; metrics=${metricsPresent}`,
+      )
     } else {
       const created = await payload.create({
         collection: 'matchStats',
         data: { ...dto, match: payloadMatchId },
         overrideAccess: true,
       })
-      console.log(`[STATS] CREATED (statsId=${created.id}) для matchId=${matchId}; metrics=${metricsPresent}`)
+      console.log(
+        `[STATS] CREATED (statsId=${created.id}) для matchId=${matchId}; metrics=${metricsPresent}`,
+      )
     }
     await payload.update({
       collection: 'matches',
@@ -924,7 +1011,10 @@ function* iterateDays(from, to) {
   }
 }
 
-async function processDay(payload, { day, pageSize = 30, competitionIds, teamIds, withStats = true }) {
+async function processDay(
+  payload,
+  { day, pageSize = 30, competitionIds, teamIds, withStats = true },
+) {
   console.log(`[DAY] ${day} (withStats=${withStats})`)
   let page = 1
   let processed = 0
@@ -986,7 +1076,7 @@ async function processDay(payload, { day, pageSize = 30, competitionIds, teamIds
     console.log(`[PAGE] новых=${fresh.length}, повторов=${dupCount}`)
 
     if (fresh.length === 0) {
-      console.log(`[PAGE] нет новых матчей на page=${page} — останов`) 
+      console.log(`[PAGE] нет новых матчей на page=${page} — останов`)
       break
     }
 
@@ -997,27 +1087,31 @@ async function processDay(payload, { day, pageSize = 30, competitionIds, teamIds
       batches.push(fresh.slice(i, i + BATCH_SIZE))
     }
 
-    console.log(`[PARALLEL] Обработка ${fresh.length} матчей в ${batches.length} пачках по ${BATCH_SIZE}`)
+    console.log(
+      `[PARALLEL] Обработка ${fresh.length} матчей в ${batches.length} пачках по ${BATCH_SIZE}`,
+    )
 
     for (const [batchIndex, batch] of batches.entries()) {
       console.log(`[BATCH] ${batchIndex + 1}/${batches.length}: обработка ${batch.length} матчей`)
-      
+
       const batchPromises = batch.map(async (apiMatch, index) => {
         const doc = toMatchDoc(apiMatch, 'history')
         const ordinal = processed + index + 1
         const dateStr = new Date(doc.date).toLocaleDateString('ru-RU')
-        
+
         try {
-          console.log(`  ��� [${ordinal}] ${doc.matchId} ${doc.homeTeam} - ${doc.awayTeam} (${dateStr})`)
-          
+          console.log(
+            `  ��� [${ordinal}] ${doc.matchId} ${doc.homeTeam} - ${doc.awayTeam} (${dateStr})`,
+          )
+
           // Лог маппинга основных полей матча
           console.log(
             `    [MATCH][MAP] fixture=${doc.fixtureId ?? '∅'} round=${doc.round ?? '∅'} groupId=${doc.groupId ?? '∅'} sched=${doc.scheduled ?? '∅'} time=${doc.time ?? '∅'} venue=${doc.venue?.name ?? '∅'} loc=${doc.location ?? '∅'}`,
           )
-          
+
           const { action, id } = await upsertMatch(payload, doc)
           console.log(`    ↳ ${action.toUpperCase()}${id ? ` (payloadId=${id})` : ''}`)
-          
+
           // Подтягиваем статистику для завершённых матчей (только если включено)
           if (withStats && doc.status === 'finished' && id) {
             await fetchAndUpsertStatsForMatch(payload, id, doc.matchId)
@@ -1044,10 +1138,18 @@ async function processDay(payload, { day, pageSize = 30, competitionIds, teamIds
       for (const r of settled) {
         if (r.status === 'fulfilled') {
           const result = r.value
-          if (result.action === 'created') { stats.created++; countCreated++ }
-          else if (result.action === 'skipped') { stats.skipped++; countSkipped++ }
-          else if (result.action === 'updated') { countUpdated++ }
-          else if (result.action === 'error') { stats.errors++; countErrors++ }
+          if (result.action === 'created') {
+            stats.created++
+            countCreated++
+          } else if (result.action === 'skipped') {
+            stats.skipped++
+            countSkipped++
+          } else if (result.action === 'updated') {
+            countUpdated++
+          } else if (result.action === 'error') {
+            stats.errors++
+            countErrors++
+          }
           processed++
         } else {
           if (r.reason?.code === 'REQUEST_BUDGET_EXHAUSTED') {
@@ -1060,10 +1162,14 @@ async function processDay(payload, { day, pageSize = 30, competitionIds, teamIds
         }
       }
 
-      console.log(`[BATCH] ${batchIndex + 1}/${batches.length} завершена: создано=${countCreated}, обновлено=${countUpdated}, пропущено=${countSkipped}, ошибок=${countErrors}`)
+      console.log(
+        `[BATCH] ${batchIndex + 1}/${batches.length} завершена: создано=${countCreated}, обновлено=${countUpdated}, пропущено=${countSkipped}, ошибок=${countErrors}`,
+      )
 
       if (budgetExhausted) {
-        console.warn('[BUDGET] Лимит запросов исчерпан — прерываем дальнейшую обработку матчей в этом дне')
+        console.warn(
+          '[BUDGET] Лимит запросов исчерпан — прерываем дальнейшую обработку матчей в этом дне',
+        )
         return { processed, stats, exhausted: true }
       }
     }

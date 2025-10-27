@@ -31,7 +31,7 @@ CompetitionId:
   schema:
     type: string
     description: ID соревнования (или несколько ID через запятую) для фильтрации результатов
-    example: "4"
+    example: '4'
 
 CountryId:
   name: country_id
@@ -99,7 +99,7 @@ Date:
     type: string
     format: date
     description: Конкретная дата для фильтрации (формат YYYY-MM-DD) – возвращает данные (матчи) за указанную дату. Специальное значение `today` означает текущий день.
-    example: "2025-09-10"
+    example: '2025-09-10'
 
 FromDate:
   name: from
@@ -108,7 +108,7 @@ FromDate:
     type: string
     format: date
     description: Начало диапазона дат для фильтрации истории/расписания матчей. Используется вместе с параметром `to`.
-    example: "2025-01-01"
+    example: '2025-01-01'
 
 ToDate:
   name: to
@@ -117,7 +117,7 @@ ToDate:
     type: string
     format: date
     description: Конец диапазона дат для фильтрации истории/расписания матчей (включительно). Если не указан при использовании `from`, считается равным `from`.
-    example: "2025-01-31"
+    example: '2025-01-31'
 
 Number:
   name: number

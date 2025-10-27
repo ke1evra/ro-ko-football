@@ -1,1 +1,42 @@
-{"type":"object","description":"Состав команды на матч (стартовый состав и запасные)","properties":{"starting_lineup":{"type":"array","description":"Список основных (стартовых) игроков команды","items":{"type":"object","properties":{"id":{"type":"integer","description":"ID игрока"},"name":{"type":"string","description":"Имя игрока"},"number":{"type":"integer","description":"Номер на футболке"},"position":{"type":"string","description":"Амплуа/позиция игрока (например, G, D, M, F)"}}}},"substitutes":{"type":"array","description":"Список запасных игроков команды","items":{"type":"object","properties":{"id":{"type":"integer"},"name":{"type":"string"},"number":{"type":"integer"},"position":{"type":"string"}}}},"coach":{"type":"object","nullable":true,"description":"Тренер команды (если известен)","properties":{"id":{"type":"integer"},"name":{"type":"string"}}}},"x-readme-ref-name":"Lineup"}
+{
+  "type": "object",
+  "description": "Состав команды на матч (стартовый состав и запасные)",
+  "properties": {
+    "starting_lineup": {
+      "type": "array",
+      "description": "Список основных (стартовых) игроков команды",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "description": "ID игрока" },
+          "name": { "type": "string", "description": "Имя игрока" },
+          "number": { "type": "integer", "description": "Номер на футболке" },
+          "position": {
+            "type": "string",
+            "description": "Амплуа/позиция игрока (например, G, D, M, F)"
+          }
+        }
+      }
+    },
+    "substitutes": {
+      "type": "array",
+      "description": "Список запасных игроков команды",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "number": { "type": "integer" },
+          "position": { "type": "string" }
+        }
+      }
+    },
+    "coach": {
+      "type": "object",
+      "nullable": true,
+      "description": "Тренер команды (если известен)",
+      "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
+    }
+  },
+  "x-readme-ref-name": "Lineup"
+}

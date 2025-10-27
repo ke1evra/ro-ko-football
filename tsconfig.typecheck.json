@@ -24,17 +24,12 @@
     },
     "target": "ES2022"
   },
-  "include": [
-    "next-env.d.ts", 
-    "src/**/*.ts", 
-    "src/**/*.tsx",
-    "!src/app/(frontend)/client/**/*"
-  ],
+  "include": ["next-env.d.ts", "src/**/*.ts", "src/**/*.tsx", "!src/app/(frontend)/client/**/*"],
   "exclude": [
     "node_modules",
     "src/app/(frontend)/client",
     ".next/types/app/(frontend)/(site)/test-avatar",
-    ".next/types/app/api/test-media", 
+    ".next/types/app/api/test-media",
     ".next/types/app/api/test-user-update"
   ]
 }

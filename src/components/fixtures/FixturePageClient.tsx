@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calendar, Clock, MapPin, Trophy, TrendingUp, MessageSquare, ThumbsUp } from 'lucide-react'
+import { Calendar, Clock, MapPin, TrendingUp, MessageSquare, ThumbsUp } from 'lucide-react'
 import { LocalDateTime } from '@/components/LocalDateTime'
 import PredictionModal from '@/components/predictions/PredictionModal'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
@@ -14,21 +14,7 @@ import { TeamLogo } from '@/components/TeamLogo'
 import H2HBlock from '@/components/fixtures/H2HBlock'
 import ComparativeTeamAnalysis from '@/components/fixtures/ComparativeTeamAnalysis'
 
-// Вспомогательные мапперы статусов на русский
-function statusRu(status?: string): string | undefined {
-  if (!status) return undefined
-  const s = status.toUpperCase()
-  if (s.includes('NOT') || s === 'NS' || s.includes('SCHEDULED')) return 'Запланирован'
-  if (s.includes('IN PLAY') || s === 'LIVE') return 'Идёт'
-  if (s === 'HT' || s.includes('HALF TIME')) return 'Перерыв'
-  if (s.includes('ADDED TIME')) return 'Добавленное время'
-  if (s.includes('FINISHED') || s === 'FT') return 'Завершён'
-  if (s.includes('POSTPONED')) return 'Отложен'
-  if (s.includes('CANCELLED')) return 'Отменён'
-  if (s.includes('ABANDONED')) return 'Прерван'
-  return status
-}
-
+// Вспомогательный маппер статуса времени на русский
 function timeStatusRu(timeStatus?: string | null): string | undefined {
   if (!timeStatus) return undefined
   const ts = String(timeStatus).toUpperCase()
@@ -141,18 +127,6 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
     return { wh: inv[0] / total, wd: inv[1] / total, wa: inv[2] / total }
   }
 
-  const widths = computeWidths(oHome, oDraw, oAway)
-  const minOdd = Math.min(...[oHome, oDraw, oAway].filter((x) => Number.isFinite(x)))
-  const fav = {
-    home: Number.isFinite(oHome) && oHome === minOdd,
-    draw: Number.isFinite(oDraw) && oDraw === minOdd,
-    away: Number.isFinite(oAway) && oAway === minOdd,
-  }
-  // Проценты ширины сегментов для позиционирования подписи X (минимум 6%)
-  const whPct = Math.max(6, widths.wh * 100)
-  const wdPct = Math.max(6, widths.wd * 100)
-  const waPct = Math.max(6, widths.wa * 100)
-
   return (
     <>
       <div className="space-y-6">
@@ -188,21 +162,26 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
               <div className="flex items-center justify-end gap-3">
                 <Link
                   href={`/teams/${fx.home.id}`}
-                  className="text-lg font-semibold hover:text-primary truncate"
+                  className="text-3xl font-semibold hover:text-primary max-w-64"
                 >
                   {fx.home.name}
                 </Link>
                 <TeamLogo teamId={fx.home.id} teamName={fx.home.name} size="large" />
               </div>
 
-              {/* Центральный счёт, минуты, дата и обратный отсчёт */}
               <div className="flex flex-col items-center justify-center gap-2">
-                {/* Дата и обратный отсчёт под счётом */}
+                {/* Дата, время и обратный отсчёт под счётом */}
                 <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
                   <div className="inline-flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     <LocalDateTime date={fx.date} time={fx.time} utc showTime={false} />
                   </div>
+                  {isScheduled && fx.time && (
+                    <div className="inline-flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      <LocalDateTime date={fx.date} time={fx.time} utc showDate={false} />
+                    </div>
+                  )}
                   {countdownText && (
                     <div className="inline-flex items-center gap-1 text-emerald-700 font-medium">
                       <span>{countdownText}</span>
@@ -216,99 +195,33 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                 <TeamLogo teamId={fx.away.id} teamName={fx.away.name} size="large" />
                 <Link
                   href={`/teams/${fx.away.id}`}
-                  className="text-lg font-semibold hover:text-primary truncate"
+                  className="text-3xl font-semibold hover:text-primary max-w-64 flex justify-center"
                 >
                   {fx.away.name}
                 </Link>
               </div>
             </div>
 
-            {/* Информация о дате, лиге, туре, группе и статусе */}
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-[11px]">
-                <Calendar className="h-3 w-3" />
-                <LocalDateTime date={fx.date} time={fx.time} utc showTime={false} />
-              </div>
-
-              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-[11px]">
-                <Clock className="h-3 w-3" />
-                <LocalDateTime date={fx.date} time={fx.time} utc showDate={false} />
-              </div>
-
-              {countdownText && (
-                <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px]">
-                  <Clock className="h-3 w-3" />
-                  <span>{countdownText}</span>
-                </div>
-              )}
-
-              {fx.status && (
-                <Badge variant="secondary" className="text-[11px]">
-                  {statusRu(fx.status) || fx.status}
-                </Badge>
-              )}
-
-              {fx.round && (
-                <Badge variant="secondary" className="text-[11px]">
-                  Тур {fx.round}
-                </Badge>
-              )}
-
-              {fx.group_id && (
-                <Badge variant="secondary" className="text-[11px]">
-                  Группа {fx.group_id}
-                </Badge>
-              )}
-
-              {fx.last_changed && (
-                <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-[10px] text-muted-foreground">
-                  <span>Обновлено:</span>
-                  <LocalDateTime
-                    dateTime={fx.last_changed.replace(' ', 'T')}
-                    utc
-                    showDate={false}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Предматчевые коэффициенты — заметная линия распределения на отдельной строке */}
+            {/* Футер с коэффициентами */}
             {(Number.isFinite(oHome) || Number.isFinite(oDraw) || Number.isFinite(oAway)) && (
-              <div className="mt-3 space-y-1">
-                <div className="h-3 rounded-full overflow-hidden border border-border bg-muted/40 flex">
-                  <div
-                    className={`${fav.home ? 'bg-primary' : 'bg-primary/60'} h-full`}
-                    style={{ width: `${whPct}%` }}
-                  />
-                  <div
-                    className={`${fav.draw ? 'bg-amber-500' : 'bg-amber-400'} h-full`}
-                    style={{ width: `${wdPct}%` }}
-                  />
-                  <div
-                    className={`${fav.away ? 'bg-blue-600' : 'bg-blue-400'} h-full`}
-                    style={{ width: `${waPct}%` }}
-                  />
+              <div className="flex items-center justify-center gap-4 py-4">
+                <div className="flex flex-col items-center gap-1 w-64">
+                  <div className="border-2 border-border rounded px-3 py-2 text-center">
+                    <span className="font-semibold text-sm">{fmtOdd(oHome)}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground ">{fx.home.name}</span>
                 </div>
-                <div className="relative mt-1 text-xs text-muted-foreground">
-                  {/* Левые/правые подписи у краёв линии */}
-                  <div className="flex items-center justify-between">
-                    <div className="text-left">
-                      <span className="font-medium"></span> {fmtOdd(oHome)}
-                    </div>
-                    <div className="text-right">
-                      <span className="font-medium"></span> {fmtOdd(oAway)}
-                    </div>
+                <div className="flex flex-col items-center gap-1 w-64">
+                  <div className="border-2 border-border rounded px-3 py-2 text-center">
+                    <span className="font-semibold text-sm">{fmtOdd(oDraw)}</span>
                   </div>
-                  {/* Центровка X относительно жёлтого сегмента линии */}
-                  <div
-                    className="absolute left-0 top-0 w-0 translate-x-[-50%] pointer-events-none"
-                    style={{ left: `${whPct + wdPct / 2}%` }}
-                  >
-                    <div className="text-center">
-                      <span className="font-medium opacity-30">X&nbsp;</span>
-                      <span className="font-medium">{fmtOdd(oDraw)}</span>
-                    </div>
+                  <span className="text-xs text-muted-foreground ">Ничья</span>
+                </div>
+                <div className="flex flex-col items-center gap-1 w-64">
+                  <div className="border-2 border-border rounded px-3 py-2 text-center">
+                    <span className="font-semibold text-sm">{fmtOdd(oAway)}</span>
                   </div>
+                  <span className="text-xs text-muted-foreground ">{fx.away.name}</span>
                 </div>
               </div>
             )}
@@ -359,18 +272,18 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
           </CardContent>
         </Card>
 
+        {/* Аналитический виджет сравнительной статистики на всю ширину */}
+        <ComparativeTeamAnalysis
+          home={{ id: fx.home.id, name: fx.home.name }}
+          away={{ id: fx.away.id, name: fx.away.name }}
+        />
+
         {/* H2H блок - показываем для всех матчей */}
         <H2HBlock
           homeTeamId={fx.home.id}
           awayTeamId={fx.away.id}
           homeTeamName={fx.home.name}
           awayTeamName={fx.away.name}
-        />
-
-        {/* Аналитический виджет сравнительной статистики на всю ширину */}
-        <ComparativeTeamAnalysis
-          home={{ id: fx.home.id, name: fx.home.name }}
-          away={{ id: fx.away.id, name: fx.away.name }}
         />
 
         {/* Прогнозы на матч */}

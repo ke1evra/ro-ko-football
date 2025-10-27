@@ -44,12 +44,12 @@
             description: Ссылка для получения событий конкретного матча
             operationId: getMatchEvents
             parameters:
-              id: "$response.body#/data/match/0/id"
+              id: '$response.body#/data/match/0/id'
           GetMatchStatistics:
             description: Ссылка для получения статистики конкретного матча
             operationId: getMatchStatistics
             parameters:
-              match_id: "$response.body#/data/match/0/id"
+              match_id: '$response.body#/data/match/0/id'
       '400':
         $ref: '#/components/responses/ApiError'
       '401':
@@ -101,7 +101,7 @@
                       type: string
                       nullable: true
                       description: URL для следующей с��раницы результатов (если есть следующая страница)
-                      example: "https://livescore-api.com/api-client/scores/history.json?key=...&secret=...&page=2"
+                      example: 'https://livescore-api.com/api-client/scores/history.json?key=...&secret=...&page=2'
                     prev_page:
                       type: string
                       nullable: true

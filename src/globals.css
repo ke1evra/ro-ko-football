@@ -91,7 +91,7 @@
     --accent: oklch(0.967 0.001 286.375);
     --accent-foreground: oklch(0.21 0.006 285.885);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.90 0.005 286.32); /* Немного темнее границы */
+    --border: oklch(0.9 0.005 286.32); /* Немного темнее границы */
     --input: oklch(1 0 0); /* Поля ввода белые */
     --ring: oklch(0.705 0.213 47.604);
     --chart-1: oklch(0.646 0.222 41.116);
@@ -105,7 +105,7 @@
     --sidebar-primary-foreground: oklch(0.98 0.016 73.684);
     --sidebar-accent: oklch(0.967 0.001 286.375);
     --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-    --sidebar-border: oklch(0.90 0.005 286.32);
+    --sidebar-border: oklch(0.9 0.005 286.32);
     --sidebar-ring: oklch(0.705 0.213 47.604);
   }
 
@@ -208,7 +208,7 @@
   --accent: oklch(0.967 0.001 286.375);
   --accent-foreground: oklch(0.21 0.006 285.885);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.90 0.005 286.32); /* Немного темнее границы */
+  --border: oklch(0.9 0.005 286.32); /* Немного темнее границы */
   --input: oklch(1 0 0); /* Поля ввода белые */
   --ring: oklch(0.705 0.213 47.604);
   --chart-1: oklch(0.646 0.222 41.116);
@@ -222,7 +222,7 @@
   --sidebar-primary-foreground: oklch(0.98 0.016 73.684);
   --sidebar-accent: oklch(0.967 0.001 286.375);
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.90 0.005 286.32);
+  --sidebar-border: oklch(0.9 0.005 286.32);
   --sidebar-ring: oklch(0.705 0.213 47.604);
 }
 

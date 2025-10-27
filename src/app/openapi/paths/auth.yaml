@@ -14,7 +14,7 @@
         }
       }
       ```
-      
+
       При ошибке аутентификации возвращается стандартное сообщение об ошибке (например, "Invalid API key or secret") и код 401.
     responses:
       '200':
@@ -28,7 +28,8 @@
                 data:
                   type: object
                   properties:
-                    message: { type: string, example: "Your API key and API secret are working correctly" }
+                    message:
+                      { type: string, example: 'Your API key and API secret are working correctly' }
       '400':
         $ref: '#/components/responses/ApiError'
       '401':
@@ -39,7 +40,7 @@
               type: object
               properties:
                 success: { type: boolean, example: false }
-                error: { type: string, example: "Invalid API key or secret" }
+                error: { type: string, example: 'Invalid API key or secret' }
       '404':
         description: Эндпоинт не найден
       '500':

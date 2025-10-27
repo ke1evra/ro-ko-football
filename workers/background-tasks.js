@@ -1,6 +1,6 @@
 /**
  * Фоновый воркер для Football Platform
- * 
+ *
  * Выполняет периодические задачи:
  * - Обновление статистики матчей
  * - Подсчёт очков за предсказания
@@ -43,17 +43,17 @@ async function initializePayload() {
  */
 async function updateCommentCounters() {
   if (!payload || isShuttingDown) return
-  
+
   try {
     console.log('[Worker] Обновление счётчиков комментариев...')
-    
+
     // Получаем все комментарии с неправильными счётчиками
     const comments = await payload.find({
       collection: 'comments',
       limit: 100,
       overrideAccess: true,
     })
-    
+
     for (const comment of comments.docs) {
       // Подсчитываем голоса для каждого комментария
       const votes = await payload.find({
@@ -64,19 +64,23 @@ async function updateCommentCounters() {
         limit: 1000,
         overrideAccess: true,
       })
-      
+
       let upvotes = 0
       let downvotes = 0
-      
+
       votes.docs.forEach((vote) => {
         if (vote.value === 1) upvotes++
         if (vote.value === -1) downvotes++
       })
-      
+
       const score = upvotes - downvotes
-      
+
       // Обновляем счётчики если они изменились
-      if (comment.upvotes !== upvotes || comment.downvotes !== downvotes || comment.score !== score) {
+      if (
+        comment.upvotes !== upvotes ||
+        comment.downvotes !== downvotes ||
+        comment.score !== score
+      ) {
         await payload.update({
           collection: 'comments',
           id: comment.id,
@@ -87,11 +91,13 @@ async function updateCommentCounters() {
           },
           overrideAccess: true,
         })
-        
-        console.log(`[Worker] Обновлён комментарий ${comment.id}: ${upvotes}↑ ${downvotes}↓ (${score})`)
+
+        console.log(
+          `[Worker] Обновлён комментарий ${comment.id}: ${upvotes}↑ ${downvotes}↓ (${score})`,
+        )
       }
     }
-    
+
     console.log('[Worker] Счётчики комментариев обновлены')
   } catch (error) {
     console.error('[Worker] Ошибка обновления счётчиков:', error)
@@ -103,12 +109,12 @@ async function updateCommentCounters() {
  */
 async function cleanupExpiredTokens() {
   if (!payload || isShuttingDown) return
-  
+
   try {
     console.log('[Worker] Очистка устаревших токенов...')
-    
+
     const now = new Date()
-    
+
     // Очищаем токены верификации email
     const usersWithExpiredTokens = await payload.find({
       collection: 'users',
@@ -121,7 +127,7 @@ async function cleanupExpiredTokens() {
       limit: 100,
       overrideAccess: true,
     })
-    
+
     for (const user of usersWithExpiredTokens.docs) {
       await payload.update({
         collection: 'users',
@@ -133,7 +139,7 @@ async function cleanupExpiredTokens() {
         overrideAccess: true,
       })
     }
-    
+
     // Очищаем токены сброса пароля
     const usersWithExpiredResetTokens = await payload.find({
       collection: 'users',
@@ -146,7 +152,7 @@ async function cleanupExpiredTokens() {
       limit: 100,
       overrideAccess: true,
     })
-    
+
     for (const user of usersWithExpiredResetTokens.docs) {
       await payload.update({
         collection: 'users',
@@ -158,8 +164,10 @@ async function cleanupExpiredTokens() {
         overrideAccess: true,
       })
     }
-    
-    console.log(`[Worker] Очищено ${usersWithExpiredTokens.docs.length + usersWithExpiredResetTokens.docs.length} устаревших токенов`)
+
+    console.log(
+      `[Worker] Очищено ${usersWithExpiredTokens.docs.length + usersWithExpiredResetTokens.docs.length} устаревших токенов`,
+    )
   } catch (error) {
     console.error('[Worker] Ошибка очистки токенов:', error)
   }
@@ -170,13 +178,13 @@ async function cleanupExpiredTokens() {
  */
 async function runWorkerCycle() {
   if (isShuttingDown) return
-  
+
   console.log('[Worker] Запуск цикла фоновых задач...')
-  
+
   try {
     await updateCommentCounters()
     await cleanupExpiredTokens()
-    
+
     console.log('[Worker] Цикл фоновых задач завершён')
   } catch (error) {
     console.error('[Worker] Ошибка в цикле воркера:', error)
@@ -189,7 +197,7 @@ async function runWorkerCycle() {
 async function shutdown() {
   console.log('[Worker] Получен сигнал завершения...')
   isShuttingDown = true
-  
+
   if (payload?.db?.drain) {
     try {
       await payload.db.drain()
@@ -198,7 +206,7 @@ async function shutdown() {
       console.error('[Worker] Ошибка закрытия БД:', error)
     }
   }
-  
+
   console.log('[Worker] Воркер завершён')
   process.exit(0)
 }
@@ -209,29 +217,31 @@ async function shutdown() {
 async function startWorker() {
   try {
     console.log('[Worker] Запуск фонового воркера...')
-    
+
     // Инициализация
     await initializePayload()
-    
+
     // Первый запуск
     await runWorkerCycle()
-    
+
     // Периодический запуск каждые 5 минут
-    const interval = setInterval(async () => {
-      if (!isShuttingDown) {
-        await runWorkerCycle()
-      } else {
-        clearInterval(interval)
-      }
-    }, 5 * 60 * 1000) // 5 минут
-    
+    const interval = setInterval(
+      async () => {
+        if (!isShuttingDown) {
+          await runWorkerCycle()
+        } else {
+          clearInterval(interval)
+        }
+      },
+      5 * 60 * 1000,
+    ) // 5 минут
+
     console.log('[Worker] Воркер запущен, интервал: 5 минут')
-    
+
     // Обработка сигналов завершения
     process.on('SIGTERM', shutdown)
     process.on('SIGINT', shutdown)
     process.on('SIGUSR2', shutdown) // PM2 reload
-    
   } catch (error) {
     console.error('[Worker] Критическая ошибка воркера:', error)
     process.exit(1)

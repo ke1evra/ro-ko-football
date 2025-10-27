@@ -38,7 +38,9 @@ async function importLeagueNames() {
         )
         withStat.sort((a, b) => b.stat.mtimeMs - a.stat.mtimeMs)
         filePath = withStat[0].p
-        console.log(`ℹ️ Файл не указан. Использую последний переведённый: ${path.basename(filePath)}`)
+        console.log(
+          `ℹ️ Файл не указан. Использую последний переведённый: ${path.basename(filePath)}`,
+        )
       } else {
         // Нет переведённых файлов — попробуем найти последний оригинальный и проверить наличие перевода
         const originals = files
@@ -54,7 +56,9 @@ async function importLeagueNames() {
           try {
             await fs.access(translatedCandidate)
             filePath = translatedCandidate
-            console.log(`ℹ️ Файл не указан. Найден последний оригинал и соответствующий перевод: ${path.basename(filePath)}`)
+            console.log(
+              `ℹ️ Файл не указан. Найден последний оригинал и соответствующий перевод: ${path.basename(filePath)}`,
+            )
           } catch {
             console.error('❌ Переведённые файлы не найдены. Сначала запустите перевод:')
             console.error('   pnpm leagues:names:translate:latest')
@@ -107,7 +111,9 @@ async function importLeagueNames() {
 
         if (!existing.docs.length) {
           notFound++
-          console.warn(`⚠️  Не найдена лига competitionId=${league.competitionId} (${league.name || 'unknown'})`)
+          console.warn(
+            `⚠️  Не найдена лига competitionId=${league.competitionId} (${league.name || 'unknown'})`,
+          )
           continue
         }
 
@@ -122,7 +128,10 @@ async function importLeagueNames() {
         updated++
       } catch (e) {
         errors++
-        console.error(`❌ Ошибка при обновлении competitionId=${league?.competitionId}:`, e?.message || e)
+        console.error(
+          `❌ Ошибка при обновлении competitionId=${league?.competitionId}:`,
+          e?.message || e,
+        )
       }
     }
 

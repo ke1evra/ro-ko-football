@@ -112,11 +112,11 @@
                               id:
                                 type: string
                                 description: ID федерации (может быть строкой)
-                                example: "4"
+                                example: '4'
                               name:
                                 type: string
                                 description: Название федерации
-                                example: "AFC"
+                                example: 'AFC'
       '400':
         $ref: '#/components/responses/ApiError'
       '401':
@@ -197,9 +197,9 @@
                         type: object
                         properties:
                           id: { type: integer, example: 26 }
-                          name: { type: string, example: "2023/2024" }
-                          start: { type: string, format: date, example: "2023-07-01" }
-                          end: { type: string, format: date, example: "2024-06-30" }
+                          name: { type: string, example: '2023/2024' }
+                          start: { type: string, format: date, example: '2023-07-01' }
+                          end: { type: string, format: date, example: '2024-06-30' }
       '400':
         $ref: '#/components/responses/ApiError'
       '401':

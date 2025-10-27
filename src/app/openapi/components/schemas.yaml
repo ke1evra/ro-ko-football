@@ -8,7 +8,7 @@ Country:
     name:
       type: string
       description: Название страны
-      example: "Australia"
+      example: 'Australia'
     is_real:
       type: boolean
       description: Флаг реальной страны (true, если страна реально существует, false – например, для условных объединений вроде «World» или континентов)
@@ -17,17 +17,17 @@ Country:
       type: string
       nullable: true
       description: Код FIFA (если есть)
-      example: "AUS"
+      example: 'AUS'
     uefa_code:
       type: string
       nullable: true
       description: Код UEFA (если есть)
-      example: ""
+      example: ''
     flag:
       type: string
       nullable: true
       description: Название файла флага страны (PNG) на CDN. Например, `AUS.png`. Для получения самого изображения используется отдельный эндпоинт флагов.
-      example: "AUS.png"
+      example: 'AUS.png'
     federation:
       type: object
       nullable: true
@@ -40,7 +40,7 @@ Country:
         name:
           type: string
           description: Название федерации
-          example: "CAF"
+          example: 'CAF'
     national_team:
       type: object
       nullable: true
@@ -53,15 +53,15 @@ Country:
         name:
           type: string
           description: Название национальной команды
-          example: "Australia"
+          example: 'Australia'
         stadium:
           type: string
           description: Название домашнего стадиона сборной (если есть данные)
-          example: "Stadium Australia"
+          example: 'Stadium Australia'
         location:
           type: string
           description: Локация (город/стадион) национальной команды (если есть данные)
-          example: "Sydney"
+          example: 'Sydney'
 
 Federation:
   type: object
@@ -73,7 +73,7 @@ Federation:
     name:
       type: string
       description: Название федерации
-      example: "FIFA"
+      example: 'FIFA'
 
 Competition:
   type: object
@@ -85,14 +85,14 @@ Competition:
     name:
       type: string
       description: Название соревнования
-      example: "Hyundai A-League"
+      example: 'Hyundai A-League'
     is_league:
       type: boolean
       description: Признак лиги (true, если это лиговый турнир, false для кубка)
       example: true
     is_cup:
       type: boolean
-      description: "Признак кубкового турнира (обратен is_league: true для кубков, false для лиг)"
+      description: 'Признак кубкового турнира (обратен is_league: true для кубков, false для лиг)'
       example: false
     tier:
       type: integer
@@ -132,17 +132,17 @@ Competition:
         name:
           type: string
           description: Название сезона (например, "2021/2022" или "2023")
-          example: "2021/2022"
+          example: '2021/2022'
         start:
           type: string
           format: date
           description: Дата начала сезона (календарная)
-          example: "2021-07-01"
+          example: '2021-07-01'
         end:
           type: string
           format: date
           description: Дата окончания сезона
-          example: "2022-06-30"
+          example: '2022-06-30'
 
 Team:
   type: object
@@ -154,7 +154,7 @@ Team:
     name:
       type: string
       description: Название команды
-      example: "Wellington Phoenix"
+      example: 'Wellington Phoenix'
     country_id:
       type: integer
       nullable: true
@@ -166,13 +166,13 @@ Team:
       type: string
       nullable: true
       description: Название стадиона (домашнего поля) команды (если есть данные)
-      example: "Westpac Stadium"
+      example: 'Westpac Stadium'
     logo:
       type: string
       format: uri
       nullable: true
       description: URL логотипа команды (PNG изображение на CDN)
-      example: "https://cdn.live-score-api.com/teams/004d52954bd4936cc14e30b4511073ab.png"
+      example: 'https://cdn.live-score-api.com/teams/004d52954bd4936cc14e30b4511073ab.png'
 
 Match:
   type: object
@@ -191,30 +191,30 @@ Match:
       type: string
       format: date
       description: Дата проведения матча (UTC)
-      example: "2025-02-03"
+      example: '2025-02-03'
     time:
       type: string
       description: Время начала матча (UTC)
-      example: "08:00"
+      example: '08:00'
     added:
       type: string
       format: date-time
       description: Дата и время добавления матча в live-ленту (UTC)
-      example: "2023-12-18 07:45:06"
+      example: '2023-12-18 07:45:06'
     last_changed:
       type: string
       format: date-time
       description: Дата и время последнего обновления данных матча (UTC)
-      example: "2023-12-18 08:42:53"
+      example: '2023-12-18 08:42:53'
     status:
       type: string
       description: Текущий статус матча (например, NOT STARTED, IN PLAY, HALF TIME BREAK, ADDED TIME, FINISHED, INSUFFICIENT DATA)
-      example: "IN PLAY"
+      example: 'IN PLAY'
     time_status:
       type: string
       nullable: true
-      description: "Отображение текущего игрового времени или стадии: число минут (идущая минута) л��бо специальные значения: `HT` (перерыв), `FT` (конец 90 минут), `AET` (после доп. времени), `AP` (после пенальти)"
-      example: "43"
+      description: 'Отображение текущего игрового времени или стадии: число минут (идущая минута) л��бо специальные значения: `HT` (перерыв), `FT` (конец 90 минут), `AET` (после доп. времени), `AP` (после пенальти)'
+      example: '43'
     home:
       $ref: '#/components/schemas/Team'
     away:
@@ -229,7 +229,7 @@ Match:
       type: string
       nullable: true
       description: Место проведения матча (стадион, город или страна)
-      example: "Campbelltown Stadium"
+      example: 'Campbelltown Stadium'
     scores:
       type: object
       description: Объект с текущими счетами по ходу матча и итогами по периодам (для live и завершённых матчей).
@@ -237,23 +237,23 @@ Match:
         score:
           type: string
           description: Текущий счёт матча (формат `число - число`)
-          example: "0 - 1"
+          example: '0 - 1'
         ht_score:
           type: string
           description: Счёт после первого тайма (полувремени)
-          example: "2 - 0"
+          example: '2 - 0'
         ft_score:
           type: string
           description: Счёт после второго тайма (основного времени)
-          example: "2 - 2"
+          example: '2 - 2'
         et_score:
           type: string
           description: Счёт после дополнительного времени (если было)
-          example: "3 - 3"
+          example: '3 - 3'
         ps_score:
           type: string
           description: Счёт после серии пенальти (если была)
-          example: "4 - 2"
+          example: '4 - 2'
     outcomes:
       type: object
       description: Объект с исходами матча по результатам основных этапов (`1`, `X`, `2` для первой команды, ничьи или второй команды).
@@ -282,44 +282,62 @@ Match:
           type: object
           description: Коэффициенты перед началом матча (прематч) – для исходов 1, X, 2.
           properties:
-            "1": { type: number, description: "Коэффициент на победу первой (домашней) команды до матча" }
-            "X": { type: number, description: "Коэффициент на ничью до матча" }
-            "2": { type: number, description: "Коэффициент на победу второй (гостевой) команды до матча" }
+            '1':
+              {
+                type: number,
+                description: 'Коэффициент на победу первой (домашней) команды до матча',
+              }
+            'X': { type: number, description: 'Коэффициент на ничью до матча' }
+            '2':
+              {
+                type: number,
+                description: 'Коэффициент на победу второй (гостевой) команды до матча',
+              }
           example:
-            "1": 2.0
-            "X": 3.85
-            "2": 3.45
+            '1': 2.0
+            'X': 3.85
+            '2': 3.45
         live:
           type: object
           description: Текущие live-коэффициенты (в режиме реального времени) для исходов 1, X, 2.
           properties:
-            "1": { type: number, nullable: true, description: "Live-коэффициент на победу первой команды" }
-            "X": { type: number, nullable: true, description: "Live-коэффициент на ничью" }
-            "2": { type: number, nullable: true, description: "Live-коэффициент на победу второй команды" }
+            '1':
+              {
+                type: number,
+                nullable: true,
+                description: 'Live-коэффициент на победу первой команды',
+              }
+            'X': { type: number, nullable: true, description: 'Live-коэффициент на ничью' }
+            '2':
+              {
+                type: number,
+                nullable: true,
+                description: 'Live-коэффициент на победу второй команды',
+              }
           example:
-            "1": 5.6
-            "X": 3.55
-            "2": 1.61
+            '1': 5.6
+            'X': 3.55
+            '2': 1.61
     urls:
       type: object
-      description: "Связанные ссылки на подробные данные по матчу (эндпоинты внутри данного API). Поля:"
+      description: 'Связанные ссылки на подробные данные по матчу (эндпоинты внутри данного API). Поля:'
       properties:
         events:
           type: string
           description: URL для получения событий матча (голы, карточки и пр.)
-          example: "https://livescore-api.com/api-client/scores/events.json?id=483252"
+          example: 'https://livescore-api.com/api-client/scores/events.json?id=483252'
         statistics:
           type: string
           description: URL для получения статистики матча
-          example: "https://livescore-api.com/api-client/matches/stats.json?match_id=483252"
+          example: 'https://livescore-api.com/api-client/matches/stats.json?match_id=483252'
         lineups:
           type: string
           description: URL для получения стартовых составов матча
-          example: "https://livescore-api.com/api-client/matches/lineups.json?match_id=483252"
+          example: 'https://livescore-api.com/api-client/matches/lineups.json?match_id=483252'
         head2head:
           type: string
           description: URL для получения сравнения (H2H) двух команд, играющих в матче
-          example: "https://livescore-api.com/api-client/teams/head2head.json?team1_id=6581&team2_id=202"
+          example: 'https://livescore-api.com/api-client/teams/head2head.json?team1_id=6581&team2_id=202'
 
 Fixture:
   type: object
@@ -333,11 +351,11 @@ Fixture:
       type: string
       format: date
       description: Дата, на которую назначен матч
-      example: "2025-05-15"
+      example: '2025-05-15'
     time:
       type: string
       description: Время начала матча (UTC)
-      example: "16:00:00"
+      example: '16:00:00'
     home:
       $ref: '#/components/schemas/Team'
     away:
@@ -352,11 +370,11 @@ Fixture:
       type: string
       nullable: true
       description: Место проведения (стадион или город) запланированного матча
-      example: "Torino"
+      example: 'Torino'
     round:
       type: string
       description: Тур или стадия, в рамках которых запланирован матч. Может быть числом (номер тура) или кодом стадии (например, QF, SF для четверть-/полуфинала)
-      example: "25"
+      example: '25'
     group_id:
       type: integer
       nullable: true
@@ -369,18 +387,18 @@ Fixture:
         pre:
           type: object
           properties:
-            "1": { type: number }
-            "X": { type: number }
-            "2": { type: number }
+            '1': { type: number }
+            'X': { type: number }
+            '2': { type: number }
         live:
           type: object
           properties:
-            "1": { type: number, nullable: true }
-            "X": { type: number, nullable: true }
-            "2": { type: number, nullable: true }
+            '1': { type: number, nullable: true }
+            'X': { type: number, nullable: true }
+            '2': { type: number, nullable: true }
       example:
-        pre: { "1": 1.62, "X": 3.6, "2": 5.5 }
-        live: { "1": null, "X": null, "2": null }
+        pre: { '1': 1.62, 'X': 3.6, '2': 5.5 }
+        live: { '1': null, 'X': null, '2': null }
 
 Event:
   type: object
@@ -397,11 +415,11 @@ Event:
     event:
       type: string
       description: Тип события (кодовое обозначение)
-      example: "GOAL"
+      example: 'GOAL'
     label:
       type: string
       description: Человекочитаемое название события (на английском или на языке `lang`, если запрошен перевод)
-      example: "Goal"
+      example: 'Goal'
     is_home:
       type: boolean
       description: Признак события, относящегося к домашней команде (true, если событие связано с home-командой)
@@ -422,7 +440,7 @@ Event:
         name:
           type: string
           description: Имя игрока
-          example: "Lionel Messi"
+          example: 'Lionel Messi'
     info:
       type: object
       nullable: true
@@ -435,7 +453,7 @@ Event:
         name:
           type: string
           description: Имя второго игрока
-          example: "Alexis MacAllister"
+          example: 'Alexis MacAllister'
     sort:
       type: integer
       description: Порядковый номер события в хронологии матча (начиная с 0; если два события в одну минуту, используется sort д��я упорядочения)
@@ -451,10 +469,10 @@ Lineup:
       items:
         type: object
         properties:
-          id: { type: integer, description: "ID игрока" }
-          name: { type: string, description: "Имя игрока" }
-          number: { type: integer, description: "Номер на футболке" }
-          position: { type: string, description: "Амплуа/позиция игрока (например, G, D, M, F)" }
+          id: { type: integer, description: 'ID игрока' }
+          name: { type: string, description: 'Имя игрока' }
+          number: { type: integer, description: 'Номер на футболке' }
+          position: { type: string, description: 'Амплуа/позиция игрока (например, G, D, M, F)' }
     substitutes:
       type: array
       description: Список запасных игроков команды
@@ -475,84 +493,84 @@ Lineup:
 
 MatchStats:
   type: object
-  description: "Статистика матча: к��ючи объекта – наименования статистических показателей, значения – строки вида `\"Дома:Гости\"` (либо `null`, если данные недоступны)."
+  description: 'Статистика матча: к��ючи объекта – наименования статистических показателей, значения – строки вида `"Дома:Гости"` (либо `null`, если данные недоступны).'
   properties:
     attacks:
       type: string
       description: Количество атак (home:away)
-      example: "82:91"
+      example: '82:91'
     dangerous_attacks:
       type: string
       description: Количество опасных атак (home:away)
-      example: "33:56"
+      example: '33:56'
     possession:
       type: string
       description: Владение мячом в процентах (home:away, сумма = 100%)
-      example: "48:52"
+      example: '48:52'
     shots_on_target:
       type: string
       description: Удары в створ ворот (home:away)
-      example: "5:3"
+      example: '5:3'
     shots_off_target:
       type: string
       description: Удары мимо ворот (home:away)
-      example: "4:8"
+      example: '4:8'
     shots_blocked:
       type: string
       description: Заблокированные удары (home:away)
-      example: "3:8"
+      example: '3:8'
     attempts_on_goal:
       type: string
       description: Все попытки удара по воротам (home:away), сумма ударов в створ и мимо
-      example: "9:11"
+      example: '9:11'
     corners:
       type: string
       description: Угловые удары (home:away)
-      example: "4:13"
+      example: '4:13'
     offsides:
       type: string
       description: Офсайды (положения «вне игры») (home:away)
-      example: "3:5"
+      example: '3:5'
     yellow_cards:
       type: string
       description: Жёлтые карточки (home:away)
-      example: "0:1"
+      example: '0:1'
     red_cards:
       type: string
       description: Красные карточки (home:away)
-      example: "0:0"
+      example: '0:0'
     substitutions:
       type: string
       description: Проведённые замены (home:away)
-      example: "3:1"
+      example: '3:1'
     fouls:
       type: string
       description: Нарушения правил (фолы) (home:away)
-      example: "10:5"
+      example: '10:5'
     free_kicks:
       type: string
       description: Штрафные удары (home:away)
-      example: "10:13"
+      example: '10:13'
     goal_kicks:
       type: string
       description: Удары от ворот (home:away)
-      example: "11:6"
+      example: '11:6'
     throw_ins:
       type: string
       description: Вбрасывания (ауты) (home:away)
-      example: "21:18"
+      example: '21:18'
     saves:
       type: string
       description: Сэйвы вратаря (home:away)
-      example: "2:2"
+      example: '2:2'
     treatments:
       type: string
       description: Оказания медицинской помощи на поле (home:away)
-      example: "1:0"
+      example: '1:0'
     penalties:
       type: string
       description: Пенальти (назначенные) (home:away)
-      example: "0:0"
+      example: '0:0'
 
 TableRow:
   type: object
@@ -569,7 +587,7 @@ TableRow:
     team_name:
       type: string
       description: Название команды
-      example: "Arsenal"
+      example: 'Arsenal'
     matches:
       type: integer
       description: Количество сыгранных матчей
@@ -605,8 +623,8 @@ TableRow:
     form:
       type: string
       nullable: true
-      description: "Последние результаты команды (серия из ~5 символов: W - победа, D - ничья, L - поражение) при запросе с include_form=1"
-      example: "WWLLWW"
+      description: 'Последние результаты команды (серия из ~5 символов: W - победа, D - ничья, L - поражение) при запросе с include_form=1'
+      example: 'WWLLWW'
 
 CompetitionsStandingsTableRow:
   type: object
@@ -615,80 +633,80 @@ CompetitionsStandingsTableRow:
     league_id:
       type: string
       description: ID лиги
-      example: "0"
+      example: '0'
     season_id:
       type: string
       description: ID сезона
-      example: "56"
+      example: '56'
     name:
       type: string
       description: Название команды
-      example: "ЦСКА Москва"
+      example: 'ЦСКА Москва'
     rank:
       type: string
       description: Позиция в таблице
-      example: "1"
+      example: '1'
     points:
       type: string
       description: Очки
-      example: "21"
+      example: '21'
     matches:
       type: string
       description: Количество матчей
-      example: "10"
+      example: '10'
     goal_diff:
       type: string
       description: Разность мячей
-      example: "11"
+      example: '11'
     goals_scored:
       type: string
       description: Забитые голы
-      example: "19"
+      example: '19'
     goals_conceded:
       type: string
       description: Пропущенные голы
-      example: "8"
+      example: '8'
     lost:
       type: string
       description: Поражения
-      example: "1"
+      example: '1'
     drawn:
       type: string
       description: Ничьи
-      example: "3"
+      example: '3'
     won:
       type: string
       description: Победы
-      example: "6"
+      example: '6'
     team_id:
       type: string
       description: ID команды
-      example: "132"
+      example: '132'
     competition_id:
       type: string
       description: ID соревнования
-      example: "7"
+      example: '7'
     group_id:
       type: string
       description: ID группы
-      example: "4048"
+      example: '4048'
     group_name:
       type: string
       description: Название группы
-      example: "A"
+      example: 'A'
     stage_name:
       type: string
       description: Название стадии
-      example: "Regular Season"
+      example: 'Regular Season'
     stage_id:
       type: string
       description: ID стадии
-      example: "3504"
+      example: '3504'
     form:
       type: string
       nullable: true
-      description: "Форма команды (последние результаты): W - победа, D - ничья, L - поражение"
-      example: "WWDWL"
+      description: 'Форма команды (последние результаты): W - победа, D - ничья, L - поражение'
+      example: 'WWDWL'
 
 TopScorerEntry:
   type: object
@@ -698,16 +716,16 @@ TopScorerEntry:
       type: object
       description: Объект игрока (лучшего бомбардира)
       properties:
-        id: { type: integer, description: "ID игрока" }
-        name: { type: string, description: "Имя игрока" }
+        id: { type: integer, description: 'ID игрока' }
+        name: { type: string, description: 'Имя игрока' }
     team:
       type: object
       description: Объект команды, за которую выступает игрок
       properties:
-        id: { type: integer, description: "ID команды" }
-        name: { type: string, description: "Название команды" }
-        stadium: { type: string, nullable: true, description: "Стадион команды (если применимо)" }
-        country_id: { type: integer, description: "ID страны команды" }
+        id: { type: integer, description: 'ID команды' }
+        name: { type: string, description: 'Название команды' }
+        stadium: { type: string, nullable: true, description: 'Стадион команды (если применимо)' }
+        country_id: { type: integer, description: 'ID страны команды' }
     goals:
       type: integer
       description: Количество голов, забитых игроком в сезоне
@@ -764,7 +782,7 @@ SquadPlayer:
     name:
       type: string
       description: Имя игрока
-      example: "Ante Rebic"
+      example: 'Ante Rebic'
     shirt_number:
       type: integer
       description: Номер игрока в заявке (на футболке на турнире)
@@ -772,4 +790,4 @@ SquadPlayer:
     position:
       type: string
       description: Амплуа игрока (GK – вратарь, DF – защитник, MF – полузащитник, FW – нападающий)
-      example: "FW"
+      example: 'FW'

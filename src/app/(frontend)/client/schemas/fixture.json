@@ -1,1 +1,503 @@
-{"type":"object","description":"Модель запланированного матча (fixture)","properties":{"id":{"type":"integer","description":"ID запланированного матча (постоянный идентификатор, отличающийся от будущего match_id)","example":1578384},"date":{"type":"string","format":"date","description":"Дата, на которую назначен матч","example":"2025-05-15"},"time":{"type":"string","description":"Время начала матча (UTC)","example":"16:00:00"},"home":{"type":"object","properties":{"id":{"type":"integer","description":"Уникальный ID команды","example":202},"name":{"type":"string","description":"Название команды","example":"Wellington Phoenix"},"country_id":{"type":"integer","nullable":true,"description":"ID страны, к которой привязана команда (для клубов)","example":71},"country":{"type":"object","properties":{"id":{"type":"integer","description":"Уникальный ID страны","example":71},"name":{"type":"string","description":"Название страны","example":"Australia"},"is_real":{"type":"boolean","description":"Флаг реальной страны (true, если страна реально существует, false – например, для условных объединений вроде «World» или континентов)","example":true},"fifa_code":{"type":"string","nullable":true,"description":"Код FIFA (если есть)","example":"AUS"},"uefa_code":{"type":"string","nullable":true,"description":"Код UEFA (если есть)","example":""},"flag":{"type":"string","nullable":true,"description":"Название файла флага страны (PNG) на CDN. Например, `AUS.png`. Для получения самого изображения используется отдельный эндпоинт флагов.","example":"AUS.png"},"federation":{"type":"object","nullable":true,"description":"Объект федерации, к которой относится страна (если применимо; для реальных стран указывается соответствующая конфедерация, например UEFA). Содержит поля `id` и `name` федерации.","properties":{"id":{"type":"integer","description":"ID федерации","example":3},"name":{"type":"string","description":"Название федерации","example":"CAF"}}},"national_team":{"type":"object","nullable":true,"description":"Объект национальной сборной этой страны (если информация доступна и страна реальная). Содержит сведения о национальной команде.","properties":{"id":{"type":"integer","description":"ID команды (национальной сборной)","example":1440},"name":{"type":"string","description":"Название национальной команды","example":"Australia"},"stadium":{"type":"string","description":"Название домашнего стадиона сборной (если есть данные)","example":"Stadium Australia"},"location":{"type":"string","description":"Локация (город/стадион) национальной команды (если есть данные)","example":"Sydney"}}}},"x-readme-ref-name":"Country"},"stadium":{"type":"string","nullable":true,"description":"Название стадиона (домашнего поля) команды (если есть данные)","example":"Westpac Stadium"},"logo":{"type":"string","format":"uri","nullable":true,"description":"URL логотипа команды (PNG изображение на CDN)","example":"https://cdn.live-score-api.com/teams/004d52954bd4936cc14e30b4511073ab.png"}},"x-readme-ref-name":"Team"},"away":{"type":"object","properties":{"id":{"type":"integer","description":"Уникальный ID команды","example":202},"name":{"type":"string","description":"Название команды","example":"Wellington Phoenix"},"country_id":{"type":"integer","nullable":true,"description":"ID страны, к которой привязана команда (для клубов)","example":71},"country":{"type":"object","properties":{"id":{"type":"integer","description":"Уникальный ID страны","example":71},"name":{"type":"string","description":"Название страны","example":"Australia"},"is_real":{"type":"boolean","description":"Флаг реальной страны (true, если страна реально существует, false – например, для условных объединений вроде «World» или континентов)","example":true},"fifa_code":{"type":"string","nullable":true,"description":"Код FIFA (если есть)","example":"AUS"},"uefa_code":{"type":"string","nullable":true,"description":"Код UEFA (если есть)","example":""},"flag":{"type":"string","nullable":true,"description":"Название файла флага страны (PNG) на CDN. Например, `AUS.png`. Для получения самого изображения используется отдельный эндпоинт флагов.","example":"AUS.png"},"federation":{"type":"object","nullable":true,"description":"Объект федерации, к которой относится страна (если применимо; для реальных стран указывается соответствующая конфедерация, например UEFA). Содержит поля `id` и `name` федерации.","properties":{"id":{"type":"integer","description":"ID федерации","example":3},"name":{"type":"string","description":"Название федерации","example":"CAF"}}},"national_team":{"type":"object","nullable":true,"description":"Объект национальной сборной этой страны (если информация доступна и страна реальная). Содержит сведения о национальной команде.","properties":{"id":{"type":"integer","description":"ID команды (национальной сборной)","example":1440},"name":{"type":"string","description":"Название национальной команды","example":"Australia"},"stadium":{"type":"string","description":"Название домашнего стадиона сборной (если есть данные)","example":"Stadium Australia"},"location":{"type":"string","description":"Локация (город/стадион) национальной команды (если есть данные)","example":"Sydney"}}}},"x-readme-ref-name":"Country"},"stadium":{"type":"string","nullable":true,"description":"Название стадиона (домашнего поля) команды (если есть данные)","example":"Westpac Stadium"},"logo":{"type":"string","format":"uri","nullable":true,"description":"URL логотипа команды (PNG изображение на CDN)","example":"https://cdn.live-score-api.com/teams/004d52954bd4936cc14e30b4511073ab.png"}},"x-readme-ref-name":"Team"},"competition":{"type":"object","properties":{"id":{"type":"integer","description":"Уникальный ID соревнования (лиги или кубка)","example":67},"name":{"type":"string","description":"Название соревнования","example":"Hyundai A-League"},"is_league":{"type":"boolean","description":"Признак лиги (true, если это лиговый турнир, false для кубка)","example":true},"is_cup":{"type":"boolean","description":"Признак кубкового турнира (обратен is_league: true для кубков, false для лиг)","example":false},"tier":{"type":"integer","description":"Уровень (дивизион) соревнования. Например, 1 – высший дивизион страны, 2 – второй и т.д. Международные турниры могут иметь tier = 0.","example":1},"has_groups":{"type":"boolean","description":"Имеет ли турнир групповой этап (true, если соревнование разбито на группы)","example":true},"active":{"type":"boolean","description":"Активно ли соревнование (true – поддерживается в текущем сезоне; false – данные есть лишь в архиве)","example":true},"national_teams_only":{"type":"boolean","description":"Флаг, обозначающий, что в турнире участвуют только национальные сборные (true для турниров сборных, false для клубных)","example":false},"countries":{"type":"array","description":"Список стран, к которым относится соревнование (может быть пустым для международных турниров)","items":{"type":"object","properties":{"id":{"type":"integer","description":"Уникальный ID страны","example":71},"name":{"type":"string","description":"Название страны","example":"Australia"},"is_real":{"type":"boolean","description":"Флаг реальной страны (true, если страна реально существует, false – например, для условных объединений вроде «World» или континентов)","example":true},"fifa_code":{"type":"string","nullable":true,"description":"Код FIFA (если есть)","example":"AUS"},"uefa_code":{"type":"string","nullable":true,"description":"Код UEFA (если есть)","example":""},"flag":{"type":"string","nullable":true,"description":"Название файла флага страны (PNG) на CDN. Например, `AUS.png`. Для получения самого изображения используется отдельный эндпоинт флагов.","example":"AUS.png"},"federation":{"type":"object","nullable":true,"description":"Объект федерации, к которой относится страна (если применимо; для реальных стран указывается соответствующая конфедерация, например UEFA). Содержит поля `id` и `name` федерации.","properties":{"id":{"type":"integer","description":"ID федерации","example":3},"name":{"type":"string","description":"Название федерации","example":"CAF"}}},"national_team":{"type":"object","nullable":true,"description":"Объект национальной сборной этой страны (если информация доступна и страна реальная). Содержит сведения о национальной команде.","properties":{"id":{"type":"integer","description":"ID команды (национальной сборной)","example":1440},"name":{"type":"string","description":"Название национальной команды","example":"Australia"},"stadium":{"type":"string","description":"Название домашнего стадиона сборной (если есть данные)","example":"Stadium Australia"},"location":{"type":"string","description":"Локация (город/стадион) национальной команды (если есть данные)","example":"Sydney"}}}},"x-readme-ref-name":"Country"}},"federations":{"type":"array","description":"Список федераций, к которым относится соревнование (например, UEFA для Лиги Чемпионов; может быть пустым для национальных лиг)","items":{"type":"object","properties":{"id":{"type":"integer","description":"ID футбольной федерации (конфедерации), например 1 для FIFA","example":1},"name":{"type":"string","description":"Название федерации","example":"FIFA"}},"x-readme-ref-name":"Federation"}},"season":{"type":"object","nullable":true,"description":"Текущий сезон соревнования (последний на момент запроса). Содержит идентификатор и временные рамки сезона.","properties":{"id":{"type":"integer","description":"ID сезона","example":13},"name":{"type":"string","description":"Название сезона (например, \"2021/2022\" или \"2023\")","example":"2021/2022"},"start":{"type":"string","format":"date","description":"Дата начала сезона (календарная)","example":"2021-07-01"},"end":{"type":"string","format":"date","description":"Дата окончания сезона","example":"2022-06-30"}}}},"x-readme-ref-name":"Competition"},"country":{"type":"object","properties":{"id":{"type":"integer","description":"Уникальный ID страны","example":71},"name":{"type":"string","description":"Название страны","example":"Australia"},"is_real":{"type":"boolean","description":"Флаг реальной страны (true, если страна реально существует, false – например, для условных объединений вроде «World» или континентов)","example":true},"fifa_code":{"type":"string","nullable":true,"description":"Код FIFA (если есть)","example":"AUS"},"uefa_code":{"type":"string","nullable":true,"description":"Код UEFA (если есть)","example":""},"flag":{"type":"string","nullable":true,"description":"Название файла флага страны (PNG) на CDN. Например, `AUS.png`. Для получения самого изображения используется отдельный эндпоинт флагов.","example":"AUS.png"},"federation":{"type":"object","nullable":true,"description":"Объект федерации, к которой относится страна (если применимо; для реальных стран указывается соответствующая конфедерация, например UEFA). Содержит поля `id` и `name` федерации.","properties":{"id":{"type":"integer","description":"ID федерации","example":3},"name":{"type":"string","description":"Название федерации","example":"CAF"}}},"national_team":{"type":"object","nullable":true,"description":"Объект национальной сборной этой страны (если информация доступна и страна реальная). Содержит сведения о национальной команде.","properties":{"id":{"type":"integer","description":"ID команды (национальной сборной)","example":1440},"name":{"type":"string","description":"Название национальной команды","example":"Australia"},"stadium":{"type":"string","description":"Название домашнего стадиона сборной (если есть данные)","example":"Stadium Australia"},"location":{"type":"string","description":"Локация (город/стадион) национальной команды (если есть данные)","example":"Sydney"}}}},"x-readme-ref-name":"Country"},"federation":{"type":"object","properties":{"id":{"type":"integer","description":"ID футбольной федерации (конфедерации), например 1 для FIFA","example":1},"name":{"type":"string","description":"Название федерации","example":"FIFA"}},"x-readme-ref-name":"Federation"},"location":{"type":"string","nullable":true,"description":"Место проведения (стадион или город) запланированного матча","example":"Torino"},"round":{"type":"string","description":"Тур или стадия, в рамках которых запланирован матч. Может быть числом (номер тура) или кодом стадии (например, QF, SF для четверть-/полуфинала)","example":"25"},"group_id":{"type":"integer","nullable":true,"description":"ID группы, в которой состоится матч (для турниров с группами). 0 или null, если матч не привязан к группе","example":1714},"odds":{"type":"object","description":"Объект коэффициентов ставок, аналогичный полю `odds` в модели матча. Для запланированных матчей, как правило, заполнены только прематчевые коэффициенты, live-коэффициенты будут null до начала игры.","properties":{"pre":{"type":"object","properties":{"1":{"type":"number"},"2":{"type":"number"},"X":{"type":"number"}}},"live":{"type":"object","properties":{"1":{"type":"number","nullable":true},"2":{"type":"number","nullable":true},"X":{"type":"number","nullable":true}}}},"example":{"pre":{"1":1.62,"2":5.5,"X":3.6},"live":{"1":null,"2":null,"X":null}}}},"x-readme-ref-name":"Fixture"}
+{
+  "type": "object",
+  "description": "Модель запланированного матча (fixture)",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "ID запланированного матча (постоянный идентификатор, отличающийся от будущего match_id)",
+      "example": 1578384
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Дата, на которую назначен матч",
+      "example": "2025-05-15"
+    },
+    "time": { "type": "string", "description": "Время начала матча (UTC)", "example": "16:00:00" },
+    "home": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer", "description": "Уникальный ID команды", "example": 202 },
+        "name": {
+          "type": "string",
+          "description": "Название команды",
+          "example": "Wellington Phoenix"
+        },
+        "country_id": {
+          "type": "integer",
+          "nullable": true,
+          "description": "ID страны, к которой привязана команда (для клубов)",
+          "example": 71
+        },
+        "country": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "integer", "description": "Уникальный ID страны", "example": 71 },
+            "name": { "type": "string", "description": "Название страны", "example": "Australia" },
+            "is_real": {
+              "type": "boolean",
+              "description": "Флаг реальной страны (true, если страна реально существует, false – например, для условных объединений вроде «World» или континентов)",
+              "example": true
+            },
+            "fifa_code": {
+              "type": "string",
+              "nullable": true,
+              "description": "Код FIFA (если есть)",
+              "example": "AUS"
+            },
+            "uefa_code": {
+              "type": "string",
+              "nullable": true,
+              "description": "Код UEFA (если есть)",
+              "example": ""
+            },
+            "flag": {
+              "type": "string",
+              "nullable": true,
+              "description": "Название файла флага страны (PNG) на CDN. Например, `AUS.png`. Для получения самого изображения используется отдельный эндпоинт флагов.",
+              "example": "AUS.png"
+            },
+            "federation": {
+              "type": "object",
+              "nullable": true,
+              "description": "Объект федерации, к которой относится страна (если применимо; для реальных стран указывается соответствующая конфедерация, например UEFA). Содержит поля `id` и `name` федерации.",
+              "properties": {
+                "id": { "type": "integer", "description": "ID федерации", "example": 3 },
+                "name": { "type": "string", "description": "Название федерации", "example": "CAF" }
+              }
+            },
+            "national_team": {
+              "type": "object",
+              "nullable": true,
+              "description": "Объект национальной сборной этой страны (если информация доступна и страна реальная). Содержит сведения о национальной команде.",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "ID команды (национальной сборной)",
+                  "example": 1440
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Название национальной команды",
+                  "example": "Australia"
+                },
+                "stadium": {
+                  "type": "string",
+                  "description": "Название домашнего стадиона сборной (если есть данные)",
+                  "example": "Stadium Australia"
+                },
+                "location": {
+                  "type": "string",
+                  "description": "Локация (город/стадион) национальной команды (если есть данные)",
+                  "example": "Sydney"
+                }
+              }
+            }
+          },
+          "x-readme-ref-name": "Country"
+        },
+        "stadium": {
+          "type": "string",
+          "nullable": true,
+          "description": "Название стадиона (домашнего поля) команды (если есть данные)",
+          "example": "Westpac Stadium"
+        },
+        "logo": {
+          "type": "string",
+          "format": "uri",
+          "nullable": true,
+          "description": "URL логотипа команды (PNG изображение на CDN)",
+          "example": "https://cdn.live-score-api.com/teams/004d52954bd4936cc14e30b4511073ab.png"
+        }
+      },
+      "x-readme-ref-name": "Team"
+    },
+    "away": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer", "description": "Уникальный ID команды", "example": 202 },
+        "name": {
+          "type": "string",
+          "description": "Название команды",
+          "example": "Wellington Phoenix"
+        },
+        "country_id": {
+          "type": "integer",
+          "nullable": true,
+          "description": "ID страны, к которой привязана команда (для клубов)",
+          "example": 71
+        },
+        "country": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "integer", "description": "Уникальный ID страны", "example": 71 },
+            "name": { "type": "string", "description": "Название страны", "example": "Australia" },
+            "is_real": {
+              "type": "boolean",
+              "description": "Флаг реальной страны (true, если страна реально существует, false – например, для условных объединений вроде «World» или континентов)",
+              "example": true
+            },
+            "fifa_code": {
+              "type": "string",
+              "nullable": true,
+              "description": "Код FIFA (если есть)",
+              "example": "AUS"
+            },
+            "uefa_code": {
+              "type": "string",
+              "nullable": true,
+              "description": "Код UEFA (если есть)",
+              "example": ""
+            },
+            "flag": {
+              "type": "string",
+              "nullable": true,
+              "description": "Название файла флага страны (PNG) на CDN. Например, `AUS.png`. Для получения самого изображения используется отдельный эндпоинт флагов.",
+              "example": "AUS.png"
+            },
+            "federation": {
+              "type": "object",
+              "nullable": true,
+              "description": "Объект федерации, к которой относится страна (если применимо; для реальных стран указывается соответствующая конфедерация, например UEFA). Содержит поля `id` и `name` федерации.",
+              "properties": {
+                "id": { "type": "integer", "description": "ID федерации", "example": 3 },
+                "name": { "type": "string", "description": "Название федерации", "example": "CAF" }
+              }
+            },
+            "national_team": {
+              "type": "object",
+              "nullable": true,
+              "description": "Объект национальной сборной этой страны (если информация доступна и страна реальная). Содержит сведения о национальной команде.",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "ID команды (национальной сборной)",
+                  "example": 1440
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Название национальной команды",
+                  "example": "Australia"
+                },
+                "stadium": {
+                  "type": "string",
+                  "description": "Название домашнего стадиона сборной (если есть данные)",
+                  "example": "Stadium Australia"
+                },
+                "location": {
+                  "type": "string",
+                  "description": "Локация (город/стадион) национальной команды (если есть данные)",
+                  "example": "Sydney"
+                }
+              }
+            }
+          },
+          "x-readme-ref-name": "Country"
+        },
+        "stadium": {
+          "type": "string",
+          "nullable": true,
+          "description": "Название стадиона (домашнего поля) команды (если есть данные)",
+          "example": "Westpac Stadium"
+        },
+        "logo": {
+          "type": "string",
+          "format": "uri",
+          "nullable": true,
+          "description": "URL логотипа команды (PNG изображение на CDN)",
+          "example": "https://cdn.live-score-api.com/teams/004d52954bd4936cc14e30b4511073ab.png"
+        }
+      },
+      "x-readme-ref-name": "Team"
+    },
+    "competition": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Уникальный ID соревнования (лиги или кубка)",
+          "example": 67
+        },
+        "name": {
+          "type": "string",
+          "description": "Название соревнования",
+          "example": "Hyundai A-League"
+        },
+        "is_league": {
+          "type": "boolean",
+          "description": "Признак лиги (true, если это лиговый турнир, false для кубка)",
+          "example": true
+        },
+        "is_cup": {
+          "type": "boolean",
+          "description": "Признак кубкового турнира (обратен is_league: true для кубков, false для лиг)",
+          "example": false
+        },
+        "tier": {
+          "type": "integer",
+          "description": "Уровень (дивизион) соревнования. Например, 1 – высший дивизион страны, 2 – второй и т.д. Международные турниры могут иметь tier = 0.",
+          "example": 1
+        },
+        "has_groups": {
+          "type": "boolean",
+          "description": "Имеет ли турнир групповой этап (true, если соревнование разбито на группы)",
+          "example": true
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Активно ли соревнование (true – поддерживается в текущем сезоне; false – данные есть лишь в архиве)",
+          "example": true
+        },
+        "national_teams_only": {
+          "type": "boolean",
+          "description": "Флаг, обозначающий, что в турнире участвуют только национальные сборные (true для турниров сборных, false для клубных)",
+          "example": false
+        },
+        "countries": {
+          "type": "array",
+          "description": "Список стран, к которым относится соревнование (может быть пустым для международных турниров)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer", "description": "Уникальный ID страны", "example": 71 },
+              "name": {
+                "type": "string",
+                "description": "Название страны",
+                "example": "Australia"
+              },
+              "is_real": {
+                "type": "boolean",
+                "description": "Флаг реальной страны (true, если страна реально существует, false – например, для условных объединений вроде «World» или континентов)",
+                "example": true
+              },
+              "fifa_code": {
+                "type": "string",
+                "nullable": true,
+                "description": "Код FIFA (если есть)",
+                "example": "AUS"
+              },
+              "uefa_code": {
+                "type": "string",
+                "nullable": true,
+                "description": "Код UEFA (если есть)",
+                "example": ""
+              },
+              "flag": {
+                "type": "string",
+                "nullable": true,
+                "description": "Название файла флага страны (PNG) на CDN. Например, `AUS.png`. Для получения самого изображения используется отдельный эндпоинт флагов.",
+                "example": "AUS.png"
+              },
+              "federation": {
+                "type": "object",
+                "nullable": true,
+                "description": "Объект федерации, к которой относится страна (если применимо; для реальных стран указывается соответствующая конфедерация, например UEFA). Содержит поля `id` и `name` федерации.",
+                "properties": {
+                  "id": { "type": "integer", "description": "ID федерации", "example": 3 },
+                  "name": {
+                    "type": "string",
+                    "description": "Название федерации",
+                    "example": "CAF"
+                  }
+                }
+              },
+              "national_team": {
+                "type": "object",
+                "nullable": true,
+                "description": "Объект национальной сборной этой страны (если информация доступна и страна реальная). Содержит сведения о национальной команде.",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "description": "ID команды (национальной сборной)",
+                    "example": 1440
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Название национальной команды",
+                    "example": "Australia"
+                  },
+                  "stadium": {
+                    "type": "string",
+                    "description": "Название домашнего стадиона сборной (если есть данные)",
+                    "example": "Stadium Australia"
+                  },
+                  "location": {
+                    "type": "string",
+                    "description": "Локация (город/стадион) национальной команды (если есть данные)",
+                    "example": "Sydney"
+                  }
+                }
+              }
+            },
+            "x-readme-ref-name": "Country"
+          }
+        },
+        "federations": {
+          "type": "array",
+          "description": "Список федераций, к которым относится соревнование (например, UEFA для Лиги Чемпионов; может быть пустым для национальных лиг)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "description": "ID футбольной федерации (конфедерации), например 1 для FIFA",
+                "example": 1
+              },
+              "name": { "type": "string", "description": "Название федерации", "example": "FIFA" }
+            },
+            "x-readme-ref-name": "Federation"
+          }
+        },
+        "season": {
+          "type": "object",
+          "nullable": true,
+          "description": "Текущий сезон соревнования (последний на момент запроса). Содержит идентификатор и временные рамки сезона.",
+          "properties": {
+            "id": { "type": "integer", "description": "ID сезона", "example": 13 },
+            "name": {
+              "type": "string",
+              "description": "Название сезона (например, \"2021/2022\" или \"2023\")",
+              "example": "2021/2022"
+            },
+            "start": {
+              "type": "string",
+              "format": "date",
+              "description": "Дата начала сезона (календарная)",
+              "example": "2021-07-01"
+            },
+            "end": {
+              "type": "string",
+              "format": "date",
+              "description": "Дата окончания сезона",
+              "example": "2022-06-30"
+            }
+          }
+        }
+      },
+      "x-readme-ref-name": "Competition"
+    },
+    "country": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer", "description": "Уникальный ID страны", "example": 71 },
+        "name": { "type": "string", "description": "Название страны", "example": "Australia" },
+        "is_real": {
+          "type": "boolean",
+          "description": "Флаг реальной страны (true, если страна реально существует, false – например, для условных объединений вроде «World» или континентов)",
+          "example": true
+        },
+        "fifa_code": {
+          "type": "string",
+          "nullable": true,
+          "description": "Код FIFA (если есть)",
+          "example": "AUS"
+        },
+        "uefa_code": {
+          "type": "string",
+          "nullable": true,
+          "description": "Код UEFA (если есть)",
+          "example": ""
+        },
+        "flag": {
+          "type": "string",
+          "nullable": true,
+          "description": "Название файла флага страны (PNG) на CDN. Например, `AUS.png`. Для получения самого изображения используется отдельный эндпоинт флагов.",
+          "example": "AUS.png"
+        },
+        "federation": {
+          "type": "object",
+          "nullable": true,
+          "description": "Объект федерации, к которой относится страна (если применимо; для реальных стран указывается соответствующая конфедерация, например UEFA). Содержит поля `id` и `name` федерации.",
+          "properties": {
+            "id": { "type": "integer", "description": "ID федерации", "example": 3 },
+            "name": { "type": "string", "description": "Название федерации", "example": "CAF" }
+          }
+        },
+        "national_team": {
+          "type": "object",
+          "nullable": true,
+          "description": "Объект национальной сборной этой страны (если информация доступна и страна реальная). Содержит сведения о национальной команде.",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "ID команды (национальной сборной)",
+              "example": 1440
+            },
+            "name": {
+              "type": "string",
+              "description": "Название национальной команды",
+              "example": "Australia"
+            },
+            "stadium": {
+              "type": "string",
+              "description": "Название домашнего стадиона сборной (если есть данные)",
+              "example": "Stadium Australia"
+            },
+            "location": {
+              "type": "string",
+              "description": "Локация (город/стадион) национальной команды (если есть данные)",
+              "example": "Sydney"
+            }
+          }
+        }
+      },
+      "x-readme-ref-name": "Country"
+    },
+    "federation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID футбольной федерации (конфедерации), например 1 для FIFA",
+          "example": 1
+        },
+        "name": { "type": "string", "description": "Название федерации", "example": "FIFA" }
+      },
+      "x-readme-ref-name": "Federation"
+    },
+    "location": {
+      "type": "string",
+      "nullable": true,
+      "description": "Место проведения (стадион или город) запланированного матча",
+      "example": "Torino"
+    },
+    "round": {
+      "type": "string",
+      "description": "Тур или стадия, в рамках которых запланирован матч. Может быть числом (номер тура) или кодом стадии (например, QF, SF для четверть-/полуфинала)",
+      "example": "25"
+    },
+    "group_id": {
+      "type": "integer",
+      "nullable": true,
+      "description": "ID группы, в которой состоится матч (для турниров с группами). 0 или null, если матч не привязан к группе",
+      "example": 1714
+    },
+    "odds": {
+      "type": "object",
+      "description": "Объект коэффициентов ставок, аналогичный полю `odds` в модели матча. Для запланированных матчей, как правило, заполнены только прематчевые коэффициенты, live-коэффициенты будут null до начала игры.",
+      "properties": {
+        "pre": {
+          "type": "object",
+          "properties": {
+            "1": { "type": "number" },
+            "2": { "type": "number" },
+            "X": { "type": "number" }
+          }
+        },
+        "live": {
+          "type": "object",
+          "properties": {
+            "1": { "type": "number", "nullable": true },
+            "2": { "type": "number", "nullable": true },
+            "X": { "type": "number", "nullable": true }
+          }
+        }
+      },
+      "example": {
+        "pre": { "1": 1.62, "2": 5.5, "X": 3.6 },
+        "live": { "1": null, "2": null, "X": null }
+      }
+    }
+  },
+  "x-readme-ref-name": "Fixture"
+}

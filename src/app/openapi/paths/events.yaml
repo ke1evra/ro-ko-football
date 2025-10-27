@@ -33,14 +33,19 @@
                       description: Общая информация о матче (идентификатор, дата, счёт и т.п.)
                       properties:
                         id: { type: integer, example: 385735 }
-                        date: { type: string, example: "2022-12-18" }
-                        time: { type: string, example: "AP", description: "Статус времени матча (например, AP – после пенальти)" }
-                        status: { type: string, example: "FINISHED" }
-                        added: { type: string, example: "2022-12-18 14:45:12" }
-                        last_changed: { type: string, example: "2022-12-18 18:54:06" }
-                        location: { type: string, example: "Lusail Stadium, Lusail" }
-                        fixture_id: { type: string, example: "1581460" }
-                        scheduled: { type: string, example: "15:00" }
+                        date: { type: string, example: '2022-12-18' }
+                        time:
+                          {
+                            type: string,
+                            example: 'AP',
+                            description: 'Статус времени матча (например, AP – после пенальти)',
+                          }
+                        status: { type: string, example: 'FINISHED' }
+                        added: { type: string, example: '2022-12-18 14:45:12' }
+                        last_changed: { type: string, example: '2022-12-18 18:54:06' }
+                        location: { type: string, example: 'Lusail Stadium, Lusail' }
+                        fixture_id: { type: string, example: '1581460' }
+                        scheduled: { type: string, example: '15:00' }
                         odds:
                           type: object
                           properties:
@@ -56,11 +61,11 @@
                         scores:
                           type: object
                           properties:
-                            score: { type: string, example: "3 - 3" }
-                            ht_score: { type: string, example: "2 - 0" }
-                            ft_score: { type: string, example: "2 - 2" }
-                            et_score: { type: string, example: "3 - 3" }
-                            ps_score: { type: string, example: "4 - 2" }
+                            score: { type: string, example: '3 - 3' }
+                            ht_score: { type: string, example: '2 - 0' }
+                            ft_score: { type: string, example: '2 - 2' }
+                            et_score: { type: string, example: '3 - 3' }
+                            ps_score: { type: string, example: '4 - 2' }
                         home:
                           $ref: '#/components/schemas/Team'
                         away:
