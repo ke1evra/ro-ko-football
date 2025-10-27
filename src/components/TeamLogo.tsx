@@ -11,12 +11,7 @@ interface TeamLogoProps {
   className?: string
 }
 
-export function TeamLogo({
-  teamId,
-  teamName,
-  size = 'medium',
-  className,
-}: TeamLogoProps) {
+export function TeamLogo({ teamId, teamName, size = 'medium', className }: TeamLogoProps) {
   const [hasError, setHasError] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(true)
 
@@ -45,11 +40,7 @@ export function TeamLogo({
       <div
         className={`${sizeClasses[size]} flex items-center justify-center bg-muted rounded ${className || ''}`}
       >
-        <span 
-          className={emojiSizes[size]} 
-          aria-hidden
-          title={teamName || 'Команда'}
-        >
+        <span className={emojiSizes[size]} aria-hidden title={teamName || 'Команда'}>
           {TEAM_FALLBACK_EMOJI}
         </span>
       </div>
@@ -62,11 +53,7 @@ export function TeamLogo({
       <div
         className={`${sizeClasses[size]} flex items-center justify-center bg-muted rounded ${className || ''}`}
       >
-        <span 
-          className={emojiSizes[size]} 
-          aria-hidden
-          title={teamName || 'Команда'}
-        >
+        <span className={emojiSizes[size]} aria-hidden title={teamName || 'Команда'}>
           {TEAM_FALLBACK_EMOJI}
         </span>
       </div>
@@ -75,9 +62,7 @@ export function TeamLogo({
 
   return (
     <div className={`${sizeClasses[size]} relative overflow-hidden rounded ${className || ''}`}>
-      {isLoading && (
-        <div className="absolute inset-0 bg-muted animate-pulse rounded" />
-      )}
+      {isLoading && <div className="absolute inset-0 bg-muted animate-pulse rounded" />}
       <Image
         src={getTeamLogoUrl(teamId)}
         alt={getTeamLogoAlt(teamName || 'Команда')}

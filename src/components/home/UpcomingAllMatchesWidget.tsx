@@ -140,7 +140,6 @@ export default function UpcomingAllMatchesWidget() {
                   </div>
                 </div>
               </Link>
-
             </li>
           ))}
         </ul>

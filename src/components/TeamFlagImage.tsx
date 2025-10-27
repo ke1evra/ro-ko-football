@@ -74,8 +74,7 @@ export function TeamFlagImage({
     return (
       <div
         className={`${
-          size === 'large' ? 'w-12 h-12' : 
-          size === 'medium' ? 'w-8 h-8' : 'w-4 h-4'
+          size === 'large' ? 'w-12 h-12' : size === 'medium' ? 'w-8 h-8' : 'w-4 h-4'
         } bg-muted animate-pulse rounded ${className || ''}`}
       />
     )
@@ -84,19 +83,17 @@ export function TeamFlagImage({
   // Если есть ошибка или нет URL, показываем fallback
   if (hasError || !flagUrl) {
     const fallbackEmoji = countryName ? COUNTRY_FLAG_EMOJI[countryName] || '⚽' : '⚽'
-    
+
     return (
       <div
         className={`${
-          size === 'large' ? 'w-12 h-12' : 
-          size === 'medium' ? 'w-8 h-8' : 'w-4 h-4'
+          size === 'large' ? 'w-12 h-12' : size === 'medium' ? 'w-8 h-8' : 'w-4 h-4'
         } flex items-center justify-center bg-muted rounded ${className || ''}`}
       >
-        <span 
+        <span
           className={`${
-            size === 'large' ? 'text-xl' : 
-            size === 'medium' ? 'text-base' : 'text-sm'
-          }`} 
+            size === 'large' ? 'text-xl' : size === 'medium' ? 'text-base' : 'text-sm'
+          }`}
           aria-hidden
           title={teamName || countryName || 'Команда'}
         >
@@ -109,14 +106,13 @@ export function TeamFlagImage({
   return (
     <div
       className={`${
-        size === 'large' ? 'w-12 h-12' : 
-        size === 'medium' ? 'w-8 h-8' : 'w-4 h-4'
+        size === 'large' ? 'w-12 h-12' : size === 'medium' ? 'w-8 h-8' : 'w-4 h-4'
       } overflow-hidden rounded ${className || ''}`}
     >
-      <FlagImage 
-        src={flagUrl} 
-        countryName={countryName} 
-        size={size === 'medium' ? 'large' : size} 
+      <FlagImage
+        src={flagUrl}
+        countryName={countryName}
+        size={size === 'medium' ? 'large' : size}
         className="w-full h-full object-cover"
       />
     </div>

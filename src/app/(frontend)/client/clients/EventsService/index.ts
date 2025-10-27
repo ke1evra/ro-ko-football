@@ -1,2 +1,2 @@
-export { eventsService } from "./eventsService.ts";
-export { getGetScoresEventsJsonUrl, getScoresEventsJson } from "./getScoresEventsJson.ts";
+export { eventsService } from './eventsService.ts'
+export { getGetScoresEventsJsonUrl, getScoresEventsJson } from './getScoresEventsJson.ts'

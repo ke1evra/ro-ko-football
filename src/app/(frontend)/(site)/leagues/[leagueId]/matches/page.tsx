@@ -13,7 +13,6 @@ import {
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { YearSelector } from '@/components/YearSelector'
 
-
 export const revalidate = 300 // 5 минут
 
 interface MatchesPageProps {
@@ -308,8 +307,9 @@ function getStatusBadge(status: string) {
 
 function MatchCard({ match, isExactDay = false }: { match: Match; isExactDay?: boolean }) {
   const played = isPlayed(match)
-  const isScheduled = match.status.toLowerCase() === 'scheduled' || match.status.toLowerCase() === 'ns'
-  
+  const isScheduled =
+    match.status.toLowerCase() === 'scheduled' || match.status.toLowerCase() === 'ns'
+
   // Определяем URL для перехода к матчу
   // Генерируем правильный URL для matches-v2
   const matchUrl = `/matches-v2/match_${match.date}_${match.home_team?.id || 0}_${match.away_team?.id || 0}_${match.id}${played && match.id ? `_${match.id}` : ''}`
@@ -356,20 +356,15 @@ function MatchCard({ match, isExactDay = false }: { match: Match; isExactDay?: b
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {getStatusBadge(match.status)}
-          </div>
+          <div className="flex items-center gap-2">{getStatusBadge(match.status)}</div>
         </div>
       </Link>
-      
-
     </div>
   )
 }
 
 function isPlayed(m: Match): boolean {
-  if (m.score && (typeof m.score.home === 'number' || typeof m.score.away === 'number'))
-    return true
+  if (m.score && (typeof m.score.home === 'number' || typeof m.score.away === 'number')) return true
   const s = (m.status || '').toLowerCase()
   return s === 'finished' || s === 'ft'
 }
@@ -583,9 +578,9 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
                   <CardContent>
                     <div className="space-y-3">
                       {tourMatches.map((match) => (
-                        <MatchCard 
-                          key={match.id} 
-                          match={match} 
+                        <MatchCard
+                          key={match.id}
+                          match={match}
                           isExactDay={match.date === selectedDate}
                         />
                       ))}
@@ -593,7 +588,7 @@ export default async function MatchesPage({ params, searchParams }: MatchesPageP
                   </CardContent>
                 </Card>
               )}
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">

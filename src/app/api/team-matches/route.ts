@@ -99,6 +99,7 @@ export async function GET(request: NextRequest) {
       return {
         id: String(m.id),
         matchId: m.matchId,
+        fixtureId: m.fixtureId,
         date: m.date,
         season:
           (m.season as Record<string, unknown>)?.name ||
@@ -106,6 +107,8 @@ export async function GET(request: NextRequest) {
         competition: m.competition,
         homeName: m.homeTeam as string,
         awayName: m.awayTeam as string,
+        homeTeamId: m.homeTeamId,
+        awayTeamId: m.awayTeamId,
         homeScore,
         awayScore,
         gf,

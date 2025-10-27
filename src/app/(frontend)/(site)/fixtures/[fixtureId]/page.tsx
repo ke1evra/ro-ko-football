@@ -59,12 +59,12 @@ type FixtureNormalized = {
 
 async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | null> {
   console.log(`[findFixtureById] Searching for fixture ${fixtureId}`)
-  
+
   // Используем те же параметры, что и виджет: диапазон дат + приоритетные лиги
   const today = new Date()
   const endDate = new Date(today)
   endDate.setDate(today.getDate() + 7)
-  
+
   // Получаем ID лиг из CMS
   let priorityLeagueIds: number[] = []
   try {
@@ -74,30 +74,30 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
     console.error(`[findFixtureById] Error loading leagues from CMS:`, error)
     priorityLeagueIds = []
   }
-  
+
   // Сначала проверим, есть ли этот матч в общем списке fixtures (используем те же параметры, что и виджет)
   try {
     console.log(`[findFixtureById] Checking general fixtures API with same params as widget`)
-    
+
     const params: any = {
       size: 100,
       lang: 'ru' as const,
       from: today.toISOString().split('T')[0],
       to: endDate.toISOString().split('T')[0],
     }
-    
+
     // Добавляем фильтр по лигам только если есть приоритетные лиги
     if (priorityLeagueIds.length > 0) {
       params.competition_id = priorityLeagueIds.join(',')
     }
-    
+
     console.log(`[findFixtureById] Using params:`, params)
-    
+
     const fixturesResp = await getFixturesMatchesJson(params)
-    
+
     const fixturesList = (fixturesResp.data?.data?.fixtures || []) as Array<any>
     console.log(`[findFixtureById] General fixtures API returned ${fixturesList.length} fixtures`)
-    
+
     // Ищем матч по ID в общем списке fixtures
     const foundFixture = fixturesList.find((fx) => Number(fx?.id) === fixtureId)
     if (foundFixture) {
@@ -105,7 +105,7 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
       const fx = foundFixture
       const homeName = fx.home_name || fx.home?.name || fx.home_team?.name || 'Команда дома'
       const awayName = fx.away_name || fx.away?.name || fx.away_team?.name || 'Команда гостей'
-      
+
       return {
         id: Number(fx.id),
         date: String(fx.date || ''),
@@ -131,7 +131,7 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
   if (priorityLeagueIds.length > 0) {
     try {
       console.log(`[findFixtureById] Trying general fixtures API without league filter`)
-      
+
       const paramsNoFilter = {
         size: 100,
         lang: 'ru' as const,
@@ -139,14 +139,16 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
         to: endDate.toISOString().split('T')[0],
         // Убираем фильтр по лигам
       }
-      
+
       console.log(`[findFixtureById] Using params without filter:`, paramsNoFilter)
-      
+
       const fixturesResp = await getFixturesMatchesJson(paramsNoFilter)
-      
+
       const fixturesList = (fixturesResp.data?.data?.fixtures || []) as Array<any>
-      console.log(`[findFixtureById] General fixtures API (no filter) returned ${fixturesList.length} fixtures`)
-      
+      console.log(
+        `[findFixtureById] General fixtures API (no filter) returned ${fixturesList.length} fixtures`,
+      )
+
       // Ищем матч по ID в общем списке fixtures
       const foundFixture = fixturesList.find((fx) => Number(fx?.id) === fixtureId)
       if (foundFixture) {
@@ -154,19 +156,29 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
         const fx = foundFixture
         const homeName = fx.home_name || fx.home?.name || fx.home_team?.name || 'Команда дома'
         const awayName = fx.away_name || fx.away?.name || fx.away_team?.name || 'Команда гостей'
-        
+
         return {
           id: Number(fx.id),
           date: String(fx.date || ''),
           time: String(fx.time || ''),
-          home: { id: Number(fx.home_id || fx.home?.id || fx.home_team?.id || '0'), name: homeName },
-          away: { id: Number(fx.away_id || fx.away?.id || fx.away_team?.id || '0'), name: awayName },
+          home: {
+            id: Number(fx.home_id || fx.home?.id || fx.home_team?.id || '0'),
+            name: homeName,
+          },
+          away: {
+            id: Number(fx.away_id || fx.away?.id || fx.away_team?.id || '0'),
+            name: awayName,
+          },
           competition: fx.competition
             ? { id: Number(fx.competition.id || '0'), name: fx.competition.name || '' }
             : undefined,
           location: typeof fx.location === 'string' ? fx.location : fx.venue?.name || null,
           round:
-            typeof fx.round === 'string' ? fx.round : fx.round != null ? String(fx.round) : undefined,
+            typeof fx.round === 'string'
+              ? fx.round
+              : fx.round != null
+                ? String(fx.round)
+                : undefined,
           group_id: fx.group_id != null ? Number(fx.group_id) : null,
           odds: fx.odds,
           h2h: typeof fx.h2h === 'string' ? fx.h2h : undefined,
@@ -180,13 +192,13 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
   // Если не найден в общем списке, пробуем live API
   try {
     console.log(`[findFixtureById] Trying live matches API with fixture_id=${fixtureId}`)
-    const liveResp = await getMatchesLiveJson({ 
+    const liveResp = await getMatchesLiveJson({
       fixture_id: fixtureId,
-      lang: 'ru'
+      lang: 'ru',
     })
     const liveList = (liveResp.data?.data?.match || []) as Array<any>
     console.log(`[findFixtureById] Live API returned ${liveList.length} matches`)
-    
+
     const m = liveList[0]
     if (m) {
       console.log(`[findFixtureById] Found match in live API`)
@@ -227,17 +239,17 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
     const now = new Date()
     const historyStart = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000) // 90 дней назад
     const historyEnd = new Date() // до сегодня
-    
+
     const historyResp = await getMatchesHistoryJson({
       from: historyStart,
       to: historyEnd,
       size: 100,
-      lang: 'ru'
+      lang: 'ru',
     })
-    
+
     const historyList = (historyResp.data?.data?.match || []) as Array<any>
     console.log(`[findFixtureById] History API returned ${historyList.length} matches`)
-    
+
     // Ищем матч по fixture_id в истории
     const historyMatch = historyList.find((m) => Number(m?.fixture_id) === fixtureId)
     if (historyMatch) {
@@ -245,7 +257,7 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
       const m = historyMatch
       const homeName = m.home?.name || 'Команда дома'
       const awayName = m.away?.name || 'Команда гостей'
-      
+
       return {
         id: Number(m.fixture_id || fixtureId),
         date: String(m.date || ''),
@@ -282,14 +294,11 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
 async function getPredictionsForFixture(fixtureId: number) {
   try {
     const payload = await getPayload({ config: await configPromise })
-    
+
     const predictionsRes = await payload.find({
       collection: 'posts',
       where: {
-        and: [
-          { postType: { equals: 'prediction' } },
-          { fixtureId: { equals: fixtureId } }
-        ]
+        and: [{ postType: { equals: 'prediction' } }, { fixtureId: { equals: fixtureId } }],
       },
       sort: '-publishedAt',
       limit: 10,
@@ -361,10 +370,7 @@ export default async function FixturePage({ params }: { params: Promise<{ fixtur
     )
   }
 
-  const [fx, predictions] = await Promise.all([
-    findFixtureById(id),
-    getPredictionsForFixture(id)
-  ])
+  const [fx, predictions] = await Promise.all([findFixtureById(id), getPredictionsForFixture(id)])
 
   if (!fx) {
     return (
@@ -372,9 +378,7 @@ export default async function FixturePage({ params }: { params: Promise<{ fixtur
         <Container className="space-y-4">
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Матч #{id} не найден.
-            </AlertDescription>
+            <AlertDescription>Матч #{id} не найден.</AlertDescription>
           </Alert>
           <Link href="/leagues">
             <Button variant="outline" size="sm">

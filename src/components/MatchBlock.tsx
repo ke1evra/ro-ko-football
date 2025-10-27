@@ -5,7 +5,11 @@ import { Badge } from '@/components/ui/badge'
 import { CalendarIcon } from 'lucide-react'
 
 import { TeamLogo } from '@/components/TeamLogo'
-import { generateMatchUrl, generateLegacyMatchUrl, generateLegacyFixtureUrl } from '@/lib/match-url-utils'
+import {
+  generateMatchUrl,
+  generateLegacyMatchUrl,
+  generateLegacyFixtureUrl,
+} from '@/lib/match-url-utils'
 
 export interface MatchData {
   id: string
@@ -91,21 +95,13 @@ const MatchBlock: React.FC<MatchBlockProps> = ({ match }) => {
         <CardContent>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <TeamLogo 
-                teamId={match.homeTeam.id} 
-                teamName={match.homeTeam.name} 
-                size="medium" 
-              />
+              <TeamLogo teamId={match.homeTeam.id} teamName={match.homeTeam.name} size="medium" />
               <span className="font-bold">{match.homeTeam.name}</span>
             </div>
             <div className="text-xl font-bold">{score}</div>
             <div className="flex items-center space-x-2">
               <span className="font-bold">{match.awayTeam.name}</span>
-              <TeamLogo 
-                teamId={match.awayTeam.id} 
-                teamName={match.awayTeam.name} 
-                size="medium" 
-              />
+              <TeamLogo teamId={match.awayTeam.id} teamName={match.awayTeam.name} size="medium" />
             </div>
           </div>
           <div className="mt-4 flex items-center justify-between">
@@ -116,7 +112,6 @@ const MatchBlock: React.FC<MatchBlockProps> = ({ match }) => {
                 timeStyle: 'short',
               })}
             </div>
-
           </div>
         </CardContent>
       </Card>

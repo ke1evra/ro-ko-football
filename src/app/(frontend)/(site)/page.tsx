@@ -91,21 +91,25 @@ async function getLiveMatchesTop() {
 
 export default async function Home({ searchParams }: { searchParams: SearchParams }) {
   const { page } = await searchParams
-  const [{ items, page: curPage, totalPages }, topUpcoming, liveTop, priorityMatches, leaguesSettings] =
-    await Promise.all([
-      getPostsPage(page),
-      getTopUpcomingMatches(),
-      getLiveMatchesTop(),
-      getPriorityLeagueMatches(),
-      getSidebarLeaguesForWidget(),
-    ])
+  const [
+    { items, page: curPage, totalPages },
+    topUpcoming,
+    liveTop,
+    priorityMatches,
+    leaguesSettings,
+  ] = await Promise.all([
+    getPostsPage(page),
+    getTopUpcomingMatches(),
+    getLiveMatchesTop(),
+    getPriorityLeagueMatches(),
+    getSidebarLeaguesForWidget(),
+  ])
 
   const priorityLeagues = getAllPriorityLeagues()
 
   return (
     <Section>
       <Container className="space-y-6">
-
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Левая колонка — Новости (заглушка) */}
           <aside className="lg:col-span-3 space-y-4">
@@ -169,7 +173,10 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                         <h3 className="text-lg font-semibold">{post.title}</h3>
                         {post.publishedAt ? (
                           <div className="text-xs text-muted-foreground mt-1">
-                            {new Date(post.publishedAt).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}
+                            {new Date(post.publishedAt).toLocaleDateString('ru-RU', {
+                              day: '2-digit',
+                              month: '2-digit',
+                            })}
                           </div>
                         ) : null}
                       </Link>
@@ -275,7 +282,9 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                     >
                       ↻
                     </button>
-                    <span id="live-refresh-timer" className="tabular-nums">01:00</span>
+                    <span id="live-refresh-timer" className="tabular-nums">
+                      01:00
+                    </span>
                   </div>
                 </div>
                 <Script id="live-refresh-script" strategy="afterInteractive">{`

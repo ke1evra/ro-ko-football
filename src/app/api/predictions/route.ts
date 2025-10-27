@@ -11,11 +11,9 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
 
     const payload = await getPayload({ config: await configPromise })
-    
+
     // Строим условия фильтрации
-    const whereConditions: any[] = [
-      { postType: { equals: 'prediction' } }
-    ]
+    const whereConditions: any[] = [{ postType: { equals: 'prediction' } }]
 
     if (fixtureId) {
       whereConditions.push({ fixtureId: { equals: parseInt(fixtureId) } })
@@ -28,7 +26,7 @@ export async function GET(request: NextRequest) {
     const predictionsRes = await payload.find({
       collection: 'posts',
       where: {
-        and: whereConditions
+        and: whereConditions,
       },
       sort: '-publishedAt',
       limit,
@@ -54,7 +52,6 @@ export async function GET(request: NextRequest) {
     )
 
     return NextResponse.json(withCounts)
-
   } catch (error) {
     console.error('Error fetching predictions:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -76,9 +73,7 @@ export async function POST(request: NextRequest) {
     // Находим матч
     const matchQuery = await payload.find({
       collection: 'matches',
-      where: matchId
-        ? { matchId: { equals: matchId } }
-        : { fixtureId: { equals: fixtureId } },
+      where: matchId ? { matchId: { equals: matchId } } : { fixtureId: { equals: fixtureId } },
       limit: 1,
       depth: 0,
     })
@@ -154,7 +149,10 @@ export async function POST(request: NextRequest) {
       if (outcome) {
         const home = Number(match.homeScore)
         const away = Number(match.awayScore)
-        const outcomeWon = (outcome === 'home' && home > away) || (outcome === 'draw' && home === away) || (outcome === 'away' && away > home)
+        const outcomeWon =
+          (outcome === 'home' && home > away) ||
+          (outcome === 'draw' && home === away) ||
+          (outcome === 'away' && away > home)
         if (outcomeWon) points += 2
         breakdown.outcome = { predicted: outcome, won: outcomeWon, points: outcomeWon ? 2 : 0 }
       }
@@ -162,9 +160,14 @@ export async function POST(request: NextRequest) {
       const scoreHome = post?.prediction?.score?.home
       const scoreAway = post?.prediction?.score?.away
       if (typeof scoreHome === 'number' && typeof scoreAway === 'number') {
-        const exactWon = Number(match.homeScore) === scoreHome && Number(match.awayScore) === scoreAway
+        const exactWon =
+          Number(match.homeScore) === scoreHome && Number(match.awayScore) === scoreAway
         if (exactWon) points += 5
-        breakdown.exact = { predicted: { home: scoreHome, away: scoreAway }, won: exactWon, points: exactWon ? 5 : 0 }
+        breakdown.exact = {
+          predicted: { home: scoreHome, away: scoreAway },
+          won: exactWon,
+          points: exactWon ? 5 : 0,
+        }
       }
 
       const hitRate = evalRes.total > 0 ? evalRes.won / evalRes.total : 0
@@ -208,12 +211,21 @@ export async function POST(request: NextRequest) {
 
       let saved
       if (existing.docs.length > 0) {
-        saved = await payload.update({ collection: 'predictionStats', id: (existing.docs[0] as any).id, data: doc })
+        saved = await payload.update({
+          collection: 'predictionStats',
+          id: (existing.docs[0] as any).id,
+          data: doc,
+        })
       } else {
         saved = await payload.create({ collection: 'predictionStats', data: doc })
       }
 
-      results.push({ postId: post.id, statsId: saved.id, summary: doc.summary, scoring: doc.scoring })
+      results.push({
+        postId: post.id,
+        statsId: saved.id,
+        summary: doc.summary,
+        scoring: doc.scoring,
+      })
     }
 
     return NextResponse.json({ ok: true, count: results.length, results })

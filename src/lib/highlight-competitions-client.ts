@@ -22,12 +22,12 @@ const CACHE_TTL = 5 * 60 * 1000 // 5 минут
  */
 async function getCachedLeaguesFromAPI() {
   const now = Date.now()
-  
+
   // Проверяем кэш
-  if (cachedLeagues && (now - cacheTimestamp) < CACHE_TTL) {
+  if (cachedLeagues && now - cacheTimestamp < CACHE_TTL) {
     return cachedLeagues
   }
-  
+
   try {
     const response = await fetch('/api/top-matches-settings', {
       method: 'GET',
@@ -35,34 +35,33 @@ async function getCachedLeaguesFromAPI() {
         'Content-Type': 'application/json',
       },
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
-    
+
     const data = await response.json()
-    
+
     if (!data.success || !data.enabled) {
       console.warn('[LEAGUES_CLIENT] Настройки топ матчей отключены или недоступны')
       return []
     }
-    
+
     // Обновляем кэш
     cachedLeagues = data.leagues || []
     cacheTimestamp = now
-    
+
     console.log(`[LEAGUES_CLIENT] Загружено ${cachedLeagues?.length || 0} лиг из Payload`)
     return cachedLeagues
-    
   } catch (error) {
     console.error('[LEAGUES_CLIENT] Ошибка при загрузке лиг:', error)
-    
+
     // Возвращаем кэшированные данные, если есть
     if (cachedLeagues) {
       console.warn('[LEAGUES_CLIENT] Используем кэшированные данные')
       return cachedLeagues
     }
-    
+
     // Если нет кэша и API недоступен - возвращаем пустой массив
     console.warn('[LEAGUES_CLIENT] API недоступен, возвращаем пустой список')
     return []
@@ -88,7 +87,7 @@ function getCachedLeaguesSync() {
 export function getLeaguePriorityClient(competitionId: number): number {
   const leagues = getCachedLeaguesSync()
   if (!leagues) return 999
-  const league = leagues.find(league => league.id === competitionId)
+  const league = leagues.find((league) => league.id === competitionId)
   return league?.priority ?? 999 // Низкий приоритет для неприоритетных лиг
 }
 
@@ -99,7 +98,7 @@ export function getLeaguePriorityClient(competitionId: number): number {
 export function isPriorityLeagueClient(competitionId: number): boolean {
   const leagues = getCachedLeaguesSync()
   if (!leagues) return false
-  return leagues.some(league => league.id === competitionId)
+  return leagues.some((league) => league.id === competitionId)
 }
 
 /**
@@ -109,7 +108,7 @@ export function isPriorityLeagueClient(competitionId: number): boolean {
 export function getLeagueInfoClient(competitionId: number) {
   const leagues = getCachedLeaguesSync()
   if (!leagues) return undefined
-  return leagues.find(league => league.id === competitionId)
+  return leagues.find((league) => league.id === competitionId)
 }
 
 /**
@@ -119,7 +118,7 @@ export function getLeagueInfoClient(competitionId: number) {
 export function getPriorityLeagueIdsClient(): number[] {
   const leagues = getCachedLeaguesSync()
   if (!leagues) return []
-  return leagues.map(league => league.id)
+  return leagues.map((league) => league.id)
 }
 
 /**
@@ -132,7 +131,7 @@ export function getPriorityLeagueIdsClient(): number[] {
 export async function getLeaguePriorityClientAsync(competitionId: number): Promise<number> {
   const leagues = await getCachedLeaguesFromAPI()
   if (!leagues) return 999
-  const league = leagues.find(league => league.id === competitionId)
+  const league = leagues.find((league) => league.id === competitionId)
   return league?.priority ?? 999
 }
 
@@ -142,7 +141,7 @@ export async function getLeaguePriorityClientAsync(competitionId: number): Promi
 export async function isPriorityLeagueClientAsync(competitionId: number): Promise<boolean> {
   const leagues = await getCachedLeaguesFromAPI()
   if (!leagues) return false
-  return leagues.some(league => league.id === competitionId)
+  return leagues.some((league) => league.id === competitionId)
 }
 
 /**
@@ -151,7 +150,7 @@ export async function isPriorityLeagueClientAsync(competitionId: number): Promis
 export async function getLeagueInfoClientAsync(competitionId: number) {
   const leagues = await getCachedLeaguesFromAPI()
   if (!leagues) return undefined
-  return leagues.find(league => league.id === competitionId)
+  return leagues.find((league) => league.id === competitionId)
 }
 
 /**
@@ -160,7 +159,7 @@ export async function getLeagueInfoClientAsync(competitionId: number) {
 export async function getPriorityLeagueIdsClientAsync(): Promise<number[]> {
   const leagues = await getCachedLeaguesFromAPI()
   if (!leagues) return []
-  return leagues.map(league => league.id)
+  return leagues.map((league) => league.id)
 }
 
 /**

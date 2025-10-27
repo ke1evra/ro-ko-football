@@ -12,7 +12,11 @@ function pickAvatar(user: any): string | undefined {
   return undefined
 }
 
-export default async function UserPublicPage({ params }: { params: Promise<{ username: string }> }) {
+export default async function UserPublicPage({
+  params,
+}: {
+  params: Promise<{ username: string }>
+}) {
   const payload = await getPayload({ config })
 
   const { username } = await params
@@ -69,7 +73,11 @@ export default async function UserPublicPage({ params }: { params: Promise<{ use
       <div className="flex items-center gap-4">
         {avatar ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatar} alt={String(user.name || user.username || '')} className="h-16 w-16 rounded-full" />
+          <img
+            src={avatar}
+            alt={String(user.name || user.username || '')}
+            className="h-16 w-16 rounded-full"
+          />
         ) : (
           <div className="h-16 w-16 rounded-full bg-muted" />
         )}
@@ -95,7 +103,8 @@ export default async function UserPublicPage({ params }: { params: Promise<{ use
             const title = post?.title || 'Прогноз'
             const href = post?.slug ? `/posts/${post.slug}` : undefined
             const sum = s?.summary || {}
-            const hitRate = typeof sum?.hitRate === 'number' ? `${Math.round(sum.hitRate * 100)}%` : '—'
+            const hitRate =
+              typeof sum?.hitRate === 'number' ? `${Math.round(sum.hitRate * 100)}%` : '—'
             const roi = typeof sum?.roi === 'number' ? `${Math.round(sum.roi * 100)}%` : '—'
             return (
               <div key={s.id} className="border rounded p-3">

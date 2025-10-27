@@ -20,14 +20,14 @@ interface PredictionsPageProps {
 
 async function getPredictions(page = 1) {
   const limit = 12
-  
+
   try {
     const payload = await getPayload({ config: await configPromise })
-    
+
     const result = await payload.find({
       collection: 'posts',
       where: {
-        postType: { equals: 'prediction' }
+        postType: { equals: 'prediction' },
       },
       sort: '-publishedAt',
       limit,
@@ -56,46 +56,50 @@ async function getPredictions(page = 1) {
 
 function getOutcomeLabel(outcome?: string) {
   switch (outcome) {
-    case 'home': return 'Победа хозяев'
-    case 'draw': return 'Ничья'
-    case 'away': return 'Победа гостей'
-    default: return 'Не указан'
+    case 'home':
+      return 'Победа хозяев'
+    case 'draw':
+      return 'Ничья'
+    case 'away':
+      return 'Победа гостей'
+    default:
+      return 'Не указан'
   }
 }
 
 function getOutcomeVariant(outcome?: string) {
   switch (outcome) {
-    case 'home': return 'default'
-    case 'draw': return 'secondary'
-    case 'away': return 'outline'
-    default: return 'secondary'
+    case 'home':
+      return 'default'
+    case 'draw':
+      return 'secondary'
+    case 'away':
+      return 'outline'
+    default:
+      return 'secondary'
   }
 }
 
 export default async function PredictionsPage({ searchParams }: PredictionsPageProps) {
   const resolvedSearchParams = await searchParams
   const page = parseInt(resolvedSearchParams.page || '1')
-  
-  const { predictions, totalPages, currentPage, hasNextPage, hasPrevPage } = await getPredictions(page)
 
-  const breadcrumbItems = [
-    { label: 'Главная', href: '/' },
-    { label: 'Прогнозы' }
-  ]
+  const { predictions, totalPages, currentPage, hasNextPage, hasPrevPage } =
+    await getPredictions(page)
+
+  const breadcrumbItems = [{ label: 'Главная', href: '/' }, { label: 'Прогнозы' }]
 
   return (
     <Section>
       <Container className="space-y-6">
         <Breadcrumbs items={breadcrumbItems} />
-        
+
         <header className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Прогнозы</h1>
-            <p className="text-muted-foreground">
-              Прогнозы пользователей на футбольные матчи
-            </p>
+            <p className="text-muted-foreground">Прогнозы пользователей на футбольные матчи</p>
           </div>
-          
+
           <Button asChild>
             <Link href="/leagues">
               <TrendingUp className="h-4 w-4 mr-2" />
@@ -120,7 +124,7 @@ export default async function PredictionsPage({ searchParams }: PredictionsPageP
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <CardTitle className="text-lg line-clamp-2">
-                          <Link 
+                          <Link
                             href={`/posts/${prediction.slug}`}
                             className="hover:text-primary transition-colors"
                           >
@@ -128,10 +132,9 @@ export default async function PredictionsPage({ searchParams }: PredictionsPageP
                           </Link>
                         </CardTitle>
                         <CardDescription className="mt-1">
-                          {prediction.content 
+                          {prediction.content
                             ? truncateText(extractTextFromLexical(prediction.content), 100)
-                            : ''
-                          }
+                            : ''}
                         </CardDescription>
                       </div>
                       <Badge variant="secondary" className="ml-2">
@@ -140,7 +143,7 @@ export default async function PredictionsPage({ searchParams }: PredictionsPageP
                       </Badge>
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent className="space-y-4">
                     {/* Прогноз исхода */}
                     {prediction.prediction?.outcome && (
@@ -153,15 +156,15 @@ export default async function PredictionsPage({ searchParams }: PredictionsPageP
                     )}
 
                     {/* Прогноз счета */}
-                    {prediction.prediction?.score?.home !== undefined && 
-                     prediction.prediction?.score?.away !== undefined && (
-                      <div>
-                        <div className="text-sm text-muted-foreground mb-1">Счет:</div>
-                        <div className="font-mono text-lg">
-                          {prediction.prediction.score.home} : {prediction.prediction.score.away}
+                    {prediction.prediction?.score?.home !== undefined &&
+                      prediction.prediction?.score?.away !== undefined && (
+                        <div>
+                          <div className="text-sm text-muted-foreground mb-1">Счет:</div>
+                          <div className="font-mono text-lg">
+                            {prediction.prediction.score.home} : {prediction.prediction.score.away}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     {/* Дополнительная статистика */}
                     <div className="grid grid-cols-2 gap-2 text-sm">
@@ -197,10 +200,9 @@ export default async function PredictionsPage({ searchParams }: PredictionsPageP
                     <div className="flex items-center justify-between pt-2 border-t text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <User className="h-3 w-3" />
-                        {typeof prediction.author === 'object' && prediction.author?.name 
-                          ? prediction.author.name 
-                          : 'Аноним'
-                        }
+                        {typeof prediction.author === 'object' && prediction.author?.name
+                          ? prediction.author.name
+                          : 'Аноним'}
                       </div>
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
@@ -217,21 +219,17 @@ export default async function PredictionsPage({ searchParams }: PredictionsPageP
               <div className="flex justify-center gap-2 mt-8">
                 {hasPrevPage && (
                   <Button variant="outline" asChild>
-                    <Link href={`/predictions?page=${currentPage - 1}`}>
-                      Предыдущая
-                    </Link>
+                    <Link href={`/predictions?page=${currentPage - 1}`}>Предыдущая</Link>
                   </Button>
                 )}
-                
+
                 <Badge variant="outline" className="px-3 py-1">
                   Страница {currentPage} из {totalPages}
                 </Badge>
-                
+
                 {hasNextPage && (
                   <Button variant="outline" asChild>
-                    <Link href={`/predictions?page=${currentPage + 1}`}>
-                      Следующая
-                    </Link>
+                    <Link href={`/predictions?page=${currentPage + 1}`}>Следующая</Link>
                   </Button>
                 )}
               </div>

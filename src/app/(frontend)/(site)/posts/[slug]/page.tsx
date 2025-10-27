@@ -47,7 +47,10 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         <header className="space-y-4">
           <h1 className="text-2xl font-semibold">{post.title}</h1>
           <div className="flex items-center gap-3">
-            <UserAvatar user={typeof post.author === 'object' ? (post.author as any) : null} size="md" />
+            <UserAvatar
+              user={typeof post.author === 'object' ? (post.author as any) : null}
+              size="md"
+            />
             <div className="flex flex-col">
               <div className="text-sm font-medium">
                 {typeof post.author === 'object'
@@ -87,21 +90,24 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                       <div className="space-y-3">
                         <div className="space-y-1">
                           <div className="text-lg font-semibold">
-                            {(post as any).prediction.matchInfo.home} — {(post as any).prediction.matchInfo.away}
+                            {(post as any).prediction.matchInfo.home} —{' '}
+                            {(post as any).prediction.matchInfo.away}
                           </div>
                           {(post as any).prediction.matchInfo.competition && (
                             <div className="text-sm text-muted-foreground">
                               {(post as any).prediction.matchInfo.competition}
                             </div>
                           )}
-                          {((post as any).prediction.matchInfo.date || (post as any).prediction.matchInfo.time) && (
+                          {((post as any).prediction.matchInfo.date ||
+                            (post as any).prediction.matchInfo.time) && (
                             <div className="text-sm text-muted-foreground">
-                              {(post as any).prediction.matchInfo.date} {(post as any).prediction.matchInfo.time}
+                              {(post as any).prediction.matchInfo.date}{' '}
+                              {(post as any).prediction.matchInfo.time}
                             </div>
                           )}
                         </div>
                         {(post as any).fixtureId && (
-                          <Link 
+                          <Link
                             href={`/fixtures/${(post as any).fixtureId}`}
                             className="text-primary hover:underline flex items-center gap-1 text-sm"
                           >
@@ -113,24 +119,28 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                     )}
 
                     {/* События прогноза */}
-                    {(post as any).prediction.events && (post as any).prediction.events.length > 0 && (
-                      <div className="space-y-3">
-                        <h4 className="font-medium flex items-center gap-2">
-                          <Target className="h-4 w-4" />
-                          События прогноза
-                        </h4>
-                        <div className="space-y-2">
-                          {(post as any).prediction.events.map((event: any, index: number) => (
-                            <div key={index} className="flex items-center justify-between p-2 bg-background rounded border text-sm">
-                              <span className="font-medium">{event.event}</span>
-                              <Badge variant="secondary" className="font-mono text-xs">
-                                {event.coefficient}
-                              </Badge>
-                            </div>
-                          ))}
+                    {(post as any).prediction.events &&
+                      (post as any).prediction.events.length > 0 && (
+                        <div className="space-y-3">
+                          <h4 className="font-medium flex items-center gap-2">
+                            <Target className="h-4 w-4" />
+                            События прогноза
+                          </h4>
+                          <div className="space-y-2">
+                            {(post as any).prediction.events.map((event: any, index: number) => (
+                              <div
+                                key={index}
+                                className="flex items-center justify-between p-2 bg-background rounded border text-sm"
+                              >
+                                <span className="font-medium">{event.event}</span>
+                                <Badge variant="secondary" className="font-mono text-xs">
+                                  {event.coefficient}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </CardContent>
                 </Card>
               )}

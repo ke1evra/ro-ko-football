@@ -15,9 +15,9 @@ async function getMatchInfo(matchId: number) {
     // Пробуем получить информацию о матче из API событий
     const eventsResponse = await fetch(
       `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/matches/events?match_id=${matchId}`,
-      { next: { revalidate: 300 } }
+      { next: { revalidate: 300 } },
     )
-    
+
     if (eventsResponse.ok) {
       const eventsData = await eventsResponse.json()
       if (eventsData.success && eventsData.data) {
@@ -36,9 +36,9 @@ async function getMatchInfo(matchId: number) {
     // Если не удалось получить из событий, пробуем статистику
     const statsResponse = await fetch(
       `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/matches/stats?match_id=${matchId}`,
-      { next: { revalidate: 300 } }
+      { next: { revalidate: 300 } },
     )
-    
+
     if (statsResponse.ok) {
       const statsData = await statsResponse.json()
       if (statsData.success && statsData.data) {
@@ -68,13 +68,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { matchId } = await params
   const id = Number(matchId)
-  
+
   if (!Number.isFinite(id)) {
     return { title: 'Матч не найден' }
   }
 
   const matchInfo = await getMatchInfo(id)
-  
+
   if (!matchInfo) {
     return { title: `Матч #${id}` }
   }
@@ -113,9 +113,7 @@ export default async function MatchPage({ params }: { params: Promise<{ matchId:
         <Container className="space-y-4">
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Матч #{id} не найден.
-            </AlertDescription>
+            <AlertDescription>Матч #{id} не найден.</AlertDescription>
           </Alert>
           <Link href="/leagues">
             <Button variant="outline" size="sm">

@@ -18,8 +18,6 @@ export function CountryFlagImage({
 }: CountryFlagImageProps) {
   const [imageError, setImageError] = useState(false)
 
-  
-
   // Если нет ID страны, показываем иконку
   if (!countryId) {
     return (
@@ -38,7 +36,9 @@ export function CountryFlagImage({
 
   if (showFallback) {
     return (
-      <div className={`flex items-center justify-center bg-primary/10 border border-primary/20 rounded ${className}`}>
+      <div
+        className={`flex items-center justify-center bg-primary/10 border border-primary/20 rounded ${className}`}
+      >
         {countryName ? (
           <span
             className={`font-bold text-primary ${
@@ -60,8 +60,6 @@ export function CountryFlagImage({
 
   const sizeParam = size === 'small' ? 'small' : size === 'large' ? 'large' : 'medium'
   const flagUrl = `/api/countries/${countryId}/flag?size=${sizeParam}`
-
-  
 
   return (
     <div className={`relative ${className}`}>

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar, Clock, MapPin, Trophy, TrendingUp, MessageSquare, ThumbsUp } from 'lucide-react'
 import { LocalDateTime } from '@/components/LocalDateTime'
 import PredictionModal from '@/components/predictions/PredictionModal'
+import { CountryFlagImage } from '@/components/CountryFlagImage'
 
 import { TeamLogo } from '@/components/TeamLogo'
 import H2HBlock from '@/components/fixtures/H2HBlock'
@@ -154,88 +155,31 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
 
   return (
     <>
-      {/* Шапка */}
-      <header className="space-y-2">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Calendar className="h-4 w-4" />
-          <LocalDateTime date={fx.date} time={fx.time} utc />
-          {fx.competition?.name ? (
-            <Badge variant="outline" className="ml-2">
-              {fx.competition.name}
-            </Badge>
-          ) : null}
-          {fx.round ? (
-            <Badge variant="secondary" className="ml-2">
-              Тур {fx.round}
-            </Badge>
-          ) : null}
-          {fx.group_id ? (
-            <Badge variant="secondary" className="ml-2">
-              Группа {fx.group_id}
-            </Badge>
-          ) : null}
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Trophy className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold tracking-tight">
-              {fx.home.name} — {fx.away.name}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="text-sm text-muted-foreground inline-flex items-center gap-2">
-              {fx.status ? (
-                <Badge variant="secondary">{statusRu(fx.status) || fx.status}</Badge>
-              ) : null}
-              <Clock className="h-4 w-4" />
-              <LocalDateTime date={fx.date} time={fx.time} utc showDate={false} />
-            </div>
-            {isScheduled && (
-              <Button variant="outline" size="sm" onClick={() => setIsPredictionModalOpen(true)}>
-                Оставить прогноз
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Время и обновления — мини‑виджеты */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Дата (локально) */}
-          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-[11px]">
-            <Calendar className="h-3 w-3" />
-            <LocalDateTime date={fx.date} time={fx.time} utc showTime={false} />
-          </div>
-
-          {/* Время (локально) */}
-          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-[11px]">
-            <Clock className="h-3 w-3" />
-            <LocalDateTime date={fx.date} time={fx.time} utc showDate={false} />
-          </div>
-
-          {/* До начала (для запланированных) */}
-          {countdownText && (
-            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px]">
-              <Clock className="h-3 w-3" />
-              <span>{countdownText}</span>
-            </div>
-          )}
-
-          {/* Обновлено */}
-          {fx.last_changed && (
-            <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-[10px] text-muted-foreground">
-              <span>Обновлено:</span>
-              <LocalDateTime dateTime={fx.last_changed.replace(' ', 'T')} utc showDate={false} />
-            </div>
-          )}
-        </div>
-      </header>
-
       <div className="space-y-6">
         {/* Детали матча */}
         <Card>
           <CardHeader>
-            <CardTitle>Детали матча</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              {fx.competition?.countries && fx.competition.countries.length > 0 ? (
+                <>
+                  <CountryFlagImage
+                    countryId={fx.competition.countries[0].id}
+                    countryName={fx.competition.countries[0].name}
+                    size="small"
+                    className="h-5 w-5"
+                  />
+                  <span className="opacity-50">
+                    {fx.competition.name || 'Матч'}
+                    {fx.round && ` • Тур ${fx.round}`}
+                  </span>
+                </>
+              ) : (
+                <span>
+                  {fx.competition?.name || 'Матч'}
+                  {fx.round && ` • Тур ${fx.round}`}
+                </span>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Главный ряд: команды слева/справа и крупный счёт по центру */}
@@ -251,29 +195,20 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                 <TeamLogo teamId={fx.home.id} teamName={fx.home.name} size="large" />
               </div>
 
-              {/* Центральный счёт и минуты */}
-              <div className="flex items-center justify-center">
-                <div
-                  className="text-5xl md:text-6xl font-extrabold tabular-nums leading-none"
-                  aria-live={isLive ? 'polite' : undefined}
-                >
-                  {homeScoreBig != null && awayScoreBig != null ? (
-                    <>
-                      <span className="opacity-90">{homeScoreBig}</span>
-                      <span className="opacity-30 mx-3">-</span>
-                      <span className="opacity-90">{awayScoreBig}</span>
-                    </>
-                  ) : (
-                    <span className="text-muted-foreground">vs</span>
+              {/* Центральный счёт, минуты, дата и обратный отсчёт */}
+              <div className="flex flex-col items-center justify-center gap-2">
+                {/* Дата и обратный отсчёт под счётом */}
+                <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
+                  <div className="inline-flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    <LocalDateTime date={fx.date} time={fx.time} utc showTime={false} />
+                  </div>
+                  {countdownText && (
+                    <div className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+                      <span>{countdownText}</span>
+                    </div>
                   )}
                 </div>
-                {minuteLabel && (
-                  <span
-                    className={`${isLive ? 'bg-red-50 text-red-700' : minuteLabel === 'Перерыв' ? 'bg-amber-50 text-amber-700' : minuteLabel === 'Завершён' ? 'bg-muted text-muted-foreground' : 'bg-muted text-muted-foreground'} ml-3 text-[10px] px-2 py-1 rounded`}
-                  >
-                    {minuteLabel}
-                  </span>
-                )}
               </div>
 
               {/* Гостевая команда */}
@@ -286,6 +221,55 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                   {fx.away.name}
                 </Link>
               </div>
+            </div>
+
+            {/* Информация о дате, лиге, туре, группе и статусе */}
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-[11px]">
+                <Calendar className="h-3 w-3" />
+                <LocalDateTime date={fx.date} time={fx.time} utc showTime={false} />
+              </div>
+
+              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-[11px]">
+                <Clock className="h-3 w-3" />
+                <LocalDateTime date={fx.date} time={fx.time} utc showDate={false} />
+              </div>
+
+              {countdownText && (
+                <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px]">
+                  <Clock className="h-3 w-3" />
+                  <span>{countdownText}</span>
+                </div>
+              )}
+
+              {fx.status && (
+                <Badge variant="secondary" className="text-[11px]">
+                  {statusRu(fx.status) || fx.status}
+                </Badge>
+              )}
+
+              {fx.round && (
+                <Badge variant="secondary" className="text-[11px]">
+                  Тур {fx.round}
+                </Badge>
+              )}
+
+              {fx.group_id && (
+                <Badge variant="secondary" className="text-[11px]">
+                  Группа {fx.group_id}
+                </Badge>
+              )}
+
+              {fx.last_changed && (
+                <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-[10px] text-muted-foreground">
+                  <span>Обновлено:</span>
+                  <LocalDateTime
+                    dateTime={fx.last_changed.replace(' ', 'T')}
+                    utc
+                    showDate={false}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Предматчевые коэффициенты — заметная линия распределения на отдельной строке */}

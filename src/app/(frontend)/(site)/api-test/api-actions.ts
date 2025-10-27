@@ -80,17 +80,13 @@ export async function executeApiMethod({
 
       // Lineups & Stats Service
       case 'getMatchesLineupsJson':
-        result = await getMatchesLineupsJson(
-          params as unknown as GetMatchesLineupsJsonQueryParams,
-        )
+        result = await getMatchesLineupsJson(params as unknown as GetMatchesLineupsJsonQueryParams)
         break
       case 'getMatchesStatsJson':
         result = await getMatchesStatsJson(params as unknown as GetMatchesStatsJsonQueryParams)
         break
       case 'getTeamsHead2HeadJson':
-        result = await getTeamsHead2HeadJson(
-          params as unknown as GetTeamsHead2HeadJsonQueryParams,
-        )
+        result = await getTeamsHead2HeadJson(params as unknown as GetTeamsHead2HeadJsonQueryParams)
         break
 
       // Matches Service

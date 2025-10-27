@@ -19,7 +19,6 @@
   - Для 1Т/2Т поддержаны: основные исходы и тоталы голов. Для статистик таймы не применяются (данных по таймам нет).
 */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export type TeamSide = 'home' | 'away'
@@ -155,7 +154,10 @@ export function parseEventString(raw: string): ParsedEvent | null {
 
   // Комбо: разделяем по " и " и парсим каждую часть
   if (hasCombo(s)) {
-    const parts = s.split(/\sи\s/i).map((p) => p.trim()).filter(Boolean)
+    const parts = s
+      .split(/\sи\s/i)
+      .map((p) => p.trim())
+      .filter(Boolean)
     if (parts.length >= 2) {
       const sub: ParsedEvent[] = []
       for (const p of parts) {
@@ -218,7 +220,10 @@ export function parseEventString(raw: string): ParsedEvent | null {
         const line = toNumberLocaleAware(parts.slice(1).join(' '))
         if (Number.isFinite(line)) {
           const stat = statPrefix ?? 'goals'
-          return { group: 'total', total: { kind, line, stat, scope: stat === 'goals' ? scope : 'ft' } }
+          return {
+            group: 'total',
+            total: { kind, line, stat, scope: stat === 'goals' ? scope : 'ft' },
+          }
         }
       }
     }
@@ -322,7 +327,10 @@ function mainDoubleChance(match: any, kind: DCKind, scope: Scope = 'ft'): boolea
   return null
 }
 
-function pairFromAdditional(raw: any, keyCandidates: string[]): { home: number; away: number } | null {
+function pairFromAdditional(
+  raw: any,
+  keyCandidates: string[],
+): { home: number; away: number } | null {
   if (!raw) return null
   for (const key of keyCandidates) {
     const val = raw?.[key]
@@ -516,7 +524,12 @@ function renderEvent(pe: ParsedEvent): string {
     return `${scope}${pfx}${kind} ${pe.total.line}`.trim()
   }
   if (pe.group === 'statOutcome' && pe.statOutcome) {
-    const tag = pe.statOutcome.comparator === 'home>away' ? 'П1' : pe.statOutcome.comparator === 'away>home' ? 'П2' : 'Х'
+    const tag =
+      pe.statOutcome.comparator === 'home>away'
+        ? 'П1'
+        : pe.statOutcome.comparator === 'away>home'
+          ? 'П2'
+          : 'Х'
     return `${statPrefixFromKey(pe.statOutcome.stat)} ${tag}`
   }
   if (pe.group === 'statDoubleChance' && pe.doubleChance && pe.dcStat) {

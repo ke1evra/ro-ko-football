@@ -6,72 +6,72 @@ import { getCompetitionsListJson } from '@/app/(frontend)/client'
  */
 export const PRIORITY_LEAGUES = {
   // Топ-5 европейских лиг
-  PREMIER_LEAGUE: { 
-    id: 2, 
-    name: 'Premier League', 
-    country: 'England', 
+  PREMIER_LEAGUE: {
+    id: 2,
+    name: 'Premier League',
+    country: 'England',
     priority: 1,
-    description: 'Английская Премьер-лига'
+    description: 'Английская Премьер-лига',
   },
-  BUNDESLIGA: { 
-    id: 1, 
-    name: 'Bundesliga', 
-    country: 'Germany', 
+  BUNDESLIGA: {
+    id: 1,
+    name: 'Bundesliga',
+    country: 'Germany',
     priority: 2,
-    description: 'Немецкая Бундеслига'
+    description: 'Немецкая Бундеслига',
   },
-  SERIE_A: { 
-    id: 4, 
-    name: 'Serie A', 
-    country: 'Italy', 
+  SERIE_A: {
+    id: 4,
+    name: 'Serie A',
+    country: 'Italy',
     priority: 3,
-    description: 'Итальянская Серия А'
+    description: 'Итальянская Серия А',
   },
-  LIGUE_1: { 
-    id: 5, 
-    name: 'Ligue 1', 
-    country: 'France', 
+  LIGUE_1: {
+    id: 5,
+    name: 'Ligue 1',
+    country: 'France',
     priority: 4,
-    description: 'Французская Лига 1'
+    description: 'Французская Лига 1',
   },
-  LA_LIGA: { 
-    id: 3, 
-    name: 'LaLiga Santander', 
-    country: 'Spain', 
+  LA_LIGA: {
+    id: 3,
+    name: 'LaLiga Santander',
+    country: 'Spain',
     priority: 5,
-    description: 'Испанская Ла Лига'
+    description: 'Испанская Ла Лига',
   },
-  
+
   // Российская лига
-  RUSSIAN_PREMIER_LEAGUE: { 
-    id: 7, 
-    name: 'Premier League', 
-    country: 'Russia', 
+  RUSSIAN_PREMIER_LEAGUE: {
+    id: 7,
+    name: 'Premier League',
+    country: 'Russia',
     priority: 6,
-    description: 'Российская Премьер-лига'
+    description: 'Российская Премьер-лига',
   },
-  
+
   // Европейские кубки
-  UEFA_CHAMPIONS_LEAGUE: { 
-    id: 268, 
-    name: 'Champions League', 
-    country: 'Europe', 
+  UEFA_CHAMPIONS_LEAGUE: {
+    id: 268,
+    name: 'Champions League',
+    country: 'Europe',
     priority: 7,
-    description: 'Лига Чемпионов УЕФА'
+    description: 'Лига Чемпионов УЕФА',
   },
-  UEFA_EUROPA_LEAGUE: { 
-    id: 245, 
-    name: 'Europa League', 
-    country: 'Europe', 
+  UEFA_EUROPA_LEAGUE: {
+    id: 245,
+    name: 'Europa League',
+    country: 'Europe',
     priority: 8,
-    description: 'Лига Европы УЕФА'
+    description: 'Лига Европы УЕФА',
   },
-  UEFA_CONFERENCE_LEAGUE: { 
-    id: 446, 
-    name: 'UEFA Conference League', 
-    country: 'Europe', 
+  UEFA_CONFERENCE_LEAGUE: {
+    id: 446,
+    name: 'UEFA Conference League',
+    country: 'Europe',
     priority: 9,
-    description: 'Лига Конференций УЕФА'
+    description: 'Лига Конференций УЕФА',
   },
 } as const
 
@@ -79,7 +79,7 @@ export const PRIORITY_LEAGUES = {
  * Получить ID всех приоритетных лиг
  */
 export function getPriorityLeagueIds(): number[] {
-  return Object.values(PRIORITY_LEAGUES).map(league => league.id)
+  return Object.values(PRIORITY_LEAGUES).map((league) => league.id)
 }
 
 /**
@@ -93,7 +93,7 @@ export function isPriorityLeague(competitionId: number): boolean {
  * Получить приоритет лиги (чем меньше число, тем выше приоритет)
  */
 export function getLeaguePriority(competitionId: number): number {
-  const league = Object.values(PRIORITY_LEAGUES).find(league => league.id === competitionId)
+  const league = Object.values(PRIORITY_LEAGUES).find((league) => league.id === competitionId)
   return league?.priority ?? 999 // Низкий приоритет для неприоритетных лиг
 }
 
@@ -101,7 +101,7 @@ export function getLeaguePriority(competitionId: number): number {
  * Получить информацию о лиге по ID
  */
 export function getLeagueInfo(competitionId: number) {
-  return Object.values(PRIORITY_LEAGUES).find(league => league.id === competitionId)
+  return Object.values(PRIORITY_LEAGUES).find((league) => league.id === competitionId)
 }
 
 /**
@@ -115,7 +115,7 @@ export function getAllPriorityLeagues() {
  * Сортировать матчи по приоритету лиг
  */
 export function sortMatchesByLeaguePriority<T extends { competitionId?: number }>(
-  matches: T[]
+  matches: T[],
 ): T[] {
   return matches.sort((a, b) => {
     const priorityA = getLeaguePriority(a.competitionId || 0)

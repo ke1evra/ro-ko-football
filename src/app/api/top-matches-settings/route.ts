@@ -5,20 +5,20 @@ export async function GET() {
   try {
     // Получаем настройки из Payload
     const settings = await getTopMatchesLeagues()
-    
+
     if (!settings?.enabled) {
       return NextResponse.json({
         success: true,
         enabled: false,
         leagues: [],
         leagueIds: [],
-        message: 'Виджет топ матчей отключён в настройках'
+        message: 'Виджет топ матчей отключён в настройках',
       })
     }
-    
+
     // Получаем ID лиг
     const leagueIds = await getTopMatchesLeagueIds()
-    
+
     // Формируем список лиг с приоритетами для клиента
     const leagues =
       settings.leagues
@@ -46,7 +46,7 @@ export async function GET() {
       '[API] Processed leagues:',
       leagues.map((l: any) => `${l.id}: ${l.name} (priority: ${l.priority})`),
     )
-    
+
     return NextResponse.json({
       success: true,
       enabled: settings.enabled,
@@ -57,10 +57,9 @@ export async function GET() {
       filterSettings: settings.filterSettings || {},
       timestamp: new Date().toISOString(),
     })
-    
   } catch (error) {
     console.error('[API] /api/top-matches-settings - ошибка:', error)
-    
+
     return NextResponse.json(
       {
         success: false,
@@ -70,7 +69,7 @@ export async function GET() {
         leagues: [],
         leagueIds: [],
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

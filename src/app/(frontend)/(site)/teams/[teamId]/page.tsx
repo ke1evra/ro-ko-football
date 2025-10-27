@@ -280,7 +280,11 @@ export default async function TeamPage({ params }: TeamPageProps) {
                       const opponent = isHome ? match.away_team : match.home_team
 
                       return (
-                        <Link key={match.id} href={`/matches-v2/match_${match.date}_${match.home?.id || 0}_${match.away?.id || 0}_${match.id}_${match.id}`} className="block">
+                        <Link
+                          key={match.id}
+                          href={`/matches-v2/match_${match.date}_${match.home?.id || 0}_${match.away?.id || 0}_${match.id}_${match.id}`}
+                          className="block"
+                        >
                           <Card className="hover:shadow-md transition-shadow">
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">

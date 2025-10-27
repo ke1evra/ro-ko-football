@@ -76,7 +76,7 @@ interface MatchUrlParams {
 
 /**
  * Генерирует URL для страницы матча в формате matches-v2
- * 
+ *
  * Формат:
  * /matches-v2/spartak-dinamo_2025-05-28_123_456_789 (без matchId)
  * /matches-v2/spartak-dinamo_2025-05-28_123_456_789_1011 (с matchId)

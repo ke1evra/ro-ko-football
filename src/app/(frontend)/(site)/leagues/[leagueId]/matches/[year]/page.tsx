@@ -194,8 +194,6 @@ async function getLeagueMatches(leagueId: string, year: string): Promise<Match[]
   }
 }
 
-
-
 function getStatusBadge(status: string) {
   switch (status.toLowerCase()) {
     case 'finished':
@@ -343,7 +341,12 @@ export default async function MatchesYearPage({ params }: MatchesYearPageProps) 
                           <div className="flex items-center gap-4 flex-1">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Clock className="h-4 w-4" />
-                              <LocalDateTime date={match.date} time={match.time} utc showDate={false} />
+                              <LocalDateTime
+                                date={match.date}
+                                time={match.time}
+                                utc
+                                showDate={false}
+                              />
                             </div>
 
                             <div className="flex items-center gap-3 flex-1">

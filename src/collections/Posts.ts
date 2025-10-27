@@ -469,16 +469,16 @@ export const Posts: CollectionConfig = {
         // Генерация и уникализация slug: при создании, при изменении title, или если slug не задан
         const titleChanged = Boolean(data.title && data.title !== (originalDoc as any)?.title)
         const needsSlug = operation === 'create' || titleChanged || !data.slug
-        
+
         if (needsSlug && data.title) {
           const base = slugify(String(data.title))
-          let candidate = base.slice(0, 150) // Базовый slug
-          
+          const candidate = base.slice(0, 150) // Базовый slug
+
           const payload = req.payload
-          
+
           // Исключаем текущий документ из проверки (для случая редактирования)
           const currentDocId = (originalDoc as any)?.id
-          
+
           // Функция для проверки уникальности slug
           const isSlugTaken = async (slug: string): Promise<boolean> => {
             const existing = await payload.find({
@@ -487,13 +487,13 @@ export const Posts: CollectionConfig = {
               limit: 1,
               depth: 0,
             })
-            
+
             // Если найден документ, проверяем, не является ли он текущим редактируемым
             if (existing.docs.length > 0) {
               const foundDoc = existing.docs[0] as any
               return foundDoc.id !== currentDocId
             }
-            
+
             return false
           }
 
@@ -504,10 +504,10 @@ export const Posts: CollectionConfig = {
             // Если базовый slug занят, добавляем числовой суффикс
             let counter = 1
             let found = false
-            
+
             while (counter <= 1000 && !found) {
               const testSlug = `${candidate}-${counter}`
-              
+
               if (!(await isSlugTaken(testSlug))) {
                 data.slug = testSlug
                 found = true
@@ -515,7 +515,7 @@ export const Posts: CollectionConfig = {
                 counter++
               }
             }
-            
+
             // Если не нашли свободный slug за 1000 попыток, добавляем timestamp
             if (!found) {
               data.slug = `${candidate}-${Date.now()}`

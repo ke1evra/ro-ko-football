@@ -25,10 +25,10 @@ export async function getPayloadClient() {
  */
 export async function findMatchByMatchId(matchId: number) {
   console.log(`[findMatchByMatchId] Поиск матча matchId=${matchId} через Payload клиент`)
-  
+
   try {
     const payload = await getPayloadClient()
-    
+
     const result = await payload.find({
       collection: 'matches',
       where: {
@@ -58,7 +58,9 @@ export async function findMatchByMatchId(matchId: number) {
       if (match.matchId === matchId) {
         return match
       } else {
-        console.error(`[findMatchByMatchId] 🚨 Найден матч с неправильным matchId: ${match.matchId} вместо ${matchId}`)
+        console.error(
+          `[findMatchByMatchId] 🚨 Найден матч с неправильным matchId: ${match.matchId} вместо ${matchId}`,
+        )
         return null
       }
     }
@@ -74,16 +76,20 @@ export async function findMatchByMatchId(matchId: number) {
 /**
  * Ищет матч по дате и ID команд через прямой запрос к Payload
  */
-export async function findMatchByTeamsAndDate(homeTeamId: number, awayTeamId: number, date: string) {
+export async function findMatchByTeamsAndDate(
+  homeTeamId: number,
+  awayTeamId: number,
+  date: string,
+) {
   console.log(`[findMatchByTeamsAndDate] Поиск матча через Payload клиент:`, {
     homeTeamId,
     awayTeamId,
     date,
   })
-  
+
   try {
     const payload = await getPayloadClient()
-    
+
     const result = await payload.find({
       collection: 'matches',
       where: {

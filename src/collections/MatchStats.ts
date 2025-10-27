@@ -230,10 +230,15 @@ export const MatchStats: CollectionConfig = {
             { label: 'Другое', value: 'other' },
           ],
         },
-        { name: 'team', type: 'select', required: true, options: [
-          { label: 'Хозяева', value: 'home' },
-          { label: 'Гости', value: 'away' },
-        ]},
+        {
+          name: 'team',
+          type: 'select',
+          required: true,
+          options: [
+            { label: 'Хозяева', value: 'home' },
+            { label: 'Гости', value: 'away' },
+          ],
+        },
         { name: 'player', type: 'text' },
         { name: 'assistPlayer', type: 'text' },
         { name: 'playerOut', type: 'text' },

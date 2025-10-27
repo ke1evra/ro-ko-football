@@ -129,20 +129,20 @@ async function getStandings(leagueId: string, seasonId: string): Promise<Standin
         competition_id: String(leagueId),
         season: parseInt(seasonId),
         include_form: 1,
-        lang: 'ru'
+        lang: 'ru',
       },
       {
         next: { revalidate: 300 },
-        cache: 'no-store'
+        cache: 'no-store',
       },
     )
 
     console.log(`Структура ответа standings:`, Object.keys(response.data?.data || {}))
     console.log(`Полный ответ API:`, JSON.stringify(response.data, null, 2))
-    
+
     const standings = response.data?.data?.table || []
     console.log(`Всего команд в таблице получено: ${standings.length}`)
-    
+
     if (standings.length > 0) {
       console.log(`Первая команда в таблице:`, JSON.stringify(standings[0], null, 2))
     }
@@ -159,12 +159,13 @@ async function getStandings(leagueId: string, seasonId: string): Promise<Standin
         const lost = parseInt(team.lost) || 0
         const goalsFor = parseInt(team.goals_scored) || 0
         const goalsAgainst = parseInt(team.goals_conceded) || 0
-        const goalDiff = parseInt(team.goal_diff) || (goalsFor - goalsAgainst)
+        const goalDiff = parseInt(team.goal_diff) || goalsFor - goalsAgainst
         const points = parseInt(team.points) || 0
-        const form = team.form && typeof team.form === 'string' ? team.form.split('').slice(-5) : undefined
-        
+        const form =
+          team.form && typeof team.form === 'string' ? team.form.split('').slice(-5) : undefined
+
         console.log(`Команда ${teamName}: позиция=${position}, очки=${points}, форма=${team.form}`)
-        
+
         return {
           position,
           team: {

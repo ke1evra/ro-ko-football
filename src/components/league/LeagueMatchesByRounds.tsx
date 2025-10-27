@@ -3,10 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, Clock, Trophy, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
-import {
-  getMatchesHistoryJson,
-  getFixturesMatchesJson,
-} from '@/app/(frontend)/client'
+import { getMatchesHistoryJson, getFixturesMatchesJson } from '@/app/(frontend)/client'
 import { TeamLogo } from '@/components/TeamLogo'
 
 interface Match {
@@ -73,8 +70,9 @@ async function getLeagueMatches(leagueId: string): Promise<Match[]> {
       const end = seasonEnd
       let page = 1
       let hasNext = true
-      
-      while (hasNext && page <= 5) { // Ограничиваем количество страниц
+
+      while (hasNext && page <= 5) {
+        // Ограничиваем количество страниц
         const resp = await getFixturesMatchesJson(
           { competition_id: String(leagueId), from: start, to: end, size: 50, page },
           { next: { revalidate: 300 } },
@@ -178,26 +176,51 @@ function getStatusBadge(status: string) {
   switch (status.toLowerCase()) {
     case 'finished':
     case 'ft':
-      return <Badge variant="secondary" className="text-xs">Завершен</Badge>
+      return (
+        <Badge variant="secondary" className="text-xs">
+          Завершен
+        </Badge>
+      )
     case 'live':
     case 'ht':
-      return <Badge variant="destructive" className="text-xs">Live</Badge>
+      return (
+        <Badge variant="destructive" className="text-xs">
+          Live
+        </Badge>
+      )
     case 'scheduled':
     case 'ns':
-      return <Badge variant="outline" className="text-xs">Запланирован</Badge>
+      return (
+        <Badge variant="outline" className="text-xs">
+          Запланирован
+        </Badge>
+      )
     case 'postponed':
-      return <Badge variant="secondary" className="text-xs">Отложен</Badge>
+      return (
+        <Badge variant="secondary" className="text-xs">
+          Отложен
+        </Badge>
+      )
     case 'cancelled':
-      return <Badge variant="secondary" className="text-xs">Отменен</Badge>
+      return (
+        <Badge variant="secondary" className="text-xs">
+          Отменен
+        </Badge>
+      )
     default:
-      return <Badge variant="outline" className="text-xs">{status}</Badge>
+      return (
+        <Badge variant="outline" className="text-xs">
+          {status}
+        </Badge>
+      )
   }
 }
 
 function MatchCard({ match }: { match: Match }) {
   const played = isPlayed(match)
-  const isScheduled = match.status.toLowerCase() === 'scheduled' || match.status.toLowerCase() === 'ns'
-  
+  const isScheduled =
+    match.status.toLowerCase() === 'scheduled' || match.status.toLowerCase() === 'ns'
+
   // Определяем URL для перехода к матчу
   // Генерируем правильный URL для matches-v2
   const matchUrl = `/matches-v2/match_${match.date}_${match.home_team?.id || 0}_${match.away_team?.id || 0}_${match.id}${played && match.id ? `_${match.id}` : ''}`
@@ -216,7 +239,7 @@ function MatchCard({ match }: { match: Match }) {
             </div>
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <div className="flex items-center gap-1 flex-1 min-w-0 justify-end">
-                <TeamLogo 
+                <TeamLogo
                   teamId={match.home_team.id}
                   teamName={match.home_team.name}
                   size="small"
@@ -238,7 +261,7 @@ function MatchCard({ match }: { match: Match }) {
                 <span className="font-medium text-sm group-hover:text-primary transition-colors truncate">
                   {match.away_team.name}
                 </span>
-                <TeamLogo 
+                <TeamLogo
                   teamId={match.away_team.id}
                   teamName={match.away_team.name}
                   size="small"
@@ -251,24 +274,21 @@ function MatchCard({ match }: { match: Match }) {
           </div>
         </div>
       </Link>
-      
-
     </div>
   )
 }
 
 function isPlayed(m: Match): boolean {
-  if (m.score && (typeof m.score.home === 'number' || typeof m.score.away === 'number'))
-    return true
+  if (m.score && (typeof m.score.home === 'number' || typeof m.score.away === 'number')) return true
   const s = (m.status || '').toLowerCase()
   return s === 'finished' || s === 'ft'
 }
 
-export default async function LeagueMatchesByRounds({ 
-  leagueId, 
+export default async function LeagueMatchesByRounds({
+  leagueId,
   className = '',
   maxRounds = 3,
-  showViewAllButton = true
+  showViewAllButton = true,
 }: LeagueMatchesByRoundsProps) {
   const matches = await getLeagueMatches(leagueId)
 
@@ -282,9 +302,7 @@ export default async function LeagueMatchesByRounds({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            Матчи не найдены
-          </div>
+          <div className="text-center py-8 text-muted-foreground">Матчи не найдены</div>
         </CardContent>
       </Card>
     )

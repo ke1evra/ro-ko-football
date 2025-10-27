@@ -20,20 +20,20 @@ interface SeasonSelectorProps {
   className?: string
 }
 
-export default function SeasonSelector({ 
-  seasons, 
-  currentSeasonId, 
-  onSeasonChange, 
-  className = '' 
+export default function SeasonSelector({
+  seasons,
+  currentSeasonId,
+  onSeasonChange,
+  className = '',
 }: SeasonSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
-  
-  const currentSeason = seasons.find(s => s.id === currentSeasonId) || seasons[0]
-  
+
+  const currentSeason = seasons.find((s) => s.id === currentSeasonId) || seasons[0]
+
   if (seasons.length === 0) {
     return null
   }
-  
+
   if (seasons.length === 1) {
     return (
       <Card className={className}>
@@ -42,14 +42,16 @@ export default function SeasonSelector({
             <Calendar className="w-4 h-4 text-muted-foreground" />
             <span className="font-medium">{currentSeason?.name}</span>
             {currentSeason?.is_current && (
-              <Badge variant="default" className="text-xs">Текущий</Badge>
+              <Badge variant="default" className="text-xs">
+                Текущий
+              </Badge>
             )}
           </div>
         </CardContent>
       </Card>
     )
   }
-  
+
   return (
     <Card className={className}>
       <CardContent className="p-4">
@@ -63,12 +65,14 @@ export default function SeasonSelector({
               <Calendar className="w-4 h-4" />
               <span>{currentSeason?.name}</span>
               {currentSeason?.is_current && (
-                <Badge variant="default" className="text-xs">Текущий</Badge>
+                <Badge variant="default" className="text-xs">
+                  Текущий
+                </Badge>
               )}
             </div>
             <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
           </Button>
-          
+
           {isOpen && (
             <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-background border rounded-md shadow-lg">
               <div className="py-1 max-h-60 overflow-y-auto">
@@ -90,7 +94,9 @@ export default function SeasonSelector({
                       )}
                     </div>
                     {season.is_current && (
-                      <Badge variant="default" className="text-xs">Текущий</Badge>
+                      <Badge variant="default" className="text-xs">
+                        Текущий
+                      </Badge>
                     )}
                   </button>
                 ))}

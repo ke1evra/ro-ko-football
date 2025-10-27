@@ -28,10 +28,12 @@ export const PredictionStats: CollectionConfig = {
       type: 'text',
       admin: { hidden: true },
       hooks: {
-        beforeChange: [({ data }) => {
-          const base = data?.post ? `Статистика прогноза` : 'Статистика прогноза'
-          return base
-        }],
+        beforeChange: [
+          ({ data }) => {
+            const base = data?.post ? `Статистика прогноза` : 'Статистика прогноза'
+            return base
+          },
+        ],
       },
     },
     {
@@ -83,9 +85,17 @@ export const PredictionStats: CollectionConfig = {
         { name: 'total', type: 'number', admin: { description: 'Всего событий' } },
         { name: 'won', type: 'number', admin: { description: 'Выиграло' } },
         { name: 'lost', type: 'number', admin: { description: 'Проиграло' } },
-        { name: 'undecided', type: 'number', admin: { description: 'Не определено (нет данных/матч не окончен)' } },
+        {
+          name: 'undecided',
+          type: 'number',
+          admin: { description: 'Не определено (нет данных/матч не окончен)' },
+        },
         { name: 'hitRate', type: 'number', admin: { description: 'Процент попаданий (0..1)' } },
-        { name: 'roi', type: 'number', admin: { description: 'ROI по коэффициентам (если заданы), например 0.12 = +12%' } },
+        {
+          name: 'roi',
+          type: 'number',
+          admin: { description: 'ROI по коэффициентам (если заданы), например 0.12 = +12%' },
+        },
       ],
     },
     // Детализация по каждому событию
@@ -94,8 +104,17 @@ export const PredictionStats: CollectionConfig = {
       type: 'array',
       admin: { description: 'Результаты по отдельным событиям' },
       fields: [
-        { name: 'event', type: 'text', required: true, admin: { description: 'Строка события (например, "ТБ 2.5", "УГ ТМ 9.5")' } },
-        { name: 'coefficient', type: 'number', admin: { description: 'Коэффициент (если есть)', position: 'sidebar' } },
+        {
+          name: 'event',
+          type: 'text',
+          required: true,
+          admin: { description: 'Строка события (например, "ТБ 2.5", "УГ ТМ 9.5")' },
+        },
+        {
+          name: 'coefficient',
+          type: 'number',
+          admin: { description: 'Коэффициент (если есть)', position: 'sidebar' },
+        },
         {
           name: 'result',
           type: 'select',

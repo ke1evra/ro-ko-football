@@ -11,7 +11,7 @@ export async function getTopMatchesLeagues() {
       slug: 'topMatchesLeagues',
       depth: 2, // Загружаем связанные лиги
     })
-    
+
     return data
   } catch (error) {
     console.error('Ошибка при получении настроек топ матчей:', error)
@@ -29,7 +29,7 @@ export async function getSidebarLeagues() {
       slug: 'sidebarLeagues',
       depth: 2, // Загружаем связанные лиги
     })
-    
+
     return data
   } catch (error) {
     console.error('Ошибка при получении настроек сайдбара:', error)
@@ -42,11 +42,11 @@ export async function getSidebarLeagues() {
  */
 export async function getFilteredTopMatchesLeagues() {
   const settings = await getTopMatchesLeagues()
-  
+
   if (!settings?.enabled || !settings?.leagues) {
     return []
   }
-  
+
   return settings.leagues
     .filter((item: any) => item.enabled && item.league)
     .sort((a: any, b: any) => (a.priority || 999) - (b.priority || 999))
@@ -62,11 +62,11 @@ export async function getFilteredTopMatchesLeagues() {
  */
 export async function getFilteredSidebarLeagues() {
   const settings = await getSidebarLeagues()
-  
+
   if (!settings?.enabled || !settings?.leagues) {
     return []
   }
-  
+
   return settings.leagues
     .filter((item: any) => item.enabled && item.league)
     .sort((a: any, b: any) => (a.priority || 999) - (b.priority || 999))
@@ -85,17 +85,17 @@ export async function getFilteredSidebarLeagues() {
  */
 export async function getTopMatchesLeagueIds(): Promise<number[]> {
   const settings = await getTopMatchesLeagues()
-  
+
   if (!settings?.enabled || !settings?.leagues) {
     return []
   }
-  
+
   const ids = settings.leagues
     .filter((item: any) => item.enabled && item.league && item.league.competitionId)
     .sort((a: any, b: any) => (a.priority || 999) - (b.priority || 999))
     .map((item: any) => item.league.competitionId)
     .filter((id: any) => typeof id === 'number')
-  
+
   console.log('[LEAGUES] getTopMatchesLeagueIds result:', ids)
   return ids
 }
@@ -115,11 +115,11 @@ export async function getSidebarLeagueIds(): Promise<number[]> {
  */
 export async function getSidebarLeaguesForWidget() {
   const settings = await getSidebarLeagues()
-  
+
   if (!settings?.enabled || !settings?.leagues) {
     return null
   }
-  
+
   // Преобразуем данные в формат для виджета
   const leagues = settings.leagues
     .filter((item: any) => item.enabled && item.league)
@@ -139,7 +139,7 @@ export async function getSidebarLeaguesForWidget() {
       isActive: item.league.active,
       matchCount: 0, // TODO: Можно добавить подсчёт матчей
     }))
-  
+
   return {
     enabled: settings.enabled,
     title: settings.title || 'Лиги',

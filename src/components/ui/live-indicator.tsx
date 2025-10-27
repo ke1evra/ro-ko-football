@@ -15,25 +15,14 @@ export function LiveIndicator({ className, size = 'medium' }: LiveIndicatorProps
   return (
     <div className={cn('relative flex items-center justify-center', className)}>
       {/* Основная точка */}
-      <div
-        className={cn(
-          'bg-red-500 rounded-full',
-          sizeClasses[size],
-          'animate-pulse'
-        )}
-      />
-      
+      <div className={cn('bg-red-500 rounded-full', sizeClasses[size], 'animate-pulse')} />
+
       {/* Пульсирующие кольца */}
-      <div
-        className={cn(
-          'absolute bg-red-500/30 rounded-full animate-ping',
-          sizeClasses[size]
-        )}
-      />
+      <div className={cn('absolute bg-red-500/30 rounded-full animate-ping', sizeClasses[size])} />
       <div
         className={cn(
           'absolute bg-red-500/20 rounded-full animate-ping',
-          size === 'small' ? 'w-3 h-3' : size === 'large' ? 'w-6 h-6' : 'w-4 h-4'
+          size === 'small' ? 'w-3 h-3' : size === 'large' ? 'w-6 h-6' : 'w-4 h-4',
         )}
         style={{ animationDelay: '0.5s' }}
       />

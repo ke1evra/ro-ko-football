@@ -12,7 +12,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { AlertCircle, Info, Table as TableIcon } from 'lucide-react'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
+import { AlertCircle, Info, Table as TableIcon, BarChart3, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
+import { generateMatchUrl } from '@/lib/match-url-utils'
 
 type TeamSide = 'home' | 'away'
 
@@ -21,18 +24,44 @@ interface TeamInfo {
   name: string
 }
 
+interface MatchStatsData {
+  possession?: { home: number; away: number }
+  shots?: { home: number; away: number }
+  shotsOnTarget?: { home: number; away: number }
+  shotsOffTarget?: { home: number; away: number }
+  shotsBlocked?: { home: number; away: number }
+  corners?: { home: number; away: number }
+  offsides?: { home: number; away: number }
+  fouls?: { home: number; away: number }
+  yellowCards?: { home: number; away: number }
+  redCards?: { home: number; away: number }
+  saves?: { home: number; away: number }
+  passes?: { home: number; away: number }
+  passesAccurate?: { home: number; away: number }
+  passAccuracy?: { home: number; away: number }
+  attacks?: { home: number; away: number }
+  dangerousAttacks?: { home: number; away: number }
+}
+
 interface MatchRow {
   id: string
+  matchId: string
+  fixtureId: string
   date: string
   competition?: string
   season?: string
   round?: string
   homeName: string
   awayName: string
+  homeTeamId: number
+  awayTeamId: number
+  homeScore: number
+  awayScore: number
   gf: number
   ga: number
   total: number
   result: 'W' | 'D' | 'L'
+  stats?: MatchStatsData
 }
 
 interface ComparativeTeamAnalysisProps {
@@ -76,6 +105,8 @@ function normalizeRows(rows: unknown[]): MatchRow[] {
     const match = m as Record<string, unknown>
     const gf = (match.gf as number) ?? 0
     const ga = (match.ga as number) ?? 0
+    const homeScore = (match.homeScore as number) ?? 0
+    const awayScore = (match.awayScore as number) ?? 0
     const result = (match.result as 'W' | 'D' | 'L') ?? 'D'
     const season: string | undefined =
       ((match.season as Record<string, unknown>)?.name as string) ??
@@ -84,16 +115,23 @@ function normalizeRows(rows: unknown[]): MatchRow[] {
 
     return {
       id: String(match.id ?? match.matchId ?? ''),
+      matchId: String(match.matchId ?? ''),
+      fixtureId: String(match.fixtureId ?? ''),
       date: String(match.date ?? ''),
       competition: (match.competition as string) ?? undefined,
       season,
       round: (match.round as string) ?? undefined,
       homeName: (match.homeName as string) ?? '—',
       awayName: (match.awayName as string) ?? '—',
+      homeTeamId: (match.homeTeamId as number) ?? 0,
+      awayTeamId: (match.awayTeamId as number) ?? 0,
+      homeScore,
+      awayScore,
       gf,
       ga,
       total: gf + ga,
       result,
+      stats: match.stats,
     }
   })
 }
@@ -137,6 +175,158 @@ function ResultPill({ res }: { res: 'W' | 'D' | 'L' }): JSX.Element {
     <span className={`inline-block px-1.5 py-0.5 text-[10px] font-medium rounded ${map[res]}`}>
       {label[res]}
     </span>
+  )
+}
+
+// Карта а��иасов и порядок метрик для упорядочивания статистики
+const ORDERED_STATS_KEYS: string[] = [
+  // Сводка
+  'possession',
+  'shots',
+  'shotsOnTarget',
+  'bigChances',
+  'corners',
+  'passes',
+  'yellowCards',
+  // Детализация
+  'shotsOffTarget',
+  'shotsBlocked',
+  'shotsInsideBox',
+  'shotsOutsideBox',
+  'hitWoodwork',
+  'goals',
+  'offsides',
+  'freeKicks',
+  'longPasses',
+  'finalThirdPasses',
+  'crosses',
+  'xa',
+  'throwIns',
+  'fouls',
+  'tackles',
+  'duelsWon',
+  'clearances',
+  'interceptions',
+  'errorsLeadingToShot',
+  'errorsLeadingToGoal',
+  'saves',
+  'xgotAfterShotsOnTarget',
+  'goalsPrevented',
+]
+
+// Утилита для русскоязычных названий статистики
+const getStatsLabel = (key: string): string => {
+  const statsLabels: Record<string, string> = {
+    possession: 'Владение мячом',
+    shots: 'Удары',
+    shotsOnTarget: 'Удары в створ',
+    shotsOffTarget: 'Удары мимо',
+    shotsBlocked: 'Заблокированные удары',
+    shotsInsideBox: 'Удары из штрафной',
+    shotsOutsideBox: 'Удары за штрафной',
+    hitWoodwork: 'Попадание в штангу',
+    goals: 'Голы',
+    bigChances: 'Голевые моменты',
+    corners: 'Угловые',
+    offsides: 'Офсайды',
+    freeKicks: 'Штрафные',
+    longPasses: 'Длинные передачи',
+    finalThirdPasses: 'Передачи в последней трети',
+    crosses: 'Навесы',
+    xa: 'Ожидаемые ассисты',
+    throwIns: 'Вбрасывания',
+    fouls: 'Фолы',
+    tackles: 'Отборы',
+    duelsWon: 'Выиграно дуэлей',
+    clearances: 'Выносы',
+    interceptions: 'Перехваты',
+    errorsLeadingToShot: 'Ошибки, приведшие к удару',
+    errorsLeadingToGoal: 'Ошибки, приведшие к голу',
+    yellowCards: 'Жёлтые карточки',
+    redCards: 'Красные карточки',
+    saves: 'Сэйвы',
+    passes: 'Передачи',
+    passesAccurate: 'Точные передачи',
+    passAccuracy: 'Точность передач (%)',
+    attacks: 'Атаки',
+    dangerousAttacks: 'Опасные атаки',
+    xgotAfterShotsOnTarget: 'xGOT после ударов в створ',
+    goalsPrevented: 'Предотвращённые голы',
+  }
+  return statsLabels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+}
+
+function MiniStatsPopover({ stats }: { stats?: MatchStatsData }): JSX.Element {
+  if (!stats) {
+    return (
+      <HoverCard>
+        <HoverCardTrigger asChild>
+          <button className="p-1 hover:bg-muted rounded">
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-80">
+          <p className="text-sm text-muted-foreground">Статистика недоступна</p>
+        </HoverCardContent>
+      </HoverCard>
+    )
+  }
+
+  // Получить все ключи из stats, отсортировать по ORDERED_STATS_KEYS
+  const allKeys = Object.keys(stats)
+  const sortedKeys = ORDERED_STATS_KEYS.filter((key) => allKeys.includes(key)).concat(
+    allKeys.filter((key) => !ORDERED_STATS_KEYS.includes(key)),
+  )
+
+  if (sortedKeys.length === 0) {
+    return (
+      <HoverCard>
+        <HoverCardTrigger asChild>
+          <button className="p-1 hover:bg-muted rounded">
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-80">
+          <p className="text-sm text-muted-foreground">Статистика недоступна</p>
+        </HoverCardContent>
+      </HoverCard>
+    )
+  }
+
+  return (
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <button className="p-1 hover:bg-muted rounded">
+          <BarChart3 className="h-4 w-4 text-muted-foreground" />
+        </button>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-80 max-h-96 overflow-y-auto">
+        <div className="space-y-2">
+          <h4 className="font-semibold text-sm">Статистика матча</h4>
+          {sortedKeys.map((key) => {
+            const val = stats[key as keyof MatchStatsData]
+            if (
+              val &&
+              typeof val === 'object' &&
+              'home' in val &&
+              'away' in val &&
+              typeof val.home === 'number' &&
+              typeof val.away === 'number'
+            ) {
+              return (
+                <div key={key} className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">{getStatsLabel(key)}</span>
+                  <span className="font-semibold">
+                    {val.home} - {val.away}
+                  </span>
+                </div>
+              )
+            }
+            return null
+          })}
+        </div>
+      </HoverCardContent>
+    </HoverCard>
   )
 }
 
@@ -200,6 +390,21 @@ export default function ComparativeTeamAnalysis({
       if (next.has(id)) next.delete(id)
       else next.add(id)
       return { ...prev, [side]: next }
+    })
+  }
+
+  function toggleAll(side: TeamSide, rows: MatchRow[]) {
+    setSelectedIds((prev) => {
+      const allIds = new Set(rows.map((r) => r.id))
+      const current = prev[side]
+      const isAllSelected = rows.every((r) => current.has(r.id))
+      if (isAllSelected) {
+        // Deselect all
+        return { ...prev, [side]: new Set() }
+      } else {
+        // Select all
+        return { ...prev, [side]: allIds }
+      }
     })
   }
 
@@ -408,7 +613,14 @@ export default function ComparativeTeamAnalysis({
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead className="w-12 text-center">✓</TableHead>
+                  <TableHead className="w-12 text-center">
+                    <input
+                      type="checkbox"
+                      className="accent-primary cursor-pointer"
+                      checked={rows.length > 0 && rows.every((r) => selectedIds[side].has(r.id))}
+                      onChange={() => toggleAll(side, rows)}
+                    />
+                  </TableHead>
                   <TableHead>Дата</TableHead>
                   <TableHead>Хозяева</TableHead>
                   <TableHead className="text-center">ИТ1</TableHead>
@@ -416,12 +628,13 @@ export default function ComparativeTeamAnalysis({
                   <TableHead>Гости</TableHead>
                   <TableHead className="text-center">Т</TableHead>
                   <TableHead className="text-center">Рез.</TableHead>
+                  <TableHead className="w-20 text-center">Действия</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground py-6">
+                    <TableCell colSpan={10} className="text-center text-muted-foreground py-6">
                       Нет данных
                     </TableCell>
                   </TableRow>
@@ -452,8 +665,12 @@ export default function ComparativeTeamAnalysis({
                           })}
                         </TableCell>
                         <TableCell className="truncate text-xs">{r.homeName}</TableCell>
-                        <TableCell className="text-center font-semibold text-xs">{r.gf}</TableCell>
-                        <TableCell className="text-center font-semibold text-xs">{r.ga}</TableCell>
+                        <TableCell className="text-center font-semibold text-xs">
+                          {r.homeScore}
+                        </TableCell>
+                        <TableCell className="text-center font-semibold text-xs">
+                          {r.awayScore}
+                        </TableCell>
                         <TableCell className="truncate text-xs">{r.awayName}</TableCell>
                         <TableCell className="text-center font-semibold text-xs">
                           {r.total}
@@ -464,6 +681,25 @@ export default function ComparativeTeamAnalysis({
                             <span className="font-semibold text-xs">
                               {r.gf}:{r.ga}
                             </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center gap-1">
+                            <MiniStatsPopover stats={r.stats} />
+                            <Link
+                              href={generateMatchUrl({
+                                homeTeamName: r.homeName,
+                                awayTeamName: r.awayName,
+                                date: r.date,
+                                homeTeamId: r.homeTeamId,
+                                awayTeamId: r.awayTeamId,
+                                fixtureId: r.fixtureId,
+                                matchId: r.matchId,
+                              })}
+                              className="p-1 hover:bg-muted rounded inline-block"
+                            >
+                              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                            </Link>
                           </div>
                         </TableCell>
                       </TableRow>

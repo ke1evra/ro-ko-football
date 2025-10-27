@@ -76,10 +76,7 @@ export async function GET(request: NextRequest) {
     if (error && typeof error === 'object' && 'status' in error) {
       const status = Number(error.status) || 500
       const message = error?.data?.message || error?.statusText || 'Ошибка сервера'
-      return NextResponse.json(
-        { success: false, message },
-        { status },
-      )
+      return NextResponse.json({ success: false, message }, { status })
     }
 
     if (error instanceof Error && error.name === 'AbortError') {
@@ -90,7 +87,10 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: false, message: error instanceof Error ? error.message : 'Неизвестная ошибка сервера' },
+      {
+        success: false,
+        message: error instanceof Error ? error.message : 'Неизвестная ошибка сервера',
+      },
       { status: 500 },
     )
   }

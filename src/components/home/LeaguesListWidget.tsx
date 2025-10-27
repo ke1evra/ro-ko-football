@@ -43,13 +43,13 @@ interface LeaguesListWidgetProps {
   className?: string
 }
 
-function LeagueListItem({ 
-  league, 
-  showFlags, 
-  showTiers, 
-  compactMode, 
-  showLogos 
-}: { 
+function LeagueListItem({
+  league,
+  showFlags,
+  showTiers,
+  compactMode,
+  showLogos,
+}: {
   league: LeagueItem
   showFlags: boolean
   showTiers: boolean
@@ -57,7 +57,7 @@ function LeagueListItem({
   showLogos: boolean
 }) {
   const displayName = league.customName || league.displayName || league.name
-  
+
   return (
     <Link
       href={`/leagues/${league.competitionId}`}
@@ -65,33 +65,35 @@ function LeagueListItem({
         flex items-center gap-2 p-2 rounded-lg hover:bg-accent transition-colors
         ${compactMode ? 'py-1' : 'py-2'}
       `}
-      style={league.highlightColor ? { borderLeft: `3px solid ${league.highlightColor}` } : undefined}
+      style={
+        league.highlightColor ? { borderLeft: `3px solid ${league.highlightColor}` } : undefined
+      }
     >
       {/* Флаг страны */}
       {showFlags && (
         <div className="flex-shrink-0">
-          <CountryFlagImage 
+          <CountryFlagImage
             countryId={league.countryId}
-            countryName={league.countryName || 'Международная'} 
+            countryName={league.countryName || 'Международная'}
             size="small"
             className="w-4 h-3 rounded-sm"
           />
         </div>
       )}
-      
+
       {/* Логотип лиги (заглушка) */}
       {showLogos && (
         <div className="flex-shrink-0 w-5 h-5 bg-muted rounded-full flex items-center justify-center">
           <Trophy className="w-3 h-3 text-muted-foreground" />
         </div>
       )}
-      
+
       {/* Название лиги */}
       <div className="flex-1 min-w-0">
         <div className={`font-medium truncate ${compactMode ? 'text-sm' : 'text-sm'}`}>
           {displayName}
         </div>
-        
+
         {/* Уровень лиги */}
         {showTiers && league.tier && (
           <div className="text-xs text-muted-foreground">
@@ -99,7 +101,7 @@ function LeagueListItem({
           </div>
         )}
       </div>
-      
+
       {/* Количество матчей */}
       {league.showMatchCount && league.matchCount !== undefined && (
         <Badge variant="secondary" className="text-xs">
@@ -110,12 +112,12 @@ function LeagueListItem({
   )
 }
 
-function GroupedLeaguesList({ 
-  leagues, 
-  showFlags, 
-  showTiers, 
-  compactMode, 
-  showLogos 
+function GroupedLeaguesList({
+  leagues,
+  showFlags,
+  showTiers,
+  compactMode,
+  showLogos,
 }: {
   leagues: LeagueItem[]
   showFlags: boolean
@@ -126,46 +128,44 @@ function GroupedLeaguesList({
   // Группируем лиги по странам
   const groupedLeagues = React.useMemo(() => {
     const groups = new Map<string, { countryId?: number; leagues: LeagueItem[] }>()
-    
-    leagues.forEach(league => {
+
+    leagues.forEach((league) => {
       const country = league.countryName || 'Международные'
       if (!groups.has(country)) {
         groups.set(country, { countryId: league.countryId, leagues: [] })
       }
       groups.get(country)!.leagues.push(league)
     })
-    
+
     // Сортируем страны и лиги внутри каждой страны
     return Array.from(groups.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([country, { countryId, leagues: countryLeagues }]) => ({
         country,
         countryId,
-        leagues: countryLeagues.sort((a, b) => a.priority - b.priority)
+        leagues: countryLeagues.sort((a, b) => a.priority - b.priority),
       }))
   }, [leagues])
-  
+
   return (
     <div className="space-y-4">
       {groupedLeagues.map(({ country, countryId, leagues: countryLeagues }) => (
         <div key={country}>
           <div className="flex items-center gap-2 mb-2 px-2">
             {showFlags && (
-              <CountryFlagImage 
+              <CountryFlagImage
                 countryId={countryId}
-                countryName={country} 
+                countryName={country}
                 size="small"
                 className="w-4 h-3 rounded-sm"
               />
             )}
-            <h4 className="text-sm font-semibold text-muted-foreground">
-              {country}
-            </h4>
+            <h4 className="text-sm font-semibold text-muted-foreground">{country}</h4>
             <div className="flex-1 h-px bg-border" />
           </div>
-          
+
           <div className="space-y-1">
-            {countryLeagues.map(league => (
+            {countryLeagues.map((league) => (
               <LeagueListItem
                 key={league.id}
                 league={league}
@@ -191,11 +191,11 @@ export default function LeaguesListWidget({ settings, className }: LeaguesListWi
       </div>
     )
   }
-  
+
   // Фильтруем и сортируем лиги
   const filteredLeagues = React.useMemo(() => {
     return settings.leagues
-      .filter(league => {
+      .filter((league) => {
         if (!league.enabled) return false
         if (settings.displaySettings.showOnlyActive && !league.isActive) return false
         return true
@@ -203,7 +203,7 @@ export default function LeaguesListWidget({ settings, className }: LeaguesListWi
       .sort((a, b) => a.priority - b.priority)
       .slice(0, settings.maxItems)
   }, [settings])
-  
+
   if (filteredLeagues.length === 0) {
     return (
       <div className={`text-sm text-muted-foreground text-center py-4 ${className}`}>
@@ -211,7 +211,7 @@ export default function LeaguesListWidget({ settings, className }: LeaguesListWi
       </div>
     )
   }
-  
+
   return (
     <div className={className}>
       {/* Заголовок */}
@@ -222,7 +222,7 @@ export default function LeaguesListWidget({ settings, className }: LeaguesListWi
           {filteredLeagues.length}
         </Badge>
       </div>
-      
+
       {/* Список лиг */}
       {settings.groupByCountry ? (
         <GroupedLeaguesList
@@ -234,7 +234,7 @@ export default function LeaguesListWidget({ settings, className }: LeaguesListWi
         />
       ) : (
         <div className="space-y-1">
-          {filteredLeagues.map(league => (
+          {filteredLeagues.map((league) => (
             <LeagueListItem
               key={league.id}
               league={league}
@@ -246,11 +246,11 @@ export default function LeaguesListWidget({ settings, className }: LeaguesListWi
           ))}
         </div>
       )}
-      
+
       {/* Ссылка на все лиги */}
       <div className="mt-4 pt-3 border-t">
-        <Link 
-          href="/leagues" 
+        <Link
+          href="/leagues"
           className="text-sm text-primary hover:underline flex items-center gap-1"
         >
           <Users className="w-4 h-4" />

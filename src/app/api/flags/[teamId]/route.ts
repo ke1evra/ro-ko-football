@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(_request: NextRequest, { params }: { params: Promise<{ teamId: string }> }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ teamId: string }> },
+) {
   try {
     const { teamId } = await params
 

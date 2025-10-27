@@ -31,25 +31,18 @@ interface CompetitionItem {
 }
 
 // Топ страны (фиксированный порядок) - теперь на русском как в CMS
-const HIGHLIGHT_COUNTRY_ORDER_RU = [
-  'Англия',
-  'Италия', 
-  'Испания',
-  'Франция',
-  'Россия',
-  'Германия',
-]
+const HIGHLIGHT_COUNTRY_ORDER_RU = ['Англия', 'Италия', 'Испания', 'Франция', 'Россия', 'Германия']
 
 const HIGHLIGHT_COUNTRIES_RU = new Set(HIGHLIGHT_COUNTRY_ORDER_RU)
 
 // Паттерны для поиска топ-лиг (теперь по русским названиям стран)
 const LEAGUE_PATTERNS: Record<string, RegExp[]> = {
-  'Англия': [/premier\s*league/i, /премьер/i],
-  'Италия': [/serie\s*a/i, /серия\s*a/i],
-  'Испания': [/(la\s*liga|laliga|примера)/i],
-  'Франция': [/(ligue\s*1|лига\s*1)/i],
-  'Россия': [/российская|рпл|rfpl/i],
-  'Германия': [/bundesliga|бундеслига/i],
+  Англия: [/premier\s*league/i, /премьер/i],
+  Италия: [/serie\s*a/i, /серия\s*a/i],
+  Испания: [/(la\s*liga|laliga|примера)/i],
+  Франция: [/(ligue\s*1|лига\s*1)/i],
+  Россия: [/российская|рпл|rfpl/i],
+  Германия: [/bundesliga|бундеслига/i],
 }
 
 function byName(a?: string | null, b?: string | null) {
@@ -64,7 +57,7 @@ function matchByPatterns(name?: string, patterns: RegExp[] = []) {
 async function getSidebarLeagues(): Promise<CompetitionItem[]> {
   try {
     const payload = await getPayload({ config })
-    
+
     // Получаем настройки сайдбара
     const sidebarSettings = await payload.findGlobal({
       slug: 'sidebarLeagues',
@@ -86,11 +79,14 @@ async function getSidebarLeagues(): Promise<CompetitionItem[]> {
     const competitions: CompetitionItem[] = enabledLeagues.map((item: any) => ({
       id: item.league.competitionId,
       name: item.customName || item.league.customName || item.league.name,
-      country: item.league.countryId && item.league.countryName ? {
-        id: item.league.countryId,
-        name: item.league.countryName,
-        flag: null,
-      } : null,
+      country:
+        item.league.countryId && item.league.countryName
+          ? {
+              id: item.league.countryId,
+              name: item.league.countryName,
+              flag: null,
+            }
+          : null,
     }))
 
     return competitions
@@ -112,19 +108,19 @@ async function getCompetitions(
 }> {
   try {
     const payload = await getPayload({ config })
-    
+
     // Строим условия фильтрации
     const where: any = { active: { equals: true } }
-    
+
     if (countryId) {
       where.countryId = { equals: parseInt(countryId) }
     }
-    
+
     if (federationId) {
       where.federations = {
         contains: {
-          id: { equals: parseInt(federationId) }
-        }
+          id: { equals: parseInt(federationId) },
+        },
       }
     }
 
@@ -149,11 +145,14 @@ async function getCompetitions(
     const competitions: CompetitionItem[] = leagues.map((league) => ({
       id: league.competitionId,
       name: league.customName || league.name,
-      country: league.countryId && league.countryName ? {
-        id: league.countryId,
-        name: league.countryName,
-        flag: null, // Флаги пока не храним в CMS
-      } : null,
+      country:
+        league.countryId && league.countryName
+          ? {
+              id: league.countryId,
+              name: league.countryName,
+              flag: null, // Флаги пока не храним в CMS
+            }
+          : null,
     }))
 
     // Получаем название страны и федерации для breadcrumbs
@@ -161,15 +160,17 @@ async function getCompetitions(
     let federationName: string | undefined
 
     if (countryId && competitions.length > 0) {
-      countryName = competitions.find(c => c.country?.id === parseInt(countryId))?.country?.name
+      countryName = competitions.find((c) => c.country?.id === parseInt(countryId))?.country?.name
     }
 
     if (federationId && leagues.length > 0) {
-      const leagueWithFederation = leagues.find(l => 
-        l.federations?.some((f: any) => f.id === parseInt(federationId))
+      const leagueWithFederation = leagues.find((l) =>
+        l.federations?.some((f: any) => f.id === parseInt(federationId)),
       )
       if (leagueWithFederation?.federations) {
-        const federation = leagueWithFederation.federations.find((f: any) => f.id === parseInt(federationId))
+        const federation = leagueWithFederation.federations.find(
+          (f: any) => f.id === parseInt(federationId),
+        )
         federationName = federation?.name
       }
     }
@@ -192,7 +193,7 @@ function selectTopLeagues(competitions: CompetitionItem[]): CompetitionItem[] {
   console.log('=== ОТЛАДКА ВЫБОРА ТОП-ЛИГ ===')
   console.log('Всего соревнований:', competitions.length)
   console.log('Ищем страны:', HIGHLIGHT_COUNTRY_ORDER_RU)
-  
+
   // Показываем примеры соревнований по целевым странам
   const byCountryDebug = new Map<string, CompetitionItem[]>()
   for (const c of competitions) {
@@ -202,10 +203,13 @@ function selectTopLeagues(competitions: CompetitionItem[]): CompetitionItem[] {
       byCountryDebug.get(country)!.push(c)
     }
   }
-  
+
   console.log('Найденные соревнования по целевым странам:')
   for (const [country, comps] of byCountryDebug.entries()) {
-    console.log(`${country}: ${comps.length} соревнований`, comps.slice(0, 5).map(c => c.name))
+    console.log(
+      `${country}: ${comps.length} соревнований`,
+      comps.slice(0, 5).map((c) => c.name),
+    )
   }
 
   // Выбираем по паттернам названий
@@ -213,7 +217,7 @@ function selectTopLeagues(competitions: CompetitionItem[]): CompetitionItem[] {
     const country = (c.country?.name || '').trim()
     if (!HIGHLIGHT_COUNTRIES_RU.has(country)) continue
     if (byCountry.has(country)) continue
-    
+
     const patterns = LEAGUE_PATTERNS[country]
     if (patterns && matchByPatterns(c.name, patterns)) {
       console.log(`✓ Найдена лига по паттерну для ${country}:`, c.name)
@@ -232,10 +236,12 @@ function selectTopLeagues(competitions: CompetitionItem[]): CompetitionItem[] {
     }
   }
 
-  const result = HIGHLIGHT_COUNTRY_ORDER_RU.map((country) => byCountry.get(country)).filter(Boolean) as CompetitionItem[]
+  const result = HIGHLIGHT_COUNTRY_ORDER_RU.map((country) => byCountry.get(country)).filter(
+    Boolean,
+  ) as CompetitionItem[]
   console.log('=== ИТОГОВЫЕ ТОП-ЛИГИ ===')
-  console.log(result.map(c => ({ name: c.name, country: c.country?.name })))
-  
+  console.log(result.map((c) => ({ name: c.name, country: c.country?.name })))
+
   return result
 }
 
@@ -261,19 +267,19 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
   if (!countryId && !federationId) {
     // Объединяем лиги из сайдбара с автоматически выбранными топ-лигами
     const autoTopLeagues = selectTopLeagues(competitions)
-    
+
     // Создаём Set для быстрой проверки дубликатов
-    const sidebarIds = new Set(sidebarLeagues.map(l => l.id))
-    const autoIds = new Set(autoTopLeagues.map(l => l.id))
-    
+    const sidebarIds = new Set(sidebarLeagues.map((l) => l.id))
+    const autoIds = new Set(autoTopLeagues.map((l) => l.id))
+
     // Сначала лиги из сайдбара, затем автоматические (без дубликатов)
     highlight = [
       ...sidebarLeagues,
-      ...autoTopLeagues.filter(league => !sidebarIds.has(league.id))
+      ...autoTopLeagues.filter((league) => !sidebarIds.has(league.id)),
     ]
-    
+
     // Исключаем все топ-лиги из общего списка
-    const allTopIds = new Set(highlight.map(l => l.id))
+    const allTopIds = new Set(highlight.map((l) => l.id))
     rest = competitions.filter((c) => !allTopIds.has(c.id))
   } else {
     // При фильтрации показываем все как обычный список
@@ -369,7 +375,11 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
                   <h2 className="text-xl font-semibold mb-4">Топ лиги</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {highlight.map((competition) => (
-                      <Link key={competition.id} href={`/leagues/${competition.id}`} className="block">
+                      <Link
+                        key={competition.id}
+                        href={`/leagues/${competition.id}`}
+                        className="block"
+                      >
                         <div className="group border rounded-md p-4 flex items-center gap-3 hover:bg-accent transition-colors">
                           <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden">
                             {competition.country?.id ? (

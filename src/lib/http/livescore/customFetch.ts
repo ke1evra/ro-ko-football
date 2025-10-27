@@ -46,7 +46,14 @@ export function createCustomFetch({
       body?: TBody
     } & RequestConfig,
   ): Promise<{ data: TRes; status: number; statusText: string }> {
-    const { method = 'GET', url: configUrl = '', params, body, timeoutMs = 8000, ...restConfig } = config
+    const {
+      method = 'GET',
+      url: configUrl = '',
+      params,
+      body,
+      timeoutMs = 8000,
+      ...restConfig
+    } = config
 
     // Нормализуем базовый URL и путь
     const base = new URL(baseUrl.endsWith('/') ? baseUrl : baseUrl + '/')
@@ -154,7 +161,10 @@ export function createCustomFetch({
         if (!response.ok) {
           lastError = { status: response.status, statusText: response.statusText, data }
           // Повторяем на 408/429/5xx кроме последней попытки
-          if (attempt < maxAttempts && (response.status === 408 || response.status === 429 || response.status >= 500)) {
+          if (
+            attempt < maxAttempts &&
+            (response.status === 408 || response.status === 429 || response.status >= 500)
+          ) {
             await new Promise((r) => setTimeout(r, 200 * attempt))
             continue
           }

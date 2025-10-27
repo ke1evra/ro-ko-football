@@ -27,15 +27,15 @@ interface LeaguesPreviewProps {
   compactMode?: boolean
 }
 
-export function LeaguesPreview({ 
-  leagues, 
-  title, 
+export function LeaguesPreview({
+  leagues,
+  title,
   maxItems = 10,
   showFlags = true,
-  compactMode = false 
+  compactMode = false,
 }: LeaguesPreviewProps) {
   const enabledLeagues = leagues
-    .filter(item => item.enabled && item.league)
+    .filter((item) => item.enabled && item.league)
     .sort((a, b) => (a.priority || 999) - (b.priority || 999))
     .slice(0, maxItems)
 
@@ -53,38 +53,28 @@ export function LeaguesPreview({
       <h3 className="text-lg font-semibold mb-3">{title}</h3>
       <div className="space-y-2">
         {enabledLeagues.map((item, index) => (
-          <div 
+          <div
             key={item.league.id}
             className={`flex items-center justify-between p-2 rounded ${
               compactMode ? 'py-1' : 'py-2'
             } ${item.highlightColor ? 'border-l-4' : 'border-l-2 border-gray-200'}`}
             style={{
-              borderLeftColor: item.highlightColor || '#e5e7eb'
+              borderLeftColor: item.highlightColor || '#e5e7eb',
             }}
           >
             <div className="flex items-center space-x-3">
-              <span className="text-sm text-gray-500 font-mono w-6">
-                {index + 1}.
-              </span>
+              <span className="text-sm text-gray-500 font-mono w-6">{index + 1}.</span>
               {showFlags && item.league.countryName && (
-                <span className="text-sm text-gray-400">
-                  {item.league.countryName}
-                </span>
+                <span className="text-sm text-gray-400">{item.league.countryName}</span>
               )}
               <div className="flex flex-col">
-                <span className="font-medium">
-                  {item.customName || item.league.name}
-                </span>
+                <span className="font-medium">{item.customName || item.league.name}</span>
                 {item.league.countryName && (
-                  <span className="text-xs text-gray-400">
-                    {item.league.countryName}
-                  </span>
+                  <span className="text-xs text-gray-400">{item.league.countryName}</span>
                 )}
               </div>
               {!item.league.active && (
-                <span className="px-2 py-1 text-xs bg-red-100 text-red-600 rounded">
-                  Неактивна
-                </span>
+                <span className="px-2 py-1 text-xs bg-red-100 text-red-600 rounded">Неактивна</span>
               )}
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
@@ -101,7 +91,8 @@ export function LeaguesPreview({
       </div>
       {leagues.length > maxItems && (
         <p className="text-sm text-gray-500 mt-2">
-          Показано {enabledLeagues.length} из {leagues.filter(l => l.enabled).length} включённых лиг
+          Показано {enabledLeagues.length} из {leagues.filter((l) => l.enabled).length} включённых
+          лиг
         </p>
       )}
     </div>

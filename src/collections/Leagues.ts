@@ -39,8 +39,8 @@ export const Leagues: CollectionConfig = {
       type: 'text',
       required: false,
       admin: {
-        description: 'Внешний идентификатор (если отличается от competitionId)'
-      }
+        description: 'Внешний идентификатор (если отличается от competitionId)',
+      },
     },
     {
       name: 'name',
@@ -80,15 +80,15 @@ export const Leagues: CollectionConfig = {
       name: 'countryId',
       type: 'number',
       admin: {
-        description: 'ID страны первого вхождения (если применимо)'
-      }
+        description: 'ID страны первого вхождения (если применимо)',
+      },
     },
     {
       name: 'countryName',
       type: 'text',
       admin: {
-        description: 'Название страны (первое вхождение из списка стран)'
-      }
+        description: 'Название страны (первое вхождение из списка стран)',
+      },
     },
     {
       name: 'isLeague',

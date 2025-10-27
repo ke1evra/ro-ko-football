@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ArrowLeft, AlertCircle, Calendar, Trophy } from 'lucide-react'
 import Link from 'next/link'
-import { getCompetitionsListJson, getSeasonsListJson, getCompetitionsStandingsJson } from '@/app/(frontend)/client'
+import {
+  getCompetitionsListJson,
+  getSeasonsListJson,
+  getCompetitionsStandingsJson,
+} from '@/app/(frontend)/client'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import SeasonStandingsTable from '@/components/league/SeasonStandingsTable'
@@ -49,12 +53,17 @@ interface League {
   national_teams_only?: boolean
 }
 
-async function getLeagueInfo(leagueId: string): Promise<{ league: League | null; availableSeasons: Season[] }> {
+async function getLeagueInfo(
+  leagueId: string,
+): Promise<{ league: League | null; availableSeasons: Season[] }> {
   try {
     console.log(`Поиск лиги с ID: ${leagueId}`)
 
     // Получаем информацию о лиге из списка всех лиг
-    const response = await getCompetitionsListJson({ size: 100 }, { next: { revalidate: 300 }, cache: 'no-store' })
+    const response = await getCompetitionsListJson(
+      { size: 100 },
+      { next: { revalidate: 300 }, cache: 'no-store' },
+    )
 
     // Проверяем различные структуры, но используем типизированный путь data.data.competition
     const competitions = (response.data?.data?.competition || []) as Array<any>
@@ -80,12 +89,14 @@ async function getLeagueInfo(leagueId: string): Promise<{ league: League | null;
               flag: league.countries[0].flag,
             }
           : undefined,
-      season: league.season ? {
-        id: Number(league.season.id),
-        name: league.season.name || 'Текущий сезон',
-        start: league.season.start ? new Date(league.season.start) : undefined,
-        end: league.season.end ? new Date(league.season.end) : undefined,
-      } : undefined,
+      season: league.season
+        ? {
+            id: Number(league.season.id),
+            name: league.season.name || 'Текущий сезон',
+            start: league.season.start ? new Date(league.season.start) : undefined,
+            end: league.season.end ? new Date(league.season.end) : undefined,
+          }
+        : undefined,
       is_league: league.is_league,
       is_cup: league.is_cup,
       tier: league.tier,
@@ -96,10 +107,10 @@ async function getLeagueInfo(leagueId: string): Promise<{ league: League | null;
 
     // Пытаемся найти доступные сезоны, проверяя турнирные таблицы
     let availableSeasons: Season[] = []
-    
+
     try {
       console.log(`Поиск доступных сезонов для лиги ${leagueId}`)
-      
+
       // Получаем общий список сезонов
       const seasonsResponse = await getSeasonsListJson({ next: { revalidate: 300 } })
       const allSeasons = (seasonsResponse.data?.data?.season || []) as Array<{
@@ -108,12 +119,12 @@ async function getLeagueInfo(leagueId: string): Promise<{ league: League | null;
         start?: string | Date
         end?: string | Date
       }>
-      
+
       console.log(`Найдено ${allSeasons.length} общих сезонов`)
-      
+
       // Проверяем последние 10 сезонов на наличие данных
       const recentSeasons = allSeasons
-        .map(s => ({
+        .map((s) => ({
           id: Number(s.id),
           name: s.name || `Сезон ${s.id}`,
           year: extractYearFromSeasonName(s.name),
@@ -122,85 +133,91 @@ async function getLeagueInfo(leagueId: string): Promise<{ league: League | null;
         }))
         .sort((a, b) => (b.year || 0) - (a.year || 0))
         .slice(0, 10)
-      
+
       console.log(`Проверяем ${recentSeasons.length} последних сезонов`)
-      
+
       // Проверяем каждый сезон на наличие турнирной таблицы
       const seasonChecks = await Promise.allSettled(
         recentSeasons.map(async (season) => {
           try {
-            const standingsResponse = await getCompetitionsStandingsJson({
-              competition_id: leagueId,
-              season: season.id,
-              lang: 'ru'
-            }, { 
-              next: { revalidate: 300 },
-              cache: 'no-store'
-            })
-            
+            const standingsResponse = await getCompetitionsStandingsJson(
+              {
+                competition_id: leagueId,
+                season: season.id,
+                lang: 'ru',
+              },
+              {
+                next: { revalidate: 300 },
+                cache: 'no-store',
+              },
+            )
+
             const standings = standingsResponse.data?.data?.table || []
             const hasData = standings.length > 0
-            
-            console.log(`Сезон ${season.name} (ID: ${season.id}): ${hasData ? 'есть данные' : 'нет данных'} (${standings.length} команд)`)
-            
+
+            console.log(
+              `Сезон ${season.name} (ID: ${season.id}): ${hasData ? 'есть данные' : 'нет данных'} (${standings.length} команд)`,
+            )
+
             if (hasData) {
               // Определяем, является ли сезон текущим
               const now = new Date()
               let is_current = false
-              
+
               if (season.start && season.end) {
                 is_current = now >= season.start && now <= season.end
               }
-              
+
               // Если у лиги есть текущий сезон, сравниваем с ним
               if (leagueData.season?.id && Number(season.id) === Number(leagueData.season.id)) {
                 is_current = true
               }
-              
+
               return {
                 ...season,
                 is_current,
-                hasData: true
+                hasData: true,
               }
             }
-            
+
             return null
           } catch (error) {
             console.log(`Ошибка проверки сезона ${season.name}:`, error)
             return null
           }
-        })
+        }),
       )
-      
+
       // Собираем успешные результаты
       availableSeasons = seasonChecks
-        .map(result => result.status === 'fulfilled' ? result.value : null)
+        .map((result) => (result.status === 'fulfilled' ? result.value : null))
         .filter(Boolean) as Season[]
-      
+
       console.log(`Найдено ${availableSeasons.length} доступных сезонов`)
-      
+
       // Если не нашли сезоны, но у лиги есть текущий сезон, добавляем его
       if (availableSeasons.length === 0 && leagueData.season) {
         availableSeasons.push({
           id: leagueData.season.id,
           name: leagueData.season.name,
           year: extractYearFromSeasonName(leagueData.season.name),
-          is_current: true
+          is_current: true,
         })
         console.log(`Добавлен текущий сезон лиги: ${leagueData.season.name}`)
       }
-      
     } catch (error) {
       console.error('Ошибка поиска доступных сезонов:', error)
-      
+
       // Fallback: если есть текущий сезон лиги, используем его
       if (leagueData.season) {
-        availableSeasons = [{
-          id: leagueData.season.id,
-          name: leagueData.season.name,
-          year: extractYearFromSeasonName(leagueData.season.name),
-          is_current: true
-        }]
+        availableSeasons = [
+          {
+            id: leagueData.season.id,
+            name: leagueData.season.name,
+            year: extractYearFromSeasonName(leagueData.season.name),
+            is_current: true,
+          },
+        ]
       }
     }
 
@@ -214,13 +231,13 @@ async function getLeagueInfo(leagueId: string): Promise<{ league: League | null;
 // Вспомогательная функция для извлечения года из названия сезона
 function extractYearFromSeasonName(name?: string): number | undefined {
   if (!name) return undefined
-  
+
   // Ищем год в формате "2023/2024", "2023-2024", "2023"
   const yearMatch = name.match(/(\d{4})/)
   if (yearMatch) {
     return parseInt(yearMatch[1])
   }
-  
+
   return undefined
 }
 
@@ -233,37 +250,40 @@ async function getLeagueSeasons(leagueId: string): Promise<Season[]> {
 async function getLeagueStandings(leagueId: string, seasonId?: number) {
   try {
     console.log(`Загрузка турнирной таблицы для лиги ${leagueId}, сезон ${seasonId}`)
-    
+
     const params: any = {
       competition_id: leagueId,
       include_form: 1,
-      lang: 'ru'
+      lang: 'ru',
     }
-    
+
     if (seasonId) {
       params.season = seasonId
     }
-    
-    const response = await getCompetitionsStandingsJson(params, { 
-      next: { revalidate: 300 }, 
-      cache: 'no-store' 
+
+    const response = await getCompetitionsStandingsJson(params, {
+      next: { revalidate: 300 },
+      cache: 'no-store',
     })
-    
+
     const standings = response.data?.data?.table || []
     const competition = null // Этот endpoint не возвращает competition
-    
+
     console.log(`Получено ${standings.length} команд в турнирной таблице`)
-    console.log(`Структура первой команды:`, standings[0] ? JSON.stringify(standings[0], null, 2) : 'нет данных')
-    
+    console.log(
+      `Структура первой команды:`,
+      standings[0] ? JSON.stringify(standings[0], null, 2) : 'нет данных',
+    )
+
     return {
       standings,
-      competition
+      competition,
     }
   } catch (error) {
     console.error('Ошибка загрузки турнирной таблицы:', error)
     return {
       standings: [],
-      competition: null
+      competition: null,
     }
   }
 }
@@ -273,12 +293,13 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
   const leagueId = resolvedParams.leagueId
 
   const { league, availableSeasons } = await getLeagueInfo(leagueId)
-  
+
   // Получаем турнирную таблицу для текущего сезона
-  const currentSeason = availableSeasons.find(s => s.is_current) || availableSeasons[0] || league?.season
-  const { standings, competition } = currentSeason 
+  const currentSeason =
+    availableSeasons.find((s) => s.is_current) || availableSeasons[0] || league?.season
+  const { standings, competition } = currentSeason
     ? await getLeagueStandings(leagueId, currentSeason.id)
-    : league?.season 
+    : league?.season
       ? await getLeagueStandings(leagueId, league.season.id)
       : { standings: [], competition: null }
 
@@ -340,29 +361,17 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
               {league.country && (
                 <p className="text-muted-foreground text-lg">{league.country.name}</p>
               )}
-              
+
               {/* Дополнительная информация о лиге */}
               <div className="flex flex-wrap gap-2 mt-2">
-                {league.is_league && (
-                  <Badge variant="secondary">Лига</Badge>
-                )}
-                {league.is_cup && (
-                  <Badge variant="secondary">Кубок</Badge>
-                )}
-                {league.tier && (
-                  <Badge variant="outline">Дивизион {league.tier}</Badge>
-                )}
-                {league.has_groups && (
-                  <Badge variant="outline">Групповой этап</Badge>
-                )}
-                {league.national_teams_only && (
-                  <Badge variant="outline">Сборные</Badge>
-                )}
-                {league.active === false && (
-                  <Badge variant="destructive">Архив</Badge>
-                )}
+                {league.is_league && <Badge variant="secondary">Лига</Badge>}
+                {league.is_cup && <Badge variant="secondary">Кубок</Badge>}
+                {league.tier && <Badge variant="outline">Дивизион {league.tier}</Badge>}
+                {league.has_groups && <Badge variant="outline">Групповой этап</Badge>}
+                {league.national_teams_only && <Badge variant="outline">Сборные</Badge>}
+                {league.active === false && <Badge variant="destructive">Архив</Badge>}
               </div>
-              
+
               {/* Информация о текущем сезоне */}
               {league.season && (
                 <div className="mt-3 p-3 bg-muted/50 rounded-lg">
@@ -370,7 +379,8 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
                   <div className="text-lg font-semibold">{league.season.name}</div>
                   {league.season.start && league.season.end && (
                     <div className="text-sm text-muted-foreground">
-                      {league.season.start.toLocaleDateString('ru-RU')} — {league.season.end.toLocaleDateString('ru-RU')}
+                      {league.season.start.toLocaleDateString('ru-RU')} —{' '}
+                      {league.season.end.toLocaleDateString('ru-RU')}
                     </div>
                   )}
                 </div>
@@ -381,7 +391,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
 
         {/* Турнирная таблица текущего сезона */}
         {currentSeason && (
-          <SeasonStandingsTable 
+          <SeasonStandingsTable
             leagueId={leagueId}
             seasonId={currentSeason.id}
             competitionName={league.name}
@@ -391,7 +401,7 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
         )}
 
         {/* Матчи по турам */}
-        <LeagueMatchesByRounds 
+        <LeagueMatchesByRounds
           leagueId={leagueId}
           maxRounds={3}
           showViewAllButton={true}

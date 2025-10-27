@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
@@ -29,9 +29,7 @@ export default function LeaguesGroupedSearch({ items, className }: LeaguesGroupe
 
   const normalized = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return !q
-      ? items
-      : items.filter((it) => it.name.toLowerCase().includes(q))
+    return !q ? items : items.filter((it) => it.name.toLowerCase().includes(q))
   }, [items, query])
 
   const groups = useMemo(() => {
@@ -81,9 +79,11 @@ export default function LeaguesGroupedSearch({ items, className }: LeaguesGroupe
                             countryName={competition.country.name || undefined}
                             size="small"
                             className="w-full h-full object-cover"
-                          />)
-                          : (
-                          <span className="text-xs" aria-hidden>⚽</span>
+                          />
+                        ) : (
+                          <span className="text-xs" aria-hidden>
+                            ⚽
+                          </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">

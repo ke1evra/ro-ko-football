@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(liveUrl, {
       method: 'GET',
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'User-Agent': 'LiveScore-Client/1.0',
       },
       // Добавляем таймаут
@@ -58,11 +58,11 @@ export async function GET(request: NextRequest) {
     if (!response.ok) {
       console.error(`[Live API] HTTP error: ${response.status} ${response.statusText}`)
       return NextResponse.json(
-        { 
-          success: false, 
-          message: `Ошибка API: ${response.status} ${response.statusText}` 
+        {
+          success: false,
+          message: `Ошибка API: ${response.status} ${response.statusText}`,
         },
-        { status: response.status }
+        { status: response.status },
       )
     }
 
@@ -77,17 +77,17 @@ export async function GET(request: NextRequest) {
     if (!data.success) {
       console.error(`[Live API] API вернул ошибку:`, data)
       return NextResponse.json(
-        { 
-          success: false, 
-          message: data.message || 'API вернул ошибку' 
+        {
+          success: false,
+          message: data.message || 'API вернул ошибку',
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     // Нормализуем ответ для совместимости
     const matches = data.data?.match || []
-    
+
     console.log(`[Live API] Возвращаем ${matches.length} матчей`)
 
     return NextResponse.json({
@@ -97,29 +97,28 @@ export async function GET(request: NextRequest) {
         total: matches.length,
         page: 1,
         size: parseInt(size, 10),
-      }
+      },
     })
-
   } catch (error) {
     console.error('[Live API] Ошибка:', error)
-    
+
     if (error instanceof Error) {
       if (error.name === 'AbortError') {
         return NextResponse.json(
           { success: false, message: 'Превышено время ожидания запроса' },
-          { status: 408 }
+          { status: 408 },
         )
       }
-      
+
       return NextResponse.json(
         { success: false, message: `Ошибка сервера: ${error.message}` },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
     return NextResponse.json(
       { success: false, message: 'Неизвестная ошибка сервера' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
