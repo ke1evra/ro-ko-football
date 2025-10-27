@@ -8,9 +8,10 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const teamId = searchParams.get('teamId')
+    const opponentTeamId = searchParams.get('opponentTeamId')
     const limit = Math.min(Number(searchParams.get('limit')) || 10, 50)
 
-    console.log('[Team Matches API] Запрос:', { teamId, limit })
+    console.log('[Team Matches API] Запрос:', { teamId, opponentTeamId, limit })
 
     if (!teamId) {
       return NextResponse.json({ success: false, message: 'teamId обязателен' }, { status: 400 })
@@ -18,20 +19,48 @@ export async function GET(request: NextRequest) {
 
     const payload = await getPayload({ config: await configPromise })
 
-    // Получаем матчи команды (завершённые)
-    const matches = await payload.find({
-      collection: 'matches',
-      where: {
+    // Строим условие для фильтрации
+    let whereCondition: Record<string, unknown> = {
+      and: [
+        {
+          or: [
+            { homeTeamId: { equals: Number(teamId) } },
+            { awayTeamId: { equals: Number(teamId) } },
+          ],
+        },
+        { status: { equals: 'finished' } },
+      ],
+    }
+
+    // Если указан opponentTeamId, фильтруем только матчи между этими двумя командами
+    if (opponentTeamId) {
+      whereCondition = {
         and: [
           {
             or: [
-              { homeTeamId: { equals: Number(teamId) } },
-              { awayTeamId: { equals: Number(teamId) } },
+              {
+                and: [
+                  { homeTeamId: { equals: Number(teamId) } },
+                  { awayTeamId: { equals: Number(opponentTeamId) } },
+                ],
+              },
+              {
+                and: [
+                  { homeTeamId: { equals: Number(opponentTeamId) } },
+                  { awayTeamId: { equals: Number(teamId) } },
+                ],
+              },
             ],
           },
           { status: { equals: 'finished' } },
         ],
-      },
+      }
+    }
+
+    // Получаем матчи команды (завершённые)
+    const matches = await payload.find({
+      collection: 'matches',
+      where: whereCondition,
       sort: '-date',
       limit,
     })
