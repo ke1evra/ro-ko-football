@@ -9,24 +9,23 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const teamId = searchParams.get('teamId')
     const opponentTeamId = searchParams.get('opponentTeamId')
+    const venueFilter = searchParams.get('venueFilter') || 'all'
     const limit = Math.min(Number(searchParams.get('limit')) || 10, 50)
 
-    console.log('[Team Matches API] Запрос:', { teamId, opponentTeamId, limit })
+    console.log('[Team Matches API] Запрос:', { teamId, opponentTeamId, venueFilter, limit })
 
     if (!teamId) {
       return NextResponse.json({ success: false, message: 'teamId обязателен' }, { status: 400 })
     }
 
     const payload = await getPayload({ config: await configPromise })
+    const teamIdNum = Number(teamId)
 
     // Строим условие для фильтрации
     let whereCondition: Record<string, unknown> = {
       and: [
         {
-          or: [
-            { homeTeamId: { equals: Number(teamId) } },
-            { awayTeamId: { equals: Number(teamId) } },
-          ],
+          or: [{ homeTeamId: { equals: teamIdNum } }, { awayTeamId: { equals: teamIdNum } }],
         },
         { status: { equals: 'finished' } },
       ],
@@ -34,20 +33,21 @@ export async function GET(request: NextRequest) {
 
     // Если указан opponentTeamId, фильтруем только матчи между этими двумя командами
     if (opponentTeamId) {
+      const opponentTeamIdNum = Number(opponentTeamId)
       whereCondition = {
         and: [
           {
             or: [
               {
                 and: [
-                  { homeTeamId: { equals: Number(teamId) } },
-                  { awayTeamId: { equals: Number(opponentTeamId) } },
+                  { homeTeamId: { equals: teamIdNum } },
+                  { awayTeamId: { equals: opponentTeamIdNum } },
                 ],
               },
               {
                 and: [
-                  { homeTeamId: { equals: Number(opponentTeamId) } },
-                  { awayTeamId: { equals: Number(teamId) } },
+                  { homeTeamId: { equals: opponentTeamIdNum } },
+                  { awayTeamId: { equals: teamIdNum } },
                 ],
               },
             ],
@@ -57,10 +57,23 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Применяем фильтр по месту проведения (дома/в гостях)
+    if (venueFilter === 'home') {
+      // Показываем только матчи, где команда игр��ет дома
+      whereCondition = {
+        and: [whereCondition, { homeTeamId: { equals: teamIdNum } }],
+      }
+    } else if (venueFilter === 'away') {
+      // Показываем только матчи, где команда играет в гостях
+      whereCondition = {
+        and: [whereCondition, { awayTeamId: { equals: teamIdNum } }],
+      }
+    }
+
     // Получаем матчи команды (завершённые)
     const matches = await payload.find({
       collection: 'matches',
-      where: whereCondition,
+      where: whereCondition as any,
       sort: '-date',
       limit,
     })
@@ -69,7 +82,7 @@ export async function GET(request: NextRequest) {
     console.log('[Team Matches API] Первый матч (RAW):', JSON.stringify(matches.docs[0], null, 2))
 
     // Получаем ID матчей для поиска статистики
-    const matchIds = matches.docs.map((m: Record<string, unknown>) => m.matchId)
+    const matchIds = matches.docs.map((m: any) => m.matchId)
     console.log('[Team Matches API] Match IDs:', matchIds)
 
     // Получаем статистику для этих матчей
@@ -90,10 +103,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Создаём map статистики по matchId
-    const statsMap = new Map(stats.docs.map((s: Record<string, unknown>) => [s.matchId, s]))
+    const statsMap = new Map(stats.docs.map((s: any) => [s.matchId, s]))
 
     // Нормализуем матчи
-    const normalizedMatches = matches.docs.map((m: Record<string, unknown>) => {
+    const normalizedMatches = matches.docs.map((m: any) => {
       const teamIdNum = Number(teamId)
       const homeTeamIdNum = Number(m.homeTeamId)
       const awayTeamIdNum = Number(m.awayTeamId)

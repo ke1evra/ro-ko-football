@@ -187,7 +187,6 @@ export async function GET(
       const historyResp = await getMatchesHistoryJson({
         from: historyStart,
         to: historyEnd,
-        size: 100,
         lang: 'ru',
       })
 

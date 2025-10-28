@@ -16,31 +16,36 @@ import FixturesWidget from '@/components/league/FixturesWidget'
 import RefreshButton from '@/components/league/RefreshButton'
 
 // Конфигурация поддерживаемых лиг
-const LEAGUE_CONFIG: Record<string, { name: string; country: string; description: string }> = {
+const LEAGUE_CONFIG: Record<string, { name: string; country: string; description: string; competitionId: number }> = {
   'premier-league': {
     name: 'Premier League',
     country: 'Англия',
     description: 'Английская Премьер-лига - самая популярная футбольная лига в мире',
+    competitionId: 2,
   },
   'la-liga': {
     name: 'La Liga',
     country: 'Испания',
     description: 'Испанская Ла Лига - домашняя лига для Реал Мадрид и Барселоны',
+    competitionId: 3,
   },
   bundesliga: {
     name: 'Bundesliga',
     country: 'Германия',
     description: 'Немецкая Бундеслига - известна своей атмосферой и молодыми талантами',
+    competitionId: 1,
   },
   'serie-a': {
     name: 'Serie A',
     country: 'Италия',
     description: 'Итальянская Серия А - лига с богатой тактической традицией',
+    competitionId: 4,
   },
   'ligue-1': {
     name: 'Ligue 1',
     country: 'Франция',
     description: 'Французская Лига 1 - развивающаяся лига с большим потенциалом',
+    competitionId: 5,
   },
 }
 
@@ -135,7 +140,7 @@ export default async function LeaguePage({ params, searchParams }: PageProps) {
             </CardHeader>
             <CardContent>
               <Suspense fallback={<StandingsTableSkeleton />}>
-                <StandingsTable league={league} season={season} view={view} round={round} />
+                <StandingsTable competitionId={leagueConfig.competitionId} season={season} view={view} round={round} />
               </Suspense>
             </CardContent>
           </Card>

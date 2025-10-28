@@ -191,8 +191,8 @@ export async function POST(request: NextRequest) {
         post: post.id,
         author: post.author,
         matchId: resolvedMatchId,
-        fixtureId: match.fixtureId || undefined,
-        status: 'settled',
+        fixtureId: Number(match.fixtureId) || undefined,
+        status: 'settled' as const,
         evaluatedAt: new Date().toISOString(),
         summary: {
           total: evalRes.total,
@@ -222,7 +222,7 @@ export async function POST(request: NextRequest) {
 
       results.push({
         postId: post.id,
-        statsId: saved.id,
+        statsId: (saved as any).id,
         summary: doc.summary,
         scoring: doc.scoring,
       })

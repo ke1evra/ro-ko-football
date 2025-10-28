@@ -282,7 +282,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
                       return (
                         <Link
                           key={match.id}
-                          href={`/matches-v2/match_${match.date}_${match.home?.id || 0}_${match.away?.id || 0}_${match.id}_${match.id}`}
+                          href={`/matches-v2/match_${match.date}_${match.home_team?.id || 0}_${match.away_team?.id || 0}_${match.id}_${match.id}`}
                           className="block"
                         >
                           <Card className="hover:shadow-md transition-shadow">

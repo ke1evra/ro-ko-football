@@ -1,4 +1,119 @@
-import type { LiveScoreMatch, LiveScoreMatchStats } from './livescore-client'
+// Временные типы для LiveScore API
+interface LiveScoreTeam {
+  id: number
+  name: string
+}
+
+interface LiveScoreCompetition {
+  id: number
+  name: string
+}
+
+interface LiveScoreSeason {
+  id: number
+  name: string
+  year?: number
+}
+
+interface LiveScoreVenue {
+  name?: string
+  city?: string
+  country?: string
+}
+
+interface LiveScoreWeather {
+  temperature?: number
+  humidity?: number
+  wind_speed?: number
+  condition?: string
+}
+
+interface LiveScoreScores {
+  home_score?: number
+  away_score?: number
+  home_score_halftime?: number
+  away_score_halftime?: number
+  home_score_extra_time?: number
+  away_score_extra_time?: number
+  home_score_penalties?: number
+  away_score_penalties?: number
+}
+
+interface LiveScoreMatch {
+  id: number
+  fixture_id?: number
+  date: string
+  status: string
+  minute?: number
+  period?: string
+  home_team: LiveScoreTeam
+  away_team: LiveScoreTeam
+  competition: LiveScoreCompetition
+  season?: LiveScoreSeason
+  round?: string
+  venue?: LiveScoreVenue
+  referee?: string
+  weather?: LiveScoreWeather
+  scores?: LiveScoreScores
+}
+
+interface LiveScoreMatchStats {
+  match_id: number
+  possession?: { home: number; away: number }
+  shots?: { home: number; away: number }
+  shots_on_target?: { home: number; away: number }
+  shots_off_target?: { home: number; away: number }
+  shots_blocked?: { home: number; away: number }
+  corners?: { home: number; away: number }
+  offsides?: { home: number; away: number }
+  fouls?: { home: number; away: number }
+  yellow_cards?: { home: number; away: number }
+  red_cards?: { home: number; away: number }
+  saves?: { home: number; away: number }
+  passes?: { home: number; away: number }
+  passes_accurate?: { home: number; away: number }
+  pass_accuracy?: { home: number; away: number }
+  attacks?: { home: number; away: number }
+  dangerous_attacks?: { home: number; away: number }
+  events?: Array<{
+    minute: number
+    type: string
+    team: string
+    player?: string
+    assist_player?: string
+    player_out?: string
+    player_in?: string
+    description?: string
+  }>
+  lineups?: {
+    home?: {
+      formation?: string
+      starting_xi?: Array<{
+        number?: number
+        name: string
+        position?: string
+      }>
+      substitutes?: Array<{
+        number?: number
+        name: string
+        position?: string
+      }>
+    }
+    away?: {
+      formation?: string
+      starting_xi?: Array<{
+        number?: number
+        name: string
+        position?: string
+      }>
+      substitutes?: Array<{
+        number?: number
+        name: string
+        position?: string
+      }>
+    }
+  }
+}
 
 /**
  * Преобразует статус матча из API в наш формат
@@ -268,7 +383,7 @@ export function transformMatchStatsData(
 
     // События
     events:
-      apiStats.events?.map((event) => ({
+      apiStats.events?.map((event: any) => ({
         minute: event.minute,
         type: transformEventType(event.type),
         team: event.team,
@@ -286,13 +401,13 @@ export function transformMatchStatsData(
             ? {
                 formation: apiStats.lineups.home.formation || null,
                 startingXI:
-                  apiStats.lineups.home.starting_xi?.map((player) => ({
+                  apiStats.lineups.home.starting_xi?.map((player: any) => ({
                     number: player.number || null,
                     name: player.name,
                     position: player.position || null,
                   })) || [],
                 substitutes:
-                  apiStats.lineups.home.substitutes?.map((player) => ({
+                  apiStats.lineups.home.substitutes?.map((player: any) => ({
                     number: player.number || null,
                     name: player.name,
                     position: player.position || null,
@@ -303,13 +418,13 @@ export function transformMatchStatsData(
             ? {
                 formation: apiStats.lineups.away.formation || null,
                 startingXI:
-                  apiStats.lineups.away.starting_xi?.map((player) => ({
+                  apiStats.lineups.away.starting_xi?.map((player: any) => ({
                     number: player.number || null,
                     name: player.name,
                     position: player.position || null,
                   })) || [],
                 substitutes:
-                  apiStats.lineups.away.substitutes?.map((player) => ({
+                  apiStats.lineups.away.substitutes?.map((player: any) => ({
                     number: player.number || null,
                     name: player.name,
                     position: player.position || null,

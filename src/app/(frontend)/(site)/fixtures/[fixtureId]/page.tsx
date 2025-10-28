@@ -82,8 +82,8 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
     const params: any = {
       size: 100,
       lang: 'ru' as const,
-      from: today.toISOString().split('T')[0],
-      to: endDate.toISOString().split('T')[0],
+      from: today,
+      to: endDate,
     }
 
     // Добавляем фильтр по лигам только если есть приоритетные лиги
@@ -135,8 +135,8 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
       const paramsNoFilter = {
         size: 100,
         lang: 'ru' as const,
-        from: today.toISOString().split('T')[0],
-        to: endDate.toISOString().split('T')[0],
+        from: today,
+        to: endDate,
         // Убираем фильтр по лигам
       }
 
@@ -243,7 +243,6 @@ async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | n
     const historyResp = await getMatchesHistoryJson({
       from: historyStart,
       to: historyEnd,
-      size: 100,
       lang: 'ru',
     })
 

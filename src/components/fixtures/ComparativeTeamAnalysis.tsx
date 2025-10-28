@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -15,7 +15,6 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import {
   AlertCircle,
   Info,
-  Table as TableIcon,
   BarChart3,
   ArrowRight,
   BarChart4,
@@ -175,11 +174,13 @@ async function fetchTeamLastMatches(
   teamId: number,
   limit = 10,
   opponentTeamId?: number,
+  venueFilter: 'all' | 'home' | 'away' = 'all',
 ): Promise<unknown[]> {
   try {
     const query = new URLSearchParams({
       teamId: String(teamId),
       limit: String(limit),
+      venueFilter,
     })
     if (opponentTeamId) {
       query.append('opponentTeamId', String(opponentTeamId))
@@ -475,17 +476,20 @@ export default function ComparativeTeamAnalysis({
           home: home.id,
           away: away.id,
           matchFilter,
+          venueFilter,
         })
         const [hRaw, aRaw] = await Promise.all([
           fetchTeamLastMatches(
             home.id,
             limit,
             matchFilter === 'head-to-head' ? away.id : undefined,
+            venueFilter,
           ),
           fetchTeamLastMatches(
             away.id,
             limit,
             matchFilter === 'head-to-head' ? home.id : undefined,
+            venueFilter,
           ),
         ])
         console.log('[ComparativeTeamAnalysis] Получены матчи:', {
@@ -516,7 +520,7 @@ export default function ComparativeTeamAnalysis({
     return () => {
       aborted = true
     }
-  }, [home.id, home.name, away.id, away.name, limit, matchFilter])
+  }, [home.id, home.name, away.id, away.name, limit, matchFilter, venueFilter])
 
   const filteredHomeRows = useMemo(() => {
     if (matchFilter === 'head-to-head') {
@@ -697,27 +701,14 @@ export default function ComparativeTeamAnalysis({
       }
     }
 
-    // Фильтрация по месту проведения и сортировка по дате
+    // Сортировка матчей по дате (от новых к старым)
     const sortedRows = useMemo(() => {
-      let filtered = rows
-      if (venueFilter === 'home') {
-        // Показываем только матчи, где команда играет дома
-        filtered = rows.filter((r) =>
-          side === 'home' ? r.homeTeamId === home.id : r.homeTeamId === away.id,
-        )
-      } else if (venueFilter === 'away') {
-        // Показываем только матчи, где команда играет в гостях
-        filtered = rows.filter((r) =>
-          side === 'home' ? r.awayTeamId === home.id : r.awayTeamId === away.id,
-        )
-      }
-      // Сортируем по дате (от новых к старым)
-      return [...filtered].sort((a, b) => {
+      return [...rows].sort((a, b) => {
         const aDate = new Date(a.date).getTime()
         const bDate = new Date(b.date).getTime()
         return bDate - aDate
       })
-    }, [rows, venueFilter, side, home.id, away.id]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [rows])
 
     return (
       <Card className="rounded-lg shadow-sm">
@@ -856,80 +847,6 @@ export default function ComparativeTeamAnalysis({
           </div>
         </CardContent>
       </Card>
-    )
-  }
-
-  function SelectedSummary(): JSX.Element {
-    const pick = (side: TeamSide, rows: MatchRow[]) =>
-      rows.filter((r) => selectedIds[side].has(r.id))
-    const sh = pick('home', homeRows)
-    const sa = pick('away', awayRows)
-
-    const agg = (rows: MatchRow[]) => {
-      const gf = rows.reduce((s, r) => s + r.gf, 0)
-      const ga = rows.reduce((s, r) => s + r.ga, 0)
-      const t = rows.reduce((s, r) => s + r.total, 0)
-      return { gf, ga, t, n: rows.length }
-    }
-
-    const ah = agg(sh)
-    const aa = agg(sa)
-
-    return (
-      <div className="mt-6 space-y-3">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-          <TableIcon className="h-4 w-4" />
-          Итоги по выбранным матчам
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="rounded-lg shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold">{home.name}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">ИТ (сумма):</span>
-                <span className="font-semibold">{ah.gf}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">ИТ Кон (сумма):</span>
-                <span className="font-semibold">{ah.ga}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Т (сумма):</span>
-                <span className="font-semibold">{ah.t}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs border-t pt-2">
-                <span className="text-muted-foreground">Выбрано матчей:</span>
-                <span className="font-semibold">{ah.n}</span>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="rounded-lg shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold">{away.name}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">ИТ (сумма):</span>
-                <span className="font-semibold">{aa.gf}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">ИТ Кон (сумма):</span>
-                <span className="font-semibold">{aa.ga}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Т (сумма):</span>
-                <span className="font-semibold">{aa.t}</span>
-              </div>
-              <div className="flex items-center justify-between text-xs border-t pt-2">
-                <span className="text-muted-foreground">Выбрано матчей:</span>
-                <span className="font-semibold">{aa.n}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
     )
   }
 
@@ -1076,7 +993,33 @@ export default function ComparativeTeamAnalysis({
         </CardHeader>
         <CardContent className="p-4">
           {chartType === 'pie' ? (
-            pieChartData[0].value === 0 && pieChartData[1].value === 0
+            pieChartData[0].value === 0 && pieChartData[1].value === 0 ? (
+              <div className="text-center text-sm text-muted-foreground py-8">
+                Нет данных для отображения графика
+              </div>
+            ) : (
+              <div className="w-full h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieChartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: ${value}`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {pieChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            )
           ) : matchChartData.length === 0 ? (
             <div className="text-center text-sm text-muted-foreground py-8">
               Нет данных для отображения графика
@@ -1133,27 +1076,6 @@ export default function ComparativeTeamAnalysis({
                       dot={false}
                     />
                   </LineChart>
-                </ResponsiveContainer>
-              )}
-              {chartType === 'pie' && (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieChartData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, value }) => `${name}: ${value}`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {pieChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip />
-                  </PieChart>
                 </ResponsiveContainer>
               )}
             </div>
@@ -1257,7 +1179,7 @@ export default function ComparativeTeamAnalysis({
               ))}
             </div>
             <div className="flex gap-2">
-              {[10, 20, 30].map((value) => (
+              {[10, 20, 30, 40, 50].map((value) => (
                 <button
                   key={value}
                   onClick={() => setLimit(value)}
@@ -1293,10 +1215,7 @@ export default function ComparativeTeamAnalysis({
             />
           </div>
 
-          {/* 3. Итоги по выбранным матчам */}
-          <SelectedSummary />
-
-          {/* 4. Графики сравнения */}
+          {/* 3. Графики сравнения */}
           <ChartsSection />
         </>
       )}

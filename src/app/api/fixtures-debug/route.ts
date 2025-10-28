@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     console.log('[fixtures-debug] Testing API without filters...')
 
     const res = await getFixturesMatchesJson(
-      { date: 'today', size: 50 },
+      { date: new Date(), size: 50 },
       { cache: 'no-store', next: { revalidate: 0 }, timeoutMs: 10000 },
     )
 
