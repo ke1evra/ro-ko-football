@@ -183,8 +183,8 @@ function MatchCard({ m }: { m: StripMatch }) {
   )
 
   return (
-    <Link href={matchUrl} className="block">
-      <div className="w-full border rounded-lg p-3 bg-card hover:bg-accent transition-colors relative">
+    <Link href={matchUrl} className="block h-full">
+      <div className="w-full border rounded-lg p-3 bg-card hover:bg-accent transition-colors relative h-full">
         <div className="absolute -top-2 left-2 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-medium rounded-full">
           {formatDateLabel(m.date)}
         </div>

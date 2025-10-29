@@ -293,7 +293,7 @@ function ResultPill({ res }: { res: 'W' | 'D' | 'L' }): JSX.Element {
   )
 }
 
-// Карта а��иасов и порядок метрик для упорядочивания статистики
+// Карта алиасов и порядок метрик для упорядочивания статистики
 const ORDERED_STATS_KEYS: string[] = [
   // Сводка
   'possession',

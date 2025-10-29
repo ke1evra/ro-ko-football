@@ -16,9 +16,12 @@ import { Leagues } from './collections/Leagues'
 import { Matches } from './collections/Matches'
 import { MatchStats } from './collections/MatchStats'
 import { PredictionStats } from './collections/PredictionStats'
+import { Markets } from './collections/Markets'
+import { OutcomeGroups } from './collections/OutcomeGroups'
 
 import { TopMatchesLeagues } from './globals/TopMatchesLeagues'
 import { SidebarLeagues } from './globals/SidebarLeagues'
+import { OutcomeManager } from './globals/OutcomeManager'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -40,8 +43,10 @@ export default buildConfig({
     Matches,
     MatchStats,
     PredictionStats,
+    Markets,
+    OutcomeGroups,
   ],
-  globals: [TopMatchesLeagues, SidebarLeagues],
+  globals: [TopMatchesLeagues, SidebarLeagues, OutcomeManager],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

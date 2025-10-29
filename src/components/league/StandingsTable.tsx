@@ -102,7 +102,9 @@ export default async function StandingsTable({
             <CardDescription>Сезон {season}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-muted-foreground">Турнирная таблица недоступна</div>
+            <div className="text-center py-8 text-muted-foreground">
+              Турнирная таблица недоступна
+            </div>
           </CardContent>
         </Card>
       )

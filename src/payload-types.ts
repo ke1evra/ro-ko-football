@@ -76,6 +76,8 @@ export interface Config {
     matches: Match;
     matchStats: MatchStat;
     predictionStats: PredictionStat;
+    'bet-markets': BetMarket;
+    'outcome-groups': OutcomeGroup;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -91,6 +93,8 @@ export interface Config {
     matches: MatchesSelect<false> | MatchesSelect<true>;
     matchStats: MatchStatsSelect<false> | MatchStatsSelect<true>;
     predictionStats: PredictionStatsSelect<false> | PredictionStatsSelect<true>;
+    'bet-markets': BetMarketsSelect<false> | BetMarketsSelect<true>;
+    'outcome-groups': OutcomeGroupsSelect<false> | OutcomeGroupsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -101,10 +105,12 @@ export interface Config {
   globals: {
     topMatchesLeagues: TopMatchesLeague;
     sidebarLeagues: SidebarLeague;
+    'outcome-manager': OutcomeManager;
   };
   globalsSelect: {
     topMatchesLeagues: TopMatchesLeaguesSelect<false> | TopMatchesLeaguesSelect<true>;
     sidebarLeagues: SidebarLeaguesSelect<false> | SidebarLeaguesSelect<true>;
+    'outcome-manager': OutcomeManagerSelect<false> | OutcomeManagerSelect<true>;
   };
   locale: null;
   user: User & {
@@ -1116,6 +1122,60 @@ export interface PredictionStat {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bet-markets".
+ */
+export interface BetMarket {
+  id: string;
+  /**
+   * Название маркета (основные исходы, ЖК, КК, фолы, ауты и т.д.)
+   */
+  name: string;
+  /**
+   * Выберите группы исходов для этого маркета
+   */
+  groups?: (string | OutcomeGroup)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "outcome-groups".
+ */
+export interface OutcomeGroup {
+  id: string;
+  /**
+   * Название группы исходов (тоталы, форы, обе забьют и т.д.)
+   */
+  name: string;
+  /**
+   * Исходы, принадлежащие этой группе. Каждый исход - ��ростая строка.
+   */
+  outcomes?:
+    | {
+        /**
+         * Название исхода
+         */
+        name: string;
+        /**
+         * Значения для этого исхода (например, 1.5, 2.0 для тоталов). Оставьте пустым для исходов без значений.
+         */
+        values?:
+          | {
+              /**
+               * Числовое значение
+               */
+              value: number;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -1156,6 +1216,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'predictionStats';
         value: string | PredictionStat;
+      } | null)
+    | ({
+        relationTo: 'bet-markets';
+        value: string | BetMarket;
+      } | null)
+    | ({
+        relationTo: 'outcome-groups';
+        value: string | OutcomeGroup;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1770,6 +1838,37 @@ export interface PredictionStatsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bet-markets_select".
+ */
+export interface BetMarketsSelect<T extends boolean = true> {
+  name?: T;
+  groups?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "outcome-groups_select".
+ */
+export interface OutcomeGroupsSelect<T extends boolean = true> {
+  name?: T;
+  outcomes?:
+    | T
+    | {
+        name?: T;
+        values?:
+          | T
+          | {
+              value?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents_select".
  */
 export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
@@ -1945,6 +2044,21 @@ export interface SidebarLeague {
   createdAt?: string | null;
 }
 /**
+ * Управление группами исходов и исходами для букмекерских ставок
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "outcome-manager".
+ */
+export interface OutcomeManager {
+  id: string;
+  /**
+   * Описание управления исходами.
+   */
+  description?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "topMatchesLeagues_select".
  */
@@ -2000,6 +2114,16 @@ export interface SidebarLeaguesSelect<T extends boolean = true> {
         compactMode?: T;
         showLogos?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "outcome-manager_select".
+ */
+export interface OutcomeManagerSelect<T extends boolean = true> {
+  description?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

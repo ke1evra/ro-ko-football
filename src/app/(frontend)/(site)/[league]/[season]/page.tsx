@@ -16,7 +16,10 @@ import FixturesWidget from '@/components/league/FixturesWidget'
 import RefreshButton from '@/components/league/RefreshButton'
 
 // Конфигурация поддерживаемых лиг
-const LEAGUE_CONFIG: Record<string, { name: string; country: string; description: string; competitionId: number }> = {
+const LEAGUE_CONFIG: Record<
+  string,
+  { name: string; country: string; description: string; competitionId: number }
+> = {
   'premier-league': {
     name: 'Premier League',
     country: 'Англия',
@@ -140,7 +143,12 @@ export default async function LeaguePage({ params, searchParams }: PageProps) {
             </CardHeader>
             <CardContent>
               <Suspense fallback={<StandingsTableSkeleton />}>
-                <StandingsTable competitionId={leagueConfig.competitionId} season={season} view={view} round={round} />
+                <StandingsTable
+                  competitionId={leagueConfig.competitionId}
+                  season={season}
+                  view={view}
+                  round={round}
+                />
               </Suspense>
             </CardContent>
           </Card>
