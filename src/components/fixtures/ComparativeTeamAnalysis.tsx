@@ -243,6 +243,12 @@ function getStatValue(row: MatchRow, metric: StatMetric, side: TeamSide): number
   return side === 'home' ? (stat.home as number) : (stat.away as number)
 }
 
+function getStatColor(value: number, avg: number): string {
+  if (value > avg * 1.1) return 'bg-green-100 text-green-800' // Выше среднего
+  if (value < avg * 0.9) return 'bg-red-100 text-red-800' // Ниже среднего
+  return 'bg-yellow-100 text-yellow-800' // Около среднего
+}
+
 function aggregateByMetric(rows: MatchRow[], metric: StatMetric): AggregateStats {
   const n = rows.length || 1
   const wins = rows.filter((r) => r.result === 'W').length
@@ -483,13 +489,13 @@ export default function ComparativeTeamAnalysis({
             home.id,
             limit,
             matchFilter === 'head-to-head' ? away.id : undefined,
-            venueFilter,
+            matchFilter === 'head-to-head' ? 'all' : venueFilter,
           ),
           fetchTeamLastMatches(
             away.id,
             limit,
             matchFilter === 'head-to-head' ? home.id : undefined,
-            venueFilter,
+            matchFilter === 'head-to-head' ? 'all' : venueFilter,
           ),
         ])
         console.log('[ComparativeTeamAnalysis] Получены матчи:', {
@@ -523,50 +529,12 @@ export default function ComparativeTeamAnalysis({
   }, [home.id, home.name, away.id, away.name, limit, matchFilter, venueFilter])
 
   const filteredHomeRows = useMemo(() => {
-    if (matchFilter === 'head-to-head') {
-      // Для homeRows: ищем матчи, где home.id играет дома, а away.id играет в гостях
-      const filtered = homeRows.filter((r) => r.awayTeamId === away.id)
-      console.log('[ComparativeTeamAnalysis] Фильтр head-to-head для home:', {
-        homeTeamId: home.id,
-        awayTeamId: away.id,
-        totalHomeRows: homeRows.length,
-        filteredCount: filtered.length,
-        sampleRows: homeRows.slice(0, 2).map((r) => ({
-          id: r.id,
-          homeTeamId: r.homeTeamId,
-          awayTeamId: r.awayTeamId,
-          homeName: r.homeName,
-          awayName: r.awayName,
-        })),
-      })
-      return filtered
-    }
     return homeRows
-  }, [homeRows, matchFilter, away.id, home.id])
+  }, [homeRows])
 
   const filteredAwayRows = useMemo(() => {
-    if (matchFilter === 'head-to-head') {
-      // Для awayRows: ищем матчи, где away.id играет в гостях, а home.id играет дома
-      // awayRows содержит матчи, где away.id играет (может быть дома или в гостях)
-      // Нам нужны матчи, где away.id в гостях (awayTeamId === away.id) и home.id дома (homeTeamId === home.id)
-      const filtered = awayRows.filter((r) => r.homeTeamId === home.id && r.awayTeamId === away.id)
-      console.log('[ComparativeTeamAnalysis] Фильтр head-to-head для away:', {
-        homeTeamId: home.id,
-        awayTeamId: away.id,
-        totalAwayRows: awayRows.length,
-        filteredCount: filtered.length,
-        sampleRows: awayRows.slice(0, 2).map((r) => ({
-          id: r.id,
-          homeTeamId: r.homeTeamId,
-          awayTeamId: r.awayTeamId,
-          homeName: r.homeName,
-          awayName: r.awayName,
-        })),
-      })
-      return filtered
-    }
     return awayRows
-  }, [awayRows, matchFilter, home.id, away.id])
+  }, [awayRows])
 
   // Обновить выбранные матчи при смене фильтра
   useEffect(() => {
@@ -640,23 +608,41 @@ export default function ComparativeTeamAnalysis({
       },
     ]
 
-    const renderStat = (stat: { label: string; value: string | number; tooltip: string }) => (
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="text-xs text-muted-foreground cursor-help block truncate">
-                  {stat.label}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>{stat.tooltip}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+    const getResultColor = (wins: number, draws: number, losses: number): string => {
+      if (wins > draws && wins > losses) return 'text-green-600 font-bold'
+      if (losses > wins && losses > draws) return 'text-red-600 font-bold'
+      return 'text-yellow-600 font-bold'
+    }
+
+    const renderStat = (
+      stat: { label: string; value: string | number; tooltip: string },
+      agg: AggregateStats,
+    ) => {
+      let colorClass = ''
+
+      // Подсвечиваем первую колонку (Победы/Ничьи/Поражения) по результатам
+      if (stat.label === 'Победы' || stat.label === 'Ничьи' || stat.label === 'Поражения') {
+        colorClass = getResultColor(agg.wins, agg.draws, agg.losses)
+      }
+
+      return (
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-xs text-muted-foreground cursor-help block truncate">
+                    {stat.label}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{stat.tooltip}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <span className={`text-xs font-semibold text-right ${colorClass}`}>{stat.value}</span>
         </div>
-        <span className="text-xs font-semibold text-right">{stat.value}</span>
-      </div>
-    )
+      )
+    }
 
     return (
       <Card className="rounded-lg shadow-sm">
@@ -667,12 +653,12 @@ export default function ComparativeTeamAnalysis({
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-3">
               {column1.map((stat, idx) => (
-                <div key={idx}>{renderStat(stat)}</div>
+                <div key={idx}>{renderStat(stat, agg)}</div>
               ))}
             </div>
             <div className="space-y-3">
               {column2.map((stat, idx) => (
-                <div key={idx}>{renderStat(stat)}</div>
+                <div key={idx}>{renderStat(stat, agg)}</div>
               ))}
             </div>
           </div>
@@ -690,15 +676,10 @@ export default function ComparativeTeamAnalysis({
     title: string
     rows: MatchRow[]
   }): JSX.Element {
-    const getResultColor = (result: 'W' | 'D' | 'L'): string => {
-      switch (result) {
-        case 'W':
-          return 'bg-green-50 hover:bg-green-100'
-        case 'D':
-          return 'bg-yellow-50 hover:bg-yellow-100'
-        case 'L':
-          return 'bg-red-50 hover:bg-red-100'
-      }
+    const getRowColorByValues = (it1: number, it2: number): string => {
+      if (it1 > it2) return 'bg-green-50 hover:bg-green-100'
+      if (it1 < it2) return 'bg-red-50 hover:bg-red-100'
+      return 'bg-yellow-50 hover:bg-yellow-100'
     }
 
     // Сортировка матчей по дате (от новых к старым)
@@ -751,7 +732,9 @@ export default function ComparativeTeamAnalysis({
                 ) : (
                   sortedRows.map((r) => {
                     const checked = selectedIds[side].has(r.id)
-                    const rowClass = getResultColor(r.result)
+                    const it1Value = getStatValue(r, selectedMetric, 'home')
+                    const it2Value = getStatValue(r, selectedMetric, 'away')
+                    const rowClass = getRowColorByValues(it1Value, it2Value)
                     return (
                       <TableRow
                         key={r.id}
