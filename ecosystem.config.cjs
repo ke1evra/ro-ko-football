@@ -18,8 +18,8 @@ module.exports = {
       // Основное приложение Next.js
       name: 'football-platform',
       script: 'node',
-      args: '.next/standalone/server.js',
-      cwd: './',
+      args: 'server.js',
+      cwd: '.next/standalone',
       instances: 1,
       exec_mode: 'fork',
 

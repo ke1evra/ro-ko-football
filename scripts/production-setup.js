@@ -127,6 +127,57 @@ checkFile(path.join(projectRoot, '.next/standalone/server.js'), 'Standalone се
 checkFile(path.join(projectRoot, '.next/static'), 'Директория статических файлов')
 console.log('✅ Файлы сборки найдены\n')
 
+// Шаг 7.6: Копирование статических файлов для standalone
+console.log('📋 Шаг 7.6: Копирование статических файлов для standalone')
+try {
+  const standaloneStaticDir = path.join(projectRoot, '.next/standalone/.next/static')
+  const sourceStaticDir = path.join(projectRoot, '.next/static')
+
+  // Удаляем старую копию
+  if (fs.existsSync(standaloneStaticDir)) {
+    fs.rmSync(standaloneStaticDir, { recursive: true, force: true })
+  }
+
+  // Создаем директорию
+  fs.mkdirSync(standaloneStaticDir, { recursive: true })
+
+  // Копируем статические файлы
+  function copyDir(src, dest) {
+    const entries = fs.readdirSync(src, { withFileTypes: true })
+    for (const entry of entries) {
+      const srcPath = path.join(src, entry.name)
+      const destPath = path.join(dest, entry.name)
+      if (entry.isDirectory()) {
+        fs.mkdirSync(destPath, { recursive: true })
+        copyDir(srcPath, destPath)
+      } else {
+        fs.copyFileSync(srcPath, destPath)
+      }
+    }
+  }
+
+  copyDir(sourceStaticDir, standaloneStaticDir)
+  console.log('✅ Статические файлы скопированы в .next/standalone/.next/static')
+
+  // Копируем public
+  const standalonePublicDir = path.join(projectRoot, '.next/standalone/public')
+  const sourcePublicDir = path.join(projectRoot, 'public')
+
+  if (fs.existsSync(standalonePublicDir)) {
+    fs.rmSync(standalonePublicDir, { recursive: true, force: true })
+  }
+
+  if (fs.existsSync(sourcePublicDir)) {
+    fs.mkdirSync(standalonePublicDir, { recursive: true })
+    copyDir(sourcePublicDir, standalonePublicDir)
+    console.log('✅ Public файлы скопированы в .next/standalone/public')
+  }
+} catch (error) {
+  console.error('❌ Ошибка при копировании файлов:', error.message)
+  process.exit(1)
+}
+console.log()
+
 // Шаг 8: Создание директорий для логов
 console.log('📂 Шаг 8: Подготовка директорий')
 const logsDir = path.join(projectRoot, 'logs')
@@ -172,6 +223,7 @@ runCommand('pm2 status', 'Проверка статуса PM2 процессов
 console.log('🎉 Продакшн окружение успешно настроено!')
 console.log('\n📊 Информация о запуске:')
 console.log('- Приложение запущено на порту 4317')
+console.log('- Рабочая директория: .next/standalone')
 console.log('- Логи доступны в директории ./logs/')
 console.log('- Мониторинг: pm2 monit')
 console.log('- Просмотр логов: pm2 logs')
