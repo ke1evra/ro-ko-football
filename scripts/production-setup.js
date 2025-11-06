@@ -85,6 +85,14 @@ try {
   envVars.NEXT_PUBLIC_SITE_URL = 'https://rocoscore.ru'
   console.log('✅ NEXT_PUBLIC_SITE_URL=https://rocoscore.ru задан')
 
+  // Задаем PROD_DATABASE_URI, если не задана
+  if (!envVars.PROD_DATABASE_URI) {
+    // Предполагаем, что прод база на том же сервере, но с другим именем или портом
+    // Пользователь должен скорректировать вручную
+    envVars.PROD_DATABASE_URI = 'mongodb://localhost:27017/payload-prod'
+    console.log('✅ PROD_DATABASE_URI=mongodb://localhost:27017/payload-prod задан (скорректируйте при необходимости)')
+  }
+
   // Пересобираем содержимое
   envContent = Object.entries(envVars)
     .map(([key, value]) => `${key}=${value}`)
