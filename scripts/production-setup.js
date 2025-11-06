@@ -1,0 +1,120 @@
+#!/usr/bin/env node
+
+/**
+ * Скрипт полной настройки продакшн окружения
+ *
+ * Выполняет:
+ * - Проверку готовности к продакшену
+ * - Сборку приложения
+ * - Запуск PM2 процессов
+ * - Финальную проверку
+ */
+
+import { execSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const projectRoot = path.resolve(__dirname, '..')
+
+function runCommand(command, description) {
+  console.log(`🔧 ${description}...`)
+  try {
+    execSync(command, {
+      cwd: projectRoot,
+      stdio: 'inherit',
+      env: { ...process.env, FORCE_COLOR: '1' },
+    })
+    console.log(`✅ ${description} завершено\n`)
+  } catch (error) {
+    console.error(`❌ Ошибка при ${description.toLowerCase()}:`, error.message)
+    process.exit(1)
+  }
+}
+
+function checkFile(filePath, description) {
+  if (!fs.existsSync(filePath)) {
+    console.error(`❌ ${description} не найден: ${filePath}`)
+    process.exit(1)
+  }
+  console.log(`✅ ${description} найден`)
+}
+
+console.log('🚀 Настройка продакшн окружения для Football Platform\n')
+
+// Шаг 1: Проверка готовности
+console.log('📋 Шаг 1: Проверка готовности к продакшену')
+runCommand('node scripts/production-check.js', 'Проверка конфигурации')
+
+// Шаг 2: Проверка наличия необходимых файлов
+console.log('📁 Шаг 2: Проверка файлов')
+checkFile(path.join(projectRoot, '.env'), 'Файл .env')
+checkFile(path.join(projectRoot, 'ecosystem.config.cjs'), 'Конфигурация PM2')
+checkFile(path.join(projectRoot, 'package.json'), 'package.json')
+console.log('✅ Все файлы найдены\n')
+
+// Шаг 3: Установка зависимостей (на всякий случай)
+console.log('📦 Шаг 3: Установка зависимостей')
+runCommand('pnpm install --frozen-lockfile', 'Установка зависимостей')
+
+// Шаг 4: Генерация типов и API клиентов
+console.log('🔨 Шаг 4: Генерация типов и API клиентов')
+runCommand('pnpm generate:types', 'Генерация типов Payload')
+runCommand('pnpm generate:api', 'Генерация API клиентов')
+
+// Шаг 5: Сборка приложения
+console.log('🏗️ Шаг 5: Сборка приложения')
+runCommand('pnpm build', 'Сборка Next.js приложения')
+
+// Шаг 6: Создание директорий для логов
+console.log('📂 Шаг 6: Подготовка директорий')
+const logsDir = path.join(projectRoot, 'logs')
+const workersDir = path.join(projectRoot, 'workers')
+
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir, { recursive: true })
+  console.log('✅ Директория logs создана')
+} else {
+  console.log('✅ Директория logs существует')
+}
+
+if (!fs.existsSync(workersDir)) {
+  fs.mkdirSync(workersDir, { recursive: true })
+  console.log('✅ Директория workers создана')
+} else {
+  console.log('✅ Директория workers существует')
+}
+console.log()
+
+// Шаг 7: Остановка существующих процессов PM2 (если есть)
+console.log('🛑 Шаг 7: Очистка существующих процессов PM2')
+try {
+  execSync('pm2 delete all', { cwd: projectRoot, stdio: 'pipe' })
+  console.log('✅ Существующие процессы PM2 остановлены')
+} catch (error) {
+  console.log('ℹ️ Нет активных процессов PM2 для остановки')
+}
+console.log()
+
+// Шаг 8: Запуск PM2
+console.log('▶️ Шаг 8: Запуск PM2 процессов')
+runCommand('pm2 start ecosystem.config.cjs', 'Запуск PM2 процессов')
+
+// Шаг 9: Сохранение конфигурации PM2 для автозапуска
+console.log('💾 Шаг 9: Сохранение конфигурации PM2')
+runCommand('pm2 save', 'Сохранение конфигурации PM2')
+
+// Шаг 10: Финальная проверка
+console.log('🔍 Шаг 10: Финальная проверка')
+runCommand('pm2 status', 'Проверка статуса PM2 процессов')
+
+console.log('🎉 Продакшн окружение успешно настроено!')
+console.log('\n📊 Информация о запуске:')
+console.log('- Приложение запущено на порту 4317')
+console.log('- Логи доступны в директории ./logs/')
+console.log('- Мониторинг: pm2 monit')
+console.log('- Просмотр логов: pm2 logs')
+console.log('\n⚠️ Не забудьте настроить nginx или другой reverse proxy для проксирования запросов на localhost:4317')
+console.log('Пример nginx конфигурации см. в документации проекта')
