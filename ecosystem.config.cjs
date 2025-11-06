@@ -28,9 +28,11 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 4317,
         HOST: '0.0.0.0',
+        HOSTNAME: '0.0.0.0',
         NODE_OPTIONS: '--no-deprecation',
         // Базовые переменные (остальные из .env файла)
         NEXT_TELEMETRY_DISABLED: '1',
+        NEXT_PUBLIC_SITE_URL: 'https://rocoscore.ru',
       },
 
       // Настройки автоперезапуска
