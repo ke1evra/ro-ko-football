@@ -20,28 +20,28 @@ const fontMono = FontMono({
 })
 
 export const metadata: Metadata = {
-  title: 'Payload App Starter by Bridger Tower',
-  description: 'A modern SaaS starter built with Payload CMS, Next.js, and TypeScript',
-  metadataBase: new URL('https://payload-saas-starter.vercel.app/'),
+  title: 'RocoScore - Футбольная платформа',
+  description: 'Современная платформа для прогнозов и статистики футбола',
+  metadataBase: new URL('https://rocoscore.ru/'),
   openGraph: {
     type: 'website',
-    locale: 'en_US',
-    url: 'https://payload-saas-starter.vercel.app/',
-    siteName: 'Payload SaaS Starter by Bridger Tower',
-    title: 'Payload SaaS Starter by Bridger Tower',
-    description: 'A modern SaaS starter built with Payload CMS, Next.js, and TypeScript',
+    locale: 'ru_RU',
+    url: 'https://rocoscore.ru/',
+    siteName: 'RocoScore',
+    title: 'RocoScore - Футбольная платформа',
+    description: 'Современная платформа для прогнозов и статистики футбола',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Payload SaaS Starter by Bridger Tower',
-    description: 'A modern SaaS starter built with Payload CMS, Next.js, and TypeScript',
+    title: 'RocoScore - Футбольная платформа',
+    description: 'Современная платформа для прогнозов и статистики футбола',
   },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
-      lang="en"
+      lang="ru"
       className={`${fontSans.className} ${fontMono.className} antialiased`}
       suppressHydrationWarning
     >

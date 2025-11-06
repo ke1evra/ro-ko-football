@@ -81,6 +81,10 @@ try {
     console.log('✅ APP_URL=https://rocoscore.ru задан')
   }
 
+  // Задаем NEXT_PUBLIC_SITE_URL
+  envVars.NEXT_PUBLIC_SITE_URL = 'https://rocoscore.ru'
+  console.log('✅ NEXT_PUBLIC_SITE_URL=https://rocoscore.ru задан')
+
   // Пересобираем содержимое
   envContent = Object.entries(envVars)
     .map(([key, value]) => `${key}=${value}`)
