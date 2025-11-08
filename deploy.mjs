@@ -150,15 +150,41 @@ try { fs.unlinkSync(LOG_FILE) } catch {}
 writeLog('=== START DEPLOY ===')
 log('== Предпроверки окружения ==')
 if (!cmdExists('node')) fail('Node.js не найден')
-if (!cmdExists('docker')) fail('Docker не найден')
+if (!cmdExists('docker')) {
+  log('Docker не найден. Пытаюсь установить для Ubuntu...')
+  // проверка root
+  if (process.getuid && process.getuid() !== 0) {
+    fail('Для автоустановки Docker запустите скрипт под root (sudo).')
+  }
+  // удалить старые пакеты (мягко)
+  tryRun('apt-get remove -y docker docker-engine docker.io containerd runc || true')
+  run('apt-get update -y')
+  run('apt-get install -y ca-certificates curl gnupg lsb-release')
+  run('install -m 0755 -d /etc/apt/keyrings')
+  run('bash -lc "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg"')
+  run('chmod a+r /etc/apt/keyrings/docker.gpg')
+  run('bash -lc "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable\" > /etc/apt/sources.list.d/docker.list"')
+  run('apt-get update -y')
+  run('apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin')
+  tryRun('systemctl enable docker')
+  tryRun('systemctl start docker')
+}
 // docker compose v2
 const composeOk = cmdExists('docker') && tryRun('docker compose version')
 if (!composeOk) fail('Docker Compose V2 недоступен (docker compose)')
 
 // pnpm (через corepack)
-if (!cmdExists('pnpm')) {
+let havePnpm = cmdExists('pnpm')
+if (!havePnpm) {
   log('pnpm не найден, включаю через corepack...')
-  run('corepack enable pnpm')
+  const corepackOk = tryRun('corepack --version')
+  if (corepackOk) {
+    try {
+      run('corepack enable')
+      run('corepack prepare pnpm@latest --activate')
+      havePnpm = cmdExists('pnpm')
+    } catch {}
+  }
 }
 
 // -------------------- repo setup --------------------
@@ -169,8 +195,18 @@ if (!noPull && cmdExists('git')) {
   tryRun('git fetch --all --prune')
   tryRun('git pull --ff-only')
 }
-run('pnpm --version')
-run('pnpm install --frozen-lockfile')
+if (cmdExists('pnpm')) {
+  run('pnpm --version')
+  run('pnpm install --frozen-lockfile')
+} else if (cmdExists('npm')) {
+  warn('pnpm недоступен — выполняю установку зависимостей через npm ci (fallback)')
+  run('npm --version')
+  // при отсутствии package-lock.json используем npm install
+  const hasLock = fs.existsSync(path.join(CWD, 'package-lock.json'))
+  run(hasLock ? 'npm ci' : 'npm install')
+} else {
+  fail('Не найден ни pnpm, ни npm для установки зависимостей')
+}
 
 // -------------------- .env setup --------------------
 log('== Настройка .env ==')
@@ -219,8 +255,28 @@ const busy80 = await portBusy(80)
 const busy443 = await portBusy(443)
 if ((busy80 || busy443) && !forcePorts) {
   warn(`Порты заняты: 80=${busy80}, 443=${busy443}`)
-  warn('Завершение. Запустите с --force-ports-override для теста на 8080/8443 или освободите порты.')
-  process.exit(2)
+  // Попытаемся мягко остановить популярные сервисы, если запущен root
+  if (process.getuid && process.getuid() === 0) {
+    const candidates = ['nginx', 'apache2', 'caddy', 'traefik', 'haproxy']
+    for (const svc of candidates) {
+      const active = tryRun(`systemctl is-active ${svc}`)
+      if (active === 'active') {
+        warn(`Обнаружен активный сервис ${svc}, пытаюсь остановить...`)
+        tryRun(`systemctl stop ${svc}`)
+        tryRun(`systemctl disable ${svc}`)
+      }
+    }
+  }
+  // Повторная проверка
+  const busy80b = await portBusy(80)
+  const busy443b = await portBusy(443)
+  if (busy80b || busy443b) {
+    warn(`После попытки остановки сервисов порты заняты: 80=${busy80b}, 443=${busy443b}`)
+    warn('Завершение. Запустите с --force-ports-override для теста на 8080/8443 или освободите порты.')
+    process.exit(2)
+  } else {
+    log('Порты 80/443 освобождены автоматически.')
+  }
 }
 
 // -------------------- compose build+up --------------------
