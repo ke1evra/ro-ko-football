@@ -93,7 +93,7 @@ log "== Установка Docker =="
 if ! cmd_exists docker; then
   log "Docker не найден. Устанавливаю..."
   # проверка root
-  if [[ $EUID -ne 0 ]]; then
+  if [ $EUID -ne 0 ]; then
     fail "Для установки Docker запустите скрипт под root (sudo)."
   fi
   # удалить старые
@@ -165,7 +165,7 @@ if cmd_exists pnpm; then
   run "pnpm install --frozen-lockfile"
 elif cmd_exists npm; then
   warn "pnpm недоступен — выполняю установку через npm"
-  if [[ -f "$CWD/package-lock.json" ]]; then
+  if [ -f "$CWD/package-lock.json" ]; then
     run "npm ci"
   else
     run "npm install"
@@ -176,8 +176,8 @@ fi
 
 # -------------------- .env setup --------------------
 log "== Настройка .env =="
-if [[ ! -f "$ENV_FILE" ]]; then
-  if [[ ! -f "$ENV_EXAMPLE_FILE" ]]; then
+if [ ! -f "$ENV_FILE" ]; then
+  if [ ! -f "$ENV_EXAMPLE_FILE" ]; then
     fail ".env отсутствует и .env.example не найден"
   fi
   cp "$ENV_EXAMPLE_FILE" "$ENV_FILE"
@@ -185,7 +185,7 @@ if [[ ! -f "$ENV_FILE" ]]; then
   write_log "$(cat "$ENV_FILE")"
 fi
 # обновить переменные
-if [[ "$MODE" == "prod" ]]; then
+if [ "$MODE" = "prod" ]; then
   target_url="https://rocoscore.ru"
   node_env="production"
 else
@@ -222,10 +222,10 @@ busy80=0
 busy443=0
 if port_busy 80; then busy80=1; fi
 if port_busy 443; then busy443=1; fi
-if [[ $((busy80 + busy443)) -gt 0 && $FORCE_PORTS -eq 0 ]]; then
+if [ $((busy80 + busy443)) -gt 0 ] && [ $FORCE_PORTS -eq 0 ]; then
   warn "Порты заняты: 80=$busy80, 443=$busy443"
   # Попытаемся остановить сервисы
-  if [[ $EUID -eq 0 ]]; then
+  if [ $EUID -eq 0 ]; then
     for svc in nginx apache2 caddy traefik haproxy; do
       if try_run "systemctl is-active $svc"; then
         warn "Обнаружен активный сервис $svc, пытаюсь остановить..."
@@ -239,7 +239,7 @@ if [[ $((busy80 + busy443)) -gt 0 && $FORCE_PORTS -eq 0 ]]; then
   busy443b=0
   if port_busy 80; then busy80b=1; fi
   if port_busy 443; then busy443b=1; fi
-  if [[ $((busy80b + busy443b)) -gt 0 ]]; then
+  if [ $((busy80b + busy443b)) -gt 0 ]; then
     warn "После попытки остановки сервисов порты заняты: 80=$busy80b, 443=$busy443b"
     warn "Завершение. Запустите с FORCE_PORTS=1 для теста или освободите порты."
     exit 2
@@ -250,7 +250,7 @@ fi
 
 # -------------------- compose build+up --------------------
 log "== Сборка и запуск docker-compose =="
-if [[ ! -f "$COMPOSE_FILE" ]]; then
+if [ ! -f "$COMPOSE_FILE" ]; then
   fail "docker-compose.appstack.yml не найден"
 fi
 run "docker compose -f $COMPOSE_FILE config"
@@ -265,11 +265,11 @@ wait_healthy() {
   local timeout_ms="${2:-300000}"
   local started
   started="$(date +%s%3N)"
-  while [[ $(( $(date +%s%3N) - started )) -lt $timeout_ms ]]; do
+  while [ $(( $(date +%s%3N) - started )) -lt $timeout_ms ]; do
     if try_run "docker inspect --format='{{json .State.Health}}' $name"; then
       local status
       status="$(docker inspect --format='{{json .State.Health.Status}}' "$name" 2>/dev/null || echo 'null')"
-      if [[ "$status" == '"healthy"' ]]; then
+      if [ "$status" = '"healthy"' ]; then
         return 0
       fi
     fi
@@ -293,7 +293,7 @@ fi
 
 # -------------------- probes --------------------
 log "== HTTP проверки =="
-if [[ "$MODE" == "prod" ]]; then
+if [ "$MODE" = "prod" ]; then
   base_url="https://rocoscore.ru"
 else
   base_url="http://localhost"
