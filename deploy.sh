@@ -7,7 +7,7 @@
 # - Ожидание health'ов и HTTP-пробы
 # - Полное логирование в deploy.log
 
-set -euo pipefail
+set -eu
 
 # -------------------- vars --------------------
 CWD="$(pwd)"
