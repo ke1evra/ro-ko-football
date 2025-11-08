@@ -178,8 +178,10 @@ if (!cmdExists('docker')) {
       installed = true
     } catch (e2) {
       writeLog('Ошибка установки Docker: официальный и дистрибутивный варианты не сработали.')
-      writeLog('Рекомендуется вручную проверить:
-        apt-cache policy docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin containerd.io docker.io\n        cat /etc/apt/sources.list.d/docker.list\n        cat /etc/os-release')
+      writeLog('Рекомендуется вручную проверить команды:')
+      writeLog('  apt-cache policy docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin containerd.io docker.io')
+      writeLog('  cat /etc/apt/sources.list.d/docker.list')
+      writeLog('  cat /etc/os-release')
       fail('Автоустановка Docker не удалась. См. deploy.log для подробностей.')
     }
   }
