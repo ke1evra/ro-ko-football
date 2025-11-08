@@ -218,10 +218,10 @@ if (!cmdExists('docker')) {
 const composeOk = cmdExists('docker') && tryRun('docker compose version')
 if (!composeOk) fail('Docker Compose V2 недоступен (docker compose)')
 
-// pnpm (через corepack)
+// pnpm (через corepack или глобально через npm)
 let havePnpm = cmdExists('pnpm')
 if (!havePnpm) {
-  log('pnpm не найден, включаю через corepack...')
+  log('pnpm не найден, пытаюсь активировать через corepack...')
   const corepackOk = tryRun('corepack --version')
   if (corepackOk) {
     try {
@@ -229,6 +229,15 @@ if (!havePnpm) {
       run('corepack prepare pnpm@latest --activate')
       havePnpm = cmdExists('pnpm')
     } catch {}
+  }
+  if (!havePnpm && cmdExists('npm')) {
+    warn('corepack недоступен или не активировал pnpm — устанавливаю pnpm глобально через npm i -g pnpm')
+    try {
+      run('npm install -g pnpm')
+      havePnpm = cmdExists('pnpm')
+    } catch (e) {
+      warn('Не удалось установить pnpm глобально. Будет использован fallback на npm.')
+    }
   }
 }
 
