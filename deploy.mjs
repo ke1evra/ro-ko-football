@@ -151,39 +151,62 @@ writeLog('=== START DEPLOY ===')
 log('== Предпроверки окружения ==')
 if (!cmdExists('node')) fail('Node.js не найден')
 if (!cmdExists('docker')) {
-  log('Docker не найден. Пытаюсь установить для Ubuntu...')
+  log('Docker не найден. Пытаюсь установить для Ubuntu (неинтерактивно)...')
   // проверка root
   if (process.getuid && process.getuid() !== 0) {
     fail('Для автоустановки Docker запустите скрипт под root (sudo).')
   }
+  const envApt = 'DEBIAN_FRONTEND=noninteractive'
   // удалить старые пакеты (мягко)
-  tryRun('apt-get remove -y docker docker-engine docker.io containerd runc || true')
-  run('apt-get autoremove -y')
-  run('apt-get update -y')
-  run('apt-get install -y ca-certificates curl gnupg lsb-release')
+  tryRun(`${envApt} apt-get remove -y docker docker-engine docker.io containerd runc || true`)
+  run(`${envApt} apt-get autoremove -y`)
+  run(`${envApt} apt-get update -y`)
+  run(`${envApt} apt-get install -y --no-install-recommends apt-transport-https software-properties-common ca-certificates curl gnupg lsb-release`)
   run('install -m 0755 -d /etc/apt/keyrings')
   run('bash -lc "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg"')
   run('chmod a+r /etc/apt/keyrings/docker.gpg')
   run('bash -lc "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable\" > /etc/apt/sources.list.d/docker.list"')
-  run('apt-get update -y')
+  run(`${envApt} apt-get update -y`)
+
+  function aptFix() {
+    warn('Пробую исправить зависимости apt...')
+    tryRun(`${envApt} dpkg --configure -a || true`)
+    tryRun(`${envApt} apt --fix-broken install -y || true`)
+    tryRun(`${envApt} apt-get -o Dpkg::Options::=--force-confnew -f install -y || true`)
+  }
+
   // Для Ubuntu 22/24 сначала ставим стабильный вариант из репозитория дистрибутива,
-  // затем пробуем обновить до docker-ce (необязательно).
+  // затем пробуем официальный docker-ce.
   let installed = false
   try {
-    run('apt-get install -y docker.io docker-compose-plugin')
+    run(`${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker.io docker-compose-plugin`)
     installed = true
   } catch (eA) {
-    warn('Установка docker.io из репозитория Ubuntu не удалась, пробую официальный docker-ce')
+    warn('Установка docker.io не удалась. Попытка автоматического исправления и повтор...')
+    aptFix()
     try {
-      run('apt-get install -y docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin')
+      run(`${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker.io docker-compose-plugin`)
       installed = true
-    } catch (eB) {
-      writeLog('Ошибка установки Docker: оба варианта не сработали.')
-      writeLog('Рекомендуется вручную проверить команды:')
-      writeLog('  apt-cache policy docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin containerd.io docker.io')
-      writeLog('  cat /etc/apt/sources.list.d/docker.list')
-      writeLog('  cat /etc/os-release')
-      fail('Автоустановка Docker не удалась. См. deploy.log для подробностей.')
+    } catch (eA2) {
+      warn('Повт��рная установка docker.io не удалась. Пытаюсь установить официальный docker-ce...')
+      aptFix()
+      try {
+        run(`${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin`)
+        installed = true
+      } catch (eB) {
+        aptFix()
+        try {
+          run(`${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin`)
+          installed = true
+        } catch (eB2) {
+          writeLog('Ошибка установки Docker: все варианты исчерпаны.')
+          writeLog('Рекомендуется вручную проверить команды:')
+          writeLog('  apt-cache policy docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin containerd.io docker.io')
+          writeLog('  cat /etc/apt/sources.list.d/docker.list')
+          writeLog('  cat /etc/os-release')
+          fail('Автоустановка Docker не удалась. См. deploy.log для подробностей.')
+        }
+      }
     }
   }
   if (installed) {
