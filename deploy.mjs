@@ -166,18 +166,19 @@ if (!cmdExists('docker')) {
   run('chmod a+r /etc/apt/keyrings/docker.gpg')
   run('bash -lc "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable\" > /etc/apt/sources.list.d/docker.list"')
   run('apt-get update -y')
-  // сначала пробуем официальный набор без containerd.io (на 24.04 бывают конфликты)
+  // Для Ubuntu 22/24 сначала ставим стабильный вариант из репозитория дистрибутива,
+  // затем пробуем обновить до docker-ce (необязательно).
   let installed = false
   try {
-    run('apt-get install -y docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin')
+    run('apt-get install -y docker.io docker-compose-plugin')
     installed = true
-  } catch (e) {
-    warn('Не удалось установить docker-ce из официального репозитория. Пытаюсь установить из репозитория Ubuntu (docker.io + docker-compose-plugin)')
+  } catch (eA) {
+    warn('Установка docker.io из репозитория Ubuntu не удалась, пробую официальный docker-ce')
     try {
-      run('apt-get install -y docker.io docker-compose-plugin')
+      run('apt-get install -y docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin')
       installed = true
-    } catch (e2) {
-      writeLog('Ошибка установки Docker: официальный и дистрибутивный варианты не сработали.')
+    } catch (eB) {
+      writeLog('Ошибка установки Docker: оба варианта не сработали.')
       writeLog('Рекомендуется вручную проверить команды:')
       writeLog('  apt-cache policy docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin containerd.io docker.io')
       writeLog('  cat /etc/apt/sources.list.d/docker.list')
