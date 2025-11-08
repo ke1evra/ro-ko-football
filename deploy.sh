@@ -254,9 +254,39 @@ if [ ! -f "$COMPOSE_FILE" ]; then
   fail "docker-compose.appstack.yml не найден"
 fi
 run "docker compose -f $COMPOSE_FILE config"
-run "docker compose -f $COMPOSE_FILE build --pull"
-run "docker compose -f $COMPOSE_FILE up -d"
-run "docker compose -f $COMPOSE_FILE ps"
+
+# Handle web network conflict
+COMPOSE_CMD="docker compose -f $COMPOSE_FILE"
+if docker network inspect web >/dev/null 2>&1; then
+  label=$(docker network inspect web | jq -r '.[0].Labels."com.docker.compose.network"')
+  if [ "$label" != "web" ]; then
+    if [ "$FORCE_NETWORK" = "remove" ]; then
+      log "FORCE_NETWORK=remove: удаляю конфликтующую сеть web и пересоздаю"
+      run "docker compose -f $COMPOSE_FILE down || true"
+      run "docker network rm web"
+      run "docker network create web"
+    else
+      log "Сеть web существует и не принадлежит этому compose. Использую external override."
+      cat > docker-compose._web_external_override.yml <<'EOF'
+name: appstack
+services: {}
+networks:
+  web:
+    external: true
+    name: web
+EOF
+      COMPOSE_CMD="docker compose -f $COMPOSE_FILE -f docker-compose._web_external_override.yml"
+    fi
+  else
+    log "Сеть web принадлежит этому compose, продолжаю."
+  fi
+else
+  log "Сеть web отсутствует, будет создана compose."
+fi
+
+run "$COMPOSE_CMD build --pull"
+run "$COMPOSE_CMD up -d"
+run "$COMPOSE_CMD ps"
 
 # -------------------- wait health --------------------
 log "== Ожидание готовности сервисов =="
