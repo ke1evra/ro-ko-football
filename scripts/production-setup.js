@@ -93,6 +93,37 @@ try {
     console.log('✅ PROD_DATABASE_URI=mongodb://localhost:27017/payload-prod задан (скорректируйте при необходимости)')
   }
 
+  // Задаем прод-специфичные переменные, если не заданы
+  if (!envVars.PROD_PAYLOAD_SECRET) {
+    envVars.PROD_PAYLOAD_SECRET = envVars.PAYLOAD_SECRET || 'your-prod-secret-key-here'
+    console.log('✅ PROD_PAYLOAD_SECRET задан')
+  }
+
+  if (!envVars.PROD_RESEND_API_KEY) {
+    envVars.PROD_RESEND_API_KEY = envVars.RESEND_API_KEY || 're_xxxxxxxx'
+    console.log('✅ PROD_RESEND_API_KEY задан')
+  }
+
+  if (!envVars.PROD_EMAIL_FROM) {
+    envVars.PROD_EMAIL_FROM = envVars.EMAIL_FROM || 'noreply@rocoscore.ru'
+    console.log('✅ PROD_EMAIL_FROM=noreply@rocoscore.ru задан')
+  }
+
+  if (!envVars.PROD_LIVESCORE_KEY) {
+    envVars.PROD_LIVESCORE_KEY = envVars.LIVESCORE_KEY || 'JFSoWhkq1FIky8SS'
+    console.log('✅ PROD_LIVESCORE_KEY задан')
+  }
+
+  if (!envVars.PROD_LIVESCORE_SECRET) {
+    envVars.PROD_LIVESCORE_SECRET = envVars.LIVESCORE_SECRET || 'qbjc7aeuFAJo1E5KjX8fetGg9oAIxtBY'
+    console.log('✅ PROD_LIVESCORE_SECRET задан')
+  }
+
+  if (!envVars.PROD_LIVESCORE_API_BASE) {
+    envVars.PROD_LIVESCORE_API_BASE = envVars.LIVESCORE_API_BASE || 'https://livescore-api.com/api-client'
+    console.log('✅ PROD_LIVESCORE_API_BASE задан')
+  }
+
   // Пересобираем содержимое
   envContent = Object.entries(envVars)
     .map(([key, value]) => `${key}=${value}`)

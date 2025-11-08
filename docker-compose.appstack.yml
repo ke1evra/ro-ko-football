@@ -1,0 +1,124 @@
+version: "3.9"
+
+name: appstack
+
+services:
+  # Reverse proxy and automatic HTTP->HTTPS with caddy-docker-proxy
+  caddy:
+    image: lucaslorentz/caddy-docker-proxy:2.8.7
+    container_name: caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      # Only expose services attached to this network
+      CADDY_INGRESS_NETWORKS: web
+    networks:
+      - web
+    restart: unless-stopped
+
+  # MongoDB database
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    command: ["--wiredTigerCacheSizeGB=8"]
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - private
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Payload CMS service (Node.js)
+  payload:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Используем существующий Dockerfile в корне проекта,
+      # он должен уметь собирать Payload + Next, но мы запускаем как отдельные сервисы.
+    env_file:
+      - ./.env
+    depends_on:
+      - mongo
+    networks:
+      - private
+      - web
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4g
+        reservations:
+          cpus: '1.0'
+          memory: 2g
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    labels:
+      # Главный домен
+      caddy: rocoscore.ru
+      # Роутинг Payload относительно домена на /api/* и /admin/*
+      caddy.route.0: "handle_path /api* { reverse_proxy {{upstreams 3000}} }"
+      caddy.route.1: "handle_path /admin* { reverse_proxy {{upstreams 3000}} }"
+      caddy.tls: "internal"
+      caddy.health_path: "/api/health"
+      caddy.health_interval: "30s"
+    restart: unless-stopped
+
+  # Next.js frontend
+  next:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # При необходимости разделите Dockerfile на два, либо используйте ARG/TARGET
+    env_file:
+      - ./.env
+    depends_on:
+      - payload
+    networks:
+      - private
+      - web
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4g
+        reservations:
+          cpus: '1.0'
+          memory: 2g
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    labels:
+      # Главный домен
+      caddy: rocoscore.ru
+      # Фронт как дефолтный хендлер
+      caddy.encode: gzip
+      caddy.reverse_proxy: "{{upstreams 3000}}"
+      caddy.health_path: "/"
+      caddy.health_interval: "30s"
+    restart: unless-stopped
+
+networks:
+  web:
+    name: web
+    driver: bridge
+  private:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
+  mongo_data:
