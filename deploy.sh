@@ -133,24 +133,26 @@ fi
 run "docker --version"
 run "docker compose version"
 
+# -------------------- node/npm install --------------------
+log "== Установка Node.js/npm =="
+if ! cmd_exists node || ! cmd_exists npm || ! cmd_exists corepack; then
+  log "Node.js, npm или corepack не найдены. Сношу старую установку и ставлю официальный Node.js LTS..."
+  try_run "apt-get remove -y nodejs npm || true"
+  run "curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -"
+  run "apt-get install -y nodejs"
+fi
+run "node --version"
+run "npm --version"
+run "corepack --version"
+
 # -------------------- pnpm install --------------------
 log "== Установка pnpm =="
 if ! cmd_exists pnpm; then
   log "pnpm не найден. Активирую через corepack..."
-  if cmd_exists corepack; then
-    try_run "corepack enable"
-    try_run "corepack prepare pnpm@latest --activate"
-  fi
-  if ! cmd_exists pnpm && cmd_exists npm; then
-    warn "corepack недоступен или не активировал pnpm — устанавливаю глобально через npm"
-    try_run "npm install -g pnpm"
-  fi
+  run "corepack enable"
+  run "corepack prepare pnpm@latest --activate"
 fi
-if cmd_exists pnpm; then
-  run "pnpm --version"
-else
-  warn "pnpm недоступен. Будет использован npm."
-fi
+run "pnpm --version"
 
 # -------------------- repo setup --------------------
 log "== Установка зависимостей проекта =="
