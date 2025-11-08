@@ -158,6 +158,7 @@ if (!cmdExists('docker')) {
   }
   // удалить старые пакеты (мягко)
   tryRun('apt-get remove -y docker docker-engine docker.io containerd runc || true')
+  run('apt-get autoremove -y')
   run('apt-get update -y')
   run('apt-get install -y ca-certificates curl gnupg lsb-release')
   run('install -m 0755 -d /etc/apt/keyrings')
@@ -165,9 +166,27 @@ if (!cmdExists('docker')) {
   run('chmod a+r /etc/apt/keyrings/docker.gpg')
   run('bash -lc "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable\" > /etc/apt/sources.list.d/docker.list"')
   run('apt-get update -y')
-  run('apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin')
-  tryRun('systemctl enable docker')
-  tryRun('systemctl start docker')
+  // сначала пробуем официальный набор без containerd.io (на 24.04 бывают конфликты)
+  let installed = false
+  try {
+    run('apt-get install -y docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin')
+    installed = true
+  } catch (e) {
+    warn('Не удалось установить docker-ce из официального репозитория. Пытаюсь установить из репозитория Ubuntu (docker.io + docker-compose-plugin)')
+    try {
+      run('apt-get install -y docker.io docker-compose-plugin')
+      installed = true
+    } catch (e2) {
+      writeLog('Ошибка установки Docker: официальный и дистрибутивный варианты не сработали.')
+      writeLog('Рекомендуется вручную проверить:
+        apt-cache policy docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin containerd.io docker.io\n        cat /etc/apt/sources.list.d/docker.list\n        cat /etc/os-release')
+      fail('Автоустановка Docker не удалась. См. deploy.log для подробностей.')
+    }
+  }
+  if (installed) {
+    tryRun('systemctl enable docker')
+    tryRun('systemctl start docker')
+  }
 }
 // docker compose v2
 const composeOk = cmdExists('docker') && tryRun('docker compose version')
