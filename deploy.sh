@@ -17,6 +17,7 @@ ENV_EXAMPLE_FILE="$CWD/.env.example"
 LOG_FILE="$CWD/deploy.log"
 MODE="${MODE:-prod}"
 FORCE_PORTS="${FORCE_PORTS:-0}"
+FORCE_NETWORK="${FORCE_NETWORK:-}"
 
 # -------------------- utils --------------------
 ts() {
