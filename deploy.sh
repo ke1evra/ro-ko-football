@@ -256,8 +256,38 @@ if [ ! -f "$COMPOSE_FILE" ]; then
 fi
 run "docker compose -f $COMPOSE_FILE config"
 
-# Handle web network conflict
+# Handle web network conflict and local mode
 COMPOSE_CMD="docker compose -f $COMPOSE_FILE"
+if [ "$MODE" = "local" ]; then
+  log "MODE=local: создаю override для localhost доменов"
+  cat > docker-compose._local_override.yml <<'EOF'
+name: appstack
+services:
+  caddy:
+    labels:
+      - "caddy=localhost"
+      - "caddy.reverse_proxy={{upstreams 3000}}"
+      - "caddy.encode=gzip"
+      - "caddy.health_path=/"
+      - "caddy.health_interval=30s"
+  payload:
+    labels:
+      - "caddy=localhost"
+      - "caddy.route.0=handle_path /api* { reverse_proxy {{upstreams 3000}} }"
+      - "caddy.route.1=handle_path /admin* { reverse_proxy {{upstreams 3000}} }"
+      - "caddy.health_path=/api/health"
+      - "caddy.health_interval=30s"
+  next:
+    labels:
+      - "caddy=localhost"
+      - "caddy.encode=gzip"
+      - "caddy.reverse_proxy={{upstreams 3000}}"
+      - "caddy.health_path=/"
+      - "caddy.health_interval=30s"
+EOF
+  COMPOSE_CMD="$COMPOSE_CMD -f docker-compose._local_override.yml"
+fi
+
 if docker network inspect web >/dev/null 2>&1; then
   label=$(docker network inspect web | jq -r '.[0].Labels."com.docker.compose.network"')
   if [ "$label" != "web" ]; then
@@ -276,7 +306,7 @@ networks:
     external: true
     name: web
 EOF
-      COMPOSE_CMD="docker compose -f $COMPOSE_FILE -f docker-compose._web_external_override.yml"
+      COMPOSE_CMD="$COMPOSE_CMD -f docker-compose._web_external_override.yml"
     fi
   else
     log "Сеть web принадлежит этому compose, продолжаю."

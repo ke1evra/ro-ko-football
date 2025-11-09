@@ -33,6 +33,7 @@
     "db:backup": "node scripts/db-sync.js backup",
     "deploy": "node deploy.mjs",
     "deploy:shell": "sh deploy.sh",
+    "local-dev": "sh local-dev.sh",
     "env:setup": "node scripts/setup-env.js",
     "env:setup:interactive": "node scripts/setup-env.js --interactive",
     "env:setup:force": "node scripts/setup-env.js --force",
