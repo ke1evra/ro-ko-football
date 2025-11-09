@@ -5,7 +5,7 @@
 set -eu
 
 CWD="$(pwd)"
-COMPOSE_FILE="$CWD/docker-compose.appstack.yml"
+COMPOSE_FILE="$CWD/docker-compose.yml"
 ENV_FILE="$CWD/.env"
 ENV_EXAMPLE_FILE="$CWD/.env.example"
 LOG_FILE="$CWD/local-dev.log"
@@ -55,7 +55,7 @@ if grep -q "^PAYLOAD_SECRET=your-secret-key-here" "$ENV_FILE"; then
   sed -i.bak "s|^PAYLOAD_SECRET=.*|PAYLOAD_SECRET=$secret|" "$ENV_FILE"
 fi
 sed -i.bak "s|^NODE_ENV=.*|NODE_ENV=development|" "$ENV_FILE"
-sed -i.bak "s|^APP_URL=.*|APP_URL=http://localhost|" "$ENV_FILE"
+sed -i.bak "s|^APP_URL=.*|APP_URL=http://localhost:3100|" "$ENV_FILE"
 log ".env настроен для локального режима"
 
 # Create networks
@@ -63,38 +63,10 @@ docker network inspect web >/dev/null 2>&1 || docker network create web
 docker network inspect private >/dev/null 2>&1 || docker network create private
 log "Сети созданы"
 
-# Create local override
-cat > docker-compose._local_override.yml <<'EOF'
-name: appstack
-services:
-  caddy:
-    labels:
-      - "caddy=localhost"
-      - "caddy.reverse_proxy={{upstreams 3000}}"
-      - "caddy.encode=gzip"
-      - "caddy.health_path=/"
-      - "caddy.health_interval=30s"
-  payload:
-    labels:
-      - "caddy=localhost"
-      - "caddy.route.0=handle_path /api* { reverse_proxy {{upstreams 3000}} }"
-      - "caddy.route.1=handle_path /admin* { reverse_proxy {{upstreams 3000}} }"
-      - "caddy.health_path=/api/health"
-      - "caddy.health_interval=30s"
-  next:
-    labels:
-      - "caddy=localhost"
-      - "caddy.encode=gzip"
-      - "caddy.reverse_proxy={{upstreams 3000}}"
-      - "caddy.health_path=/"
-      - "caddy.health_interval=30s"
-EOF
-log "Override для localhost создан"
-
 # Build and up
 log "Сборка и запуск..."
-docker compose -f "$COMPOSE_FILE" -f docker-compose._local_override.yml build --pull
-docker compose -f "$COMPOSE_FILE" -f docker-compose._local_override.yml up -d
+docker compose -f "$COMPOSE_FILE" build --pull
+docker compose -f "$COMPOSE_FILE" up -d
 
 # Wait for health
 log "Ожидание готовности..."
@@ -119,11 +91,11 @@ if ! wait_healthy next; then log "Next не healthy"; fi
 
 log "Готово!"
 log "Открывайте:"
-log "  http://localhost/ (фронт)"
-log "  http://localhost/admin (Payload)"
-log "  http://localhost/api/health (API)"
+log "  http://localhost:3100/ (фронт)"
+log "  http://localhost:3101/admin (Payload)"
+log "  http://localhost:3101/api/health (API)"
 log ""
 log "Управление:"
-log "  docker compose -f $COMPOSE_FILE -f docker-compose._local_override.yml ps"
-log "  docker compose -f $COMPOSE_FILE -f docker-compose._local_override.yml logs -f"
-log "  docker compose -f $COMPOSE_FILE -f docker-compose._local_override.yml down"
+log "  docker compose -f $COMPOSE_FILE ps"
+log "  docker compose -f $COMPOSE_FILE logs -f"
+log "  docker compose -f $COMPOSE_FILE down"

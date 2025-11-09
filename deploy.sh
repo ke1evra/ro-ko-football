@@ -11,7 +11,7 @@ set -eu
 
 # -------------------- vars --------------------
 CWD="$(pwd)"
-COMPOSE_FILE="$CWD/docker-compose.appstack.yml"
+COMPOSE_FILE="$CWD/docker-compose.yml"
 ENV_FILE="$CWD/.env"
 ENV_EXAMPLE_FILE="$CWD/.env.example"
 LOG_FILE="$CWD/deploy.log"
