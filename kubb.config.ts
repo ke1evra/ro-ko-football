@@ -39,7 +39,6 @@ export default defineConfig({
         name: ({ group }) => `${group.replace(/ /g, '')}Service`,
       },
       operations: true,
-      importPath: '@/lib/http/livescore/customFetch',
       dataReturnType: 'full',
       urlType: 'export',
       pathParamsType: 'inline',
