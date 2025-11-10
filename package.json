@@ -28,9 +28,9 @@
     "build:server": "next build",
     "production:check": "node scripts/production-check.js",
     "production:setup": "node scripts/production-setup.js",
-    "db:sync-from-prod": "node scripts/db-sync.js from-prod",
-    "db:sync-to-prod": "node scripts/db-sync.js to-prod",
-    "db:backup": "node scripts/db-sync.js backup",
+
+    "db:push-to-prod": "chmod +x export-and-upload.sh && ./export-and-upload.sh",
+    "db:apply-on-prod": "echo \"Run this on the server: chmod +x import-and-cleanup.sh && ./import-and-cleanup.sh\"",
     "deploy": "node deploy.mjs",
     "deploy:shell": "sh deploy.sh",
     "local-dev": "sh local-dev.sh",
