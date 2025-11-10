@@ -33,6 +33,7 @@ export default defineConfig({
         path: './clients',
         barrelType: 'named',
       },
+      baseURL: process.env.APP_URL || 'http://localhost:3100',
       group: {
         type: 'tag',
         name: ({ group }) => `${group.replace(/ /g, '')}Service`,
