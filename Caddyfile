@@ -1,0 +1,7 @@
+rocoscore.ru {
+    # Включить сжатие gzip и zstd
+    encode gzip zstd
+
+    # Проксировать все запросы на работающее Next.js приложение
+    reverse_proxy localhost:3100
+}

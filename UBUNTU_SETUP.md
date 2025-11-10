@@ -44,21 +44,21 @@ sudo usermod -aG docker $USER
 
 ## Шаг 3: Установка и настройка MongoDB
 
-### 3.1. Установка MongoDB
+### 3.1. Установка MongoDB (v7.0)
 
-Выполните следующие команды для добавления репозитория MongoDB и установки сервера:
+Выполните следующие команды для добавления репозитория MongoDB 7.0 и установки сервера:
 
 ```bash
 # Установка зависимостей
 sudo apt-get install -y gnupg
 
 # Импорт GPG ключа MongoDB
-curl -fsSL https://pgp.mongodb.com/server-6.0.asc | \
-   sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg \
+curl -fsSL https://pgp.mongodb.com/server-7.0.asc | \
+   sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg \
    --dearmor
 
 # Добавление репозитория
-echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
 
 # Обновление пакетов и установка
 sudo apt-get update
@@ -168,3 +168,46 @@ sudo ufw enable
 ```
 
 Ваше приложение теперь должно быть доступно по адресу `http://<IP_адрес_сервера>:3100`.
+
+## Шаг 6 (Опционально): Настройка веб-сервера Caddy с HTTPS
+
+Эти шаги позволят вам использовать домен `rocoscore.ru` с автоматическим SSL-сертификатом (HTTPS) вместо прямого доступа по IP-адресу и порту.
+
+### 6.1. Установка Caddy
+
+Выполните следующие команды для установки Caddy на Ubuntu:
+
+```bash
+sudo apt-get install -y debian-keyring debian-archive-keyring apt-transport-https
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+sudo apt-get update
+sudo apt-get install caddy
+```
+
+### 6.2. Настройка Caddy
+
+Скопируйте `Caddyfile`, который находится в вашем проекте, в конфигурационную директорию Caddy:
+
+```bash
+sudo cp Caddyfile /etc/caddy/Caddyfile
+```
+
+### 6.3. Обновление файрвола
+
+Разрешите стандартные порты для веб-трафика (HTTP и HTTPS):
+
+```bash
+sudo ufw allow http
+sudo ufw allow https
+```
+
+### 6.4. Перезапуск Caddy
+
+Чтобы применить новую конфигурацию, перезапустите сервис Caddy:
+
+```bash
+sudo systemctl reload caddy
+```
+
+Caddy автоматически получит SSL-сертификат для домена `rocoscore.ru` и начнет проксировать трафик на ваше приложение. Теперь сайт будет доступен по адресу `https://rocoscore.ru`.
