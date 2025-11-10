@@ -35,3 +35,22 @@
 [2025-11-09T20:21:09] Сети созданы
 [2025-11-09T20:21:09] Override для localhost создан
 [2025-11-09T20:21:09] Сборка и запуск...
+[2025-11-09T20:35:22] Docker OK
+[2025-11-09T20:35:22] Установка зависимостей через pnpm...
+[2025-11-09T20:35:23] .env настроен для локального режима
+[2025-11-09T20:35:23] Сети созданы
+[2025-11-09T20:35:23] Сборка и запуск...
+[2025-11-09T20:40:28] Ожидание готовности...
+[2025-11-09T20:45:50] Mongo не healthy
+[2025-11-09T20:51:09] Payload не healthy
+[2025-11-09T20:56:27] Next не healthy
+[2025-11-09T20:56:27] Готово!
+[2025-11-09T20:56:27] Открывайте:
+[2025-11-09T20:56:27]   http://localhost:3100/ (фронт)
+[2025-11-09T20:56:27]   http://localhost:3101/admin (Payload)
+[2025-11-09T20:56:27]   http://localhost:3101/api/health (API)
+[2025-11-09T20:56:27] 
+[2025-11-09T20:56:27] Управление:
+[2025-11-09T20:56:27]   docker compose -f /Users/ko/payload-starter/docker-compose.yml ps
+[2025-11-09T20:56:27]   docker compose -f /Users/ko/payload-starter/docker-compose.yml logs -f
+[2025-11-09T20:56:27]   docker compose -f /Users/ko/payload-starter/docker-compose.yml down

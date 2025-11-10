@@ -1,32 +1,14 @@
 name: appstack
 
 services:
-  mongo:
-    image: mongo:7
-    command: ["--wiredTigerCacheSizeGB=8"]
-    volumes:
-      - mongo_data:/data/db
-    # Порты для локальной разработки (в Coolify игнорируются, ingress управляет)
-    ports:
-      - "27117:27017"
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
-  payload:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
     env_file:
       - ./.env
-    depends_on:
-      - mongo
-    # Порты для локальной разработки (в Coolify игнорируются, ingress управляет)
     ports:
-      - "3101:3000"
+      - "3100:3100"
     deploy:
       resources:
         limits:
@@ -36,37 +18,8 @@ services:
           cpus: '1.0'
           memory: 2g
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3100').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 5s
       retries: 5
     restart: unless-stopped
-
-  next:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file:
-      - ./.env
-    depends_on:
-      - payload
-    # Порты для локальной разработки (в Coolify игнорируются, ingress управляет)
-    ports:
-      - "3100:3000"
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 4g
-        reservations:
-          cpus: '1.0'
-          memory: 2g
-    healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
-volumes:
-  mongo_data:
