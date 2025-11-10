@@ -5,70 +5,71 @@
 ## Предварительные требования
 
 1.  **Git**: Установлен и настроен.
-2.  **Docker и Docker Compose**: Установлены и запущены. [Инструкция по установке Docker](https://docs.docker.com/engine/install/).
+2.  **Docker и Docker Compose**: Установлены и запущены.
 3.  **База данных MongoDB**: Запущена и доступна для подключения.
 
 ## Шаги развертывания
 
 ### 1. Клонирование репозитория
 
-Склонируйте репозиторий на ваш локальный компьютер или сервер:
-
 ```bash
 git clone <URL_вашего_репозитория>
-cd payload-starter
+cd ro-ko-football
 ```
 
-### 2. Настройка файла окружения (`.env`)
+### 2. Создание `docker-compose.yml`
 
-Создайте копию файла с примером переменных окружения:
+Создайте файл `docker-compose.yml` со следующей рабочей конфигурацией:
+
+```bash
+cat <<EOF > docker-compose.yml
+name: appstack
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    network_mode: "host"
+    env_file:
+      - ./.env
+    environment:
+      DATABASE_URI: "mongodb://<user>:<password>@127.0.0.1:27017/<dbname>?authSource=admin"
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+      NODE_ENV: ${NODE_ENV}
+      APP_URL: ${APP_URL}
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4g
+        reservations:
+          cpus: '1.0'
+          memory: 2g
+    restart: unless-stopped
+EOF
+```
+
+### 3. Настройка файла `.env`
+
+Скопируйте пример и установите значения для `PAYLOAD_SECRET`, `NODE_ENV` и `APP_URL`. **`DATABASE_URI` теперь настраивается в `docker-compose.yml`**.
 
 ```bash
 cp .env.example .env
+nano .env
 ```
 
-Откройте файл `.env` в текстовом редакторе и заполните его, уделив особое внимание следующим переменным:
-
--   `DATABASE_URI`: Строка подключения к вашей базе данных MongoDB.
-    -   **Для Docker на Mac/Windows**: Используйте `host.docker.internal` вместо `localhost` или `127.0.0.1`, чтобы контейнер мог подключиться к базе данных на вашем компьютере.
-    -   **Для Docker на Linux**: Вы можете использовать `127.0.0.1`.
-
-    **Пример для Docker на Mac/Windows:**
-    ```env
-    DATABASE_URI="mongodb://USER:PASSWORD@host.docker.internal:27017/DATABASE_NAME?authSource=admin"
-    ```
-
--   `PAYLOAD_SECRET`: Сгенерируйте надежный секретный ключ. Можете использовать `openssl rand -hex 32` или любой другой генератор случайных строк.
-
--   `APP_URL`: URL, по которому будет доступно ваше приложение (например, `http://localhost:3100`).
-
-### 3. Сборка и запуск контейнера
-
-Находясь в корневой папке проекта, выполните команду:
+### 4. Сборка и запуск контейнера
 
 ```bash
 docker compose up --build -d
 ```
 
--   `--build`: Эта опция заставит Docker пересобрать образ, если в `Dockerfile` или файлах проекта были изменения.
--   `-d`: Запускает контейнер в фоновом режиме (detached mode).
-
-### 4. Проверка статуса
-
-Чтобы убедиться, что контейнер успешно запустился, выполните:
+### 5. Проверка статуса
 
 ```bash
 docker compose ps
-```
-
-Вы должны увидеть, что сервис `app` находится в состоянии `Up`.
-
-Чтобы посмотреть логи приложения в реальном времени и отследить возможные ошибки, используйте команду:
-
-```bash
 docker compose logs --follow app
 ```
 
-### 5. Доступ к приложению
-
-После успешного запуска приложение будет доступно в вашем браузере по адресу, указанному в переменной `APP_URL` (например, `http://localhost:3100`).
+Приложение будет доступно по порту, указанному в `Dockerfile` (3100).
