@@ -20,6 +20,8 @@ services:
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
       NODE_ENV: ${NODE_ENV}
       APP_URL: ${APP_URL}
+      LIVESCORE_KEY: ${LIVESCORE_KEY}
+      LIVESCORE_SECRET: ${LIVESCORE_SECRET}
 
     deploy:
       resources:
