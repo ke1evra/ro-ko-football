@@ -46,7 +46,9 @@ sudo usermod -aG docker $USER
 
 ### 3.1. Установка MongoDB (v7.0)
 
-Выполните следующие команды для добавления репозитория MongoDB 7.0 и установки сервера:
+Выполните следующие команды для добавления репозитория MongoDB 7.0 и установки сервера.
+
+**Примечание:** На момент написания инструкции официального р��позитория для Ubuntu 24.04 (`noble`) еще нет. Мы будем использовать репозиторий для Ubuntu 22.04 (`jammy`), который полностью совместим.
 
 ```bash
 # Установка зависимостей
@@ -57,8 +59,8 @@ curl -fsSL https://pgp.mongodb.com/server-7.0.asc | \
    sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg \
    --dearmor
 
-# Добавление репозитория
-echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+# Добавление репозитория для Ubuntu 22.04 (jammy)
+echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
 
 # Обновление пакетов и установка
 sudo apt-get update
@@ -114,8 +116,8 @@ sudo systemctl restart mongod
 3.  Создайте пользователя (замените `payload` и `your_strong_password` на свои значения):
     ```javascript
     db.createUser({
-      user: "payload",
-      pwd: "your_strong_password",
+      user: "syncadmin",
+      pwd: "syncadminsyncadmin123qQ!",
       roles: [{ role: "readWriteAnyDatabase", db: "admin" }]
     })
     ```
@@ -142,7 +144,7 @@ nano .env
 
 ```env
 # Используйте 127.0.0.1, так как Docker на Linux может обращаться к хосту напрямую
-DATABASE_URI="mongodb://payload:your_strong_password@127.0.0.1:27017/payload?authSource=admin"
+DATABASE_URI=mongodb://syncadmin:syncadminsyncadmin123qQ!@127.0.0.1:27017/payload?authSource=admin
 
 # Сгенерируйте новый секрет
 PAYLOAD_SECRET="$(openssl rand -hex 32)"
