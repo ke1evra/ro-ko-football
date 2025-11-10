@@ -8,10 +8,10 @@ services:
     env_file:
       - ./.env
     environment:
-      - DATABASE_URI=${DATABASE_URI}
-      - PAYLOAD_SECRET=${PAYLOAD_SECRET}
-      - NODE_ENV=${NODE_ENV}
-      - APP_URL=${APP_URL}
+      DATABASE_URI: "mongodb://syncadmin:syncadminsyncadmin123qQ!@127.0.0.1:27017/payload?authSource=admin"
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+      NODE_ENV: ${NODE_ENV}
+      APP_URL: ${APP_URL}
     ports:
       - "3100:3100"
     deploy:
