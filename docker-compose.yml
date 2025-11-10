@@ -5,17 +5,22 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    # Используем сеть хоста напрямую. Это самый надежный способ
+    # для контейнера получить доступ к сервисам, запущенным на хосте.
+    network_mode: "host"
+    # Директивы 'ports' и 'extra_hosts' игнорируются при network_mode: host
+
+    # Файл .env будет по-прежнему использоваться для PAYLOAD_SECRET и т.д.
     env_file:
       - ./.env
+
+    # Переопределяем DATABASE_URI для работы с network_mode: host
     environment:
-      DATABASE_URI: "mongodb://syncadmin:syncadminsyncadmin123qQ!@host.docker.internal:27017/payload?authSource=admin"
+      DATABASE_URI: "mongodb://syncadmin:syncadminsyncadmin123qQ!@127.0.0.1:27017/payload?authSource=admin"
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
       NODE_ENV: ${NODE_ENV}
       APP_URL: ${APP_URL}
-    ports:
-      - "3100:3100"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+
     deploy:
       resources:
         limits:
