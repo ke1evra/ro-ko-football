@@ -100,7 +100,7 @@ async function findMatchInPayload(params: MatchParams) {
  */
 async function findMatchInFixtures(params: MatchParams) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const baseUrl = process.env.APP_URL || 'http://localhost:3100'
     const apiUrl = `${baseUrl}/api/matches/fixtures?date=${params.date}&team_id=${params.homeTeamId}`
     const response = await fetch(apiUrl, { next: { revalidate: 300 } })
 
@@ -146,7 +146,7 @@ async function findMatchInFixtures(params: MatchParams) {
  */
 async function findMatchInLive(params: MatchParams) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const baseUrl = process.env.APP_URL || 'http://localhost:3100'
     const response = await fetch(`${baseUrl}/api/matches/live`, {
       next: { revalidate: 60 },
     })
@@ -180,7 +180,7 @@ async function findMatchInLive(params: MatchParams) {
  */
 async function findMatchInHistory(params: MatchParams) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const baseUrl = process.env.APP_URL || 'http://localhost:3100'
     const response = await fetch(
       `${baseUrl}/api/matches/history?date=${params.date}&team_id=${params.homeTeamId}`,
       { next: { revalidate: 300 } },
@@ -214,7 +214,7 @@ async function findMatchInHistory(params: MatchParams) {
  */
 async function findMatchInLiveScoreApi(matchId: number) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const baseUrl = process.env.APP_URL || 'http://localhost:3100'
 
     // Попытка 1: events API
     const eventsResponse = await fetch(`${baseUrl}/api/matches/events?match_id=${matchId}`, {
