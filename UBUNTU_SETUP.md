@@ -107,7 +107,7 @@ sudo systemctl restart mongod
     ```
 
 2.  Переключитесь на базу данных `admin`:
-    ```javascript
+    ```bash
     use admin
     ```
 
