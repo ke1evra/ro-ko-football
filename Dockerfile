@@ -56,6 +56,7 @@ COPY --from=builder /app/public ./public
 # Copy scripts and package manager files for running one-off tasks
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 COPY --from=builder /app/scripts ./scripts
+ENV COREPACK_INTEGRITY_KEYS=0
 RUN corepack enable pnpm && pnpm install --prod
 
 # Set the correct permission for prerender cache
