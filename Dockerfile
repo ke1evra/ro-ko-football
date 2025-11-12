@@ -57,7 +57,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 COPY --from=builder /app/scripts ./scripts
 ENV COREPACK_INTEGRITY_KEYS=0
-RUN corepack enable pnpm && pnpm install --prod
+RUN corepack enable pnpm && pnpm install
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
