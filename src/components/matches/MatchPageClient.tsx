@@ -20,6 +20,7 @@ import {
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { TeamLogo } from '@/components/TeamLogo'
+import ComparativeTeamAnalysis from '@/components/fixtures/ComparativeTeamAnalysis'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import PredictionModal from '@/components/predictions/PredictionModal'
 
@@ -836,6 +837,13 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
           </div>
         </CardContent>
       </Card>
+
+      {/* Сравнительный анализ команд по прошедшим матчам */}
+      <ComparativeTeamAnalysis
+        home={{ id: parseInt(String(matchInfo.home.id || '0')), name: matchInfo.home.name }}
+        away={{ id: parseInt(String(matchInfo.away.id || '0')), name: matchInfo.away.name }}
+        limit={10}
+      />
 
       {/* Контент матча */}
       {error ? (

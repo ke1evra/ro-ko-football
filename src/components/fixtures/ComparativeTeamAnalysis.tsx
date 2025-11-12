@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { JSX, useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -226,7 +226,8 @@ function normalizeRows(rows: unknown[]): MatchRow[] {
       ga: awayScore,
       total: homeScore + awayScore,
       result,
-      stats: match.stats,
+      // Приводим к ожидаемому типу, неизвестные формы отбрасываем
+      stats: match.stats as MatchStatsData | undefined,
     }
   })
 }
@@ -833,240 +834,39 @@ export default function ComparativeTeamAnalysis({
     )
   }
 
-  function ChartsSection(): JSX.Element {
-    const [chartType, setChartType] = useState<'bar' | 'line' | 'pie'>('bar')
-
-    const pick = (side: TeamSide, rows: MatchRow[]) =>
-      rows.filter((r) => selectedIds[side].has(r.id))
-    const sh = pick('home', homeRows)
-    const sa = pick('away', awayRows)
-
-    // Подготовка данных для графика по матчам (по каждому матчу отдельно)
-    const matchChartData = useMemo(() => {
-      const data: Array<{
-        matchIndex: string
-        [key: string]: string | number
-      }> = []
-
-      // Сортируем матчи по дате (от новых к старым)
-      const sortedHome = [...sh].sort((a, b) => {
-        const aDate = new Date(a.date).getTime()
-        const bDate = new Date(b.date).getTime()
-        return bDate - aDate
-      })
-
-      sortedHome.forEach((match, idx) => {
-        const homeValue = getStatValue(match, selectedMetric, 'home')
-        const awayValue = getStatValue(match, selectedMetric, 'away')
-
-        data.push({
-          matchIndex: `М${idx + 1}`,
-          [home.name]: homeValue,
-          [away.name]: awayValue,
-        })
-      })
-
-      return data
-    }, [sh, selectedMetric, home.name, away.name]) // eslint-disable-line react-hooks/exhaustive-deps
-
-    // Расчёт средних значений и добавление их в данные
-    const chartDataWithAverages = useMemo(() => {
-      if (matchChartData.length === 0) {
-        return { data: [], homeAvg: 0, awayAvg: 0 }
+  function FormIndicator({ form, title }: { form: Array<'W' | 'D' | 'L'>; title: string }) {
+    const getFormColor = (res: 'W' | 'D' | 'L'): string => {
+      switch (res) {
+        case 'W':
+          return 'bg-green-500 hover:bg-green-600'
+        case 'D':
+          return 'bg-yellow-500 hover:bg-yellow-600'
+        case 'L':
+          return 'bg-red-500 hover:bg-red-600'
+        default:
+          return 'bg-gray-400 hover:bg-gray-500'
       }
-
-      const homeSum = matchChartData.reduce((sum, item) => sum + (item[home.name] as number), 0)
-      const awaySum = matchChartData.reduce((sum, item) => sum + (item[away.name] as number), 0)
-
-      const homeAvg = homeSum / matchChartData.length
-      const awayAvg = awaySum / matchChartData.length
-
-      // Добавляем средние значения в каждую точку данных
-      const dataWithAvg = matchChartData.map((item) => ({
-        ...item,
-        [`${home.name} (ср)`]: homeAvg,
-        [`${away.name} (ср)`]: awayAvg,
-      }))
-
-      return { data: dataWithAvg, homeAvg, awayAvg }
-    }, [matchChartData])
-
-    // Подготовка данных для круговой диаграммы (общие тоталы)
-    const pieChartData = useMemo(() => {
-      const homeTotal = sh.reduce((sum, r) => sum + r.total, 0)
-      const awayTotal = sa.reduce((sum, r) => sum + r.total, 0)
-
-      return [
-        {
-          name: `${home.name} (Т)`,
-          value: homeTotal,
-          fill: '#3b82f6',
-        },
-        {
-          name: `${away.name} (Т)`,
-          value: awayTotal,
-          fill: '#ef4444',
-        },
-      ]
-    }, [sh, sa])
-
-    const COLORS = ['#3b82f6', '#ef4444']
-
+    }
     return (
-      <Card className="rounded-lg shadow-sm mt-6">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-semibold">
-              {chartType === 'pie' ? 'Общие тоталы' : 'Сравнение по матчам'}
-            </CardTitle>
-            <div className="flex gap-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => setChartType('bar')}
-                      className={`p-2 rounded-md transition-colors ${
-                        chartType === 'bar'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
-                    >
-                      <BarChart4 className="h-4 w-4" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>Столбчатая диаграмма (по матчам)</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => setChartType('line')}
-                      className={`p-2 rounded-md transition-colors ${
-                        chartType === 'line'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
-                    >
-                      <LineChartIcon className="h-4 w-4" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>Линейная диаграмма (по матчам)</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => setChartType('pie')}
-                      className={`p-2 rounded-md transition-colors ${
-                        chartType === 'pie'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
-                    >
-                      <PieChartIcon className="h-4 w-4" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>Круговая диаграмма (общие тоталы)</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-4">
-          {chartType === 'pie' ? (
-            pieChartData[0].value === 0 && pieChartData[1].value === 0 ? (
-              <div className="text-center text-sm text-muted-foreground py-8">
-                Нет данных для отображения графика
-              </div>
-            ) : (
-              <div className="w-full h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieChartData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, value }) => `${name}: ${value}`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {pieChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            )
-          ) : matchChartData.length === 0 ? (
-            <div className="text-center text-sm text-muted-foreground py-8">
-              Нет данных для отображения графика
-            </div>
-          ) : (
-            <div className="w-full h-80">
-              {chartType === 'bar' && (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={matchChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="matchIndex" />
-                    <YAxis />
-                    <RechartsTooltip />
-                    <Bar dataKey={home.name} fill="#3b82f6" />
-                    <Bar dataKey={away.name} fill="#ef4444" />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-              {chartType === 'line' && (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartDataWithAverages.data}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="matchIndex" />
-                    <YAxis />
-                    <RechartsTooltip />
-                    <Line
-                      type="monotone"
-                      dataKey={home.name}
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      dot={{ fill: '#3b82f6', r: 3 }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey={away.name}
-                      stroke="#ef4444"
-                      strokeWidth={2}
-                      dot={{ fill: '#ef4444', r: 3 }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey={`${home.name} (ср)`}
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      strokeDasharray="5 5"
-                      dot={false}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey={`${away.name} (ср)`}
-                      stroke="#ef4444"
-                      strokeWidth={2}
-                      strokeDasharray="5 5"
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <div className="space-y-2">
+        <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>
+        <div className="flex gap-1">
+          {form.map((r, idx) => (
+            <div key={`${title}-${idx}`} className={`w-3 h-3 rounded-full ${getFormColor(r)}`} />
+          ))}
+        </div>
+      </div>
     )
   }
+
+  const computeForm = (rows: MatchRow[]): Array<'W' | 'D' | 'L'> => {
+    // Учитываем столько матчей, сколько в массиве, порядок — от новых к старым
+    const sorted = [...rows].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    return sorted.map((r) => r.result)
+  }
+
+  const homeForm = useMemo(() => computeForm(filteredHomeRows), [filteredHomeRows])
+  const awayForm = useMemo(() => computeForm(filteredAwayRows), [filteredAwayRows])
 
   return (
     <div className="space-y-6">
@@ -1178,6 +978,26 @@ export default function ComparativeTeamAnalysis({
             </div>
           </div>
 
+          {/* Форма команд (последние 6 матчей) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="rounded-lg shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">{home.name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FormIndicator title="Форма (последние 6)" form={homeForm} />
+              </CardContent>
+            </Card>
+            <Card className="rounded-lg shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">{away.name}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FormIndicator title="Форма (последние 6)" form={awayForm} />
+              </CardContent>
+            </Card>
+          </div>
+
           {/* 1. Сводная статистика команд */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AggBlock title={home.name} agg={aggHome} />
@@ -1197,9 +1017,6 @@ export default function ComparativeTeamAnalysis({
               rows={filteredAwayRows}
             />
           </div>
-
-          {/* 3. Графики сравнения */}
-          <ChartsSection />
         </>
       )}
     </div>

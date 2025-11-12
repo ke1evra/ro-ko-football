@@ -111,7 +111,9 @@ async function findMatchInPayload(params: MatchParams) {
  */
 async function findMatchInFixtures(params: MatchParams) {
   try {
-    const apiUrl = makeApiUrl(`/api/matches/fixtures?date=${params.date}&team_id=${params.homeTeamId}`)
+    const apiUrl = makeApiUrl(
+      `/api/matches/fixtures?date=${params.date}&team_id=${params.homeTeamId}`,
+    )
     const response = await fetch(apiUrl, { next: { revalidate: 300 } })
 
     if (!response.ok) {
@@ -140,7 +142,9 @@ async function findMatchInFixtures(params: MatchParams) {
     }
   } catch (error) {
     console.error('[findMatchInFixtures] Error:', error)
-    const apiUrl = makeApiUrl(`/api/matches/fixtures?date=${params.date}&team_id=${params.homeTeamId}`)
+    const apiUrl = makeApiUrl(
+      `/api/matches/fixtures?date=${params.date}&team_id=${params.homeTeamId}`,
+    )
     return {
       match: null,
       apiUrl,
@@ -542,14 +546,6 @@ export default async function MatchV2Page({ params }: { params: Promise<{ slug: 
       <Section>
         <Container className="space-y-6">
           <MatchPageClient matchId={matchId} initialMatchInfo={initialMatchInfo as any} />
-
-          {/* H2H блок под виджетом матча */}
-          <H2HBlock
-            homeTeamId={parsed.homeTeamId}
-            awayTeamId={parsed.awayTeamId}
-            homeTeamName={homeTeamName}
-            awayTeamName={awayTeamName}
-          />
 
           {/* Навигация */}
           <div className="flex items-center gap-2">
