@@ -869,156 +869,158 @@ export default function ComparativeTeamAnalysis({
   const awayForm = useMemo(() => computeForm(filteredAwayRows), [filteredAwayRows])
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Info className="h-4 w-4" />
-        Анализ матчей — сравнительная статистика команд
-      </div>
-
-      {error && (
-        <div className="inline-flex items-center gap-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
-          <AlertCircle className="h-4 w-4 flex-shrink-0" />
-          {error}
-        </div>
-      )}
-
-      {loading ? (
-        <div className="text-sm text-muted-foreground py-8 text-center">Загрузка…</div>
-      ) : (
-        <>
-          {/* Фильтр: Все матчи / Личные матчи */}
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => setMatchFilter('all')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                matchFilter === 'all'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              Все матчи
-            </button>
-            <button
-              onClick={() => setMatchFilter('head-to-head')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                matchFilter === 'head-to-head'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              Личные матчи
-            </button>
+    <Card className="rounded-lg shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-semibold flex items-center gap-2">
+          <h2>Сравнительный анализ</h2>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {error && (
+          <div className="inline-flex items-center gap-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            {error}
           </div>
+        )}
 
-          {/* Фильтр: Хозяева / Гости / Все */}
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => setVenueFilter('all')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                venueFilter === 'all'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              Все матчи
-            </button>
-            <button
-              onClick={() => setVenueFilter('home')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                venueFilter === 'home'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              Дома
-            </button>
-            <button
-              onClick={() => setVenueFilter('away')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                venueFilter === 'away'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              В гостях
-            </button>
-          </div>
-
-          {/* Селектор количества матчей и вкладки для выбора метрики */}
-          <div className="flex items-center justify-between gap-4 flex-wrap">
+        {loading ? (
+          <div className="text-sm text-muted-foreground py-8 text-center">Загрузка…</div>
+        ) : (
+          <>
+            {/* Фильтр: Все матчи / Личные матчи */}
             <div className="flex gap-2 flex-wrap">
-              {STAT_METRICS.map((metric) => (
-                <button
-                  key={metric.key}
-                  onClick={() => setSelectedMetric(metric.key)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                    selectedMetric === metric.key
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  }`}
-                >
-                  {metric.label}
-                </button>
-              ))}
+              <button
+                onClick={() => setMatchFilter('all')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  matchFilter === 'all'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                Все матчи
+              </button>
+              <button
+                onClick={() => setMatchFilter('head-to-head')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  matchFilter === 'head-to-head'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                Личные матчи
+              </button>
             </div>
-            <div className="flex gap-2">
-              {[10, 20, 30, 40, 50].map((value) => (
-                <button
-                  key={value}
-                  onClick={() => setLimit(value)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                    limit === value
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  }`}
-                >
-                  {value}
-                </button>
-              ))}
+
+            {/* Фильтр: Хозяева / Гости / Все */}
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => setVenueFilter('all')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  venueFilter === 'all'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                Все матчи
+              </button>
+              <button
+                onClick={() => setVenueFilter('home')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  venueFilter === 'home'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                Дома
+              </button>
+              <button
+                onClick={() => setVenueFilter('away')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  venueFilter === 'away'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                В гостях
+              </button>
             </div>
-          </div>
 
-          {/* Форма команд (последние 6 матчей) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="rounded-lg shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base font-semibold">{home.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <FormIndicator title="Форма (последние 6)" form={homeForm} />
-              </CardContent>
-            </Card>
-            <Card className="rounded-lg shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base font-semibold">{away.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <FormIndicator title="Форма (последние 6)" form={awayForm} />
-              </CardContent>
-            </Card>
-          </div>
+            {/* Селектор количества матчей и вкладки для выбора метрики */}
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex gap-2 flex-wrap">
+                {STAT_METRICS.map((metric) => (
+                  <button
+                    key={metric.key}
+                    onClick={() => setSelectedMetric(metric.key)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                      selectedMetric === metric.key
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    {metric.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                {[10, 20, 30, 40, 50].map((value) => (
+                  <button
+                    key={value}
+                    onClick={() => setLimit(value)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                      limit === value
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          {/* 1. Сводная статистика команд */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <AggBlock title={home.name} agg={aggHome} />
-            <AggBlock title={away.name} agg={aggAway} />
-          </div>
+            {/* Форма команд (последние 6 матчей) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="rounded-lg shadow-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-semibold">{home.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <FormIndicator title="Форма" form={homeForm} />
+                </CardContent>
+              </Card>
+              <Card className="rounded-lg shadow-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-semibold">{away.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <FormIndicator title="Форма" form={awayForm} />
+                </CardContent>
+              </Card>
+            </div>
 
-          {/* 2. Таблицы последних матчей */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <MatchTable
-              side="home"
-              title={`Последние матчи — ${home.name}`}
-              rows={filteredHomeRows}
-            />
-            <MatchTable
-              side="away"
-              title={`Последние матчи — ${away.name}`}
-              rows={filteredAwayRows}
-            />
-          </div>
-        </>
-      )}
-    </div>
+            {/* 1. Сводная статистика команд */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <AggBlock title={home.name} agg={aggHome} />
+              <AggBlock title={away.name} agg={aggAway} />
+            </div>
+
+            {/* 2. Таблицы последних матчей */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <MatchTable
+                side="home"
+                title={`Последние матчи — ${home.name}`}
+                rows={filteredHomeRows}
+              />
+              <MatchTable
+                side="away"
+                title={`Последние матчи — ${away.name}`}
+                rows={filteredAwayRows}
+              />
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
   )
 }

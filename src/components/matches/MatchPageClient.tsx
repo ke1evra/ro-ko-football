@@ -838,13 +838,6 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
         </CardContent>
       </Card>
 
-      {/* Сравнительный анализ команд по прошедшим матчам */}
-      <ComparativeTeamAnalysis
-        home={{ id: parseInt(String(matchInfo.home.id || '0')), name: matchInfo.home.name }}
-        away={{ id: parseInt(String(matchInfo.away.id || '0')), name: matchInfo.away.name }}
-        limit={10}
-      />
-
       {/* Контент матча */}
       {error ? (
         <Card>
@@ -1029,7 +1022,7 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Статистика матча не най��ена</p>
+                    <p>Статистика матча не найдена</p>
                   </div>
                 )}
               </CardContent>
@@ -1037,6 +1030,14 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
           </div>
         </div>
       )}
+
+      {/* Сравнительный анализ команд по прошедшим матчам */}
+      <ComparativeTeamAnalysis
+        home={{ id: parseInt(String(matchInfo.home.id || '0')), name: matchInfo.home.name }}
+        away={{ id: parseInt(String(matchInfo.away.id || '0')), name: matchInfo.away.name }}
+        limit={10}
+      />
+
       {isScheduled && (
         <PredictionModal
           isOpen={isPredictionModalOpen}
