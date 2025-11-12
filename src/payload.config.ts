@@ -53,7 +53,10 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: mongooseAdapter({
-    url: process.env.DATABASE_URI || '',
+    url:
+      (process.env.NODE_ENV === 'development' && process.env.MONGODB_URI_LOCAL)
+        ? process.env.MONGODB_URI_LOCAL
+        : process.env.DATABASE_URI || process.env.MONGODB_URI || process.env.PAYLOAD_MONGODB_URL || '',
   }),
   sharp,
   plugins: [payloadCloudPlugin()],

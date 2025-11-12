@@ -96,6 +96,79 @@ interface MatchPageClientProps {
   initialMatchInfo: MatchInfo
 }
 
+// Маппинг статусов матча на русские названия
+const statusToRu = (status?: string | null): string => {
+  if (!status) return 'Неизвестно'
+  const s = String(status).toUpperCase()
+  switch (s) {
+    case 'FT':
+    case 'FINISHED':
+      return 'Завершён'
+    case 'HT':
+      return 'Перерыв'
+    case 'NS':
+    case 'SCHEDULED':
+    case 'NOT_STARTED':
+      return 'Запланирован'
+    case 'LIVE':
+    case 'IN_PLAY':
+      return 'Идёт'
+    case 'AET':
+      return 'Доп. время'
+    case 'PEN':
+    case 'AP':
+      return 'Пенальти'
+    case 'PST':
+      return 'Приостановлен'
+    case 'CANC':
+      return 'Отменён'
+    case 'ABD':
+      return 'Прерван'
+    case 'AWD':
+      return 'Присуждён'
+    case 'WO':
+      return 'Техническое поражение'
+    default:
+      return 'Неизвестно'
+  }
+}
+
+// Цветовая дифференциация статусов
+const statusColor = (
+  status?: string | null,
+): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  if (!status) return 'secondary'
+  const s = String(status).toUpperCase()
+  switch (s) {
+    case 'FT':
+    case 'FINISHED':
+      return 'default' // зелёный для завершённого
+    case 'HT':
+      return 'secondary' // жёлтый для перерыва
+    case 'NS':
+    case 'SCHEDULED':
+    case 'NOT_STARTED':
+      return 'outline' // серый для запланированного
+    case 'LIVE':
+    case 'IN_PLAY':
+      return 'destructive' // красный для live
+    case 'AET':
+    case 'PEN':
+    case 'AP':
+      return 'secondary'
+    case 'PST':
+      return 'secondary'
+    case 'CANC':
+    case 'ABD':
+      return 'destructive'
+    case 'AWD':
+    case 'WO':
+      return 'secondary'
+    default:
+      return 'secondary'
+  }
+}
+
 // Утилиты для событий
 const getEventIcon = (type: string) => {
   switch (type.toLowerCase()) {
@@ -670,30 +743,20 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
       {/* Шапка матча */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Activity className="h-6 w-6 text-primary" />
-              <div>
-                <h1 className="text-2xl font-bold">
-                  {matchInfo.home.name} — {matchInfo.away.name}
-                </h1>
-                {matchInfo.competition?.name && (
-                  <p className="text-muted-foreground">{matchInfo.competition.name}</p>
-                )}
+          <div className="flex justify-center items-center gap-3">
+            <div className="text-xs text-muted-foreground text-small">
+              <div>{matchInfo.competition?.name && <p>{matchInfo.competition.name}</p>}</div>
+            </div>
+            <span className="text-xs text-muted-foreground text-small opacity-30">—</span>
+            {(eventsData?.data?.match?.date || matchInfo.date) && (
+              <div className="text-xs text-muted-foreground text-small">
+                {format(new Date(eventsData?.data?.match?.date || matchInfo.date!), 'd MMMM yyyy', {
+                  locale: ru,
+                })}
+                {(eventsData?.data?.match?.time || matchInfo.time) &&
+                  ` в ${eventsData?.data?.match?.time || matchInfo.time}`}
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {(eventsData?.data?.match?.status || matchInfo.status) && (
-                <Badge variant="secondary">
-                  {eventsData?.data?.match?.status || matchInfo.status}
-                </Badge>
-              )}
-              {isScheduled && (
-                <Button variant="outline" size="sm" onClick={() => setIsPredictionModalOpen(true)}>
-                  Прогноз
-                </Button>
-              )}
-            </div>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -706,7 +769,7 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                 size="large"
               />
               <div className="text-center">
-                <div className="font-semibold text-lg">{matchInfo.home.name}</div>
+                <div className="font-semibold text-2xl">{matchInfo.home.name}</div>
                 <div className="text-sm text-muted-foreground">Дома</div>
               </div>
             </div>
@@ -716,12 +779,12 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
               {eventsData?.data?.match?.scores?.score ||
               ('score' in matchInfo ? matchInfo.score : null) ? (
                 <div className="space-y-2">
-                  <div className="text-4xl font-bold font-mono">
+                  <div className="text-5xl font-bold font-mono">
                     {eventsData?.data?.match?.scores?.score ||
                       ('score' in matchInfo ? matchInfo.score : '')}
                   </div>
                   {eventsData?.data?.match?.scores && (
-                    <div className="text-xs text-muted-foreground space-y-1">
+                    <i className="text-xs text-muted-foreground space-y-1 opacity-50">
                       {eventsData.data.match.scores.ht_score && (
                         <div>Перерыв: {eventsData.data.match.scores.ht_score}</div>
                       )}
@@ -736,29 +799,18 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
                       {eventsData.data.match.scores.ps_score && (
                         <div>Пенальти: {eventsData.data.match.scores.ps_score}</div>
                       )}
-                    </div>
+                    </i>
                   )}
                 </div>
               ) : (
                 <div className="text-2xl font-bold text-muted-foreground">vs</div>
-              )}
-              {(eventsData?.data?.match?.date || matchInfo.date) && (
-                <div className="text-sm text-muted-foreground mt-2">
-                  {format(
-                    new Date(eventsData?.data?.match?.date || matchInfo.date!),
-                    'd MMMM yyyy',
-                    { locale: ru },
-                  )}
-                  {(eventsData?.data?.match?.time || matchInfo.time) &&
-                    ` в ${eventsData?.data?.match?.time || matchInfo.time}`}
-                </div>
               )}
             </div>
 
             {/* Команда гостей */}
             <div className="flex items-center justify-center gap-3">
               <div className="text-center">
-                <div className="font-semibold text-lg">{matchInfo.away.name}</div>
+                <div className="font-semibold text-2xl">{matchInfo.away.name}</div>
                 <div className="text-sm text-muted-foreground">В гостях</div>
               </div>
               <TeamLogo
@@ -768,6 +820,20 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
               />
             </div>
           </div>
+          <div className="flex justify-center mt-6">
+            <div className="flex items-center gap-2">
+              {(eventsData?.data?.match?.status || matchInfo.status) && (
+                <Badge variant={statusColor(eventsData?.data?.match?.status || matchInfo.status)}>
+                  {statusToRu(eventsData?.data?.match?.status || matchInfo.status)}
+                </Badge>
+              )}
+              {isScheduled && (
+                <Button variant="outline" size="sm" onClick={() => setIsPredictionModalOpen(true)}>
+                  Прогноз
+                </Button>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -775,7 +841,7 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
       {error ? (
         <Card>
           <CardContent className="text-center py-8 space-y-4">
-            <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto" />
+            <AlertCircle className="h-20 w-20 text-muted-foreground mx-auto" />
             <p className="text-muted-foreground">{error}</p>
             <Button onClick={fetchMatchData} variant="outline" size="sm">
               Попробовать снова
@@ -784,11 +850,11 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
         </Card>
       ) : (
         <div
-          className={`relative grid gap-4 ${events && events.length > 0 ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}
+          className={`relative grid gap-4 ${events && events.length > 0 ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}
         >
           {/* Левая колонка: события (2/3) — рендерим только если есть события */}
           {events && events.length > 0 ? (
-            <div className="lg:col-span-2 order-1">
+            <div className="lg:col-span-1 order-1">
               <Card className="sticky top-24">
                 <CardHeader>
                   <div className="flex items-center justify-between">

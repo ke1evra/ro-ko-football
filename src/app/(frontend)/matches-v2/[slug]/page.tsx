@@ -14,6 +14,17 @@ import configPromise from '@payload-config'
 
 export const revalidate = 300
 
+// Безопасная сборка URL для fetch в SSR
+function makeApiUrl(path: string): string {
+  const isProd = process.env.NODE_ENV === 'production'
+  const baseUrl = process.env.APP_URL
+  if (isProd || baseUrl) {
+    return `${baseUrl || ''}${path}`
+  }
+  // В dev без APP_URL используем относительные пути
+  return path
+}
+
 interface MatchParams {
   homeTeamSlug: string
   awayTeamSlug: string
@@ -100,8 +111,7 @@ async function findMatchInPayload(params: MatchParams) {
  */
 async function findMatchInFixtures(params: MatchParams) {
   try {
-    const baseUrl = process.env.APP_URL || 'http://localhost:3100'
-    const apiUrl = `${baseUrl}/api/matches/fixtures?date=${params.date}&team_id=${params.homeTeamId}`
+    const apiUrl = makeApiUrl(`/api/matches/fixtures?date=${params.date}&team_id=${params.homeTeamId}`)
     const response = await fetch(apiUrl, { next: { revalidate: 300 } })
 
     if (!response.ok) {
@@ -130,8 +140,7 @@ async function findMatchInFixtures(params: MatchParams) {
     }
   } catch (error) {
     console.error('[findMatchInFixtures] Error:', error)
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    const apiUrl = `${baseUrl}/api/matches/fixtures?date=${params.date}&team_id=${params.homeTeamId}`
+    const apiUrl = makeApiUrl(`/api/matches/fixtures?date=${params.date}&team_id=${params.homeTeamId}`)
     return {
       match: null,
       apiUrl,
@@ -146,8 +155,7 @@ async function findMatchInFixtures(params: MatchParams) {
  */
 async function findMatchInLive(params: MatchParams) {
   try {
-    const baseUrl = process.env.APP_URL || 'http://localhost:3100'
-    const response = await fetch(`${baseUrl}/api/matches/live`, {
+    const response = await fetch(makeApiUrl('/api/matches/live'), {
       next: { revalidate: 60 },
     })
 
@@ -180,9 +188,8 @@ async function findMatchInLive(params: MatchParams) {
  */
 async function findMatchInHistory(params: MatchParams) {
   try {
-    const baseUrl = process.env.APP_URL || 'http://localhost:3100'
     const response = await fetch(
-      `${baseUrl}/api/matches/history?date=${params.date}&team_id=${params.homeTeamId}`,
+      makeApiUrl(`/api/matches/history?date=${params.date}&team_id=${params.homeTeamId}`),
       { next: { revalidate: 300 } },
     )
 
@@ -214,10 +221,8 @@ async function findMatchInHistory(params: MatchParams) {
  */
 async function findMatchInLiveScoreApi(matchId: number) {
   try {
-    const baseUrl = process.env.APP_URL || 'http://localhost:3100'
-
     // Попытка 1: events API
-    const eventsResponse = await fetch(`${baseUrl}/api/matches/events?match_id=${matchId}`, {
+    const eventsResponse = await fetch(makeApiUrl(`/api/matches/events?match_id=${matchId}`), {
       next: { revalidate: 300 },
     })
 
@@ -230,7 +235,7 @@ async function findMatchInLiveScoreApi(matchId: number) {
     }
 
     // Попытка 2: stats API
-    const statsResponse = await fetch(`${baseUrl}/api/matches/stats?match_id=${matchId}`, {
+    const statsResponse = await fetch(makeApiUrl(`/api/matches/stats?match_id=${matchId}`), {
       next: { revalidate: 300 },
     })
 
@@ -252,7 +257,7 @@ async function findMatchInLiveScoreApi(matchId: number) {
     }
 
     // Попытка 3: history API
-    const historyResponse = await fetch(`${baseUrl}/api/matches/history?match_id=${matchId}`, {
+    const historyResponse = await fetch(makeApiUrl(`/api/matches/history?match_id=${matchId}`), {
       next: { revalidate: 300 },
     })
 

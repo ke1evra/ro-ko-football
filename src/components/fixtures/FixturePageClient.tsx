@@ -133,45 +133,15 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
         {/* Детали матча */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {fx.competition?.countries && fx.competition.countries.length > 0 ? (
-                <>
-                  <CountryFlagImage
-                    countryId={fx.competition.countries[0].id}
-                    countryName={fx.competition.countries[0].name}
-                    size="small"
-                    className="h-5 w-5"
-                  />
-                  <span className="opacity-50">
-                    {fx.competition.name || 'Матч'}
-                    {fx.round && ` • Тур ${fx.round}`}
-                  </span>
-                </>
-              ) : (
-                <span>
-                  {fx.competition?.name || 'Матч'}
-                  {fx.round && ` • Тур ${fx.round}`}
-                </span>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Главный ряд: команды слева/справа и крупный счёт по центру */}
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-4">
-              {/* Домашняя команда */}
-              <div className="flex items-center justify-end gap-3">
-                <Link
-                  href={`/teams/${fx.home.id}`}
-                  className="text-3xl font-semibold hover:text-primary max-w-64"
-                >
-                  {fx.home.name}
-                </Link>
-                <TeamLogo teamId={fx.home.id} teamName={fx.home.name} size="large" />
-              </div>
-
-              <div className="flex flex-col items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-2 text-center">
+              <span className="text-xs text-muted-foreground text-small">
+                {fx.competition.name || 'Матч'}
+                {fx.round && `, тур ${fx.round}`}
+              </span>
+              <span className="text-xs text-muted-foreground text-small opacity-30">—</span>
+              <div className="flex justify-center gap-2">
                 {/* Дата, время и обратный отсчёт под счётом */}
-                <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
+                <div className="flex  items-center gap-1 text-xs text-muted-foreground">
                   <div className="inline-flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     <LocalDateTime date={fx.date} time={fx.time} utc showTime={false} />
@@ -184,47 +154,63 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                   )}
                   {countdownText && (
                     <div className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+                      <span className="text-xs text-muted-foreground text-small opacity-30">—</span>
                       <span>{countdownText}</span>
                     </div>
                   )}
                 </div>
               </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Главный ряд: команды слева/справа и крупный счёт по центру */}
+            <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-6">
+              {/* Домашняя команда */}
+              <div className="flex items-center justify-end gap-3">
+                <TeamLogo teamId={fx.home.id} teamName={fx.home.name} size="large" />
+                <Link
+                  href={`/teams/${fx.home.id}`}
+                  className="text-3xl font-semibold hover:text-primary max-w-64"
+                >
+                  {fx.home.name}
+                </Link>
+              </div>
+              {/* Футер с коэффициентами */}
+              {(Number.isFinite(oHome) || Number.isFinite(oDraw) || Number.isFinite(oAway)) && (
+                <div className="flex items-center justify-between gap-4 py-4 flex-1">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="border-2 border-border rounded px-3 py-2 text-center">
+                      <span className="font-semibold text-sm">{fmtOdd(oHome)}</span>
+                    </div>
+                    {/*<span className="text-xs text-muted-foreground ">{fx.home.name}</span>*/}
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="border-2 border-border rounded px-3 py-2 text-center">
+                      <i className="opacity-30">x&nbsp;</i>
+                      <span className="font-semibold text-sm">{fmtOdd(oDraw)}</span>
+                    </div>
+                    {/*<span className="text-xs text-muted-foreground ">Ничья</span>*/}
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="border-2 border-border rounded px-3 py-2 text-center">
+                      <span className="font-semibold text-sm">{fmtOdd(oAway)}</span>
+                    </div>
+                    {/*<span className="text-xs text-muted-foreground ">{fx.away.name}</span>*/}
+                  </div>
+                </div>
+              )}
 
               {/* Гостевая команда */}
               <div className="flex items-center justify-start gap-3">
-                <TeamLogo teamId={fx.away.id} teamName={fx.away.name} size="large" />
                 <Link
                   href={`/teams/${fx.away.id}`}
                   className="text-3xl font-semibold hover:text-primary max-w-64 flex justify-center"
                 >
                   {fx.away.name}
                 </Link>
+                <TeamLogo teamId={fx.away.id} teamName={fx.away.name} size="large" />
               </div>
             </div>
-
-            {/* Футер с коэффициентами */}
-            {(Number.isFinite(oHome) || Number.isFinite(oDraw) || Number.isFinite(oAway)) && (
-              <div className="flex items-center justify-center gap-4 py-4">
-                <div className="flex flex-col items-center gap-1 w-64">
-                  <div className="border-2 border-border rounded px-3 py-2 text-center">
-                    <span className="font-semibold text-sm">{fmtOdd(oHome)}</span>
-                  </div>
-                  <span className="text-xs text-muted-foreground ">{fx.home.name}</span>
-                </div>
-                <div className="flex flex-col items-center gap-1 w-64">
-                  <div className="border-2 border-border rounded px-3 py-2 text-center">
-                    <span className="font-semibold text-sm">{fmtOdd(oDraw)}</span>
-                  </div>
-                  <span className="text-xs text-muted-foreground ">Ничья</span>
-                </div>
-                <div className="flex flex-col items-center gap-1 w-64">
-                  <div className="border-2 border-border rounded px-3 py-2 text-center">
-                    <span className="font-semibold text-sm">{fmtOdd(oAway)}</span>
-                  </div>
-                  <span className="text-xs text-muted-foreground ">{fx.away.name}</span>
-                </div>
-              </div>
-            )}
 
             {/* Место проведения */}
             {fx.location ? (
