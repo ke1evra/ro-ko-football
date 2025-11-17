@@ -56,6 +56,8 @@ COPY --from=builder /app/public ./public
 # Copy scripts and package manager files for running one-off tasks
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 COPY --from=builder /app/scripts ./scripts
+# Copy src for worker scripts that need to load TypeScript files
+COPY --from=builder /app/src ./src
 ENV COREPACK_INTEGRITY_KEYS=0
 RUN corepack enable pnpm && pnpm install
 
