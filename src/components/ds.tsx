@@ -11,7 +11,7 @@ export type NavProps = React.PropsWithChildren<{
 
 export function Section({ className, children }: BaseProps) {
   return (
-    <section className={['py-8 md:py-12', className].filter(Boolean).join(' ')}>{children}</section>
+    <section className={['py-4 md:py-6', className].filter(Boolean).join(' ')}>{children}</section>
   )
 }
 

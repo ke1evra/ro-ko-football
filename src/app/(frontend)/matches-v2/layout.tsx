@@ -25,16 +25,6 @@ export default async function MatchesV2Layout({ children }: { children: React.Re
       {/* Виджет с матчами приоритетных лиг */}
       <div className="border-b bg-stone-200">
         <Container className="py-3">
-          <div className="mb-2">
-            <h2 className="text-sm font-medium text-foreground mb-1">
-              🏆 {settings?.title || 'Ближайшие матчи топ-лиг'}
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              {settings?.enabled
-                ? `Настроено ${leagueIds.length} лиг через CMS`
-                : 'Виджет отключён в настройках CMS'}
-            </p>
-          </div>
           <div className="overflow-hidden">
             <UpcomingMatchesStrip initial={[]} />
           </div>
