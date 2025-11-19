@@ -37,6 +37,7 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from 'recharts'
+import BettingFrequencyMatrix from '@/components/fixtures/BettingFrequencyMatrix'
 
 type TeamSide = 'home' | 'away'
 type StatMetric =
@@ -552,15 +553,22 @@ export default function ComparativeTeamAnalysis({
     })
   }, [matchFilter, filteredHomeRows, filteredAwayRows])
 
+  const selectedHomeRows = useMemo(
+    () => filteredHomeRows.filter((r) => selectedIds.home.has(r.id)),
+    [filteredHomeRows, selectedIds.home],
+  )
+  const selectedAwayRows = useMemo(
+    () => filteredAwayRows.filter((r) => selectedIds.away.has(r.id)),
+    [filteredAwayRows, selectedIds.away],
+  )
+
   const aggHome = useMemo(() => {
-    const selectedHomeRows = filteredHomeRows.filter((r) => selectedIds.home.has(r.id))
     return aggregateByMetric(selectedHomeRows, selectedMetric)
-  }, [filteredHomeRows, selectedIds.home, selectedMetric])
+  }, [selectedHomeRows, selectedMetric])
 
   const aggAway = useMemo(() => {
-    const selectedAwayRows = filteredAwayRows.filter((r) => selectedIds.away.has(r.id))
     return aggregateByMetric(selectedAwayRows, selectedMetric)
-  }, [filteredAwayRows, selectedIds.away, selectedMetric])
+  }, [selectedAwayRows, selectedMetric])
 
   function toggle(side: TeamSide, id: string) {
     setSelectedIds((prev) => {
@@ -1035,7 +1043,23 @@ export default function ComparativeTeamAnalysis({
               <AggBlock title={away.name} agg={aggAway} selectedMetric={selectedMetric} />
             </div>
 
-            {/* 2. Таблицы последних матчей */}
+            {/* 2. Матрица частот ставок */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <BettingFrequencyMatrix
+                teamId={home.id}
+                rows={selectedHomeRows}
+                limit={limit}
+                title={`Частоты ставок — ${home.name}`}
+              />
+              <BettingFrequencyMatrix
+                teamId={away.id}
+                rows={selectedAwayRows}
+                limit={limit}
+                title={`Частоты ставок — ${away.name}`}
+              />
+            </div>
+
+            {/* 3. Таблицы последних матчей */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <MatchTable
                 side="home"
