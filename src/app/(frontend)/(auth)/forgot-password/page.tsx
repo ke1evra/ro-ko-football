@@ -20,15 +20,15 @@ export default async function ForgotPasswordPage() {
     <Section>
       <Container>
         <AuthBox>
-          <h1>Forgot Password</h1>
+          <h1>Забыли пароль</h1>
           <p className="text-muted-foreground my-4 text-sm">
-            Enter your email address and we&apos;ll send you a link to reset your password.
+            Введите ваш адрес электронной почты, и мы отправим вам ссылку для сброса пароля.
           </p>
           <ForgotPasswordForm />
           <p className="text-muted-foreground text-xs">
-            Remember your password?{' '}
+            Вспомнили пароль?{' '}
             <Link className="text-foreground" href="/login">
-              Sign in
+              В��йти
             </Link>
           </p>
         </AuthBox>

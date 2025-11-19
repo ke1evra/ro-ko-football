@@ -7,6 +7,9 @@ import { resetPassword, getUser } from '@/lib/auth'
 import { Section, Container } from '@/components/ds'
 import { Button } from '@/components/ui/button'
 import { AuthBox } from '@/components/auth/auth-box'
+import { PasswordInput } from '@/components/ui/password-input'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
 function ResetPasswordForm() {
@@ -26,8 +29,8 @@ function ResetPasswordForm() {
       try {
         const user = await getUser()
         if (user) {
-          toast.info('Already Signed In', {
-            description: 'You are already signed in. Redirecting to dashboard...',
+          toast.info('Уже вошли в систему', {
+            description: 'Вы уже вошли в систему. Перенаправление на панель управления...',
           })
           router.push('/dashboard')
         }
@@ -53,16 +56,16 @@ function ResetPasswordForm() {
     setIsLoading(true)
 
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match', {
-        description: 'Please make sure both passwords are the same.',
+      toast.error('Пароли не совпадают', {
+        description: 'Убедитесь, что оба пароля одинаковые.',
       })
       setIsLoading(false)
       return
     }
 
     if (password.length < 8) {
-      toast.error('Password too short', {
-        description: 'Password must be at least 8 characters long.',
+      toast.error('Пароль слишком короткий', {
+        description: 'Пароль должен содержать не менее 8 символов.',
       })
       setIsLoading(false)
       return
@@ -73,30 +76,30 @@ function ResetPasswordForm() {
 
       if (result.success) {
         setIsSuccess(true)
-        toast.success('Password Reset Successfully!', {
-          description: 'You can now sign in with your new password.',
+        toast.success('Пароль успешно сброшен!', {
+          description: 'Теперь вы можете войти с новым паролем.',
         })
       } else {
         switch (result.errorCode) {
           case 'INVALID_OR_EXPIRED_TOKEN':
-            toast.error('Invalid or Expired Link', {
-              description: 'This reset link has expired. Please request a new one.',
+            toast.error('Неверная или истекшая ссылка', {
+              description: 'Эта ссылка для сброса истекла. Запросите новую.',
             })
             break
           case 'INVALID_PASSWORD':
-            toast.error('Invalid Password', {
-              description: result.error || 'Please enter a valid password',
+            toast.error('Неверный пароль', {
+              description: result.error || 'Введите корректный пароль',
             })
             break
           default:
-            toast.error('Reset Failed', {
-              description: result.error || 'Something went wrong. Please try again.',
+            toast.error('Сброс не удался', {
+              description: result.error || 'Что-то пошло не так. Попробуйте снова.',
             })
         }
       }
     } catch (_error) {
-      toast.error('Reset Failed', {
-        description: 'Something went wrong. Please try again.',
+      toast.error('Сброс не удался', {
+        description: 'Что-то пошло не так. Попробуйте снова.',
       })
     } finally {
       setIsLoading(false)
@@ -108,13 +111,13 @@ function ResetPasswordForm() {
       <Section>
         <Container>
           <AuthBox>
-            <h1>Invalid Reset Link</h1>
+            <h1>Неверная ссылка для сброса</h1>
             <p className="text-muted-foreground mb-4">
-              This password reset link is invalid or has expired.
+              Эта ссылка для сброса пароля недействительна или истекла.
             </p>
             <div className="text-center">
               <Link href="/forgot-password" className="text-foreground hover:underline">
-                Request a new password reset
+                Запросить новый сброс пароля
               </Link>
             </div>
           </AuthBox>
@@ -127,54 +130,60 @@ function ResetPasswordForm() {
     <Section>
       <Container>
         <AuthBox>
-          <h1>Reset Password</h1>
-          <p className="text-muted-foreground mb-4">Enter your new password below.</p>
+          <h1>Сброс пароля</h1>
+          <p className="text-muted-foreground mb-4">Введите новый пароль ниже.</p>
 
           {isSuccess ? (
             <div className="space-y-4 text-center">
-              <p className="text-muted-foreground">Your password has been reset successfully.</p>
+              <p className="text-muted-foreground">Ваш пароль успешно сброшен.</p>
               <Button asChild>
-                <Link href="/login">Sign In</Link>
+                <Link href="/login">Войти</Link>
               </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="grid gap-6 my-6">
-              <input
-                type="email"
-                value={email}
-                disabled
-                className="w-full focus:outline-none border-b pb-2 h-8 bg-muted text-muted-foreground"
-              />
+              <div className="grid gap-2">
+                <Label htmlFor="email">Электронная почта</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  disabled
+                  className="bg-muted text-muted-foreground"
+                />
+              </div>
 
-              <input
-                type="password"
-                name="password"
-                autoComplete="new-password"
-                placeholder="New password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full focus:outline-none border-b pb-2 h-8"
-                required
-              />
+              <div className="grid gap-2">
+                <Label htmlFor="password">Новый пароль</Label>
+                <PasswordInput
+                  id="password"
+                  autoComplete="new-password"
+                  placeholder="Новый пароль"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
 
-              <input
-                type="password"
-                name="confirmPassword"
-                autoComplete="new-password"
-                placeholder="Confirm new password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full focus:outline-none border-b pb-2 h-8"
-                required
-              />
+              <div className="grid gap-2">
+                <Label htmlFor="confirmPassword">Подтвердите новый пароль</Label>
+                <PasswordInput
+                  id="confirmPassword"
+                  autoComplete="new-password"
+                  placeholder="Подтвердите новый пароль"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Resetting...' : 'Reset Password'}
+                {isLoading ? 'Сброс...' : 'Сбросить пароль'}
               </Button>
 
               <p className="text-muted-foreground">
                 <Link className="text-foreground" href="/login">
-                  Back to sign in
+                  Вернуться к входу
                 </Link>
               </p>
             </form>
@@ -192,7 +201,7 @@ export default function ResetPasswordPage() {
         <Section>
           <Container>
             <AuthBox>
-              <h1>Loading...</h1>
+              <h1>Загрузка...</h1>
             </AuthBox>
           </Container>
         </Section>

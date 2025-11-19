@@ -20,17 +20,17 @@ export const EmailVerificationBanner = ({ userEmail }: EmailVerificationBannerPr
       const result = await resendVerification(userEmail)
 
       if (result.success) {
-        toast.success('Verification Email Sent!', {
-          description: 'Please check your inbox for the verification link.',
+        toast.success('Письмо подтверждения отправлено!', {
+          description: 'Проверьте свою почту на наличие ссылки подтверждения.',
         })
       } else {
-        toast.error('Failed to Send Email', {
-          description: result.error || 'Please try again later.',
+        toast.error('Не удалось отправить письмо', {
+          description: result.error || 'Попробуйте позже.',
         })
       }
     } catch (_error) {
-      toast.error('Something went wrong', {
-        description: 'Please try again later.',
+      toast.error('Что-то пошло не так', {
+        description: 'Попробуйте позже.',
       })
     } finally {
       setIsResending(false)
@@ -50,10 +50,11 @@ export const EmailVerificationBanner = ({ userEmail }: EmailVerificationBannerPr
             </span>
             <div className="ml-3">
               <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                Please verify your email address
+                Подтвердите свой адрес электронной почты
               </p>
               <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                We sent a verification link to <span className="font-medium">{userEmail}</span>
+                Мы отправили ссылку подтверждения на{' '}
+                <span className="font-medium">{userEmail}</span>
               </p>
             </div>
           </div>
@@ -66,7 +67,7 @@ export const EmailVerificationBanner = ({ userEmail }: EmailVerificationBannerPr
               className="bg-white text-yellow-800 hover:bg-yellow-50 dark:bg-yellow-950 dark:text-yellow-200 dark:hover:bg-yellow-900"
             >
               <Mail className="mr-2 h-4 w-4" />
-              {isResending ? 'Sending...' : 'Resend Email'}
+              {isResending ? 'Отправка...' : 'Отправить повторно'}
             </Button>
           </div>
         </div>

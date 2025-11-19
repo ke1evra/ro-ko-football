@@ -7,21 +7,23 @@ import { toast } from 'sonner'
 import { loginUser } from '@/lib/auth'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { PasswordInput } from '@/components/ui/password-input'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 
 import type { LoginResponse } from '@/lib/auth'
 
 export const LoginForm = () => {
   const [isPending, setIsPending] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsPending(true)
-
-    const formData = new FormData(e.currentTarget)
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
 
     const res: LoginResponse = await loginUser({ email, password, rememberMe })
 
@@ -31,28 +33,28 @@ export const LoginForm = () => {
       // Show error toast with specific error message
       switch (res.errorCode) {
         case 'INVALID_EMAIL':
-          toast.error('Invalid Email', {
+          toast.error('Неверный email', {
             description: res.error,
           })
           break
         case 'INVALID_CREDENTIALS':
-          toast.error('Invalid Credentials', {
-            description: 'The email or password you entered is incorrect',
+          toast.error('Неверные учетные данные', {
+            description: 'Введенный email или пароль неверны',
           })
           break
         case 'AUTH_ERROR':
-          toast.error('Authentication Failed', {
-            description: 'Please try again later',
+          toast.error('Ошибка аутентификации', {
+            description: 'Попробуйте позже',
           })
           break
         default:
-          toast.error('Login Failed', {
-            description: res.error || 'Something went wrong',
+          toast.error('Вход не удался', {
+            description: res.error || 'Что-то пошло не так',
           })
       }
     } else {
-      toast.success('Welcome back!', {
-        description: 'Redirecting to dashboard...',
+      toast.success('Добро пожаловать обратно!', {
+        description: 'Перенаправление на панель управления...',
       })
       router.push('/dashboard')
     }
@@ -60,43 +62,49 @@ export const LoginForm = () => {
 
   return (
     <form className="grid gap-6 my-6" onSubmit={handleSubmit}>
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        autoComplete="email"
-        className="w-full focus:outline-none border-b pb-2 h-8"
-        required
-      />
+      <div className="grid gap-2">
+        <Label htmlFor="email">Электронная почта</Label>
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          placeholder="Электронная почта"
+          required
+        />
+      </div>
 
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        autoComplete="current-password"
-        className="w-full focus:outline-none border-b pb-2 h-8"
-        required
-      />
+      <div className="grid gap-2">
+        <Label htmlFor="password">Пароль</Label>
+        <PasswordInput
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
+          placeholder="Пароль"
+          required
+        />
+      </div>
+
       <div className="text-xs text-muted-foreground">
         <Link href="/forgot-password" className="hover:underline">
-          Forgot password?
+          Забыли пароль?
         </Link>
       </div>
 
       <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
+        <Checkbox
           id="remember-me"
           checked={rememberMe}
-          onChange={(e) => setRememberMe(e.target.checked)}
-          className="rounded border-gray-300 text-primary focus:ring-primary"
+          onCheckedChange={(checked) => setRememberMe(checked as boolean)}
         />
-        <label htmlFor="remember-me" className="text-sm text-muted-foreground cursor-pointer">
-          Remember me for 30 days
-        </label>
+        <Label htmlFor="remember-me" className="text-sm text-muted-foreground cursor-pointer">
+          Запомнить меня на 30 дней
+        </Label>
       </div>
 
-      <SubmitButton loading={isPending} text="Login" />
+      <SubmitButton loading={isPending} text="Войти" />
     </form>
   )
 }

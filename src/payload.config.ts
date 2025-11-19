@@ -54,9 +54,12 @@ export default buildConfig({
   },
   db: mongooseAdapter({
     url:
-      (process.env.NODE_ENV === 'development' && process.env.MONGODB_URI_LOCAL)
+      process.env.NODE_ENV === 'development' && process.env.MONGODB_URI_LOCAL
         ? process.env.MONGODB_URI_LOCAL
-        : process.env.DATABASE_URI || process.env.MONGODB_URI || process.env.PAYLOAD_MONGODB_URL || '',
+        : process.env.DATABASE_URI ||
+          process.env.MONGODB_URI ||
+          process.env.PAYLOAD_MONGODB_URL ||
+          '',
   }),
   sharp,
   plugins: [payloadCloudPlugin()],

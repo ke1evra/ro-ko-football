@@ -22,12 +22,12 @@ export default async function RegisterPage() {
     <Section>
       <Container>
         <AuthBox>
-          <h1>Sign Up</h1>
+          <h1>Регистрация</h1>
           <RegisterForm />
           <p className="text-muted-foreground text-xs">
-            Already have an account?{' '}
+            Уже есть аккаунт?{' '}
             <Link className="text-foreground" href="/login">
-              Login Now
+              Войти сейчас
             </Link>
           </p>
         </AuthBox>

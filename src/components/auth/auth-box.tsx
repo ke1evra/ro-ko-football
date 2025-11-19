@@ -6,7 +6,7 @@ export const AuthBox = ({ children }: { children: React.ReactNode }) => {
     <div className="w-full sm:w-sm mx-auto space-y-4">
       <div className="p-6 border rounded-md bg-background">{children}</div>
       <Link className="text-xs text-muted-foreground flex items-center gap-1" href="/">
-        <ArrowLeft size="12" /> Back to home
+        <ArrowLeft size="12" /> Вернуться на главную
       </Link>
     </div>
   )

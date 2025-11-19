@@ -252,14 +252,21 @@ function getStatColor(value: number, avg: number): string {
 
 function aggregateByMetric(rows: MatchRow[], metric: StatMetric): AggregateStats {
   const n = rows.length || 1
-  const wins = rows.filter((r) => r.result === 'W').length
-  const draws = rows.filter((r) => r.result === 'D').length
-  const losses = rows.filter((r) => r.result === 'L').length
+  // Считаем победы/ничьи/поражения на основе выбранной метрики
+  const wins = rows.filter(
+    (r) => getStatValue(r, metric, 'home') > getStatValue(r, metric, 'away'),
+  ).length
+  const draws = rows.filter(
+    (r) => getStatValue(r, metric, 'home') === getStatValue(r, metric, 'away'),
+  ).length
+  const losses = rows.filter(
+    (r) => getStatValue(r, metric, 'home') < getStatValue(r, metric, 'away'),
+  ).length
   const gfArr = rows.map((r) => r.gf)
   const gaArr = rows.map((r) => r.ga)
-  const totals = rows.map((r) => r.total)
   const statArr = rows.map((r) => getStatValue(r, metric, 'home'))
   const statConArr = rows.map((r) => getStatValue(r, metric, 'away'))
+  const totals = rows.map((r) => getStatValue(r, metric, 'home') + getStatValue(r, metric, 'away'))
 
   const avg = (arr: number[]): number =>
     arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0
@@ -579,33 +586,56 @@ export default function ComparativeTeamAnalysis({
     })
   }
 
-  function AggBlock({ title, agg }: { title: string; agg: AggregateStats }): JSX.Element {
+  function AggBlock({
+    title,
+    agg,
+    selectedMetric,
+  }: {
+    title: string
+    agg: AggregateStats
+    selectedMetric: StatMetric
+  }): JSX.Element {
     const formatValue = (val: number): string => {
       if (Number.isInteger(val)) return String(val)
       return val.toFixed(2).replace(/\.?0+$/, '')
     }
 
+    const metricLabel =
+      STAT_METRICS.find((m) => m.key === selectedMetric)?.label.toLowerCase() || 'метрики'
+
     const column1 = [
-      { label: 'Победы', value: agg.wins, tooltip: 'Количество побед' },
-      { label: 'Ничьи', value: agg.draws, tooltip: 'Количество ничьих' },
-      { label: 'Поражения', value: agg.losses, tooltip: 'Количество поражений' },
+      {
+        label: 'Победы',
+        value: agg.wins,
+        tooltip: `Количество матчей, где команда имела больше ${metricLabel}, чем соперник`,
+      },
+      {
+        label: 'Ничьи',
+        value: agg.draws,
+        tooltip: `Количество матчей, где команда имела равное количество ${metricLabel} с соперником`,
+      },
+      {
+        label: 'Поражения',
+        value: agg.losses,
+        tooltip: `Количество матчей, где команда имела мень��е ${metricLabel}, чем соперник`,
+      },
     ]
 
     const column2 = [
       {
         label: 'СР ИТ',
-        value: formatValue(agg.avgIT),
-        tooltip: 'Средний индивидуальный тотал (забитые голы)',
+        value: formatValue(agg.avgStat),
+        tooltip: `Среднее значение ${metricLabel} за команду`,
       },
       {
         label: 'СР ИТ СОП',
-        value: formatValue(agg.avgITCon),
-        tooltip: 'Средний индивидуальный тотал соперника (пропущенные голы)',
+        value: formatValue(agg.avgStatCon),
+        tooltip: `Среднее значение ${metricLabel} соперника`,
       },
       {
         label: 'СР Т',
         value: formatValue(agg.avgT),
-        tooltip: 'Средний общий тотал матча',
+        tooltip: `Среднее значение ${metricLabel} в матче`,
       },
     ]
 
@@ -1001,8 +1031,8 @@ export default function ComparativeTeamAnalysis({
 
             {/* 1. Сводная статистика команд */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <AggBlock title={home.name} agg={aggHome} />
-              <AggBlock title={away.name} agg={aggAway} />
+              <AggBlock title={home.name} agg={aggHome} selectedMetric={selectedMetric} />
+              <AggBlock title={away.name} agg={aggAway} selectedMetric={selectedMetric} />
             </div>
 
             {/* 2. Таблицы последних матчей */}

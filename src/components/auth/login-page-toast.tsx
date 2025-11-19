@@ -13,13 +13,13 @@ export function LoginPageToast({ success, error }: LoginPageToastProps) {
     if (success) {
       switch (success) {
         case 'email-verified':
-          toast.success('Email Verified!', {
-            description: 'Your email has been verified successfully. You can now sign in.',
+          toast.success('Email подтвержден!', {
+            description: 'Ваш email успешно подтвержден. Теперь вы можете войти.',
           })
           break
         default:
-          toast.success('Success!', {
-            description: 'Operation completed successfully.',
+          toast.success('Успешно!', {
+            description: 'Операция выполнена успешно.',
           })
       }
     }
@@ -27,23 +27,23 @@ export function LoginPageToast({ success, error }: LoginPageToastProps) {
     if (error) {
       switch (error) {
         case 'invalid-verification-link':
-          toast.error('Invalid Verification Link', {
-            description: 'The verification link is invalid. Please try again.',
+          toast.error('Неверная ссылка подтверждения', {
+            description: 'Ссылка подтверждения недействительна. Попробуйте снова.',
           })
           break
         case 'verification-link-expired':
-          toast.error('Verification Link Expired', {
-            description: 'The verification link has expired. Please request a new one.',
+          toast.error('Ссылка подтверждения истекла', {
+            description: 'Ссылка подтверждения истекла. Запросите новую.',
           })
           break
         case 'verification-failed':
-          toast.error('Verification Failed', {
-            description: 'Email verification failed. Please try again.',
+          toast.error('Подтверждение не удалось', {
+            description: 'Подтверждение email не удалось. Попробуйте снова.',
           })
           break
         default:
-          toast.error('Error', {
-            description: 'An error occurred. Please try again.',
+          toast.error('Ошибка', {
+            description: 'Произошла ошибка. Попробуйте снова.',
           })
       }
     }

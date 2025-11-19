@@ -14,13 +14,13 @@ interface AuthRedirectProps {
 export function AuthRedirect({
   user,
   redirectTo = '/dashboard',
-  message = 'You are already signed in. Redirecting to dashboard...',
+  message = 'Вы уже вошли в систему. Перенаправление на панель управления...',
 }: AuthRedirectProps) {
   const router = useRouter()
 
   useEffect(() => {
     if (user) {
-      toast.info('Already Signed In', {
+      toast.info('Уже вошли в систему', {
         description: message,
       })
       router.push(redirectTo)

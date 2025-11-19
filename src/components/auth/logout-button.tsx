@@ -19,19 +19,19 @@ export const LogoutButton = () => {
       const result = await clearAuthCookies()
 
       if (result.success) {
-        toast.success('Logged out successfully', {
-          description: 'You have been signed out of your account.',
+        toast.success('Выход выполнен успешно', {
+          description: 'Вы вышли из своего аккаунта.',
         })
         router.push('/')
         router.refresh() // Refresh to clear any cached user state
       } else {
-        toast.error('Logout failed', {
-          description: 'Please try again.',
+        toast.error('Выход не удался', {
+          description: 'Попробуйте снова.',
         })
       }
     } catch (_error) {
-      toast.error('Logout failed', {
-        description: 'Please try again.',
+      toast.error('Выход не удался', {
+        description: 'Попробуйте снова.',
       })
     } finally {
       setIsLoading(false)
@@ -40,7 +40,7 @@ export const LogoutButton = () => {
 
   return (
     <Button variant="outline" onClick={handleLogout} disabled={isLoading}>
-      {isLoading ? 'Signing out...' : 'Logout'}
+      {isLoading ? 'Выход...' : 'Выйти'}
     </Button>
   )
 }

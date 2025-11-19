@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { forgotPassword } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
 export function ForgotPasswordForm() {
@@ -20,26 +22,26 @@ export function ForgotPasswordForm() {
 
       if (result.success) {
         setIsSuccess(true)
-        toast.success('Email Sent!', {
+        toast.success('Email отправлен!', {
           description:
-            "If an account with that email exists, we've sent you a password reset link.",
+            'Если аккаунт с таким email существует, мы отправили вам ссылку для сброса пароля.',
         })
       } else {
         switch (result.errorCode) {
           case 'INVALID_EMAIL':
-            toast.error('Invalid Email', {
-              description: result.error || 'Please enter a valid email address',
+            toast.error('Неверный email', {
+              description: result.error || 'Введите корректный адрес электронной почты',
             })
             break
           default:
-            toast.error('Request Failed', {
-              description: result.error || 'Something went wrong. Please try again.',
+            toast.error('Запрос не удался', {
+              description: result.error || 'Что-то пошло не так. Попробуйте снова.',
             })
         }
       }
     } catch (_error) {
-      toast.error('Request Failed', {
-        description: 'Something went wrong. Please try again.',
+      toast.error('Запрос не удался', {
+        description: 'Что-то пошло не так. Попробуйте снова.',
       })
     } finally {
       setIsLoading(false)
@@ -49,9 +51,9 @@ export function ForgotPasswordForm() {
   if (isSuccess) {
     return (
       <div className="space-y-4 text-center my-6">
-        <p className="text-muted-foreground">Check your email for the password reset link.</p>
+        <p className="text-muted-foreground">Проверьте email на ссылку для сброса пароля.</p>
         <Link href="/login" className="text-foreground hover:underline">
-          Return to login
+          Вернуться к входу
         </Link>
       </div>
     )
@@ -59,19 +61,21 @@ export function ForgotPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-6 my-6">
-      <input
-        type="email"
-        name="email"
-        autoComplete="email"
-        placeholder="Email address"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-full focus:outline-none border-b pb-2 h-8"
-        required
-      />
+      <div className="grid gap-2">
+        <Label htmlFor="email">Адрес электронной почты</Label>
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          placeholder="Адрес электронной почты"
+          required
+        />
+      </div>
 
       <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? 'Sending...' : 'Send Reset Link'}
+        {isLoading ? 'Отправка...' : 'Отправить ссылку для сброса'}
       </Button>
     </form>
   )

@@ -5,7 +5,7 @@ export function LogoutForm() {
   return (
     <form action={logoutUser}>
       <Button variant="outline" type="submit">
-        Logout
+        Выйти
       </Button>
     </form>
   )

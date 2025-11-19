@@ -29,15 +29,15 @@ export default async function LoginPage({
     <Section>
       <Container>
         <AuthBox>
-          <h1>Login</h1>
+          <h1>Войти</h1>
           {(params.success || params.error) && (
             <LoginPageToast success={params.success} error={params.error} />
           )}
           <LoginForm />
           <p className="text-muted-foreground text-xs">
-            Don&apos;t have an account?{' '}
+            Нет аккаунта?{' '}
             <Link className="text-foreground" href="/register">
-              Sign Up Now
+              Зарегистрироваться сейчас
             </Link>
           </p>
         </AuthBox>
