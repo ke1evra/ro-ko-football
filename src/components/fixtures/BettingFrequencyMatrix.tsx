@@ -153,7 +153,7 @@ export default function BettingFrequencyMatrix({
   return (
     <Card className="rounded-lg shadow-sm">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold">{title}</CardTitle>
+        <CardTitle className="text-xs font-semibold">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Верхние агрегаты */}
@@ -178,100 +178,127 @@ export default function BettingFrequencyMatrix({
           </TooltipProvider>
         </div>
 
-        {/* Матрица частот */}
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/50">
-                <TableHead className="w-16">Линия</TableHead>
-                <TableHead>ТБ</TableHead>
-                <TableHead>ТМ</TableHead>
-                <TableHead>ИТБ</TableHead>
-                <TableHead>ИТМ</TableHead>
-                <TableHead>ИТ2Б</TableHead>
-                <TableHead>ИТ2М</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {LINES.map((line) => {
-                const tb = totalsOver.find((c) => c.line === line)!
-                const tm = totalsUnder.find((c) => c.line === line)!
-                const itb = itOver.find((c) => c.line === line)!
-                const itm = itUnder.find((c) => c.line === line)!
-                const it2b = it2Over.find((c) => c.line === line)!
-                const it2m = it2Under.find((c) => c.line === line)!
-                return (
-                  <TableRow key={`line-${line}`}>
-                    <TableCell className="font-mono text-xs">{line}</TableCell>
-                    <TableCell
-                      className={`font-semibold text-xs text-center ${ratioColor(tb.hits, tb.total)}`}
-                    >
-                      {formatXN(tb.hits, tb.total)}
-                    </TableCell>
-                    <TableCell
-                      className={`font-semibold text-xs text-center ${ratioColor(tm.hits, tm.total)}`}
-                    >
-                      {formatXN(tm.hits, tm.total)}
-                    </TableCell>
-                    <TableCell
-                      className={`font-semibold text-xs text-center ${ratioColor(itb.hits, itb.total)}`}
-                    >
-                      {formatXN(itb.hits, itb.total)}
-                    </TableCell>
-                    <TableCell
-                      className={`font-semibold text-xs text-center ${ratioColor(itm.hits, itm.total)}`}
-                    >
-                      {formatXN(itm.hits, itm.total)}
-                    </TableCell>
-                    <TableCell
-                      className={`font-semibold text-xs text-center ${ratioColor(it2b.hits, it2b.total)}`}
-                    >
-                      {formatXN(it2b.hits, it2b.total)}
-                    </TableCell>
-                    <TableCell
-                      className={`font-semibold text-xs text-center ${ratioColor(it2m.hits, it2m.total)}`}
-                    >
-                      {formatXN(it2m.hits, it2m.total)}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </div>
+        {/* Матрица частот — 4 блока в одной строке */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* ТБ / ТМ */}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="w-12 px-1 py-1 text-[10px]"></TableHead>
+                  <TableHead className="px-1 py-1 text-[10px]">ТБ</TableHead>
+                  <TableHead className="px-1 py-1 text-[10px]">ТМ</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {LINES.map((line) => {
+                  const tb = totalsOver.find((c) => c.line === line)!
+                  const tm = totalsUnder.find((c) => c.line === line)!
+                  return (
+                    <TableRow key={`tb-${line}`}>
+                      <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
+                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(tb.hits, tb.total)}`}>
+                        {formatXN(tb.hits, tb.total)}
+                      </TableCell>
+                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(tm.hits, tm.total)}`}>
+                        {formatXN(tm.hits, tm.total)}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
 
-        {/* Форы */}
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/50">
-                <TableHead className="w-16">Фора</TableHead>
-                <TableHead>Ф (команда)</TableHead>
-                <TableHead>Ф2 (соперник)</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {HANDICAP_LINES.map((h) => {
-                const f = hcpTeam.find((c) => c.line === h)!
-                const f2 = hcpOpp.find((c) => c.line === h)!
-                return (
-                  <TableRow key={`hcp-${h}`}>
-                    <TableCell className="font-mono text-xs">{h > 0 ? `+${h}` : h}</TableCell>
-                    <TableCell
-                      className={`font-semibold text-xs text-center ${ratioColor(f.hits, f.total)}`}
-                    >
-                      {formatXN(f.hits, f.total)}
-                    </TableCell>
-                    <TableCell
-                      className={`font-semibold text-xs text-center ${ratioColor(f2.hits, f2.total)}`}
-                    >
-                      {formatXN(f2.hits, f2.total)}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
+          {/* ИТБ / ИТМ */}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="w-12 px-1 py-1 text-[10px]"></TableHead>
+                  <TableHead className="px-1 py-1 text-[10px]">ИТБ</TableHead>
+                  <TableHead className="px-1 py-1 text-[10px]">ИТМ</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {LINES.map((line) => {
+                  const itb = itOver.find((c) => c.line === line)!
+                  const itm = itUnder.find((c) => c.line === line)!
+                  return (
+                    <TableRow key={`it-${line}`}>
+                      <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
+                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(itb.hits, itb.total)}`}>
+                        {formatXN(itb.hits, itb.total)}
+                      </TableCell>
+                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(itm.hits, itm.total)}`}>
+                        {formatXN(itm.hits, itm.total)}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* ИТ2Б / ИТ2М */}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="w-12 px-1 py-1 text-[10px]"></TableHead>
+                  <TableHead className="px-1 py-1 text-[10px]">ИТ2Б</TableHead>
+                  <TableHead className="px-1 py-1 text-[10px]">ИТ2М</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {LINES.map((line) => {
+                  const it2b = it2Over.find((c) => c.line === line)!
+                  const it2m = it2Under.find((c) => c.line === line)!
+                  return (
+                    <TableRow key={`it2-${line}`}>
+                      <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
+                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(it2b.hits, it2b.total)}`}>
+                        {formatXN(it2b.hits, it2b.total)}
+                      </TableCell>
+                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(it2m.hits, it2m.total)}`}>
+                        {formatXN(it2m.hits, it2m.total)}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Ф1 / Ф2 */}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="w-12 px-1 py-1 text-[10px]"></TableHead>
+                  <TableHead className="px-1 py-1 text-[10px]">Ф1</TableHead>
+                  <TableHead className="px-1 py-1 text-[10px]">Ф2</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {HANDICAP_LINES.map((h) => {
+                  const f = hcpTeam.find((c) => c.line === h)!
+                  const f2 = hcpOpp.find((c) => c.line === h)!
+                  return (
+                    <TableRow key={`hcp-${h}`}>
+                      <TableCell className="font-mono text-[10px] px-1 py-1">{h > 0 ? `+${h}` : h}</TableCell>
+                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(f.hits, f.total)}`}>
+                        {formatXN(f.hits, f.total)}
+                      </TableCell>
+                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(f2.hits, f2.total)}`}>
+                        {formatXN(f2.hits, f2.total)}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -288,9 +315,9 @@ function AggTile({
   muted?: boolean
 }) {
   return (
-    <div className={`rounded border p-3 ${muted ? 'opacity-70' : ''}`}>
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="text-sm font-semibold">{value}</div>
+    <div className={`rounded border p-2 ${muted ? 'opacity-70' : ''}`}>
+      <div className="text-[10px] leading-3 text-muted-foreground text-center break-words">{label}</div>
+      <div className="text-[11px] leading-4 font-semibold font-mono text-center">{value}</div>
     </div>
   )
 }
