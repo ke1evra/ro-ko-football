@@ -106,11 +106,13 @@ export interface Config {
     topMatchesLeagues: TopMatchesLeague;
     sidebarLeagues: SidebarLeague;
     'outcome-manager': OutcomeManager;
+    'header-menu': HeaderMenu;
   };
   globalsSelect: {
     topMatchesLeagues: TopMatchesLeaguesSelect<false> | TopMatchesLeaguesSelect<true>;
     sidebarLeagues: SidebarLeaguesSelect<false> | SidebarLeaguesSelect<true>;
     'outcome-manager': OutcomeManagerSelect<false> | OutcomeManagerSelect<true>;
+    'header-menu': HeaderMenuSelect<false> | HeaderMenuSelect<true>;
   };
   locale: null;
   user: User & {
@@ -2060,6 +2062,25 @@ export interface OutcomeManager {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "header-menu".
+ */
+export interface HeaderMenu {
+  id: string;
+  items?:
+    | {
+        label: string;
+        /**
+         * Абсолютный или относительный URL (например, /leagues или https://example.com)
+         */
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "topMatchesLeagues_select".
  */
 export interface TopMatchesLeaguesSelect<T extends boolean = true> {
@@ -2124,6 +2145,22 @@ export interface SidebarLeaguesSelect<T extends boolean = true> {
  */
 export interface OutcomeManagerSelect<T extends boolean = true> {
   description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "header-menu_select".
+ */
+export interface HeaderMenuSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

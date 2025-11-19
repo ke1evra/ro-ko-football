@@ -1,9 +1,9 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/app/(frontend)/AuthContext' // Импортируем хук из AuthContext
+import { useAuth } from '@/app/(frontend)/AuthContext'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -18,9 +18,35 @@ import { UserAvatar } from '@/components/UserAvatar'
 import { SiteLogo } from '@/components/site/Logo'
 import { Container } from '@/components/ds'
 
+interface HeaderMenuItem {
+  label: string
+  url: string
+}
+
 export const Header = () => {
   const { user, isLoading, logout } = useAuth()
   const router = useRouter()
+
+  const [menu, setMenu] = useState<HeaderMenuItem[]>([])
+
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        const res = await fetch('/api/globals/header-menu', { cache: 'no-store' })
+        if (!res.ok) return
+        const data = await res.json()
+        const items: HeaderMenuItem[] = Array.isArray(data?.items) ? data.items : []
+        if (mounted) setMenu(items)
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('Не удалось загрузить меню хедера', e)
+      }
+    })()
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -35,42 +61,15 @@ export const Header = () => {
         </Link>
         <nav className="hidden md:flex items-center justify-center flex-1 mx-8">
           <div className="flex items-center gap-6 text-base font-medium">
-            <Link
-              href="/posts"
-              className="text-lg uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-            >
-              Посты
-            </Link>
-            <Link
-              href="/federations"
-              className="text-lg uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-            >
-              Федерации
-            </Link>
-            <Link
-              href="/countries"
-              className="text-lg uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-            >
-              Страны
-            </Link>
-            <Link
-              href="/leagues"
-              className="text-lg uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-            >
-              Лиги
-            </Link>
-            <Link
-              href="/predictions"
-              className="text-lg uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-            >
-              Прогнозы
-            </Link>
-            <Link
-              href="/ui-demo"
-              className="text-lg uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-            >
-              UI Демо
-            </Link>
+            {menu.map((item) => (
+              <Link
+                key={`${item.label}-${item.url}`}
+                href={item.url}
+                className="text-lg uppercase text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
         </nav>
         <div className="flex items-center gap-4">

@@ -22,6 +22,7 @@ import { OutcomeGroups } from './collections/OutcomeGroups'
 import { TopMatchesLeagues } from './globals/TopMatchesLeagues'
 import { SidebarLeagues } from './globals/SidebarLeagues'
 import { OutcomeManager } from './globals/OutcomeManager'
+import { HeaderMenu } from './globals/HeaderMenu'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -46,7 +47,7 @@ export default buildConfig({
     Markets,
     OutcomeGroups,
   ],
-  globals: [TopMatchesLeagues, SidebarLeagues, OutcomeManager],
+  globals: [TopMatchesLeagues, SidebarLeagues, OutcomeManager, HeaderMenu],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
