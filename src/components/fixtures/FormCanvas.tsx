@@ -48,10 +48,12 @@ export function FormCanvas({ form, title, compact = false }: FormCanvasProps) {
 
     const totalSquares = form.length + 1 // +1 для серого квадрата
 
-    // Вычисляем размер квадрата на основе ширины контейнера
+    // Вычисляем размер квадрата на основе ширины контейнера, но ограничиваем максимум 24px
     const canvasWidth = containerWidth
-    const squareSize = Math.floor((canvasWidth - (totalSquares - 1) * 2) / totalSquares)
-    const gap = 2
+    // При большом количестве матчей уменьшаем gap
+    const gap = compact ? 1 : 2
+    const calculatedSize = Math.floor((canvasWidth - (totalSquares - 1) * gap) / totalSquares)
+    const squareSize = Math.min(calculatedSize, 24)
 
     const verticalOffset = compact ? 4 : 0
 
@@ -86,13 +88,15 @@ export function FormCanvas({ form, title, compact = false }: FormCanvasProps) {
       roundRect(ctx, futureX, futureY, squareSize, squareSize, 4)
     }
 
-    // Текст "?" в сером квадрате
-    ctx.fillStyle = '#ffffff'
-    const fontSize = Math.max(10, Math.floor(squareSize * 0.5))
-    ctx.font = `bold ${fontSize}px sans-serif`
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText('?', futureX + squareSize / 2, futureY + squareSize / 2)
+    // Текст "?" в сером квадрате (только если не компактный режим)
+    if (!compact) {
+      ctx.fillStyle = '#ffffff'
+      const fontSize = Math.max(10, Math.floor(squareSize * 0.5))
+      ctx.font = `bold ${fontSize}px sans-serif`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('?', futureX + squareSize / 2, futureY + squareSize / 2)
+    }
 
     // Рисуем квадраты формы
     form.forEach((res, idx) => {
@@ -124,14 +128,17 @@ export function FormCanvas({ form, title, compact = false }: FormCanvasProps) {
         roundRect(ctx, x, y, squareSize, squareSize, 4)
       }
 
-      // Текст в квадрате
-      ctx.fillStyle = '#ffffff'
-      ctx.font = `bold ${fontSize}px sans-serif`
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
+      // Текст в квадрате (только если не компактный режим)
+      if (!compact) {
+        ctx.fillStyle = '#ffffff'
+        const fontSize = Math.max(10, Math.floor(squareSize * 0.5))
+        ctx.font = `bold ${fontSize}px sans-serif`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
 
-      const label = res === 'W' ? 'В' : res === 'D' ? 'Н' : 'П'
-      ctx.fillText(label, x + squareSize / 2, y + squareSize / 2)
+        const label = res === 'W' ? 'В' : res === 'D' ? 'Н' : 'П'
+        ctx.fillText(label, x + squareSize / 2, y + squareSize / 2)
+      }
     })
   }, [form, compact, containerWidth])
 
