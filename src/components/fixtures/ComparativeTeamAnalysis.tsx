@@ -328,9 +328,11 @@ function AggBlock({
 function FormIndicator({
   form,
   title,
+  compact,
 }: {
   form: Array<'W' | 'D' | 'L'>
   title: string
+  compact?: boolean
 }): JSX.Element {
   const getFormStyles = (res: 'W' | 'D' | 'L'): string => {
     switch (res) {
@@ -361,11 +363,11 @@ function FormIndicator({
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>
-      <div className="flex gap-1">
+      <div className={`flex ${compact ? 'gap-[1px]' : 'gap-1'}`}>
         {form.map((r, idx) => (
           <div
             key={`${title}-${idx}`}
-            className={`w-6 h-6 flex items-center justify-center rounded-sm text-[10px] font-semibold text-white ${getFormStyles(r)}`}
+            className={`w-6 h-6 flex items-center justify-center text-[10px] font-semibold text-white ${compact ? 'rounded-none' : 'rounded-sm'} ${getFormStyles(r)}`}
           >
             {getFormLabel(r)}
           </div>
@@ -694,7 +696,7 @@ export default function ComparativeTeamAnalysis({
                   <CardTitle className="text-base font-semibold">{home.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <FormIndicator title="Форма" form={homeForm} />
+                  <FormIndicator title="Форма" form={homeForm} compact={limit >= 30} />
                 </CardContent>
               </Card>
               <Card className="rounded-lg shadow-sm">
@@ -702,7 +704,7 @@ export default function ComparativeTeamAnalysis({
                   <CardTitle className="text-base font-semibold">{away.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <FormIndicator title="Форма" form={awayForm} />
+                  <FormIndicator title="Форма" form={awayForm} compact={limit >= 30} />
                 </CardContent>
               </Card>
             </div>
