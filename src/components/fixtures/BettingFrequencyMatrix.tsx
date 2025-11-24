@@ -88,7 +88,17 @@ interface CountCell {
 function ratioColor(hits: number, total: number): string {
   if (!total) return ''
   const pct = hits / total
-  return pct >= 0.5 ? 'bg-green-50 text-green-800' : 'bg-muted text-muted-foreground'
+  return pct >= 0.5 ? 'bg-emerald-50 text-emerald-700' : 'bg-muted text-muted-foreground'
+}
+
+function RatioDisplay({ hits, total }: { hits: number; total: number }) {
+  return (
+    <span>
+      <span className="font-semibold">{hits}</span>
+      <span className="text-[10px] opacity-70">/</span>
+      <span className="text-[10px] opacity-70">{total}</span>
+    </span>
+  )
 }
 
 function formatXN(hits: number, total: number): string {
@@ -285,7 +295,7 @@ export default function BettingFrequencyMatrix({
       <CardHeader className="pb-3">
         <CardTitle className="text-xs font-semibold">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 text-sm">
         {/* Верхние агрегаты */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <AggTile
@@ -331,10 +341,10 @@ export default function BettingFrequencyMatrix({
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="w-12 px-1 py-1 text-[10px]"></TableHead>
-                  <TableHead className="px-1 py-1 text-[10px]">ТБ</TableHead>
-                  <TableHead className="px-1 py-1 text-[10px]">ТМ</TableHead>
+                <TableRow className="bg-muted/40 h-8">
+                  <TableHead className="w-12 px-1 py-1 text-xs text-muted-foreground"></TableHead>
+                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">ТБ</TableHead>
+                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">ТМ</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -349,16 +359,16 @@ export default function BettingFrequencyMatrix({
                     const tm = totalsUnder.find((c) => c.line === line)!
                     return (
                       <TableRow key={`tb-${line}`}>
-                        <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
+                        <TableCell className="font-mono px-1 py-1">{line}</TableCell>
                         <TableCell
-                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(tb.hits, tb.total)}`}
+                          className={`font-semibold text-center px-1 py-1 ${ratioColor(tb.hits, tb.total)}`}
                         >
-                          {formatXN(tb.hits, tb.total)}
+                          <RatioDisplay hits={tb.hits} total={tb.total} />
                         </TableCell>
                         <TableCell
-                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(tm.hits, tm.total)}`}
+                          className={`font-semibold text-center px-1 py-1 ${ratioColor(tm.hits, tm.total)}`}
                         >
-                          {formatXN(tm.hits, tm.total)}
+                          <RatioDisplay hits={tm.hits} total={tm.total} />
                         </TableCell>
                       </TableRow>
                     )
@@ -371,10 +381,10 @@ export default function BettingFrequencyMatrix({
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="w-12 px-1 py-1 text-[10px]"></TableHead>
-                  <TableHead className="px-1 py-1 text-[10px]">ИТБ</TableHead>
-                  <TableHead className="px-1 py-1 text-[10px]">ИТМ</TableHead>
+                <TableRow className="bg-muted/40 h-8">
+                  <TableHead className="w-12 px-1 py-1 text-xs text-muted-foreground"></TableHead>
+                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">ИТБ</TableHead>
+                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">ИТМ</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -389,16 +399,16 @@ export default function BettingFrequencyMatrix({
                     const itm = itUnder.find((c) => c.line === line)!
                     return (
                       <TableRow key={`it-${line}`}>
-                        <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
+                        <TableCell className="font-mono px-1 py-1">{line}</TableCell>
                         <TableCell
-                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(itb.hits, itb.total)}`}
+                          className={`font-semibold text-center px-1 py-1 ${ratioColor(itb.hits, itb.total)}`}
                         >
-                          {formatXN(itb.hits, itb.total)}
+                          <RatioDisplay hits={itb.hits} total={itb.total} />
                         </TableCell>
                         <TableCell
-                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(itm.hits, itm.total)}`}
+                          className={`font-semibold text-center px-1 py-1 ${ratioColor(itm.hits, itm.total)}`}
                         >
-                          {formatXN(itm.hits, itm.total)}
+                          <RatioDisplay hits={itm.hits} total={itm.total} />
                         </TableCell>
                       </TableRow>
                     )
@@ -411,10 +421,10 @@ export default function BettingFrequencyMatrix({
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="w-12 px-1 py-1 text-[10px]"></TableHead>
-                  <TableHead className="px-1 py-1 text-[10px]">ИТ2Б</TableHead>
-                  <TableHead className="px-1 py-1 text-[10px]">ИТ2М</TableHead>
+                <TableRow className="bg-muted/40 h-8">
+                  <TableHead className="w-12 px-1 py-1 text-xs text-muted-foreground"></TableHead>
+                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">ИТ2Б</TableHead>
+                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">ИТ2М</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -429,16 +439,16 @@ export default function BettingFrequencyMatrix({
                     const it2m = it2Under.find((c) => c.line === line)!
                     return (
                       <TableRow key={`it2-${line}`}>
-                        <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
+                        <TableCell className="font-mono px-1 py-1">{line}</TableCell>
                         <TableCell
-                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(it2b.hits, it2b.total)}`}
+                          className={`font-semibold text-center px-1 py-1 ${ratioColor(it2b.hits, it2b.total)}`}
                         >
-                          {formatXN(it2b.hits, it2b.total)}
+                          <RatioDisplay hits={it2b.hits} total={it2b.total} />
                         </TableCell>
                         <TableCell
-                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(it2m.hits, it2m.total)}`}
+                          className={`font-semibold text-center px-1 py-1 ${ratioColor(it2m.hits, it2m.total)}`}
                         >
-                          {formatXN(it2m.hits, it2m.total)}
+                          <RatioDisplay hits={it2m.hits} total={it2m.total} />
                         </TableCell>
                       </TableRow>
                     )
@@ -451,10 +461,10 @@ export default function BettingFrequencyMatrix({
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="w-12 px-1 py-1 text-[10px]"></TableHead>
-                  <TableHead className="px-1 py-1 text-[10px]">Ф1</TableHead>
-                  <TableHead className="px-1 py-1 text-[10px]">Ф2</TableHead>
+                <TableRow className="bg-muted/40 h-8">
+                  <TableHead className="w-12 px-1 py-1 text-xs text-muted-foreground"></TableHead>
+                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">Ф1</TableHead>
+                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">Ф2</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -469,18 +479,16 @@ export default function BettingFrequencyMatrix({
                     const f2 = hcpOpp.find((c) => c.line === h)!
                     return (
                       <TableRow key={`hcp-${h}`}>
-                        <TableCell className="font-mono text-[10px] px-1 py-1">
-                          {h > 0 ? `+${h}` : h}
+                        <TableCell className="font-mono px-1 py-1">{h > 0 ? `+${h}` : h}</TableCell>
+                        <TableCell
+                          className={`font-semibold text-center px-1 py-1 ${ratioColor(f.hits, f.total)}`}
+                        >
+                          <RatioDisplay hits={f.hits} total={f.total} />
                         </TableCell>
                         <TableCell
-                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(f.hits, f.total)}`}
+                          className={`font-semibold text-center px-1 py-1 ${ratioColor(f2.hits, f2.total)}`}
                         >
-                          {formatXN(f.hits, f.total)}
-                        </TableCell>
-                        <TableCell
-                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(f2.hits, f2.total)}`}
-                        >
-                          {formatXN(f2.hits, f2.total)}
+                          <RatioDisplay hits={f2.hits} total={f2.total} />
                         </TableCell>
                       </TableRow>
                     )
@@ -522,7 +530,7 @@ function AggTile({
       <div className="text-[10px] leading-3 text-muted-foreground text-center break-words">
         {label}
       </div>
-      <div className={`text-[12px] leading-5 font-extrabold font-mono text-center ${numberCls}`}>
+      <div className={`text-sm leading-5 font-semibold font-mono text-center ${numberCls}`}>
         {value}
       </div>
     </div>

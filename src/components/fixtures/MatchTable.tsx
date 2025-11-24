@@ -100,9 +100,9 @@ export interface ResultPillProps {
 
 export function ResultPill({ res }: ResultPillProps) {
   const map: Record<'W' | 'D' | 'L', string> = {
-    W: 'bg-green-100 text-green-800 border border-green-300',
-    D: 'bg-yellow-100 text-yellow-800 border border-yellow-300',
-    L: 'bg-red-100 text-red-800 border border-red-300',
+    W: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    D: 'bg-amber-50 text-amber-700 border border-amber-200',
+    L: 'bg-rose-50 text-rose-700 border border-rose-200',
   }
   const label: Record<'W' | 'D' | 'L', string> = { W: 'В', D: 'Н', L: 'П' }
   return (
@@ -306,16 +306,18 @@ export function MatchTable({
   }, [rows])
 
   return (
-    <Card className=" shadow-sm">
+    <Card className="shadow-sm">
       <CardHeader className="py-1 pb-1">
-        <CardTitle className="text-sm font-semibold leading-tight">{title}</CardTitle>
+        <CardTitle className="text-xs font-semibold leading-tight text-foreground">
+          {title}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="p-0 text-xs">
+      <CardContent className="p-0 text-sm">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/50 h-7">
-                <TableHead className="w-8 text-center">
+              <TableRow className="bg-muted/40 h-8">
+                <TableHead className="w-8 text-center align-middle text-xs text-muted-foreground">
                   <input
                     type="checkbox"
                     className="accent-primary cursor-pointer h-3 w-3 align-middle"
@@ -325,13 +327,19 @@ export function MatchTable({
                     onChange={() => onToggleAll(side, sortedRows)}
                   />
                 </TableHead>
-                <TableHead className="py-0.5 ">Дата</TableHead>
-                <TableHead className="py-0.5 ">Хозяева</TableHead>
-                <TableHead className="py-0.5  text-center">ИТ1</TableHead>
-                <TableHead className="py-0.5  text-center">ИТ2</TableHead>
-                <TableHead className="py-0.5 ">Гости</TableHead>
-                <TableHead className="py-0.5  text-center">Т</TableHead>
-                <TableHead className="py-0.5  w-16 text-center">Действия</TableHead>
+                <TableHead className="py-1 text-xs text-muted-foreground">Дата</TableHead>
+                <TableHead className="py-1 text-xs text-muted-foreground">Хозяева</TableHead>
+                <TableHead className="py-1 text-xs text-center text-muted-foreground">
+                  ИТ1
+                </TableHead>
+                <TableHead className="py-1 text-xs text-center text-muted-foreground">
+                  ИТ2
+                </TableHead>
+                <TableHead className="py-1 text-xs text-muted-foreground">Гости</TableHead>
+                <TableHead className="py-1 text-xs text-center text-muted-foreground">Т</TableHead>
+                <TableHead className="py-1 w-20 text-xs text-center text-muted-foreground">
+                  Действия
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -350,17 +358,17 @@ export function MatchTable({
 
                   const rowBgClass =
                     r.result === 'W'
-                      ? 'bg-green-50'
+                      ? 'bg-emerald-50/60'
                       : r.result === 'L'
-                        ? 'bg-red-50'
+                        ? 'bg-rose-50/60'
                         : r.result === 'D'
-                          ? 'bg-yellow-50'
+                          ? 'bg-amber-50/60'
                           : ''
 
                   return (
                     <TableRow
                       key={r.id}
-                      className={`transition-colors cursor-pointer h-7 hover:bg-muted/60 ${rowBgClass}`}
+                      className={`transition-colors cursor-pointer h-8 hover:bg-muted/60 ${rowBgClass}`}
                       onClick={() => onToggle(side, r.id)}
                     >
                       <TableCell className="text-center align-middle">
@@ -372,14 +380,14 @@ export function MatchTable({
                           onClick={(e) => e.stopPropagation()}
                         />
                       </TableCell>
-                      <TableCell className="whitespace-nowrap  py-0.5 align-middle">
+                      <TableCell className="whitespace-nowrap py-1 align-middle">
                         {new Date(r.date).toLocaleDateString('ru-RU', {
                           day: '2-digit',
                           month: '2-digit',
                           year: '2-digit',
                         })}
                       </TableCell>
-                      <TableCell className=" py-0.5 align-middle">
+                      <TableCell className="py-1 align-middle">
                         <div className="flex items-center gap-1">
                           <TooltipProvider>
                             <Tooltip>
@@ -393,13 +401,13 @@ export function MatchTable({
                           </TooltipProvider>
                         </div>
                       </TableCell>
-                      <TableCell className="text-center font-semibold  py-0.5 align-middle">
+                      <TableCell className="text-center font-semibold py-1 align-middle">
                         {it1Value}
                       </TableCell>
-                      <TableCell className="text-center font-semibold  py-0.5 align-middle">
+                      <TableCell className="text-center font-semibold py-1 align-middle">
                         {it2Value}
                       </TableCell>
-                      <TableCell className=" py-0.5 align-middle">
+                      <TableCell className="py-1 align-middle">
                         <div className="flex items-center gap-1">
                           <TooltipProvider>
                             <Tooltip>
@@ -413,10 +421,10 @@ export function MatchTable({
                           </TooltipProvider>
                         </div>
                       </TableCell>
-                      <TableCell className="text-center font-semibold  py-0.5 align-middle">
+                      <TableCell className="text-center font-semibold py-1 align-middle">
                         {totalValue}
                       </TableCell>
-                      <TableCell className="text-center py-0.5 align-middle">
+                      <TableCell className="text-center py-1 align-middle">
                         <div className="flex items-center gap-1 justify-center">
                           <MiniStatsPopover stats={r.stats} />
                           <Link
