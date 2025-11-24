@@ -163,48 +163,70 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Главный ряд: команды слева/справа и крупный счёт по центру */}
+            {/* Главный ряд: команды слева/справа и крупный счёт/статус по центру */}
             <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-6">
               {/* Домашняя команда */}
-              <div className="flex items-center justify-end gap-3">
+              <div className="flex items-center justify-end gap-3 order-1 md:order-none">
                 <TeamLogo teamId={fx.home.id} teamName={fx.home.name} size="large" />
                 <Link
                   href={`/teams/${fx.home.id}`}
-                  className="text-3xl font-semibold hover:text-primary max-w-64"
+                  className="text-3xl font-semibold hover:text-primary max-w-64 text-right"
                 >
                   {fx.home.name}
                 </Link>
               </div>
-              {/* Футер с коэффициентами */}
-              {(Number.isFinite(oHome) || Number.isFinite(oDraw) || Number.isFinite(oAway)) && (
-                <div className="flex items-center justify-between gap-4 py-4 flex-1">
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="border-2 border-border rounded px-3 py-2 text-center">
-                      <span className="font-semibold text-sm">{fmtOdd(oHome)}</span>
-                    </div>
-                    {/*<span className="text-xs text-muted-foreground ">{fx.home.name}</span>*/}
+
+              {/* Центральный блок со счётом/статусом, который всегда занимает центральную колонку */}
+              <div className="flex flex-col items-center justify-center gap-2 order-3 md:order-none">
+                {homeScoreBig !== null && awayScoreBig !== null ? (
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-4xl font-bold">{homeScoreBig}</span>
+                    <span className="text-3xl font-semibold opacity-70">:</span>
+                    <span className="text-4xl font-bold">{awayScoreBig}</span>
                   </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="border-2 border-border rounded px-3 py-2 text-center">
-                      <i className="opacity-30">x&nbsp;</i>
-                      <span className="font-semibold text-sm">{fmtOdd(oDraw)}</span>
-                    </div>
-                    {/*<span className="text-xs text-muted-foreground ">Ничья</span>*/}
-                  </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="border-2 border-border rounded px-3 py-2 text-center">
-                      <span className="font-semibold text-sm">{fmtOdd(oAway)}</span>
-                    </div>
-                    {/*<span className="text-xs text-muted-foreground ">{fx.away.name}</span>*/}
-                  </div>
+                ) : null}
+
+                {/* Лейбл лайв-статуса / минут */}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground min-h-[1rem]">
+                  {isLive && minuteLabel ? (
+                    <Badge variant="outline" className="border-emerald-500 text-emerald-700">
+                      {minuteLabel}
+                    </Badge>
+                  ) : (
+                    <span className="uppercase tracking-wide text-[10px]">
+                      {statusUpper || 'ПРЕДМАТЧЕВЫЙ ОБЗОР'}
+                    </span>
+                  )}
                 </div>
-              )}
+
+                {/* Коэффициенты под счётом, если есть */}
+                {(Number.isFinite(oHome) || Number.isFinite(oDraw) || Number.isFinite(oAway)) && (
+                  <div className="mt-2 flex items-center justify-center gap-4">
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="border-2 border-border rounded px-3 py-1.5 text-center min-w-[64px]">
+                        <span className="font-semibold text-sm">{fmtOdd(oHome)}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="border-2 border-border rounded px-3 py-1.5 text-center min-w-[64px]">
+                        <i className="opacity-30 not-italic">X&nbsp;</i>
+                        <span className="font-semibold text-sm">{fmtOdd(oDraw)}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="border-2 border-border rounded px-3 py-1.5 text-center min-w-[64px]">
+                        <span className="font-semibold text-sm">{fmtOdd(oAway)}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Гостевая команда */}
-              <div className="flex items-center justify-start gap-3">
+              <div className="flex items-center justify-start gap-3 order-2 md:order-none">
                 <Link
                   href={`/teams/${fx.away.id}`}
-                  className="text-3xl font-semibold hover:text-primary max-w-64 flex justify-center"
+                  className="text-3xl font-semibold hover:text-primary max-w-64"
                 >
                   {fx.away.name}
                 </Link>
