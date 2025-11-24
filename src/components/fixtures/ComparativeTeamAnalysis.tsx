@@ -332,16 +332,29 @@ function FormIndicator({
   form: Array<'W' | 'D' | 'L'>
   title: string
 }): JSX.Element {
-  const getFormColor = (res: 'W' | 'D' | 'L'): string => {
+  const getFormStyles = (res: 'W' | 'D' | 'L'): string => {
     switch (res) {
       case 'W':
-        return 'bg-green-500 hover:bg-green-600'
+        return 'bg-green-500'
       case 'D':
-        return 'bg-yellow-500 hover:bg-yellow-600'
+        return 'bg-yellow-500'
       case 'L':
-        return 'bg-red-500 hover:bg-red-600'
+        return 'bg-red-500'
       default:
-        return 'bg-gray-400 hover:bg-gray-500'
+        return 'bg-gray-400'
+    }
+  }
+
+  const getFormLabel = (res: 'W' | 'D' | 'L'): string => {
+    switch (res) {
+      case 'W':
+        return 'В'
+      case 'D':
+        return 'Н'
+      case 'L':
+        return 'П'
+      default:
+        return ''
     }
   }
 
@@ -350,7 +363,12 @@ function FormIndicator({
       <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>
       <div className="flex gap-1">
         {form.map((r, idx) => (
-          <div key={`${title}-${idx}`} className={`w-3 h-3 rounded-full ${getFormColor(r)}`} />
+          <div
+            key={`${title}-${idx}`}
+            className={`w-6 h-6 flex items-center justify-center rounded-sm text-[10px] font-semibold text-white ${getFormStyles(r)}`}
+          >
+            {getFormLabel(r)}
+          </div>
         ))}
       </div>
     </div>
