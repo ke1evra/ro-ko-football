@@ -378,7 +378,10 @@ export default function ComparativeTeamAnalysis({
   const [selectedMetric, setSelectedMetric] = useState<StatMetric>('goals')
   const [limit, setLimit] = useState(initialLimit)
   const [matchFilter, setMatchFilter] = useState<MatchFilter>('all')
-  const [venueFilter, setVenueFilter] = useState<VenueFilter>('all')
+  const [venueFilter, setVenueFilter] = useState<Record<'home' | 'away', VenueFilter>>({
+    home: 'all',
+    away: 'all',
+  })
 
   useEffect(() => {
     let aborted = false
@@ -392,13 +395,13 @@ export default function ComparativeTeamAnalysis({
             home.id,
             limit,
             matchFilter === 'head-to-head' ? away.id : undefined,
-            matchFilter === 'head-to-head' ? 'all' : venueFilter,
+            matchFilter === 'head-to-head' ? 'all' : venueFilter.home,
           ),
           fetchTeamLastMatches(
             away.id,
             limit,
             matchFilter === 'head-to-head' ? home.id : undefined,
-            matchFilter === 'head-to-head' ? 'all' : venueFilter,
+            matchFilter === 'head-to-head' ? 'all' : venueFilter.away,
           ),
         ])
 
@@ -425,7 +428,7 @@ export default function ComparativeTeamAnalysis({
     return () => {
       aborted = true
     }
-  }, [home.id, away.id, limit, matchFilter, venueFilter])
+  }, [home.id, away.id, limit, matchFilter, venueFilter.home, venueFilter.away])
 
   const filteredHomeRows = useMemo(() => homeRows, [homeRows])
   const filteredAwayRows = useMemo(() => awayRows, [awayRows])
@@ -524,41 +527,110 @@ export default function ComparativeTeamAnalysis({
               </button>
             </div>
 
-            {/* Фильтр: Хозяева / Гости / Все */}
-            <div className="flex gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={() => setVenueFilter('all')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  venueFilter === 'all'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                }`}
-              >
-                Все матчи
-              </button>
-              <button
-                type="button"
-                onClick={() => setVenueFilter('home')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  venueFilter === 'home'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                }`}
-              >
-                Дома
-              </button>
-              <button
-                type="button"
-                onClick={() => setVenueFilter('away')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  venueFilter === 'away'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                }`}
-              >
-                В гостях
-              </button>
+            {/* Фильтры: Хозяева / Гости / Все для каждой команды (в одну строку) */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-muted-foreground min-w-[60px]">{home.name}</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setVenueFilter((prev) => ({
+                      ...prev,
+                      home: 'all',
+                    }))
+                  }
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                    venueFilter.home === 'all'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  Все матчи
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setVenueFilter((prev) => ({
+                      ...prev,
+                      home: 'home',
+                    }))
+                  }
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                    venueFilter.home === 'home'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  Дома
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setVenueFilter((prev) => ({
+                      ...prev,
+                      home: 'away',
+                    }))
+                  }
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                    venueFilter.home === 'away'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  В гостях
+                </button>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-muted-foreground min-w-[60px]">{away.name}</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setVenueFilter((prev) => ({
+                      ...prev,
+                      away: 'all',
+                    }))
+                  }
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                    venueFilter.away === 'all'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  Все матчи
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setVenueFilter((prev) => ({
+                      ...prev,
+                      away: 'home',
+                    }))
+                  }
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                    venueFilter.away === 'home'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  Дома
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setVenueFilter((prev) => ({
+                      ...prev,
+                      away: 'away',
+                    }))
+                  }
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                    venueFilter.away === 'away'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  В гостях
+                </button>
+              </div>
             </div>
 
             {/* Селектор количества матчей и вкладки для выбора метрики */}
