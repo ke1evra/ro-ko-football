@@ -247,12 +247,15 @@ export default function BettingFrequencyMatrix({
     hcpOpp.push({ line: h, hits: hitsOpp, total: totalMatches })
   }
 
-  // Предикат «дегенеративности» парных колонок: 0/0 и total/total
+  // Предикат «дегенеративности» парных колонок: скрываем строки где хотя бы одна колонка 0 или total
   const isDegeneratePair = (a: CountCell, b: CountCell) => {
     if (a.total === 0 || b.total === 0) return true
-    const bothZero = a.hits === 0 && b.hits === 0
-    const bothAll = a.hits === a.total && b.hits === b.total
-    return bothZero || bothAll
+    // Скрываем если обе колонки нулевые
+    if (a.hits === 0 && b.hits === 0) return true
+    // Скрываем если хотя бы одна колонка имеет 0 или total (дегенеративное значение)
+    const aIsDegenerate = a.hits === 0 || a.hits === a.total
+    const bIsDegenerate = b.hits === 0 || b.hits === b.total
+    return aIsDegenerate && bIsDegenerate
   }
 
   // Поиск последнего значащего индекса для обрезки хвоста
@@ -318,29 +321,31 @@ export default function BettingFrequencyMatrix({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {LINES.filter((line) => {
-                  const tb = totalsOver.find((c) => c.line === line)!
-                  const tm = totalsUnder.find((c) => c.line === line)!
-                  return tb.hits > 0 || tm.hits > 0
-                }).map((line) => {
-                  const tb = totalsOver.find((c) => c.line === line)!
-                  const tm = totalsUnder.find((c) => c.line === line)!
-                  return (
-                    <TableRow key={`tb-${line}`}>
-                      <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
-                      <TableCell
-                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(tb.hits, tb.total)}`}
-                      >
-                        {formatXN(tb.hits, tb.total)}
-                      </TableCell>
-                      <TableCell
-                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(tm.hits, tm.total)}`}
-                      >
-                        {formatXN(tm.hits, tm.total)}
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                {renderTotalsLines
+                  .filter((line) => {
+                    const tb = totalsOver.find((c) => c.line === line)!
+                    const tm = totalsUnder.find((c) => c.line === line)!
+                    return !isDegeneratePair(tb, tm)
+                  })
+                  .map((line) => {
+                    const tb = totalsOver.find((c) => c.line === line)!
+                    const tm = totalsUnder.find((c) => c.line === line)!
+                    return (
+                      <TableRow key={`tb-${line}`}>
+                        <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
+                        <TableCell
+                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(tb.hits, tb.total)}`}
+                        >
+                          {formatXN(tb.hits, tb.total)}
+                        </TableCell>
+                        <TableCell
+                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(tm.hits, tm.total)}`}
+                        >
+                          {formatXN(tm.hits, tm.total)}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
               </TableBody>
             </Table>
           </div>
@@ -356,11 +361,13 @@ export default function BettingFrequencyMatrix({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {LINES.filter((line) => {
-                  const itb = itOver.find((c) => c.line === line)!
-                  const itm = itUnder.find((c) => c.line === line)!
-                  return itb.hits > 0 || itm.hits > 0
-                }).map((line) => {
+                {renderItLines
+                  .filter((line) => {
+                    const itb = itOver.find((c) => c.line === line)!
+                    const itm = itUnder.find((c) => c.line === line)!
+                    return !isDegeneratePair(itb, itm)
+                  })
+                  .map((line) => {
                   const itb = itOver.find((c) => c.line === line)!
                   const itm = itUnder.find((c) => c.line === line)!
                   return (
@@ -394,10 +401,16 @@ export default function BettingFrequencyMatrix({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {LINES.map((line) => {
-                  const it2b = it2Over.find((c) => c.line === line)!
-                  const it2m = it2Under.find((c) => c.line === line)!
-                  return (
+                {renderIt2Lines
+                  .filter((line) => {
+                    const it2b = it2Over.find((c) => c.line === line)!
+                    const it2m = it2Under.find((c) => c.line === line)!
+                    return !isDegeneratePair(it2b, it2m)
+                  })
+                  .map((line) => {
+                    const it2b = it2Over.find((c) => c.line === line)!
+                    const it2m = it2Under.find((c) => c.line === line)!
+                    return (
                     <TableRow key={`it2-${line}`}>
                       <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
                       <TableCell
@@ -428,11 +441,13 @@ export default function BettingFrequencyMatrix({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {HANDICAP_LINES.filter((h) => {
-                  const f = hcpTeam.find((c) => c.line === h)!
-                  const f2 = hcpOpp.find((c) => c.line === h)!
-                  return f.hits > 0 || f2.hits > 0
-                }).map((h) => {
+                {renderHcpLines
+                  .filter((h) => {
+                    const f = hcpTeam.find((c) => c.line === h)!
+                    const f2 = hcpOpp.find((c) => c.line === h)!
+                    return !isDegeneratePair(f, f2)
+                  })
+                  .map((h) => {
                   const f = hcpTeam.find((c) => c.line === h)!
                   const f2 = hcpOpp.find((c) => c.line === h)!
                   return (
