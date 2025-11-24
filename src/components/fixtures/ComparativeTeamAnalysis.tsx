@@ -172,11 +172,11 @@ function getStatValue(row: MatchRow, metric: StatMetric, side: TeamSide): number
 
 function aggregateByMetric(rows: MatchRow[], metric: StatMetric): AggregateStats {
   const n = rows.length || 1
-  
+
   const wins = rows.filter((r) => r.result === 'W').length
   const draws = rows.filter((r) => r.result === 'D').length
   const losses = rows.filter((r) => r.result === 'L').length
-  
+
   const gfArr = rows.map((r) => r.gf)
   const gaArr = rows.map((r) => r.ga)
   const statArr = rows.map((r) => r.gf)
@@ -379,9 +379,13 @@ function FormIndicator({
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>
-      <div 
+      <div
         className={`flex ${compact ? 'gap-[1px]' : 'gap-1'}`}
-        style={compact ? { paddingTop: `${paddingTop ?? 0}px`, paddingBottom: `${paddingBottom ?? 0}px` } : undefined}
+        style={
+          compact
+            ? { paddingTop: `${paddingTop ?? 0}px`, paddingBottom: `${paddingBottom ?? 0}px` }
+            : undefined
+        }
       >
         <div
           className={`w-6 h-6 flex items-center justify-center text-[10px] font-semibold text-white ${
@@ -738,26 +742,28 @@ export default function ComparativeTeamAnalysis({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="rounded-lg shadow-sm overflow-visible">
+              <Card className="rounded-lg shadow-sm overflow-visible min-h-[180px]">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base font-semibold">{home.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <FormCanvas 
-                    title="Форма" 
-                    form={homeForm} 
+                  <FormCanvas
+                    title="Форма"
+                    form={homeForm}
+                    matches={filteredHomeRows}
                     compact={limit >= 30}
                   />
                 </CardContent>
               </Card>
-              <Card className="rounded-lg shadow-sm overflow-visible">
+              <Card className="rounded-lg shadow-sm overflow-visible min-h-[180px]">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base font-semibold">{away.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <FormCanvas 
-                    title="Форма" 
-                    form={awayForm} 
+                  <FormCanvas
+                    title="Форма"
+                    form={awayForm}
+                    matches={filteredAwayRows}
                     compact={limit >= 30}
                   />
                 </CardContent>
