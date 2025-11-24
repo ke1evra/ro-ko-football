@@ -2,82 +2,13 @@
 
 import React, { JSX, useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import {
-  AlertCircle,
-  Info,
-  BarChart3,
-  ArrowRight,
-  BarChart4,
-  LineChart as LineChartIcon,
-  PieChart as PieChartIcon,
-} from 'lucide-react'
-import Link from 'next/link'
-import { generateMatchUrl } from '@/lib/match-url-utils'
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-} from 'recharts'
+import { AlertCircle } from 'lucide-react'
+
 import BettingFrequencyMatrix from '@/components/fixtures/BettingFrequencyMatrix'
+import { MatchTable, MatchRow, TeamSide, StatMetric } from '@/components/fixtures/MatchTable'
 
-type TeamSide = 'home' | 'away'
-type StatMetric =
-  | 'goals'
-  | 'possession'
-  | 'shots'
-  | 'shotsOnTarget'
-  | 'shotsOffTarget'
-  | 'shotsBlocked'
-  | 'corners'
-  | 'offsides'
-  | 'fouls'
-  | 'yellowCards'
-  | 'redCards'
-  | 'saves'
-  | 'passes'
-  | 'passesAccurate'
-  | 'passAccuracy'
-  | 'attacks'
-  | 'dangerousAttacks'
-  | 'shotsInsideBox'
-  | 'shotsOutsideBox'
-  | 'hitWoodwork'
-  | 'bigChances'
-  | 'freeKicks'
-  | 'longPasses'
-  | 'finalThirdPasses'
-  | 'crosses'
-  | 'xa'
-  | 'throwIns'
-  | 'tackles'
-  | 'duelsWon'
-  | 'clearances'
-  | 'interceptions'
-  | 'errorsLeadingToShot'
-  | 'errorsLeadingToGoal'
-  | 'xgotAfterShotsOnTarget'
-  | 'goalsPrevented'
-
-interface TeamInfo {
+type TeamInfo = {
   id: number
   name: string
 }
@@ -99,28 +30,25 @@ interface MatchStatsData {
   passAccuracy?: { home: number; away: number }
   attacks?: { home: number; away: number }
   dangerousAttacks?: { home: number; away: number }
-  additionalStats?: Record<string, unknown>
-}
-
-interface MatchRow {
-  id: string
-  matchId: string
-  fixtureId: string
-  date: string
-  competition?: string
-  season?: string
-  round?: string
-  homeName: string
-  awayName: string
-  homeTeamId: number
-  awayTeamId: number
-  homeScore: number
-  awayScore: number
-  gf: number
-  ga: number
-  total: number
-  result: 'W' | 'D' | 'L'
-  stats?: MatchStatsData
+  shotsInsideBox?: { home: number; away: number }
+  shotsOutsideBox?: { home: number; away: number }
+  hitWoodwork?: { home: number; away: number }
+  bigChances?: { home: number; away: number }
+  freeKicks?: { home: number; away: number }
+  longPasses?: { home: number; away: number }
+  finalThirdPasses?: { home: number; away: number }
+  crosses?: { home: number; away: number }
+  xa?: { home: number; away: number }
+  throwIns?: { home: number; away: number }
+  tackles?: { home: number; away: number }
+  duelsWon?: { home: number; away: number }
+  clearances?: { home: number; away: number }
+  interceptions?: { home: number; away: number }
+  errorsLeadingToShot?: { home: number; away: number }
+  errorsLeadingToGoal?: { home: number; away: number }
+  xgotAfterShotsOnTarget?: { home: number; away: number }
+  goalsPrevented?: { home: number; away: number }
+  [key: string]: unknown
 }
 
 interface ComparativeTeamAnalysisProps {
@@ -198,8 +126,6 @@ async function fetchTeamLastMatches(
 function normalizeRows(rows: unknown[]): MatchRow[] {
   return rows.map((m: unknown) => {
     const match = m as Record<string, unknown>
-    // gf и ga из API могут быть перепутаны в зависимости от того, как команда загружена
-    // Используем homeScore/awayScore как источник истины для счета хозяев/гостей
     const homeScore = (match.homeScore as number) ?? (match.gf as number) ?? 0
     const awayScore = (match.awayScore as number) ?? (match.ga as number) ?? 0
     const result = (match.result as 'W' | 'D' | 'L') ?? 'D'
@@ -222,38 +148,30 @@ function normalizeRows(rows: unknown[]): MatchRow[] {
       awayTeamId: (match.awayTeamId as number) ?? 0,
       homeScore,
       awayScore,
-      // gf и ga всегда относятся к хозяевам и гостям соответственно
       gf: homeScore,
       ga: awayScore,
       total: homeScore + awayScore,
       result,
-      // Приводим к ожидаемому типу, неизвестные формы отбрасываем
-      stats: match.stats as MatchStatsData | undefined,
+      stats: (match.stats as MatchStatsData | undefined) ?? undefined,
     }
   })
 }
 
 function getStatValue(row: MatchRow, metric: StatMetric, side: TeamSide): number {
-  // Специальная обработка для голов
   if (metric === 'goals') {
     return side === 'home' ? row.gf : row.ga
   }
 
   if (!row.stats) return 0
-  const stat = row.stats[metric as keyof MatchStatsData]
+  const stats = row.stats as MatchStatsData
+  const stat = stats[metric]
   if (!stat || typeof stat !== 'object' || !('home' in stat) || !('away' in stat)) return 0
-  return side === 'home' ? (stat.home as number) : (stat.away as number)
-}
-
-function getStatColor(value: number, avg: number): string {
-  if (value > avg * 1.1) return 'bg-green-100 text-green-800' // Выше среднего
-  if (value < avg * 0.9) return 'bg-red-100 text-red-800' // Ниже среднего
-  return 'bg-yellow-100 text-yellow-800' // Около среднего
+  const v = stat as { home: number; away: number }
+  return side === 'home' ? v.home : v.away
 }
 
 function aggregateByMetric(rows: MatchRow[], metric: StatMetric): AggregateStats {
   const n = rows.length || 1
-  // Считаем победы/ничьи/поражения на основе выбранной метрики
   const wins = rows.filter(
     (r) => getStatValue(r, metric, 'home') > getStatValue(r, metric, 'away'),
   ).length
@@ -294,186 +212,167 @@ function aggregateByMetric(rows: MatchRow[], metric: StatMetric): AggregateStats
   }
 }
 
-function ResultPill({ res }: { res: 'W' | 'D' | 'L' }): JSX.Element {
-  const map: Record<'W' | 'D' | 'L', string> = {
-    W: 'bg-green-100 text-green-800 border border-green-300',
-    D: 'bg-yellow-100 text-yellow-800 border border-yellow-300',
-    L: 'bg-red-100 text-red-800 border border-red-300',
-  }
-  const label: Record<'W' | 'D' | 'L', string> = { W: 'В', D: 'Н', L: 'П' }
-  return (
-    <span className={`inline-block px-1.5 py-0.5 text-[10px] font-medium rounded ${map[res]}`}>
-      {label[res]}
-    </span>
-  )
-}
-
-// Карта алиасов и порядок метрик для упорядочивания статистики
-const ORDERED_STATS_KEYS: string[] = [
-  // Сводка
-  'possession',
-  'shots',
-  'shotsOnTarget',
-  'bigChances',
-  'corners',
-  'passes',
-  'yellowCards',
-  // Детализация
-  'shotsOffTarget',
-  'shotsBlocked',
-  'shotsInsideBox',
-  'shotsOutsideBox',
-  'hitWoodwork',
-  'goals',
-  'offsides',
-  'freeKicks',
-  'longPasses',
-  'finalThirdPasses',
-  'crosses',
-  'xa',
-  'throwIns',
-  'fouls',
-  'tackles',
-  'duelsWon',
-  'clearances',
-  'interceptions',
-  'errorsLeadingToShot',
-  'errorsLeadingToGoal',
-  'saves',
-  'xgotAfterShotsOnTarget',
-  'goalsPrevented',
-]
-
-// Утилита для русскоязычных названий статистики
-const getStatsLabel = (key: string): string => {
-  const statsLabels: Record<string, string> = {
-    possession: 'Владение мячом',
-    shots: 'Удары',
-    shotsOnTarget: 'Удары в створ',
-    shotsOffTarget: 'Удары мимо',
-    shotsBlocked: 'Заблокированные удары',
-    shotsInsideBox: 'Удары из штрафной',
-    shotsOutsideBox: 'Удары за штрафной',
-    hitWoodwork: 'Попадание в штангу',
-    goals: 'Голы',
-    bigChances: 'Голевые моменты',
-    corners: 'Угловые',
-    offsides: 'Офсайды',
-    freeKicks: 'Штрафные',
-    longPasses: 'Длинные передачи',
-    finalThirdPasses: 'Передачи в последней трети',
-    crosses: 'Навесы',
-    xa: 'Ожидаемые ассисты',
-    throwIns: 'Вбрасывания',
-    fouls: 'Фолы',
-    tackles: 'Отборы',
-    duelsWon: 'Выиграно дуэлей',
-    clearances: 'Выносы',
-    interceptions: 'Перехваты',
-    errorsLeadingToShot: 'Ошибки, приведшие к удару',
-    errorsLeadingToGoal: 'Ошибки, приведшие к голу',
-    yellowCards: 'Жёлтые карточки',
-    redCards: 'Красные карточки',
-    saves: 'Сэйвы',
-    passes: 'Передачи',
-    passesAccurate: 'Точные передачи',
-    passAccuracy: 'Точность передач (%)',
-    attacks: 'Атаки',
-    dangerousAttacks: 'Опасные атаки',
-    xgotAfterShotsOnTarget: 'xGOT после ударов в створ',
-    goalsPrevented: 'Предотвращённые голы',
-  }
-  return statsLabels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
-}
-
-function MiniStatsPopover({ stats }: { stats?: MatchStatsData }): JSX.Element {
-  if (!stats) {
-    return (
-      <HoverCard>
-        <HoverCardTrigger asChild>
-          <button className="p-1 hover:bg-muted rounded">
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </button>
-        </HoverCardTrigger>
-        <HoverCardContent className="w-80">
-          <p className="text-sm text-muted-foreground">Статистика недоступна</p>
-        </HoverCardContent>
-      </HoverCard>
-    )
-  }
-
-  // Получить все ключи из stats, отсортировать по ORDERED_STATS_KEYS
-  const allKeys = Object.keys(stats)
-  const sortedKeys = ORDERED_STATS_KEYS.filter((key) => allKeys.includes(key)).concat(
-    allKeys.filter((key) => !ORDERED_STATS_KEYS.includes(key)),
-  )
-
-  if (sortedKeys.length === 0) {
-    return (
-      <HoverCard>
-        <HoverCardTrigger asChild>
-          <button className="p-1 hover:bg-muted rounded">
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </button>
-        </HoverCardTrigger>
-        <HoverCardContent className="w-80">
-          <p className="text-sm text-muted-foreground">Статистика недоступна</p>
-        </HoverCardContent>
-      </HoverCard>
-    )
-  }
-
-  return (
-    <HoverCard>
-      <HoverCardTrigger asChild>
-        <button className="p-1 hover:bg-muted rounded">
-          <BarChart3 className="h-4 w-4 text-muted-foreground" />
-        </button>
-      </HoverCardTrigger>
-      <HoverCardContent className="w-80 max-h-96 overflow-y-auto">
-        <div className="space-y-2">
-          <h4 className="font-semibold text-sm">Статистика матча</h4>
-          {sortedKeys.map((key) => {
-            const val = stats[key as keyof MatchStatsData]
-            if (
-              val &&
-              typeof val === 'object' &&
-              'home' in val &&
-              'away' in val &&
-              typeof val.home === 'number' &&
-              typeof val.away === 'number'
-            ) {
-              return (
-                <div key={key} className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">{getStatsLabel(key)}</span>
-                  <span className="font-semibold">
-                    {val.home} - {val.away}
-                  </span>
-                </div>
-              )
-            }
-            return null
-          })}
-        </div>
-      </HoverCardContent>
-    </HoverCard>
-  )
-}
-
 type MatchFilter = 'all' | 'head-to-head'
 type VenueFilter = 'all' | 'home' | 'away'
+
+function AggBlock({
+  title,
+  agg,
+  selectedMetric,
+}: {
+  title: string
+  agg: AggregateStats
+  selectedMetric: StatMetric
+}): JSX.Element {
+  const formatValue = (val: number): string => {
+    if (Number.isInteger(val)) return String(val)
+    return val.toFixed(2).replace(/\.0+$/, '')
+  }
+
+  const metricLabel =
+    STAT_METRICS.find((m) => m.key === selectedMetric)?.label.toLowerCase() || 'метрики'
+
+  const column1 = [
+    {
+      label: 'Победы',
+      value: agg.wins,
+      tooltip: `Количество матчей, где команда имела больше ${metricLabel}, чем соперник`,
+    },
+    {
+      label: 'Ничьи',
+      value: agg.draws,
+      tooltip: `Количество матчей, где команда имела равное количество ${metricLabel} с соперником`,
+    },
+    {
+      label: 'Поражения',
+      value: agg.losses,
+      tooltip: `Количество матчей, где команда имела меньше ${metricLabel}, чем соперник`,
+    },
+  ]
+
+  const column2 = [
+    {
+      label: 'СР ИТ',
+      value: formatValue(agg.avgStat),
+      tooltip: `Среднее значение ${metricLabel} за команду`,
+    },
+    {
+      label: 'СР ИТ СОП',
+      value: formatValue(agg.avgStatCon),
+      tooltip: `Среднее значение ${metricLabel} соперника`,
+    },
+    {
+      label: 'СР Т',
+      value: formatValue(agg.avgT),
+      tooltip: `Среднее значение ${metricLabel} в матче`,
+    },
+  ]
+
+  const getResultColor = (wins: number, draws: number, losses: number): string => {
+    if (wins > draws && wins > losses) return 'text-green-600 font-bold'
+    if (losses > wins && losses > draws) return 'text-red-600 font-bold'
+    return 'text-yellow-600 font-bold'
+  }
+
+  const renderStat = (
+    stat: { label: string; value: string | number; tooltip: string },
+    aggStats: AggregateStats,
+  ) => {
+    let colorClass = ''
+    if (stat.label === 'Победы' || stat.label === 'Ничьи' || stat.label === 'Поражения') {
+      colorClass = getResultColor(aggStats.wins, aggStats.draws, aggStats.losses)
+    }
+
+    return (
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-xs text-muted-foreground cursor-help block truncate">
+                  {stat.label}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{stat.tooltip}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <span className={`text-xs font-semibold text-right ${colorClass}`}>{stat.value}</span>
+      </div>
+    )
+  }
+
+  return (
+    <Card className="rounded-lg shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-semibold">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="p-4">
+        <div className="grid grid-cols-2 gap-6">
+          <div className="space-y-3">
+            {column1.map((stat) => (
+              <div key={stat.label}>{renderStat(stat, agg)}</div>
+            ))}
+          </div>
+          <div className="space-y-3">
+            {column2.map((stat) => (
+              <div key={stat.label}>{renderStat(stat, agg)}</div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function FormIndicator({
+  form,
+  title,
+}: {
+  form: Array<'W' | 'D' | 'L'>
+  title: string
+}): JSX.Element {
+  const getFormColor = (res: 'W' | 'D' | 'L'): string => {
+    switch (res) {
+      case 'W':
+        return 'bg-green-500 hover:bg-green-600'
+      case 'D':
+        return 'bg-yellow-500 hover:bg-yellow-600'
+      case 'L':
+        return 'bg-red-500 hover:bg-red-600'
+      default:
+        return 'bg-gray-400 hover:bg-gray-500'
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>
+      <div className="flex gap-1">
+        {form.map((r, idx) => (
+          <div key={`${title}-${idx}`} className={`w-3 h-3 rounded-full ${getFormColor(r)}`} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const computeForm = (rows: MatchRow[]): Array<'W' | 'D' | 'L'> => {
+  const sorted = [...rows].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  return sorted.map((r) => r.result)
+}
 
 export default function ComparativeTeamAnalysis({
   home,
   away,
   limit: initialLimit = 10,
-}: ComparativeTeamAnalysisProps) {
+}: ComparativeTeamAnalysisProps): JSX.Element {
   const [homeRows, setHomeRows] = useState<MatchRow[]>([])
   const [awayRows, setAwayRows] = useState<MatchRow[]>([])
-  const [selectedIds, setSelectedIds] = useState<Record<'home' | 'away', Set<string>>>({
+  const [selectedIds, setSelectedIds] = useState<Record<'home' | 'away', Set<string>>>(() => ({
     home: new Set(),
     away: new Set(),
-  })
+  }))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedMetric, setSelectedMetric] = useState<StatMetric>('goals')
@@ -483,16 +382,11 @@ export default function ComparativeTeamAnalysis({
 
   useEffect(() => {
     let aborted = false
-    async function load() {
+
+    async function load(): Promise<void> {
       setLoading(true)
       setError(null)
       try {
-        console.log('[ComparativeTeamAnalysis] Загрузка матчей для:', {
-          home: home.id,
-          away: away.id,
-          matchFilter,
-          venueFilter,
-        })
         const [hRaw, aRaw] = await Promise.all([
           fetchTeamLastMatches(
             home.id,
@@ -507,45 +401,35 @@ export default function ComparativeTeamAnalysis({
             matchFilter === 'head-to-head' ? 'all' : venueFilter,
           ),
         ])
-        console.log('[ComparativeTeamAnalysis] Получены матчи:', {
-          homeCount: hRaw.length,
-          awayCount: aRaw.length,
-        })
-        console.log('[ComparativeTeamAnalysis] Матчи home:', JSON.stringify(hRaw, null, 2))
-        console.log('[ComparativeTeamAnalysis] Матчи away:', JSON.stringify(aRaw, null, 2))
+
         if (aborted) return
+
         const normalizedHome = normalizeRows(hRaw)
         const normalizedAway = normalizeRows(aRaw)
         setHomeRows(normalizedHome)
         setAwayRows(normalizedAway)
-        // Выбрать все матчи по умолчанию
         setSelectedIds({
           home: new Set(normalizedHome.map((r) => r.id)),
           away: new Set(normalizedAway.map((r) => r.id)),
         })
       } catch (e: unknown) {
-        const error = e as Record<string, unknown>
-        console.error('[ComparativeTeamAnalysis] Ошибка:', error)
-        if (!aborted) setError((error?.message as string) || 'Не удалось загрузить данные')
+        const err = e as { message?: string }
+        if (!aborted) setError(err?.message || 'Не удалось загрузить данные')
       } finally {
         if (!aborted) setLoading(false)
       }
     }
-    load()
+
+    void load()
+
     return () => {
       aborted = true
     }
-  }, [home.id, home.name, away.id, away.name, limit, matchFilter, venueFilter])
+  }, [home.id, away.id, limit, matchFilter, venueFilter])
 
-  const filteredHomeRows = useMemo(() => {
-    return homeRows
-  }, [homeRows])
+  const filteredHomeRows = useMemo(() => homeRows, [homeRows])
+  const filteredAwayRows = useMemo(() => awayRows, [awayRows])
 
-  const filteredAwayRows = useMemo(() => {
-    return awayRows
-  }, [awayRows])
-
-  // Обновить выбранные матчи при смене фильтра
   useEffect(() => {
     setSelectedIds({
       home: new Set(filteredHomeRows.map((r) => r.id)),
@@ -562,15 +446,16 @@ export default function ComparativeTeamAnalysis({
     [filteredAwayRows, selectedIds.away],
   )
 
-  const aggHome = useMemo(() => {
-    return aggregateByMetric(selectedHomeRows, selectedMetric)
-  }, [selectedHomeRows, selectedMetric])
+  const aggHome = useMemo(
+    () => aggregateByMetric(selectedHomeRows, selectedMetric),
+    [selectedHomeRows, selectedMetric],
+  )
+  const aggAway = useMemo(
+    () => aggregateByMetric(selectedAwayRows, selectedMetric),
+    [selectedAwayRows, selectedMetric],
+  )
 
-  const aggAway = useMemo(() => {
-    return aggregateByMetric(selectedAwayRows, selectedMetric)
-  }, [selectedAwayRows, selectedMetric])
-
-  function toggle(side: TeamSide, id: string) {
+  const toggle = (side: TeamSide, id: string): void => {
     setSelectedIds((prev) => {
       const next = new Set(prev[side])
       if (next.has(id)) next.delete(id)
@@ -579,328 +464,16 @@ export default function ComparativeTeamAnalysis({
     })
   }
 
-  function toggleAll(side: TeamSide, rows: MatchRow[]) {
+  const toggleAll = (side: TeamSide, rows: MatchRow[]): void => {
     setSelectedIds((prev) => {
       const allIds = new Set(rows.map((r) => r.id))
       const current = prev[side]
       const isAllSelected = rows.every((r) => current.has(r.id))
       if (isAllSelected) {
-        // Deselect all
         return { ...prev, [side]: new Set() }
-      } else {
-        // Select all
-        return { ...prev, [side]: allIds }
       }
+      return { ...prev, [side]: allIds }
     })
-  }
-
-  function AggBlock({
-    title,
-    agg,
-    selectedMetric,
-  }: {
-    title: string
-    agg: AggregateStats
-    selectedMetric: StatMetric
-  }): JSX.Element {
-    const formatValue = (val: number): string => {
-      if (Number.isInteger(val)) return String(val)
-      return val.toFixed(2).replace(/\.?0+$/, '')
-    }
-
-    const metricLabel =
-      STAT_METRICS.find((m) => m.key === selectedMetric)?.label.toLowerCase() || 'метрики'
-
-    const column1 = [
-      {
-        label: 'Победы',
-        value: agg.wins,
-        tooltip: `Количество матчей, где команда имела больше ${metricLabel}, чем соперник`,
-      },
-      {
-        label: 'Ничьи',
-        value: agg.draws,
-        tooltip: `Количество матчей, где команда имела равное количество ${metricLabel} с соперником`,
-      },
-      {
-        label: 'Поражения',
-        value: agg.losses,
-        tooltip: `Количество матчей, где команда имела мень��е ${metricLabel}, чем соперник`,
-      },
-    ]
-
-    const column2 = [
-      {
-        label: 'СР ИТ',
-        value: formatValue(agg.avgStat),
-        tooltip: `Среднее значение ${metricLabel} за команду`,
-      },
-      {
-        label: 'СР ИТ СОП',
-        value: formatValue(agg.avgStatCon),
-        tooltip: `Среднее значение ${metricLabel} соперника`,
-      },
-      {
-        label: 'СР Т',
-        value: formatValue(agg.avgT),
-        tooltip: `Среднее значение ${metricLabel} в матче`,
-      },
-    ]
-
-    const getResultColor = (wins: number, draws: number, losses: number): string => {
-      if (wins > draws && wins > losses) return 'text-green-600 font-bold'
-      if (losses > wins && losses > draws) return 'text-red-600 font-bold'
-      return 'text-yellow-600 font-bold'
-    }
-
-    const renderStat = (
-      stat: { label: string; value: string | number; tooltip: string },
-      agg: AggregateStats,
-    ) => {
-      let colorClass = ''
-
-      // Подсвечиваем первую колонку (Победы/Ничьи/Поражения) по результатам
-      if (stat.label === 'Победы' || stat.label === 'Ничьи' || stat.label === 'Поражения') {
-        colorClass = getResultColor(agg.wins, agg.draws, agg.losses)
-      }
-
-      return (
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="text-xs text-muted-foreground cursor-help block truncate">
-                    {stat.label}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>{stat.tooltip}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <span className={`text-xs font-semibold text-right ${colorClass}`}>{stat.value}</span>
-        </div>
-      )
-    }
-
-    return (
-      <Card className="rounded-lg shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">{title}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4">
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-3">
-              {column1.map((stat, idx) => (
-                <div key={idx}>{renderStat(stat, agg)}</div>
-              ))}
-            </div>
-            <div className="space-y-3">
-              {column2.map((stat, idx) => (
-                <div key={idx}>{renderStat(stat, agg)}</div>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  function MatchTable({
-    side,
-    title,
-    rows,
-  }: {
-    side: TeamSide
-    title: string
-    rows: MatchRow[]
-  }): JSX.Element {
-    const getRowColorByValues = (it1: number, it2: number): string => {
-      if (it1 > it2) return 'bg-green-50 hover:bg-green-100'
-      if (it1 < it2) return 'bg-red-50 hover:bg-red-100'
-      return 'bg-yellow-50 hover:bg-yellow-100'
-    }
-
-    // Сортировка матчей по дате (от новых к старым)
-    const sortedRows = useMemo(() => {
-      return [...rows].sort((a, b) => {
-        const aDate = new Date(a.date).getTime()
-        const bDate = new Date(b.date).getTime()
-        return bDate - aDate
-      })
-    }, [rows])
-
-    return (
-      <Card className="rounded-lg shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">{title}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="w-12 text-center">
-                    <input
-                      type="checkbox"
-                      className="accent-primary cursor-pointer"
-                      checked={
-                        sortedRows.length > 0 &&
-                        sortedRows.every((r) => selectedIds[side].has(r.id))
-                      }
-                      onChange={() => toggleAll(side, sortedRows)}
-                    />
-                  </TableHead>
-                  <TableHead>Дата</TableHead>
-                  <TableHead>Хозяева</TableHead>
-                  <TableHead className="text-center">ИТ1</TableHead>
-                  <TableHead className="text-center">ИТ2</TableHead>
-                  <TableHead>Гости</TableHead>
-                  <TableHead className="text-center">Т</TableHead>
-                  <TableHead className="text-center">Рез.</TableHead>
-                  <TableHead className="w-20 text-center">Действия</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedRows.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={10} className="text-center text-muted-foreground py-6">
-                      Нет данных
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  sortedRows.map((r) => {
-                    const checked = selectedIds[side].has(r.id)
-                    const it1Value = getStatValue(r, selectedMetric, 'home')
-                    const it2Value = getStatValue(r, selectedMetric, 'away')
-                    const rowClass = getRowColorByValues(it1Value, it2Value)
-                    return (
-                      <TableRow
-                        key={r.id}
-                        className={`transition-colors cursor-pointer ${rowClass}`}
-                        onClick={() => toggle(side, r.id)}
-                      >
-                        <TableCell className="text-center">
-                          <input
-                            type="checkbox"
-                            className="accent-primary cursor-pointer"
-                            checked={checked}
-                            onChange={() => toggle(side, r.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap text-xs">
-                          {new Date(r.date).toLocaleDateString('ru-RU', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: '2-digit',
-                          })}
-                        </TableCell>
-                        <TableCell className="text-xs">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="cursor-help block w-24 truncate overflow-hidden text-ellipsis">
-                                  {r.homeName}
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent>{r.homeName}</TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </TableCell>
-                        {/* ИТ1 - всегда хозяева матча, ИТ2 - всегда гости матча */}
-                        <TableCell className="text-center font-semibold text-xs">
-                          {getStatValue(r, selectedMetric, 'home')}
-                        </TableCell>
-                        <TableCell className="text-center font-semibold text-xs">
-                          {getStatValue(r, selectedMetric, 'away')}
-                        </TableCell>
-                        <TableCell className="text-xs">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="cursor-help block w-24 truncate overflow-hidden text-ellipsis">
-                                  {r.awayName}
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent>{r.awayName}</TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </TableCell>
-                        {/* Т - всегда сумма ИТ1 (хозяева) + ИТ2 (гости) */}
-                        <TableCell className="text-center font-semibold text-xs">
-                          {getStatValue(r, selectedMetric, 'home') +
-                            getStatValue(r, selectedMetric, 'away')}
-                        </TableCell>
-                        {/* Рез. - всегда счет ИТ1:ИТ2 (хозяева:гости) */}
-                        <TableCell className="text-center">
-                          <div className="inline-flex items-center gap-1">
-                            <ResultPill res={r.result} />
-                            <span className="font-semibold text-xs">
-                              {r.gf}:{r.ga}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex items-center gap-1">
-                            <MiniStatsPopover stats={r.stats} />
-                            <Link
-                              href={generateMatchUrl({
-                                homeTeamName: r.homeName,
-                                awayTeamName: r.awayName,
-                                date: r.date,
-                                homeTeamId: r.homeTeamId,
-                                awayTeamId: r.awayTeamId,
-                                fixtureId: r.fixtureId,
-                                matchId: r.matchId,
-                              })}
-                              className="p-1 hover:bg-muted rounded inline-block"
-                            >
-                              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                            </Link>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  function FormIndicator({ form, title }: { form: Array<'W' | 'D' | 'L'>; title: string }) {
-    const getFormColor = (res: 'W' | 'D' | 'L'): string => {
-      switch (res) {
-        case 'W':
-          return 'bg-green-500 hover:bg-green-600'
-        case 'D':
-          return 'bg-yellow-500 hover:bg-yellow-600'
-        case 'L':
-          return 'bg-red-500 hover:bg-red-600'
-        default:
-          return 'bg-gray-400 hover:bg-gray-500'
-      }
-    }
-    return (
-      <div className="space-y-2">
-        <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>
-        <div className="flex gap-1">
-          {form.map((r, idx) => (
-            <div key={`${title}-${idx}`} className={`w-3 h-3 rounded-full ${getFormColor(r)}`} />
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  const computeForm = (rows: MatchRow[]): Array<'W' | 'D' | 'L'> => {
-    // Учитываем столько матчей, сколько в массиве, порядок — от новых к старым
-    const sorted = [...rows].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    return sorted.map((r) => r.result)
   }
 
   const homeForm = useMemo(() => computeForm(filteredHomeRows), [filteredHomeRows])
@@ -928,6 +501,7 @@ export default function ComparativeTeamAnalysis({
             {/* Фильтр: Все матчи / Личные матчи */}
             <div className="flex gap-2 flex-wrap">
               <button
+                type="button"
                 onClick={() => setMatchFilter('all')}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   matchFilter === 'all'
@@ -938,6 +512,7 @@ export default function ComparativeTeamAnalysis({
                 Все матчи
               </button>
               <button
+                type="button"
                 onClick={() => setMatchFilter('head-to-head')}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   matchFilter === 'head-to-head'
@@ -952,6 +527,7 @@ export default function ComparativeTeamAnalysis({
             {/* Фильтр: Хозяева / Гости / Все */}
             <div className="flex gap-2 flex-wrap">
               <button
+                type="button"
                 onClick={() => setVenueFilter('all')}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   venueFilter === 'all'
@@ -962,6 +538,7 @@ export default function ComparativeTeamAnalysis({
                 Все матчи
               </button>
               <button
+                type="button"
                 onClick={() => setVenueFilter('home')}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   venueFilter === 'home'
@@ -972,6 +549,7 @@ export default function ComparativeTeamAnalysis({
                 Дома
               </button>
               <button
+                type="button"
                 onClick={() => setVenueFilter('away')}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   venueFilter === 'away'
@@ -989,6 +567,7 @@ export default function ComparativeTeamAnalysis({
                 {STAT_METRICS.map((metric) => (
                   <button
                     key={metric.key}
+                    type="button"
                     onClick={() => setSelectedMetric(metric.key)}
                     className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                       selectedMetric === metric.key
@@ -1004,6 +583,7 @@ export default function ComparativeTeamAnalysis({
                 {[10, 20, 30, 40, 50].map((value) => (
                   <button
                     key={value}
+                    type="button"
                     onClick={() => setLimit(value)}
                     className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                       limit === value
@@ -1017,7 +597,7 @@ export default function ComparativeTeamAnalysis({
               </div>
             </div>
 
-            {/* Форма команд (последние 6 матчей) */}
+            {/* Форма команд (последние матчи) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card className="rounded-lg shadow-sm">
                 <CardHeader className="pb-3">
@@ -1049,11 +629,19 @@ export default function ComparativeTeamAnalysis({
                 side="home"
                 title={`Последние матчи — ${home.name}`}
                 rows={filteredHomeRows}
+                selectedMetric={selectedMetric}
+                selectedIds={selectedIds}
+                onToggle={toggle}
+                onToggleAll={toggleAll}
               />
               <MatchTable
                 side="away"
                 title={`Последние матчи — ${away.name}`}
                 rows={filteredAwayRows}
+                selectedMetric={selectedMetric}
+                selectedIds={selectedIds}
+                onToggle={toggle}
+                onToggleAll={toggleAll}
               />
             </div>
 

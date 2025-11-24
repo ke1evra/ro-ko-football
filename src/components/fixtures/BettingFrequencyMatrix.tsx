@@ -288,19 +288,36 @@ export default function BettingFrequencyMatrix({
       <CardContent className="space-y-6">
         {/* Верхние агрегаты */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <AggTile label="Победы" value={formatXN(topAggregates.wins, topAggregates.total)} />
-          <AggTile label="Ничьи" value={formatXN(topAggregates.draws, topAggregates.total)} />
-          <AggTile label="Поражения" value={formatXN(topAggregates.losses, topAggregates.total)} />
-          <AggTile label="Обе забили" value={formatXN(topAggregates.btts, topAggregates.total)} />
+          <AggTile
+            label="Победы"
+            value={formatXN(topAggregates.wins, topAggregates.total)}
+            variant="success"
+          />
+          <AggTile
+            label="Ничьи"
+            value={formatXN(topAggregates.draws, topAggregates.total)}
+            variant="warning"
+          />
+          <AggTile
+            label="Поражения"
+            value={formatXN(topAggregates.losses, topAggregates.total)}
+            variant="danger"
+          />
+          <AggTile
+            label="Обе забили"
+            value={formatXN(topAggregates.btts, topAggregates.total)}
+            variant="info"
+          />
           <AggTile
             label="Команда забивала"
             value={formatXN(topAggregates.teamScored, topAggregates.total)}
+            variant="primary"
           />
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div>
-                  <AggTile label="Первый гол (н/д)" value="—" muted />
+                  <AggTile label="Первый гол (н/д)" value="—" muted variant="muted" />
                 </div>
               </TooltipTrigger>
               <TooltipContent>Недоступно: нет данных событий по минутам</TooltipContent>
@@ -481,17 +498,33 @@ function AggTile({
   label,
   value,
   muted = false,
+  variant = 'default',
 }: {
   label: string
   value: string
   muted?: boolean
+  variant?: 'default' | 'success' | 'danger' | 'warning' | 'muted' | 'info' | 'primary'
 }) {
+  const wrapper = `rounded border p-2 ${muted ? 'opacity-70' : ''}`
+  const numberPalette: Record<string, string> = {
+    default: 'text-foreground',
+    success: 'text-green-700',
+    warning: 'text-yellow-700',
+    danger: 'text-red-700',
+    info: 'text-sky-700',
+    primary: 'text-indigo-700',
+    muted: 'text-muted-foreground',
+  }
+  const numberCls = numberPalette[variant] || numberPalette.default
+
   return (
-    <div className={`rounded border p-2 ${muted ? 'opacity-70' : ''}`}>
+    <div className={wrapper}>
       <div className="text-[10px] leading-3 text-muted-foreground text-center break-words">
         {label}
       </div>
-      <div className="text-[11px] leading-4 font-semibold font-mono text-center">{value}</div>
+      <div className={`text-[12px] leading-5 font-extrabold font-mono text-center ${numberCls}`}>
+        {value}
+      </div>
     </div>
   )
 }
