@@ -294,8 +294,8 @@ export function FormCanvas({ form, matches, title, compact = false }: FormCanvas
 
   return (
     <>
-      <div className="space-y-2">
-        <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>
+      <div className={title ? "space-y-2" : ""}>
+        {title && <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>}
         <div ref={containerRef} className="w-full">
           <canvas
             ref={canvasRef}

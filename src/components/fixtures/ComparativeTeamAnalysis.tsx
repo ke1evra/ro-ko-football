@@ -740,32 +740,18 @@ export default function ComparativeTeamAnalysis({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="rounded-lg shadow-sm overflow-visible min-h-[180px]">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-semibold">{home.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <FormCanvas
-                    title="Форма"
-                    form={homeForm}
-                    matches={filteredHomeRows}
-                    compact={limit >= 30}
-                  />
-                </CardContent>
-              </Card>
-              <Card className="rounded-lg shadow-sm overflow-visible min-h-[180px]">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-semibold">{away.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <FormCanvas
-                    title="Форма"
-                    form={awayForm}
-                    matches={filteredAwayRows}
-                    compact={limit >= 30}
-                  />
-                </CardContent>
-              </Card>
+              <FormCanvas
+                title=""
+                form={homeForm}
+                matches={filteredHomeRows}
+                compact={limit >= 30}
+              />
+              <FormCanvas
+                title=""
+                form={awayForm}
+                matches={filteredAwayRows}
+                compact={limit >= 30}
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
