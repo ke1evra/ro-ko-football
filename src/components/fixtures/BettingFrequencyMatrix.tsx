@@ -147,8 +147,53 @@ export default function BettingFrequencyMatrix({
   }, [recent, computeTeamValues, totalMatches])
 
   // Линии тоталов (общих и индивидуальных)
-  const LINES = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
-  const HANDICAP_LINES = [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5]
+  // Динамический расчёт диапазона линий с шагом 0.5 на основе наблюдаемых максимумов
+  const { LINES, HANDICAP_LINES } = React.useMemo(() => {
+    let maxTeam = 0
+    let maxOpp = 0
+    let maxTotal = 0
+    let maxAbsDiff = 0
+
+    for (const r of recent) {
+      const { teamValue, oppValue } = computeTeamValues(r)
+      const total = teamValue + oppValue
+      const diff = teamValue - oppValue
+
+      maxTeam = Math.max(maxTeam, teamValue)
+      maxOpp = Math.max(maxOpp, oppValue)
+      maxTotal = Math.max(maxTotal, total)
+      maxAbsDiff = Math.max(maxAbsDiff, Math.abs(diff))
+    }
+
+    // Ограничители на случай пустых данных
+    const maxTotalCeil = Math.max(1, Math.ceil(maxTotal))
+    const maxTeamCeil = Math.max(1, Math.ceil(maxTeam))
+    const maxOppCeil = Math.max(1, Math.ceil(maxOpp))
+    const maxHcp = Math.max(1, Math.ceil(maxAbsDiff))
+
+    const totalsMax = maxTotalCeil + 2
+    const itMax = Math.max(maxTeamCeil, maxOppCeil) + 2
+    const hcpMax = maxHcp + 2
+
+    const buildHalfRange = (max: number) => {
+      const arr: number[] = []
+      // начинаем с 0.5, 1.5, ... пока не достигнем max
+      for (let v = 0.5; v <= max; v += 1) arr.push(parseFloat(v.toFixed(1)))
+      return arr
+    }
+
+    const buildHandicapRange = (max: number) => {
+      const arr: number[] = []
+      // симметричный диапазон от -max-0.5 до +max+0.5 с шагом 1.0
+      for (let v = -max - 0.5; v <= max + 0.5; v += 1) arr.push(parseFloat(v.toFixed(1)))
+      return arr
+    }
+
+    const LINES = buildHalfRange(Math.max(totalsMax, itMax))
+    const HANDICAP_LINES = buildHandicapRange(hcpMax)
+
+    return { LINES, HANDICAP_LINES }
+  }, [recent, computeTeamValues])
 
   const totalsOver: CountCell[] = []
   const totalsUnder: CountCell[] = []
@@ -202,6 +247,36 @@ export default function BettingFrequencyMatrix({
     hcpOpp.push({ line: h, hits: hitsOpp, total: totalMatches })
   }
 
+  // Предикат «дегенеративности» парных колонок: 0/0 и total/total
+  const isDegeneratePair = (a: CountCell, b: CountCell) => {
+    if (a.total === 0 || b.total === 0) return true
+    const bothZero = a.hits === 0 && b.hits === 0
+    const bothAll = a.hits === a.total && b.hits === b.total
+    return bothZero || bothAll
+  }
+
+  // Поиск последнего значащего индекса для обрезки хвоста
+  const lastSignificantIndex = (lines: number[], arrA: CountCell[], arrB: CountCell[]) => {
+    let last = -1
+    for (let i = 0; i < lines.length; i += 1) {
+      const line = lines[i]
+      const a = arrA.find((c) => c.line === line)!
+      const b = arrB.find((c) => c.line === line)!
+      if (!isDegeneratePair(a, b)) last = i
+    }
+    return last
+  }
+
+  const lastTotalsIdx = lastSignificantIndex(LINES, totalsOver, totalsUnder)
+  const lastItIdx = lastSignificantIndex(LINES, itOver, itUnder)
+  const lastIt2Idx = lastSignificantIndex(LINES, it2Over, it2Under)
+  const lastHcpIdx = lastSignificantIndex(HANDICAP_LINES, hcpTeam, hcpOpp)
+
+  const renderTotalsLines = lastTotalsIdx >= 0 ? LINES.slice(0, lastTotalsIdx + 1) : []
+  const renderItLines = lastItIdx >= 0 ? LINES.slice(0, lastItIdx + 1) : []
+  const renderIt2Lines = lastIt2Idx >= 0 ? LINES.slice(0, lastIt2Idx + 1) : []
+  const renderHcpLines = lastHcpIdx >= 0 ? HANDICAP_LINES.slice(0, lastHcpIdx + 1) : []
+
   return (
     <Card className="rounded-lg shadow-sm">
       <CardHeader className="pb-3">
@@ -243,16 +318,24 @@ export default function BettingFrequencyMatrix({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {LINES.map((line) => {
+                {LINES.filter((line) => {
+                  const tb = totalsOver.find((c) => c.line === line)!
+                  const tm = totalsUnder.find((c) => c.line === line)!
+                  return tb.hits > 0 || tm.hits > 0
+                }).map((line) => {
                   const tb = totalsOver.find((c) => c.line === line)!
                   const tm = totalsUnder.find((c) => c.line === line)!
                   return (
                     <TableRow key={`tb-${line}`}>
                       <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
-                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(tb.hits, tb.total)}`}>
+                      <TableCell
+                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(tb.hits, tb.total)}`}
+                      >
                         {formatXN(tb.hits, tb.total)}
                       </TableCell>
-                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(tm.hits, tm.total)}`}>
+                      <TableCell
+                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(tm.hits, tm.total)}`}
+                      >
                         {formatXN(tm.hits, tm.total)}
                       </TableCell>
                     </TableRow>
@@ -273,16 +356,24 @@ export default function BettingFrequencyMatrix({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {LINES.map((line) => {
+                {LINES.filter((line) => {
+                  const itb = itOver.find((c) => c.line === line)!
+                  const itm = itUnder.find((c) => c.line === line)!
+                  return itb.hits > 0 || itm.hits > 0
+                }).map((line) => {
                   const itb = itOver.find((c) => c.line === line)!
                   const itm = itUnder.find((c) => c.line === line)!
                   return (
                     <TableRow key={`it-${line}`}>
                       <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
-                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(itb.hits, itb.total)}`}>
+                      <TableCell
+                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(itb.hits, itb.total)}`}
+                      >
                         {formatXN(itb.hits, itb.total)}
                       </TableCell>
-                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(itm.hits, itm.total)}`}>
+                      <TableCell
+                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(itm.hits, itm.total)}`}
+                      >
                         {formatXN(itm.hits, itm.total)}
                       </TableCell>
                     </TableRow>
@@ -309,10 +400,14 @@ export default function BettingFrequencyMatrix({
                   return (
                     <TableRow key={`it2-${line}`}>
                       <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
-                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(it2b.hits, it2b.total)}`}>
+                      <TableCell
+                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(it2b.hits, it2b.total)}`}
+                      >
                         {formatXN(it2b.hits, it2b.total)}
                       </TableCell>
-                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(it2m.hits, it2m.total)}`}>
+                      <TableCell
+                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(it2m.hits, it2m.total)}`}
+                      >
                         {formatXN(it2m.hits, it2m.total)}
                       </TableCell>
                     </TableRow>
@@ -333,16 +428,26 @@ export default function BettingFrequencyMatrix({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {HANDICAP_LINES.map((h) => {
+                {HANDICAP_LINES.filter((h) => {
+                  const f = hcpTeam.find((c) => c.line === h)!
+                  const f2 = hcpOpp.find((c) => c.line === h)!
+                  return f.hits > 0 || f2.hits > 0
+                }).map((h) => {
                   const f = hcpTeam.find((c) => c.line === h)!
                   const f2 = hcpOpp.find((c) => c.line === h)!
                   return (
                     <TableRow key={`hcp-${h}`}>
-                      <TableCell className="font-mono text-[10px] px-1 py-1">{h > 0 ? `+${h}` : h}</TableCell>
-                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(f.hits, f.total)}`}>
+                      <TableCell className="font-mono text-[10px] px-1 py-1">
+                        {h > 0 ? `+${h}` : h}
+                      </TableCell>
+                      <TableCell
+                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(f.hits, f.total)}`}
+                      >
                         {formatXN(f.hits, f.total)}
                       </TableCell>
-                      <TableCell className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(f2.hits, f2.total)}`}>
+                      <TableCell
+                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(f2.hits, f2.total)}`}
+                      >
                         {formatXN(f2.hits, f2.total)}
                       </TableCell>
                     </TableRow>
@@ -368,7 +473,9 @@ function AggTile({
 }) {
   return (
     <div className={`rounded border p-2 ${muted ? 'opacity-70' : ''}`}>
-      <div className="text-[10px] leading-3 text-muted-foreground text-center break-words">{label}</div>
+      <div className="text-[10px] leading-3 text-muted-foreground text-center break-words">
+        {label}
+      </div>
       <div className="text-[11px] leading-4 font-semibold font-mono text-center">{value}</div>
     </div>
   )

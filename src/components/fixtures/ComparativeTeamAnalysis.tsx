@@ -1043,7 +1043,21 @@ export default function ComparativeTeamAnalysis({
               <AggBlock title={away.name} agg={aggAway} selectedMetric={selectedMetric} />
             </div>
 
-            {/* 2. Матрица частот ставок */}
+            {/* 2. Таблицы последних матчей */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <MatchTable
+                side="home"
+                title={`Последние матчи — ${home.name}`}
+                rows={filteredHomeRows}
+              />
+              <MatchTable
+                side="away"
+                title={`Последние матчи — ${away.name}`}
+                rows={filteredAwayRows}
+              />
+            </div>
+
+            {/* 3. Матрица частот ставок */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <BettingFrequencyMatrix
                 teamId={home.id}
@@ -1058,20 +1072,6 @@ export default function ComparativeTeamAnalysis({
                 limit={limit}
                 selectedMetric={selectedMetric}
                 title={`Частоты ставок — ${away.name}`}
-              />
-            </div>
-
-            {/* 3. Таблицы последних матчей */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <MatchTable
-                side="home"
-                title={`Последние матчи — ${home.name}`}
-                rows={filteredHomeRows}
-              />
-              <MatchTable
-                side="away"
-                title={`Последние матчи — ${away.name}`}
-                rows={filteredAwayRows}
               />
             </div>
           </>
