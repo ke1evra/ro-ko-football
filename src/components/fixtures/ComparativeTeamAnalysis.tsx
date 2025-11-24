@@ -623,10 +623,11 @@ export default function ComparativeTeamAnalysis({
               <AggBlock title={away.name} agg={aggAway} selectedMetric={selectedMetric} />
             </div>
 
-            {/* 2. Таблицы последних матчей */}
+            {/* 2. Таблицы последни�� матчей */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <MatchTable
                 side="home"
+                teamId={home.id}
                 title={`Последние матчи — ${home.name}`}
                 rows={filteredHomeRows}
                 selectedMetric={selectedMetric}
@@ -636,6 +637,7 @@ export default function ComparativeTeamAnalysis({
               />
               <MatchTable
                 side="away"
+                teamId={away.id}
                 title={`Последние матчи — ${away.name}`}
                 rows={filteredAwayRows}
                 selectedMetric={selectedMetric}

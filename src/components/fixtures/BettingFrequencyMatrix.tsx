@@ -385,24 +385,24 @@ export default function BettingFrequencyMatrix({
                     return !isDegeneratePair(itb, itm)
                   })
                   .map((line) => {
-                  const itb = itOver.find((c) => c.line === line)!
-                  const itm = itUnder.find((c) => c.line === line)!
-                  return (
-                    <TableRow key={`it-${line}`}>
-                      <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
-                      <TableCell
-                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(itb.hits, itb.total)}`}
-                      >
-                        {formatXN(itb.hits, itb.total)}
-                      </TableCell>
-                      <TableCell
-                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(itm.hits, itm.total)}`}
-                      >
-                        {formatXN(itm.hits, itm.total)}
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                    const itb = itOver.find((c) => c.line === line)!
+                    const itm = itUnder.find((c) => c.line === line)!
+                    return (
+                      <TableRow key={`it-${line}`}>
+                        <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
+                        <TableCell
+                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(itb.hits, itb.total)}`}
+                        >
+                          {formatXN(itb.hits, itb.total)}
+                        </TableCell>
+                        <TableCell
+                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(itm.hits, itm.total)}`}
+                        >
+                          {formatXN(itm.hits, itm.total)}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
               </TableBody>
             </Table>
           </div>
@@ -428,21 +428,21 @@ export default function BettingFrequencyMatrix({
                     const it2b = it2Over.find((c) => c.line === line)!
                     const it2m = it2Under.find((c) => c.line === line)!
                     return (
-                    <TableRow key={`it2-${line}`}>
-                      <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
-                      <TableCell
-                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(it2b.hits, it2b.total)}`}
-                      >
-                        {formatXN(it2b.hits, it2b.total)}
-                      </TableCell>
-                      <TableCell
-                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(it2m.hits, it2m.total)}`}
-                      >
-                        {formatXN(it2m.hits, it2m.total)}
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                      <TableRow key={`it2-${line}`}>
+                        <TableCell className="font-mono text-[10px] px-1 py-1">{line}</TableCell>
+                        <TableCell
+                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(it2b.hits, it2b.total)}`}
+                        >
+                          {formatXN(it2b.hits, it2b.total)}
+                        </TableCell>
+                        <TableCell
+                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(it2m.hits, it2m.total)}`}
+                        >
+                          {formatXN(it2m.hits, it2m.total)}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
               </TableBody>
             </Table>
           </div>
@@ -465,26 +465,26 @@ export default function BettingFrequencyMatrix({
                     return !isDegeneratePair(f, f2)
                   })
                   .map((h) => {
-                  const f = hcpTeam.find((c) => c.line === h)!
-                  const f2 = hcpOpp.find((c) => c.line === h)!
-                  return (
-                    <TableRow key={`hcp-${h}`}>
-                      <TableCell className="font-mono text-[10px] px-1 py-1">
-                        {h > 0 ? `+${h}` : h}
-                      </TableCell>
-                      <TableCell
-                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(f.hits, f.total)}`}
-                      >
-                        {formatXN(f.hits, f.total)}
-                      </TableCell>
-                      <TableCell
-                        className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(f2.hits, f2.total)}`}
-                      >
-                        {formatXN(f2.hits, f2.total)}
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                    const f = hcpTeam.find((c) => c.line === h)!
+                    const f2 = hcpOpp.find((c) => c.line === h)!
+                    return (
+                      <TableRow key={`hcp-${h}`}>
+                        <TableCell className="font-mono text-[10px] px-1 py-1">
+                          {h > 0 ? `+${h}` : h}
+                        </TableCell>
+                        <TableCell
+                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(f.hits, f.total)}`}
+                        >
+                          {formatXN(f.hits, f.total)}
+                        </TableCell>
+                        <TableCell
+                          className={`font-semibold text-[10px] text-center px-1 py-1 ${ratioColor(f2.hits, f2.total)}`}
+                        >
+                          {formatXN(f2.hits, f2.total)}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
               </TableBody>
             </Table>
           </div>
@@ -505,7 +505,7 @@ function AggTile({
   muted?: boolean
   variant?: 'default' | 'success' | 'danger' | 'warning' | 'muted' | 'info' | 'primary'
 }) {
-  const wrapper = `rounded border p-2 ${muted ? 'opacity-70' : ''}`
+  const wrapper = `rounded border p-2 flex flex-col justify-between ${muted ? 'opacity-70' : ''}`
   const numberPalette: Record<string, string> = {
     default: 'text-foreground',
     success: 'text-green-700',

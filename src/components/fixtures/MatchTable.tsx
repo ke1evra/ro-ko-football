@@ -266,6 +266,7 @@ export function MiniStatsPopover({ stats }: MiniStatsPopoverProps) {
 
 export interface MatchTableProps {
   side: TeamSide
+  teamId: number
   title: string
   rows: MatchRow[]
   selectedMetric: StatMetric
@@ -288,6 +289,7 @@ function getStatValue(row: MatchRow, metric: StatMetric, side: TeamSide): number
 
 export function MatchTable({
   side,
+  teamId,
   title,
   rows,
   selectedMetric,
@@ -303,18 +305,12 @@ export function MatchTable({
     })
   }, [rows])
 
-  const getCellHighlightClass = (it1: number, it2: number): string => {
-    if (it1 > it2) return 'bg-green-50'
-    if (it1 < it2) return 'bg-red-50'
-    return 'bg-yellow-50'
-  }
-
   return (
-    <Card className="rounded-lg shadow-sm">
+    <Card className=" shadow-sm">
       <CardHeader className="py-1 pb-1">
-        <CardTitle className="text-[13px] font-semibold leading-tight">{title}</CardTitle>
+        <CardTitle className="text-sm font-semibold leading-tight">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="p-0 text-xs">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -329,23 +325,19 @@ export function MatchTable({
                     onChange={() => onToggleAll(side, sortedRows)}
                   />
                 </TableHead>
-                <TableHead className="py-0.5 text-[11px]">Дата</TableHead>
-                <TableHead className="py-0.5 text-[11px]">Хозяева</TableHead>
-                <TableHead className="py-0.5 text-[11px] text-center">ИТ1</TableHead>
-                <TableHead className="py-0.5 text-[11px] text-center">ИТ2</TableHead>
-                <TableHead className="py-0.5 text-[11px]">Гости</TableHead>
-                <TableHead className="py-0.5 text-[11px] text-center">Т</TableHead>
-                <TableHead className="py-0.5 text-[11px] text-center">Рез.</TableHead>
-                <TableHead className="py-0.5 text-[11px] w-16 text-center">Действия</TableHead>
+                <TableHead className="py-0.5 ">Дата</TableHead>
+                <TableHead className="py-0.5 ">Хозяева</TableHead>
+                <TableHead className="py-0.5  text-center">ИТ1</TableHead>
+                <TableHead className="py-0.5  text-center">ИТ2</TableHead>
+                <TableHead className="py-0.5 ">Гости</TableHead>
+                <TableHead className="py-0.5  text-center">Т</TableHead>
+                <TableHead className="py-0.5  w-16 text-center">Действия</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sortedRows.length === 0 ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={10}
-                    className="text-center text-muted-foreground py-3 text-[11px]"
-                  >
+                  <TableCell colSpan={10} className="text-center text-muted-foreground py-3 ">
                     Нет данных
                   </TableCell>
                 </TableRow>
@@ -355,12 +347,33 @@ export function MatchTable({
                   const it1Value = getStatValue(r, selectedMetric, 'home')
                   const it2Value = getStatValue(r, selectedMetric, 'away')
                   const totalValue = it1Value + it2Value
-                  const cellClass = getCellHighlightClass(it1Value, it2Value)
+
+                  const isTargetHome = r.homeTeamId === teamId
+                  const isTargetAway = r.awayTeamId === teamId
+
+                  const rawResult: 'W' | 'D' | 'L' | null = isTargetHome
+                    ? r.result
+                    : isTargetAway
+                      ? r.result === 'W'
+                        ? 'L'
+                        : r.result === 'L'
+                          ? 'W'
+                          : 'D'
+                      : null
+
+                  const rowBgClass =
+                    rawResult === 'W'
+                      ? 'bg-green-50'
+                      : rawResult === 'L'
+                        ? 'bg-red-50'
+                        : rawResult === 'D'
+                          ? 'bg-yellow-50'
+                          : ''
 
                   return (
                     <TableRow
                       key={r.id}
-                      className="transition-colors cursor-pointer h-7 hover:bg-muted/60"
+                      className={`transition-colors cursor-pointer h-7 hover:bg-muted/60 ${rowBgClass}`}
                       onClick={() => onToggle(side, r.id)}
                     >
                       <TableCell className="text-center align-middle">
@@ -372,59 +385,49 @@ export function MatchTable({
                           onClick={(e) => e.stopPropagation()}
                         />
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-[11px] py-0.5 align-middle">
+                      <TableCell className="whitespace-nowrap  py-0.5 align-middle">
                         {new Date(r.date).toLocaleDateString('ru-RU', {
                           day: '2-digit',
                           month: '2-digit',
                           year: '2-digit',
                         })}
                       </TableCell>
-                      <TableCell className="text-[11px] py-0.5 align-middle">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="cursor-help block w-24 truncate overflow-hidden text-ellipsis">
-                                {r.homeName}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>{r.homeName}</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                      <TableCell className=" py-0.5 align-middle">
+                        <div className="flex items-center gap-1">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="cursor-help block w-24 truncate overflow-hidden text-ellipsis">
+                                  {r.homeName}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>{r.homeName}</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
                       </TableCell>
-                      <TableCell
-                        className={`text-center font-semibold text-[11px] py-0.5 align-middle ${cellClass}`}
-                      >
+                      <TableCell className="text-center font-semibold  py-0.5 align-middle">
                         {it1Value}
                       </TableCell>
-                      <TableCell
-                        className={`text-center font-semibold text-[11px] py-0.5 align-middle ${cellClass}`}
-                      >
+                      <TableCell className="text-center font-semibold  py-0.5 align-middle">
                         {it2Value}
                       </TableCell>
-                      <TableCell className="text-[11px] py-0.5 align-middle">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="cursor-help block w-24 truncate overflow-hidden text-ellipsis">
-                                {r.awayName}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>{r.awayName}</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                      <TableCell
-                        className={`text-center font-semibold text-[11px] py-0.5 align-middle ${cellClass}`}
-                      >
-                        {totalValue}
-                      </TableCell>
-                      <TableCell className="text-center py-0.5 align-middle">
-                        <div className="inline-flex items-center gap-1">
-                          <ResultPill res={r.result} />
-                          <span className="font-semibold text-[11px]">
-                            {r.gf}:{r.ga}
-                          </span>
+                      <TableCell className=" py-0.5 align-middle">
+                        <div className="flex items-center gap-1">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="cursor-help block w-24 truncate overflow-hidden text-ellipsis">
+                                  {r.awayName}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>{r.awayName}</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
+                      </TableCell>
+                      <TableCell className="text-center font-semibold  py-0.5 align-middle">
+                        {totalValue}
                       </TableCell>
                       <TableCell className="text-center py-0.5 align-middle">
                         <div className="flex items-center gap-1 justify-center">
