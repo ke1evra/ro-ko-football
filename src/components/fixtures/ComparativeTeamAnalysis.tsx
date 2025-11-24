@@ -7,6 +7,7 @@ import { AlertCircle } from 'lucide-react'
 
 import BettingFrequencyMatrix from '@/components/fixtures/BettingFrequencyMatrix'
 import { MatchTable, MatchRow, TeamSide, StatMetric } from '@/components/fixtures/MatchTable'
+import { FormCanvas } from '@/components/fixtures/FormCanvas'
 
 type TeamInfo = {
   id: number
@@ -123,8 +124,10 @@ async function fetchTeamLastMatches(
 function normalizeRows(rows: unknown[]): MatchRow[] {
   return rows.map((m: unknown) => {
     const match = m as Record<string, unknown>
-    const homeScore = (match.homeScore as number) ?? (match.gf as number) ?? 0
-    const awayScore = (match.awayScore as number) ?? (match.ga as number) ?? 0
+    const homeScore = (match.homeScore as number) ?? 0
+    const awayScore = (match.awayScore as number) ?? 0
+    const gf = (match.gf as number) ?? 0
+    const ga = (match.ga as number) ?? 0
     const result = (match.result as 'W' | 'D' | 'L') ?? 'D'
     const season: string | undefined =
       ((match.season as Record<string, unknown>)?.name as string) ??
@@ -145,9 +148,9 @@ function normalizeRows(rows: unknown[]): MatchRow[] {
       awayTeamId: (match.awayTeamId as number) ?? 0,
       homeScore,
       awayScore,
-      gf: homeScore,
-      ga: awayScore,
-      total: homeScore + awayScore,
+      gf,
+      ga,
+      total: gf + ga,
       result,
       stats: (match.stats as MatchStatsData | undefined) ?? undefined,
     }
@@ -169,20 +172,16 @@ function getStatValue(row: MatchRow, metric: StatMetric, side: TeamSide): number
 
 function aggregateByMetric(rows: MatchRow[], metric: StatMetric): AggregateStats {
   const n = rows.length || 1
-  const wins = rows.filter(
-    (r) => getStatValue(r, metric, 'home') > getStatValue(r, metric, 'away'),
-  ).length
-  const draws = rows.filter(
-    (r) => getStatValue(r, metric, 'home') === getStatValue(r, metric, 'away'),
-  ).length
-  const losses = rows.filter(
-    (r) => getStatValue(r, metric, 'home') < getStatValue(r, metric, 'away'),
-  ).length
+  
+  const wins = rows.filter((r) => r.result === 'W').length
+  const draws = rows.filter((r) => r.result === 'D').length
+  const losses = rows.filter((r) => r.result === 'L').length
+  
   const gfArr = rows.map((r) => r.gf)
   const gaArr = rows.map((r) => r.ga)
-  const statArr = rows.map((r) => getStatValue(r, metric, 'home'))
-  const statConArr = rows.map((r) => getStatValue(r, metric, 'away'))
-  const totals = rows.map((r) => getStatValue(r, metric, 'home') + getStatValue(r, metric, 'away'))
+  const statArr = rows.map((r) => r.gf)
+  const statConArr = rows.map((r) => r.ga)
+  const totals = rows.map((r) => r.total)
 
   const avg = (arr: number[]): number =>
     arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0
@@ -327,8 +326,8 @@ function buildFormLevels(form: Array<'W' | 'D' | 'L'>): number[] {
   let current = 0
 
   for (const res of form) {
-    if (res === 'W') current += 1
-    else if (res === 'L') current -= 1
+    if (res === 'W') current -= 1
+    else if (res === 'L') current += 1
 
     levels.push(current)
   }
@@ -340,10 +339,14 @@ function FormIndicator({
   form,
   title,
   compact,
+  paddingTop,
+  paddingBottom,
 }: {
   form: Array<'W' | 'D' | 'L'>
   title: string
   compact?: boolean
+  paddingTop?: number
+  paddingBottom?: number
 }): JSX.Element {
   const getFormStyles = (res: 'W' | 'D' | 'L'): string => {
     switch (res) {
@@ -376,7 +379,17 @@ function FormIndicator({
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>
-      <div className={`flex ${compact ? 'gap-[1px]' : 'gap-1'}`}>
+      <div 
+        className={`flex ${compact ? 'gap-[1px]' : 'gap-1'}`}
+        style={compact ? { paddingTop: `${paddingTop ?? 0}px`, paddingBottom: `${paddingBottom ?? 0}px` } : undefined}
+      >
+        <div
+          className={`w-6 h-6 flex items-center justify-center text-[10px] font-semibold text-white ${
+            compact ? 'rounded-none' : 'rounded-sm'
+          } bg-gray-400 animate-bounce`}
+        >
+          ?
+        </div>
         {form.map((res, idx) => {
           const level = levels[idx] ?? 0
           const offsetY = compact ? -level * 4 : 0
@@ -393,26 +406,13 @@ function FormIndicator({
             </div>
           )
         })}
-        <div
-          className={`w-6 h-6 flex items-center justify-center text-[10px] font-semibold text-white ${
-            compact ? 'rounded-none' : 'rounded-sm'
-          } bg-gray-400 animate-bounce`}
-          style={
-            compact && levels.length > 0
-              ? { transform: `translateY(${-levels[levels.length - 1] * 4}px)` }
-              : undefined
-          }
-        >
-          ?
-        </div>
       </div>
     </div>
   )
 }
 
 const computeForm = (rows: MatchRow[]): Array<'W' | 'D' | 'L'> => {
-  const sorted = [...rows].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-  return sorted.map((r) => r.result)
+  return rows.map((r) => r.result)
 }
 
 export default function ComparativeTeamAnalysis({
@@ -534,6 +534,24 @@ export default function ComparativeTeamAnalysis({
 
   const homeForm = useMemo(() => computeForm(filteredHomeRows), [filteredHomeRows])
   const awayForm = useMemo(() => computeForm(filteredAwayRows), [filteredAwayRows])
+
+  // Вычисляем максимальные отступы для обеих форм, чтобы контейнеры были одинаковой высоты
+  const { maxPaddingTop, maxPaddingBottom } = useMemo(() => {
+    if (limit < 30) return { maxPaddingTop: 0, maxPaddingBottom: 0 }
+
+    const homeLevels = buildFormLevels(homeForm)
+    const awayLevels = buildFormLevels(awayForm)
+
+    const homeMaxLevel = homeLevels.length > 0 ? Math.max(...homeLevels) : 0
+    const homeMinLevel = homeLevels.length > 0 ? Math.min(...homeLevels) : 0
+    const awayMaxLevel = awayLevels.length > 0 ? Math.max(...awayLevels) : 0
+    const awayMinLevel = awayLevels.length > 0 ? Math.min(...awayLevels) : 0
+
+    const maxPaddingTop = Math.max(Math.abs(homeMinLevel), Math.abs(awayMinLevel)) * 4
+    const maxPaddingBottom = Math.max(Math.abs(homeMaxLevel), Math.abs(awayMaxLevel)) * 4
+
+    return { maxPaddingTop, maxPaddingBottom }
+  }, [homeForm, awayForm, limit])
 
   return (
     <Card className="rounded-lg shadow-sm">
@@ -720,20 +738,28 @@ export default function ComparativeTeamAnalysis({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="rounded-lg shadow-sm">
+              <Card className="rounded-lg shadow-sm overflow-visible">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base font-semibold">{home.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <FormIndicator title="Форма" form={homeForm} compact={limit >= 30} />
+                  <FormCanvas 
+                    title="Форма" 
+                    form={homeForm} 
+                    compact={limit >= 30}
+                  />
                 </CardContent>
               </Card>
-              <Card className="rounded-lg shadow-sm">
+              <Card className="rounded-lg shadow-sm overflow-visible">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base font-semibold">{away.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <FormIndicator title="Форма" form={awayForm} compact={limit >= 30} />
+                  <FormCanvas 
+                    title="Форма" 
+                    form={awayForm} 
+                    compact={limit >= 30}
+                  />
                 </CardContent>
               </Card>
             </div>

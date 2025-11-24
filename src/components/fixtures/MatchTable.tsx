@@ -348,25 +348,12 @@ export function MatchTable({
                   const it2Value = getStatValue(r, selectedMetric, 'away')
                   const totalValue = it1Value + it2Value
 
-                  const isTargetHome = r.homeTeamId === teamId
-                  const isTargetAway = r.awayTeamId === teamId
-
-                  const rawResult: 'W' | 'D' | 'L' | null = isTargetHome
-                    ? r.result
-                    : isTargetAway
-                      ? r.result === 'W'
-                        ? 'L'
-                        : r.result === 'L'
-                          ? 'W'
-                          : 'D'
-                      : null
-
                   const rowBgClass =
-                    rawResult === 'W'
+                    r.result === 'W'
                       ? 'bg-green-50'
-                      : rawResult === 'L'
+                      : r.result === 'L'
                         ? 'bg-red-50'
-                        : rawResult === 'D'
+                        : r.result === 'D'
                           ? 'bg-yellow-50'
                           : ''
 
