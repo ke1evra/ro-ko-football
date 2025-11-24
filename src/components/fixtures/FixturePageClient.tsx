@@ -131,17 +131,17 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
     <>
       <div className="space-y-6">
         {/* Детали матча */}
-        <Card>
+        <Card className="bg-primary text-primary-foreground border border-border">
           <CardHeader>
             <div className="flex items-center justify-center gap-2 text-center">
-              <span className="text-xs text-muted-foreground text-small">
+              <span className="text-xs text-primary-foreground/80 text-small">
                 {fx.competition.name || 'Матч'}
                 {fx.round && `, тур ${fx.round}`}
               </span>
-              <span className="text-xs text-muted-foreground text-small opacity-30">—</span>
+              <span className="text-xs text-primary-foreground/40 text-small">—</span>
               <div className="flex justify-center gap-2">
                 {/* Дата, время и обратный отсчёт под счётом */}
-                <div className="flex  items-center gap-1 text-xs text-muted-foreground">
+                <div className="flex  items-center gap-1 text-xs text-primary-foreground/70">
                   <div className="inline-flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     <LocalDateTime date={fx.date} time={fx.time} utc showTime={false} />
@@ -153,8 +153,8 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                     </div>
                   )}
                   {countdownText && (
-                    <div className="inline-flex items-center gap-1 text-emerald-700 font-medium">
-                      <span className="text-xs text-muted-foreground text-small opacity-30">—</span>
+                    <div className="inline-flex items-center gap-1 text-primary-foreground font-medium">
+                      <span className="text-xs text-primary-foreground/40 text-small">—</span>
                       <span>{countdownText}</span>
                     </div>
                   )}
@@ -162,7 +162,7 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 text-primary-foreground">
             {/* Главный ряд: команды слева/справа и крупный счёт/статус по центру */}
             <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-6">
               {/* Домашняя команда */}
@@ -170,7 +170,7 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                 <TeamLogo teamId={fx.home.id} teamName={fx.home.name} size="large" />
                 <Link
                   href={`/teams/${fx.home.id}`}
-                  className="text-3xl font-semibold hover:text-primary max-w-64 text-right"
+                  className="text-3xl font-semibold hover:text-primary-foreground/90 max-w-64 text-right"
                 >
                   {fx.home.name}
                 </Link>
@@ -187,9 +187,9 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                 ) : null}
 
                 {/* Лейбл лайв-статуса / минут */}
-                <div className="flex items-center gap-2 text-xs text-muted-foreground min-h-[1rem]">
+                <div className="flex items-center gap-2 text-xs text-primary-foreground/80 min-h-[1rem]">
                   {isLive && minuteLabel ? (
-                    <Badge variant="outline" className="border-emerald-500 text-emerald-700">
+                    <Badge variant="outline" className="border-emerald-500 text-emerald-100">
                       {minuteLabel}
                     </Badge>
                   ) : (
@@ -209,7 +209,7 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
                     </div>
                     <div className="flex flex-col items-center gap-1">
                       <div className="border-2 border-border rounded px-3 py-1.5 text-center min-w-[64px]">
-                        <i className="opacity-30 not-italic">X&nbsp;</i>
+                        <i className="opacity-40 not-italic">X&nbsp;</i>
                         <span className="font-semibold text-sm">{fmtOdd(oDraw)}</span>
                       </div>
                     </div>
@@ -226,7 +226,7 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
               <div className="flex items-center justify-start gap-3 order-2 md:order-none">
                 <Link
                   href={`/teams/${fx.away.id}`}
-                  className="text-3xl font-semibold hover:text-primary max-w-64"
+                  className="text-3xl font-semibold hover:text-primary-foreground/90 max-w-64"
                 >
                   {fx.away.name}
                 </Link>
@@ -236,7 +236,7 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
 
             {/* Место проведения */}
             {fx.location ? (
-              <div className="text-sm text-muted-foreground inline-flex items-center gap-2">
+              <div className="text-sm text-primary-foreground/80 inline-flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
                 <span>{fx.location}</span>
               </div>
@@ -247,7 +247,7 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
             fx.scores?.ft_score ||
             fx.scores?.et_score ||
             fx.scores?.ps_score ? (
-              <div className="text-xs text-muted-foreground mt-1 grid grid-cols-2 gap-2">
+              <div className="text-xs text-primary-foreground/80 mt-1 grid grid-cols-2 gap-2">
                 {fx.scores.ht_score ? <span>HT: {fx.scores.ht_score}</span> : null}
                 {fx.scores.ft_score ? <span>FT: {fx.scores.ft_score}</span> : null}
                 {fx.scores.et_score ? <span>ET: {fx.scores.et_score}</span> : null}
@@ -255,24 +255,10 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
               </div>
             ) : null}
 
-            {/* H2H */}
-            {fx.h2h ? (
-              <div className="text-sm">
-                <a
-                  href={fx.h2h}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  История встреч (H2H)
-                </a>
-              </div>
-            ) : null}
-
             {/* Кнопка добавить прогноз */}
             {isScheduled && (
               <div className="pt-4 border-t">
-                <Button onClick={() => setIsPredictionModalOpen(true)} className="w-full">
+                <Button variant="secondary" onClick={() => setIsPredictionModalOpen(true)} className="w-full">
                   Добавить прогноз
                 </Button>
               </div>
