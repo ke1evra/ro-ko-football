@@ -91,9 +91,6 @@ const STAT_METRICS: Array<{ key: StatMetric; label: string }> = [
   { key: 'redCards', label: 'Красные карточки' },
   { key: 'shotsOffTarget', label: 'Удары мимо' },
   { key: 'shotsBlocked', label: 'Заблокированные удары' },
-  // { key: 'passes', label: 'Передачи' },
-  // { key: 'passesAccurate', label: 'Точные передачи' },
-  // { key: 'passAccuracy', label: 'Точность передач' },
   { key: 'possession', label: 'Владение' },
   { key: 'attacks', label: 'Атаки' },
   { key: 'dangerousAttacks', label: 'Опасные атаки' },
@@ -325,6 +322,20 @@ function AggBlock({
   )
 }
 
+function buildFormLevels(form: Array<'W' | 'D' | 'L'>): number[] {
+  const levels: number[] = []
+  let current = 0
+
+  for (const res of form) {
+    if (res === 'W') current -= 1
+    else if (res === 'L') current += 1
+
+    levels.push(current)
+  }
+
+  return levels
+}
+
 function FormIndicator({
   form,
   title,
@@ -360,25 +371,42 @@ function FormIndicator({
     }
   }
 
+  const levels = compact ? buildFormLevels(form) : []
+
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>
       <div className={`flex ${compact ? 'gap-[1px]' : 'gap-1'}`}>
-        {form.map((r, idx) => (
-          <div
-            key={`${title}-${idx}`}
-            className={`w-6 h-6 flex items-center justify-center text-[10px] font-semibold text-white ${compact ? 'rounded-none' : 'rounded-sm'} ${getFormStyles(r)}`}
-          >
-            {getFormLabel(r)}
-          </div>
-        ))}
+        <div
+          className={`w-6 h-6 flex items-center justify-center text-[10px] font-semibold text-white ${
+            compact ? 'rounded-none' : 'rounded-sm'
+          } bg-gray-400 animate-bounce`}
+        >
+          ?
+        </div>
+        {form.map((res, idx) => {
+          const level = levels[idx] ?? 0
+          const offsetY = compact ? -level * 4 : 0
+
+          return (
+            <div
+              key={`${title}-${idx}`}
+              className={`w-6 h-6 flex items-center justify-center text-[10px] font-semibold text-white ${
+                compact ? 'rounded-none' : 'rounded-sm'
+              } ${getFormStyles(res)}`}
+              style={compact ? { transform: `translateY(${offsetY}px)` } : undefined}
+            >
+              {getFormLabel(res)}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
 }
 
 const computeForm = (rows: MatchRow[]): Array<'W' | 'D' | 'L'> => {
-  const sorted = [...rows].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  const sorted = [...rows].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
   return sorted.map((r) => r.result)
 }
 
@@ -521,7 +549,6 @@ export default function ComparativeTeamAnalysis({
           <div className="text-sm text-muted-foreground py-8 text-center">Загрузка…</div>
         ) : (
           <>
-            {/* Фильтр: Все матчи / Личные матчи */}
             <div className="flex gap-2 flex-wrap">
               <button
                 type="button"
@@ -547,7 +574,6 @@ export default function ComparativeTeamAnalysis({
               </button>
             </div>
 
-            {/* Фильтры: Хозяева / Гости / Все для каждой команды (в одну строку) */}
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs text-muted-foreground min-w-[60px]">{home.name}</span>
@@ -653,7 +679,6 @@ export default function ComparativeTeamAnalysis({
               </div>
             </div>
 
-            {/* Селектор количества матчей и вкладки для выбора метрики */}
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex gap-2 flex-wrap">
                 {STAT_METRICS.map((metric) => (
@@ -689,7 +714,6 @@ export default function ComparativeTeamAnalysis({
               </div>
             </div>
 
-            {/* Форма команд (последние матчи) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card className="rounded-lg shadow-sm">
                 <CardHeader className="pb-3">
@@ -709,13 +733,11 @@ export default function ComparativeTeamAnalysis({
               </Card>
             </div>
 
-            {/* 1. Сводная статистика команд */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <AggBlock title={home.name} agg={aggHome} selectedMetric={selectedMetric} />
               <AggBlock title={away.name} agg={aggAway} selectedMetric={selectedMetric} />
             </div>
 
-            {/* 2. Таблицы последни�� матчей */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <MatchTable
                 side="home"
@@ -739,7 +761,6 @@ export default function ComparativeTeamAnalysis({
               />
             </div>
 
-            {/* 3. Матрица частот ставок */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <BettingFrequencyMatrix
                 teamId={home.id}
