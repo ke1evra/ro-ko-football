@@ -76,6 +76,7 @@
 @layer base {
   :root {
     --radius: 0.65rem;
+    --radix-accordion-content-height: 0;
     --background: oklch(0.96 0.002 286.32); /* Слегка темнее фон */
     --foreground: oklch(0.141 0.005 285.823);
     --card: oklch(1 0 0); /* Карточки остаются белыми */
@@ -92,6 +93,7 @@
     --accent: oklch(0.967 0.001 286.375);
     --accent-foreground: oklch(0.21 0.006 285.885);
     --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: oklch(0.98 0.016 73.684);
     --border: oklch(0.9 0.005 286.32); /* Немного темнее границы */
     --input: oklch(1 0 0); /* Поля ввода белые */
     --ring: oklch(0.46 0.11 150);
@@ -101,6 +103,7 @@
     --chart-4: oklch(0.62 0.09 150);
     --chart-5: oklch(0.52 0.07 170);
     --sidebar: oklch(1 0 0); /* Сайдбар белый */
+    --sidebar-background: var(--sidebar);
     --sidebar-foreground: oklch(0.141 0.005 285.823);
     --sidebar-primary: oklch(0.46 0.11 150);
     --sidebar-primary-foreground: oklch(0.98 0.016 73.684);
@@ -126,6 +129,7 @@
     --accent: oklch(0.274 0.006 286.033);
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.704 0.191 22.216);
+    --destructive-foreground: oklch(0.98 0.016 73.684);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.55 0.12 150);
@@ -135,6 +139,7 @@
     --chart-4: oklch(0.627 0.265 303.9);
     --chart-5: oklch(0.5 0.11 200);
     --sidebar: oklch(0.21 0.006 285.885);
+    --sidebar-background: var(--sidebar);
     --sidebar-foreground: oklch(0.985 0 0);
     --sidebar-primary: oklch(0.55 0.12 150);
     --sidebar-primary-foreground: oklch(0.98 0.016 73.684);
@@ -194,6 +199,7 @@
 
 :root {
   --radius: 0.65rem;
+  --radix-accordion-content-height: 0;
   --background: oklch(0.96 0.002 286.32); /* Слегка темнее фон */
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0); /* Карточки остаются белыми */
@@ -210,6 +216,7 @@
   --accent: oklch(0.967 0.001 286.375);
   --accent-foreground: oklch(0.21 0.006 285.885);
   --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.98 0.016 73.684);
   --border: oklch(0.9 0.005 286.32); /* Немного темнее границы */
   --input: oklch(1 0 0); /* Поля ввода белые */
   --ring: oklch(0.46 0.11 150);
@@ -219,6 +226,7 @@
   --chart-4: oklch(0.62 0.09 150);
   --chart-5: oklch(0.52 0.07 170);
   --sidebar: oklch(1 0 0); /* Сайдбар белый */
+  --sidebar-background: var(--sidebar);
   --sidebar-foreground: oklch(0.141 0.005 285.823);
   --sidebar-primary: oklch(0.46 0.11 150);
   --sidebar-primary-foreground: oklch(0.98 0.016 73.684);
@@ -244,6 +252,7 @@
   --accent: oklch(0.274 0.006 286.033);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.98 0.016 73.684);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.55 0.12 150);
@@ -253,6 +262,7 @@
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.5 0.11 200);
   --sidebar: oklch(0.21 0.006 285.885);
+  --sidebar-background: var(--sidebar);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.55 0.12 150);
   --sidebar-primary-foreground: oklch(0.98 0.016 73.684);
