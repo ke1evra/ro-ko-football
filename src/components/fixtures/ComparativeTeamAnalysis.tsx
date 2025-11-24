@@ -1047,14 +1047,16 @@ export default function ComparativeTeamAnalysis({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <BettingFrequencyMatrix
                 teamId={home.id}
-                rows={selectedHomeRows}
+                rows={filteredHomeRows}
                 limit={limit}
+                selectedMetric={selectedMetric}
                 title={`Частоты ставок — ${home.name}`}
               />
               <BettingFrequencyMatrix
                 teamId={away.id}
-                rows={selectedAwayRows}
+                rows={filteredAwayRows}
                 limit={limit}
+                selectedMetric={selectedMetric}
                 title={`Частоты ставок — ${away.name}`}
               />
             </div>

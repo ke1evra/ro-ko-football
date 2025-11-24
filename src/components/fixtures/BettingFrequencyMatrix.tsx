@@ -12,6 +12,43 @@ import {
 } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
+type StatMetric =
+  | 'goals'
+  | 'possession'
+  | 'shots'
+  | 'shotsOnTarget'
+  | 'shotsOffTarget'
+  | 'shotsBlocked'
+  | 'corners'
+  | 'offsides'
+  | 'fouls'
+  | 'yellowCards'
+  | 'redCards'
+  | 'saves'
+  | 'passes'
+  | 'passesAccurate'
+  | 'passAccuracy'
+  | 'attacks'
+  | 'dangerousAttacks'
+  | 'shotsInsideBox'
+  | 'shotsOutsideBox'
+  | 'hitWoodwork'
+  | 'bigChances'
+  | 'freeKicks'
+  | 'longPasses'
+  | 'finalThirdPasses'
+  | 'crosses'
+  | 'xa'
+  | 'throwIns'
+  | 'tackles'
+  | 'duelsWon'
+  | 'clearances'
+  | 'interceptions'
+  | 'errorsLeadingToShot'
+  | 'errorsLeadingToGoal'
+  | 'xgotAfterShotsOnTarget'
+  | 'goalsPrevented'
+
 export interface BasicMatchRow {
   id: string
   date: string
@@ -19,6 +56,7 @@ export interface BasicMatchRow {
   awayTeamId: number
   gf: number // голы хозяев
   ga: number // голы гостей
+  stats?: any
 }
 
 interface BettingFrequencyMatrixProps {
@@ -26,6 +64,19 @@ interface BettingFrequencyMatrixProps {
   rows: BasicMatchRow[]
   limit?: number
   title?: string
+  selectedMetric?: StatMetric
+}
+
+function getStatValue(row: BasicMatchRow, metric: StatMetric, side: 'home' | 'away'): number {
+  // Специальная обработка для голов
+  if (metric === 'goals') {
+    return side === 'home' ? row.gf : row.ga
+  }
+
+  if (!row.stats) return 0
+  const stat = row.stats[metric as keyof typeof row.stats]
+  if (!stat || typeof stat !== 'object' || !('home' in stat) || !('away' in stat)) return 0
+  return side === 'home' ? (stat.home as number) : (stat.away as number)
 }
 
 interface CountCell {
@@ -53,6 +104,7 @@ export default function BettingFrequencyMatrix({
   rows,
   limit = 20,
   title = 'Частоты ставок',
+  selectedMetric = 'goals',
 }: BettingFrequencyMatrixProps) {
   const recent = React.useMemo(() => {
     const sorted = [...rows].sort(byDateDesc)
@@ -61,14 +113,14 @@ export default function BettingFrequencyMatrix({
 
   const totalMatches = recent.length
 
-  const computeTeamGoals = React.useCallback(
+  const computeTeamValues = React.useCallback(
     (r: BasicMatchRow) => {
       const isHome = r.homeTeamId === teamId
-      const teamGoals = isHome ? r.gf : r.ga
-      const oppGoals = isHome ? r.ga : r.gf
-      return { teamGoals, oppGoals }
+      const teamValue = getStatValue(r, selectedMetric, isHome ? 'home' : 'away')
+      const oppValue = getStatValue(r, selectedMetric, isHome ? 'away' : 'home')
+      return { teamValue, oppValue }
     },
-    [teamId],
+    [teamId, selectedMetric],
   )
 
   // Верхние агрегаты
@@ -81,18 +133,18 @@ export default function BettingFrequencyMatrix({
     let opponentScored = 0 // соперник забивал >= 1
 
     for (const r of recent) {
-      const { teamGoals, oppGoals } = computeTeamGoals(r)
-      if (teamGoals > oppGoals) wins += 1
-      else if (teamGoals === oppGoals) draws += 1
+      const { teamValue, oppValue } = computeTeamValues(r)
+      if (teamValue > oppValue) wins += 1
+      else if (teamValue === oppValue) draws += 1
       else losses += 1
 
-      if (teamGoals > 0 && oppGoals > 0) btts += 1
-      if (teamGoals > 0) teamScored += 1
-      if (oppGoals > 0) opponentScored += 1
+      if (teamValue > 0 && oppValue > 0) btts += 1
+      if (teamValue > 0) teamScored += 1
+      if (oppValue > 0) opponentScored += 1
     }
 
     return { wins, draws, losses, btts, teamScored, opponentScored, total: totalMatches }
-  }, [recent, computeTeamGoals, totalMatches])
+  }, [recent, computeTeamValues, totalMatches])
 
   // Линии тоталов (общих и индивидуальных)
   const LINES = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
@@ -116,14 +168,14 @@ export default function BettingFrequencyMatrix({
     let it2m = 0
 
     for (const r of recent) {
-      const { teamGoals, oppGoals } = computeTeamGoals(r)
-      const total = teamGoals + oppGoals
+      const { teamValue, oppValue } = computeTeamValues(r)
+      const total = teamValue + oppValue
       if (total > line) tb += 1
       if (total < line) tm += 1
-      if (teamGoals > line) itb += 1
-      if (teamGoals < line) itm += 1
-      if (oppGoals > line) it2b += 1
-      if (oppGoals < line) it2m += 1
+      if (teamValue > line) itb += 1
+      if (teamValue < line) itm += 1
+      if (oppValue > line) it2b += 1
+      if (oppValue < line) it2m += 1
     }
 
     totalsOver.push({ line, hits: tb, total: totalMatches })
@@ -138,12 +190,12 @@ export default function BettingFrequencyMatrix({
     let hitsTeam = 0
     let hitsOpp = 0
     for (const r of recent) {
-      const { teamGoals, oppGoals } = computeTeamGoals(r)
-      const diff = teamGoals - oppGoals
+      const { teamValue, oppValue } = computeTeamValues(r)
+      const diff = teamValue - oppValue
       // Условие прохода форы: diff - handicap > 0
       if (diff - h > 0) hitsTeam += 1
-      // Для соперника зеркально: (oppGoals - teamGoals) - h > 0
-      const diffOpp = oppGoals - teamGoals
+      // Для соперника зеркально: (oppValue - teamValue) - h > 0
+      const diffOpp = oppValue - teamValue
       if (diffOpp - h > 0) hitsOpp += 1
     }
     hcpTeam.push({ line: h, hits: hitsTeam, total: totalMatches })
