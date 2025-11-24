@@ -327,8 +327,8 @@ function buildFormLevels(form: Array<'W' | 'D' | 'L'>): number[] {
   let current = 0
 
   for (const res of form) {
-    if (res === 'W') current -= 1
-    else if (res === 'L') current += 1
+    if (res === 'W') current += 1
+    else if (res === 'L') current -= 1
 
     levels.push(current)
   }
@@ -377,13 +377,6 @@ function FormIndicator({
     <div className="space-y-2">
       <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>
       <div className={`flex ${compact ? 'gap-[1px]' : 'gap-1'}`}>
-        <div
-          className={`w-6 h-6 flex items-center justify-center text-[10px] font-semibold text-white ${
-            compact ? 'rounded-none' : 'rounded-sm'
-          } bg-gray-400 animate-bounce`}
-        >
-          ?
-        </div>
         {form.map((res, idx) => {
           const level = levels[idx] ?? 0
           const offsetY = compact ? -level * 4 : 0
@@ -400,6 +393,18 @@ function FormIndicator({
             </div>
           )
         })}
+        <div
+          className={`w-6 h-6 flex items-center justify-center text-[10px] font-semibold text-white ${
+            compact ? 'rounded-none' : 'rounded-sm'
+          } bg-gray-400 animate-bounce`}
+          style={
+            compact && levels.length > 0
+              ? { transform: `translateY(${-levels[levels.length - 1] * 4}px)` }
+              : undefined
+          }
+        >
+          ?
+        </div>
       </div>
     </div>
   )
