@@ -258,7 +258,11 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
             {/* Кнопка добавить прогноз */}
             {isScheduled && (
               <div className="pt-4 border-t">
-                <Button variant="secondary" onClick={() => setIsPredictionModalOpen(true)} className="w-full">
+                <Button
+                  variant="secondary"
+                  onClick={() => setIsPredictionModalOpen(true)}
+                  className="w-full"
+                >
                   Добавить прогноз
                 </Button>
               </div>
@@ -271,7 +275,7 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
           away={{ id: fx.away.id, name: fx.away.name }}
         />
         {/* Прогнозы на матч */}
-        {predictions.length && (
+        {predictions.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
