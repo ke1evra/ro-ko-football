@@ -10,9 +10,18 @@ export async function GET(request: NextRequest) {
     const teamId = searchParams.get('teamId')
     const opponentTeamId = searchParams.get('opponentTeamId')
     const venueFilter = searchParams.get('venueFilter') || 'all'
-    const limit = Math.min(Number(searchParams.get('limit')) || 10, 50)
+    const year = searchParams.get('year')
+    const yearBefore = searchParams.get('yearBefore')
+    const limit = Math.min(Number(searchParams.get('limit')) || 10, 200)
 
-    console.log('[Team Matches API] Запрос:', { teamId, opponentTeamId, venueFilter, limit })
+    console.log('[Team Matches API] Запрос:', {
+      teamId,
+      opponentTeamId,
+      venueFilter,
+      year,
+      yearBefore,
+      limit,
+    })
 
     if (!teamId) {
       return NextResponse.json({ success: false, message: 'teamId обязателен' }, { status: 400 })
@@ -59,14 +68,45 @@ export async function GET(request: NextRequest) {
 
     // Применяем фильтр по месту проведения (дома/в гостях)
     if (venueFilter === 'home') {
-      // Показываем только матчи, где команда игр��ет дома
+      // Показываем только матчи, где команда играет дома
       whereCondition = {
         and: [whereCondition, { homeTeamId: { equals: teamIdNum } }],
       }
     } else if (venueFilter === 'away') {
-      // Показываем только матчи, где команда играет в гостях
+      // Показываем тол��ко матчи, где команда играет в гостях
       whereCondition = {
         and: [whereCondition, { awayTeamId: { equals: teamIdNum } }],
+      }
+    }
+
+    // Применяем фильтр по году
+    if (year) {
+      const yearNum = Number(year)
+      const startDate = `${yearNum}-01-01`
+      const endDate = `${yearNum}-12-31`
+      whereCondition = {
+        and: [
+          whereCondition,
+          {
+            date: {
+              greater_than_equal: startDate,
+              less_than_equal: endDate,
+            },
+          },
+        ],
+      }
+    } else if (yearBefore) {
+      const yearBeforeNum = Number(yearBefore)
+      const endDate = `${yearBeforeNum}-12-31`
+      whereCondition = {
+        and: [
+          whereCondition,
+          {
+            date: {
+              less_than_equal: endDate,
+            },
+          },
+        ],
       }
     }
 
@@ -122,23 +162,7 @@ export async function GET(request: NextRequest) {
       if (gf > ga) result = 'W'
       else if (gf < ga) result = 'L'
 
-      console.log('[Team Matches API] Нормализация матча:', {
-        teamId: teamIdNum,
-        matchId: m.matchId,
-        homeTeamId: homeTeamIdNum,
-        awayTeamId: awayTeamIdNum,
-        isHome,
-        isAway,
-        homeTeam: m.homeTeam,
-        awayTeam: m.awayTeam,
-        homeScore,
-        awayScore,
-        gf,
-        ga,
-        result,
-      })
-
-      return {
+      const returnObj = {
         id: String(m.id),
         matchId: m.matchId,
         fixtureId: m.fixtureId,
@@ -159,6 +183,28 @@ export async function GET(request: NextRequest) {
         result,
         stats: statsMap.get(m.matchId),
       }
+
+      // Логирование для матчей с 0:5 или 5:0
+      if ((homeScore === 0 && awayScore === 5) || (homeScore === 5 && awayScore === 0)) {
+        console.log('[Team Matches API] ⚠️ МАТЧ 0:5 или 5:0:', {
+          teamId: teamIdNum,
+          matchId: m.matchId,
+          homeTeamId: homeTeamIdNum,
+          awayTeamId: awayTeamIdNum,
+          isHome,
+          isAway,
+          homeTeam: m.homeTeam,
+          awayTeam: m.awayTeam,
+          homeScore,
+          awayScore,
+          gf,
+          ga,
+          result,
+          returnObj,
+        })
+      }
+
+      return returnObj
     })
 
     console.log('[Team Matches API] Нормализовано матчей:', normalizedMatches.length)

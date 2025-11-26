@@ -11,6 +11,7 @@ interface FormCanvasProps {
   matches: MatchRow[]
   title: string
   compact?: boolean
+  side?: 'home' | 'away'
 }
 
 // Порядок статистик (как в таблице)
@@ -96,7 +97,13 @@ const getOrderedStats = (stats: MatchStatsData): Array<[string, unknown]> => {
   return sortedKeys.map((key) => [key, stats[key as keyof MatchStatsData]])
 }
 
-export function FormCanvas({ form, matches, title, compact = false }: FormCanvasProps) {
+export function FormCanvas({
+  form,
+  matches,
+  title,
+  compact = false,
+  side = 'home',
+}: FormCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState(0)
@@ -149,7 +156,7 @@ export function FormCanvas({ form, matches, title, compact = false }: FormCanvas
     const verticalOffset = compact ? 4 : 0
 
     // Фиксированная высота 150px
-    const canvasHeight = 100
+    const canvasHeight = 200
 
     // Устанавливаем размеры canvas с учетом DPR
     canvas.width = canvasWidth * dpr
@@ -294,7 +301,7 @@ export function FormCanvas({ form, matches, title, compact = false }: FormCanvas
 
   return (
     <>
-      <div className={title ? "space-y-2" : ""}>
+      <div className={title ? 'space-y-2' : ''}>
         {title && <h4 className="text-sm font-medium text-muted-foreground">{title}</h4>}
         <div ref={containerRef} className="w-full">
           <canvas

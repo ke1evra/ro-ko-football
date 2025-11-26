@@ -102,6 +102,7 @@ async function fetchTeamLastMatches(
   limit = 10,
   opponentTeamId?: number,
   venueFilter: 'all' | 'home' | 'away' = 'all',
+  year?: string,
 ): Promise<unknown[]> {
   try {
     const query = new URLSearchParams({
@@ -111,6 +112,11 @@ async function fetchTeamLastMatches(
     })
     if (opponentTeamId) {
       query.append('opponentTeamId', String(opponentTeamId))
+    }
+    if (year && year !== 'before-2017') {
+      query.append('year', year)
+    } else if (year === 'before-2017') {
+      query.append('yearBefore', '2017')
     }
     const res = await fetch(`/api/team-matches?${query.toString()}`)
     if (!res.ok) return []
@@ -128,7 +134,14 @@ function normalizeRows(rows: unknown[]): MatchRow[] {
     const awayScore = (match.awayScore as number) ?? 0
     const gf = (match.gf as number) ?? 0
     const ga = (match.ga as number) ?? 0
-    const result = (match.result as 'W' | 'D' | 'L') ?? 'D'
+    
+    // Вычисляем результат на основе gf и ga
+    // gf - голы за (забила наша команда)
+    // ga - голы против (пропустила наша команда)
+    let result: 'W' | 'D' | 'L' = 'D'
+    if (gf > ga) result = 'W'
+    else if (gf < ga) result = 'L'
+    
     const season: string | undefined =
       ((match.season as Record<string, unknown>)?.name as string) ??
       ((match.season as Record<string, unknown>)?.year as string) ??
@@ -439,6 +452,10 @@ export default function ComparativeTeamAnalysis({
     home: 'all',
     away: 'all',
   })
+  const [selectedYear, setSelectedYear] = useState<Record<'home' | 'away', string | null>>({
+    home: null,
+    away: null,
+  })
 
   useEffect(() => {
     let aborted = false
@@ -453,12 +470,14 @@ export default function ComparativeTeamAnalysis({
             limit,
             matchFilter === 'head-to-head' ? away.id : undefined,
             matchFilter === 'head-to-head' ? 'all' : venueFilter.home,
+            selectedYear.home ?? undefined,
           ),
           fetchTeamLastMatches(
             away.id,
             limit,
             matchFilter === 'head-to-head' ? home.id : undefined,
             matchFilter === 'head-to-head' ? 'all' : venueFilter.away,
+            selectedYear.away ?? undefined,
           ),
         ])
 
@@ -485,9 +504,27 @@ export default function ComparativeTeamAnalysis({
     return () => {
       aborted = true
     }
-  }, [home.id, away.id, limit, matchFilter, venueFilter.home, venueFilter.away])
+  }, [home.id, away.id, limit, matchFilter, venueFilter.home, venueFilter.away, selectedYear])
+
+  const availableYears = useMemo(() => {
+    const years = new Set<string>()
+    homeRows.forEach((r) => {
+      if (r.date) {
+        const year = new Date(r.date).getFullYear().toString()
+        years.add(year)
+      }
+    })
+    awayRows.forEach((r) => {
+      if (r.date) {
+        const year = new Date(r.date).getFullYear().toString()
+        years.add(year)
+      }
+    })
+    return Array.from(years).sort().reverse()
+  }, [homeRows, awayRows])
 
   const filteredHomeRows = useMemo(() => homeRows, [homeRows])
+
   const filteredAwayRows = useMemo(() => awayRows, [awayRows])
 
   useEffect(() => {
@@ -641,6 +678,89 @@ export default function ComparativeTeamAnalysis({
                 <button
                   type="button"
                   onClick={() =>
+                    setSelectedYear((prev) => ({
+                      ...prev,
+                      home: null,
+                    }))
+                  }
+                  className={`px-2 py-1 text-[11px] font-medium rounded transition-colors ${
+                    selectedYear.home === null
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  Все годы
+                </button>
+                {Array.from(
+                  { length: new Date().getFullYear() - 2016 },
+                  (_, i) => String(new Date().getFullYear() - i),
+                ).map((year) => (
+                  <button
+                    key={`home-${year}`}
+                    type="button"
+                    onClick={() =>
+                      setSelectedYear((prev) => ({
+                        ...prev,
+                        home: year,
+                      }))
+                    }
+                    className={`px-2 py-1 text-[11px] font-medium rounded transition-colors ${
+                      selectedYear.home === year
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    {year}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-1 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedYear((prev) => ({
+                      ...prev,
+                      away: null,
+                    }))
+                  }
+                  className={`px-2 py-1 text-[11px] font-medium rounded transition-colors ${
+                    selectedYear.away === null
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  Все годы
+                </button>
+                {Array.from(
+                  { length: new Date().getFullYear() - 2016 },
+                  (_, i) => String(new Date().getFullYear() - i),
+                ).map((year) => (
+                  <button
+                    key={`away-${year}`}
+                    type="button"
+                    onClick={() =>
+                      setSelectedYear((prev) => ({
+                        ...prev,
+                        away: year,
+                      }))
+                    }
+                    className={`px-2 py-1 text-[11px] font-medium rounded transition-colors ${
+                      selectedYear.away === year
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    {year}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex gap-1 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() =>
                     setVenueFilter((prev) => ({
                       ...prev,
                       home: 'all',
@@ -745,12 +865,14 @@ export default function ComparativeTeamAnalysis({
                 form={homeForm}
                 matches={filteredHomeRows}
                 compact={limit >= 30}
+                side="home"
               />
               <FormCanvas
                 title=""
                 form={awayForm}
                 matches={filteredAwayRows}
                 compact={limit >= 30}
+                side="away"
               />
             </div>
 

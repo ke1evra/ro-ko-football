@@ -87,9 +87,11 @@ export interface MatchRow {
   awayTeamId: number
   homeScore: number
   awayScore: number
+  // gf/ga интерпретируем как "голы нашей команды" / "голы соперника" при нормализации
   gf: number
   ga: number
   total: number
+  // result из бэкенда не используем для подсветки, оставляем для совместимости
   result: 'W' | 'D' | 'L'
   stats?: MatchStatsData
 }
@@ -275,16 +277,41 @@ export interface MatchTableProps {
   onToggleAll: (side: TeamSide, rows: MatchRow[]) => void
 }
 
-function getStatValue(row: MatchRow, metric: StatMetric, side: TeamSide): number {
+// ИТ1: фактическое значение хозяев (home), независимо от нашей команды
+function getHomeScopedStatValue(row: MatchRow, metric: StatMetric): number {
   if (metric === 'goals') {
-    return side === 'home' ? row.gf : row.ga
+    return row.homeScore
   }
-
   if (!row.stats) return 0
   const stat = row.stats[metric as keyof MatchStatsData]
   if (!stat || typeof stat !== 'object' || !('home' in stat) || !('away' in stat)) return 0
   const v = stat as { home: number; away: number }
-  return side === 'home' ? v.home : v.away
+  return v.home
+}
+
+// ИТ2: фактическое значение гостей (away), независимо от нашей команды
+function getAwayScopedStatValue(row: MatchRow, metric: StatMetric): number {
+  if (metric === 'goals') {
+    return row.awayScore
+  }
+  if (!row.stats) return 0
+  const stat = row.stats[metric as keyof MatchStatsData]
+  if (!stat || typeof stat !== 'object' || !('home' in stat) || !('away' in stat)) return 0
+  const v = stat as { home: number; away: number }
+  return v.away
+}
+
+// Локальный результат матча относительно конкретной команды (teamId)
+// Важный момент: в таблицу мы передаём уже нормализованные поля gf/ga
+// как «голы нашей команды/соперника» для текущей стороны. Поэтому для
+// подсветки используем именно их, чтобы избежать рассинхрона при home/away.
+function getLocalResult(row: MatchRow, teamId: number): 'W' | 'D' | 'L' {
+  const gf = row.gf
+  const ga = row.ga
+
+  if (gf > ga) return 'W'
+  if (gf < ga) return 'L'
+  return 'D'
 }
 
 export function MatchTable({
@@ -304,6 +331,8 @@ export function MatchTable({
       return bDate - aDate
     })
   }, [rows])
+
+
 
   return (
     <Card className="shadow-sm">
@@ -352,16 +381,19 @@ export function MatchTable({
               ) : (
                 sortedRows.map((r) => {
                   const checked = selectedIds[side].has(r.id)
-                  const it1Value = getStatValue(r, selectedMetric, 'home')
-                  const it2Value = getStatValue(r, selectedMetric, 'away')
+                  // ИТ1/ИТ2 в таблице показывают фактические ИТ хозяев/гостей соответственно
+                  const it1Value = getHomeScopedStatValue(r, selectedMetric)
+                  const it2Value = getAwayScopedStatValue(r, selectedMetric)
                   const totalValue = it1Value + it2Value
 
+                  const localResult = getLocalResult(r, teamId)
+
                   const rowBgClass =
-                    r.result === 'W'
+                    localResult === 'W'
                       ? 'bg-emerald-50/60'
-                      : r.result === 'L'
+                      : localResult === 'L'
                         ? 'bg-rose-50/60'
-                        : r.result === 'D'
+                        : localResult === 'D'
                           ? 'bg-amber-50/60'
                           : ''
 
@@ -451,6 +483,8 @@ export function MatchTable({
             </TableBody>
           </Table>
         </div>
+
+
       </CardContent>
     </Card>
   )

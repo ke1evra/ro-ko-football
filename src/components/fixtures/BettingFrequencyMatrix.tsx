@@ -88,7 +88,11 @@ interface CountCell {
 function ratioColor(hits: number, total: number): string {
   if (!total) return ''
   const pct = hits / total
-  return pct >= 0.5 ? 'bg-emerald-50 text-emerald-700' : 'bg-muted text-muted-foreground'
+
+  if (pct >= 0.9) return 'bg-emerald-200 text-emerald-900'
+  if (pct >= 0.75) return 'bg-emerald-100 text-emerald-800'
+  if (pct >= 0.5) return 'bg-emerald-50 text-emerald-700'
+  return ''
 }
 
 function RatioDisplay({ hits, total }: { hits: number; total: number }) {
@@ -359,7 +363,7 @@ export default function BettingFrequencyMatrix({
                     const tm = totalsUnder.find((c) => c.line === line)!
                     return (
                       <TableRow key={`tb-${line}`}>
-                        <TableCell className="font-mono px-1 py-1">{line}</TableCell>
+                        <TableCell className="font-mono px-1 py-1 text-xs">{line}</TableCell>
                         <TableCell
                           className={`font-semibold text-center px-1 py-1 ${ratioColor(tb.hits, tb.total)}`}
                         >
@@ -399,7 +403,7 @@ export default function BettingFrequencyMatrix({
                     const itm = itUnder.find((c) => c.line === line)!
                     return (
                       <TableRow key={`it-${line}`}>
-                        <TableCell className="font-mono px-1 py-1">{line}</TableCell>
+                        <TableCell className="font-mono px-1 py-1 text-xs">{line}</TableCell>
                         <TableCell
                           className={`font-semibold text-center px-1 py-1 ${ratioColor(itb.hits, itb.total)}`}
                         >
@@ -439,7 +443,7 @@ export default function BettingFrequencyMatrix({
                     const it2m = it2Under.find((c) => c.line === line)!
                     return (
                       <TableRow key={`it2-${line}`}>
-                        <TableCell className="font-mono px-1 py-1">{line}</TableCell>
+                        <TableCell className="font-mono px-1 py-1 text-xs">{line}</TableCell>
                         <TableCell
                           className={`font-semibold text-center px-1 py-1 ${ratioColor(it2b.hits, it2b.total)}`}
                         >
@@ -479,7 +483,7 @@ export default function BettingFrequencyMatrix({
                     const f2 = hcpOpp.find((c) => c.line === h)!
                     return (
                       <TableRow key={`hcp-${h}`}>
-                        <TableCell className="font-mono px-1 py-1">{h > 0 ? `+${h}` : h}</TableCell>
+                        <TableCell className="font-mono px-1 py-1 text-xs">{h > 0 ? `+${h}` : h}</TableCell>
                         <TableCell
                           className={`font-semibold text-center px-1 py-1 ${ratioColor(f.hits, f.total)}`}
                         >
