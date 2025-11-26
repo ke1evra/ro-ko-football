@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { AlertCircle } from 'lucide-react'
 
 import BettingFrequencyMatrix from '@/components/fixtures/BettingFrequencyMatrix'
+import AggTile from '@/components/fixtures/AggTile'
 import { MatchTable, MatchRow, TeamSide, StatMetric } from '@/components/fixtures/MatchTable'
 import { FormCanvas } from '@/components/fixtures/FormCanvas'
 
@@ -62,6 +63,8 @@ interface AggregateStats {
   wins: number
   draws: number
   losses: number
+  btts: number
+  teamScored: number
   avgDiff: number
   maxIT: number
   minIT: number
@@ -134,14 +137,14 @@ function normalizeRows(rows: unknown[]): MatchRow[] {
     const awayScore = (match.awayScore as number) ?? 0
     const gf = (match.gf as number) ?? 0
     const ga = (match.ga as number) ?? 0
-    
+
     // Вычисляем результат на основе gf и ga
     // gf - голы за (забила наша команда)
     // ga - голы против (пропустила наша команда)
     let result: 'W' | 'D' | 'L' = 'D'
     if (gf > ga) result = 'W'
     else if (gf < ga) result = 'L'
-    
+
     const season: string | undefined =
       ((match.season as Record<string, unknown>)?.name as string) ??
       ((match.season as Record<string, unknown>)?.year as string) ??
@@ -190,11 +193,19 @@ function aggregateByMetric(rows: MatchRow[], metric: StatMetric): AggregateStats
   const draws = rows.filter((r) => r.result === 'D').length
   const losses = rows.filter((r) => r.result === 'L').length
 
+  // Значения метрики для команды и соперника
+  const teamVals = rows.map((r) => (metric === 'goals' ? r.gf : getStatValue(r, metric, 'home')))
+  const oppVals = rows.map((r) => (metric === 'goals' ? r.ga : getStatValue(r, metric, 'away')))
+
+  // Частоты
+  const btts = rows.filter((_, i) => teamVals[i] > 0 && oppVals[i] > 0).length
+  const teamScored = rows.filter((_, i) => teamVals[i] > 0).length
+
   const gfArr = rows.map((r) => r.gf)
   const gaArr = rows.map((r) => r.ga)
-  const statArr = rows.map((r) => r.gf)
-  const statConArr = rows.map((r) => r.ga)
-  const totals = rows.map((r) => r.total)
+  const statArr = teamVals
+  const statConArr = oppVals
+  const totals = rows.map((_, i) => teamVals[i] + oppVals[i])
 
   const avg = (arr: number[]): number =>
     arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0
@@ -203,6 +214,8 @@ function aggregateByMetric(rows: MatchRow[], metric: StatMetric): AggregateStats
     wins,
     draws,
     losses,
+    btts,
+    teamScored,
     avgDiff: avg(rows.map((r) => r.gf - r.ga)),
     maxIT: Math.max(...(gfArr.length ? gfArr : [0])),
     minIT: Math.min(...(gfArr.length ? gfArr : [0])),
@@ -238,99 +251,26 @@ function AggBlock({
     return val.toFixed(2).replace(/\.0+$/, '')
   }
 
-  const metricLabel =
-    STAT_METRICS.find((m) => m.key === selectedMetric)?.label.toLowerCase() || 'метрики'
-
-  const column1 = [
-    {
-      label: 'Победы',
-      value: agg.wins,
-      tooltip: `Количество матчей, где команда имела больше ${metricLabel}, чем соперник`,
-    },
-    {
-      label: 'Ничьи',
-      value: agg.draws,
-      tooltip: `Количество матчей, где команда имела равное количество ${metricLabel} с соперником`,
-    },
-    {
-      label: 'Поражения',
-      value: agg.losses,
-      tooltip: `Количество матчей, где команда имела меньше ${metricLabel}, чем соперник`,
-    },
-  ]
-
-  const column2 = [
-    {
-      label: 'СР ИТ',
-      value: formatValue(agg.avgStat),
-      tooltip: `Среднее значение ${metricLabel} за команду`,
-    },
-    {
-      label: 'СР ИТ СОП',
-      value: formatValue(agg.avgStatCon),
-      tooltip: `Среднее значение ${metricLabel} соперника`,
-    },
-    {
-      label: 'СР Т',
-      value: formatValue(agg.avgT),
-      tooltip: `Среднее значение ${metricLabel} в матче`,
-    },
-  ]
-
-  const getResultColor = (wins: number, draws: number, losses: number): string => {
-    if (wins > draws && wins > losses) return 'text-green-600 font-bold'
-    if (losses > wins && losses > draws) return 'text-red-600 font-bold'
-    return 'text-yellow-600 font-bold'
-  }
-
-  const renderStat = (
-    stat: { label: string; value: string | number; tooltip: string },
-    aggStats: AggregateStats,
-  ) => {
-    let colorClass = ''
-    if (stat.label === 'Победы' || stat.label === 'Ничьи' || stat.label === 'Поражения') {
-      colorClass = getResultColor(aggStats.wins, aggStats.draws, aggStats.losses)
-    }
-
-    return (
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="text-xs text-muted-foreground cursor-help block truncate">
-                  {stat.label}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>{stat.tooltip}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-        <span className={`text-xs font-semibold text-right ${colorClass}`}>{stat.value}</span>
-      </div>
-    )
-  }
-
   return (
-    <Card className="rounded-lg shadow-sm">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="p-4">
-        <div className="grid grid-cols-2 gap-6">
-          <div className="space-y-3">
-            {column1.map((stat) => (
-              <div key={stat.label}>{renderStat(stat, agg)}</div>
-            ))}
-          </div>
-          <div className="space-y-3">
-            {column2.map((stat) => (
-              <div key={stat.label}>{renderStat(stat, agg)}</div>
-            ))}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-5 gap-3">
+        <AggTile label="Победы" value={`${agg.wins}/${agg.count}`} variant="success" />
+        <AggTile label="Ничьи" value={`${agg.draws}/${agg.count}`} variant="warning" />
+        <AggTile label="Поражения" value={`${agg.losses}/${agg.count}`} variant="danger" />
+        <AggTile label="Обе забили" value={`${agg.btts}/${agg.count}`} variant="info" />
+        <AggTile
+          label="Команда забивала"
+          value={`${agg.teamScored}/${agg.count}`}
+          variant="primary"
+        />
+      </div>
+      {/* Второй ряд: средние */}
+      <div className="grid grid-cols-3 gap-3">
+        <AggTile label="СР ИТ" value={formatValue(agg.avgStat)} variant="primary" />
+        <AggTile label="СР ИТ СОП" value={formatValue(agg.avgStatCon)} variant="primary" />
+        <AggTile label="СР Т" value={formatValue(agg.avgT)} variant="primary" />
+      </div>
+    </div>
   )
 }
 
@@ -691,9 +631,8 @@ export default function ComparativeTeamAnalysis({
                 >
                   Все годы
                 </button>
-                {Array.from(
-                  { length: new Date().getFullYear() - 2016 },
-                  (_, i) => String(new Date().getFullYear() - i),
+                {Array.from({ length: new Date().getFullYear() - 2016 }, (_, i) =>
+                  String(new Date().getFullYear() - i),
                 ).map((year) => (
                   <button
                     key={`home-${year}`}
@@ -731,9 +670,8 @@ export default function ComparativeTeamAnalysis({
                 >
                   Все годы
                 </button>
-                {Array.from(
-                  { length: new Date().getFullYear() - 2016 },
-                  (_, i) => String(new Date().getFullYear() - i),
+                {Array.from({ length: new Date().getFullYear() - 2016 }, (_, i) =>
+                  String(new Date().getFullYear() - i),
                 ).map((year) => (
                   <button
                     key={`away-${year}`}

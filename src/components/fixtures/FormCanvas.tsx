@@ -97,6 +97,9 @@ const getOrderedStats = (stats: MatchStatsData): Array<[string, unknown]> => {
   return sortedKeys.map((key) => [key, stats[key as keyof MatchStatsData]])
 }
 
+const CANVAS_HEIGHT_DEFAULT = 200
+const CANVAS_HEIGHT_COMPACT = 160
+
 export function FormCanvas({
   form,
   matches,
@@ -155,8 +158,23 @@ export function FormCanvas({
 
     const verticalOffset = compact ? 4 : 0
 
-    // Фиксированная высота 150px
-    const canvasHeight = 200
+    // Считаем максимальное количество уровней вверх/вниз
+    let minLevel = 0
+    let maxLevel = 0
+    if (compact) {
+      for (const level of levels) {
+        if (level < minLevel) minLevel = level
+        if (level > maxLevel) maxLevel = level
+      }
+    }
+    const maxUpLevels = Math.abs(minLevel)
+    const maxDownLevels = maxLevel
+
+    const paddingTop = compact ? 2 : 4
+    const paddingBottom = compact ? 2 : 4
+
+    const canvasHeight =
+      squareSize + (maxUpLevels + maxDownLevels) * Math.abs(verticalOffset) + paddingTop + paddingBottom
 
     // Устанавливаем размеры canvas с учетом DPR
     canvas.width = canvasWidth * dpr
@@ -169,8 +187,9 @@ export function FormCanvas({
     // Очищаем canvas
     ctx.clearRect(0, 0, canvasWidth, canvasHeight)
 
-    // Базовая линия (центр canvas)
-    const baseline = canvasHeight / 2
+    // Базовая линия: отталкиваемся от низа, чтобы нижние квадраты не обрезались
+    const baseline =
+      canvasHeight - paddingBottom - maxDownLevels * Math.abs(verticalOffset) - squareSize / 2
 
     // Вычисляем позицию первого квадрата для знака вопроса (так как идем справа налево)
     const firstLevel = levels.length > 0 ? (levels[0] ?? 0) : 0

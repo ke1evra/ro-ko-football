@@ -295,248 +295,170 @@ export default function BettingFrequencyMatrix({
   const renderHcpLines = lastHcpIdx >= 0 ? HANDICAP_LINES.slice(0, lastHcpIdx + 1) : []
 
   return (
-    <Card className="rounded-lg shadow-sm">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-xs font-semibold">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6 text-sm">
-        {/* Верхние агрегаты */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <AggTile
-            label="Победы"
-            value={formatXN(topAggregates.wins, topAggregates.total)}
-            variant="success"
-          />
-          <AggTile
-            label="Ничьи"
-            value={formatXN(topAggregates.draws, topAggregates.total)}
-            variant="warning"
-          />
-          <AggTile
-            label="Поражения"
-            value={formatXN(topAggregates.losses, topAggregates.total)}
-            variant="danger"
-          />
-          <AggTile
-            label="Обе забили"
-            value={formatXN(topAggregates.btts, topAggregates.total)}
-            variant="info"
-          />
-          <AggTile
-            label="Команда забивала"
-            value={formatXN(topAggregates.teamScored, topAggregates.total)}
-            variant="primary"
-          />
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div>
-                  <AggTile label="Первый гол (н/д)" value="—" muted variant="muted" />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>Недоступно: нет данных событий по минутам</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* ТБ / ТМ */}
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/40 h-8">
+                <TableHead className="w-12 px-1 py-1 text-xs text-muted-foreground"></TableHead>
+                <TableHead className="px-1 py-1 text-xs text-muted-foreground">ТБ</TableHead>
+                <TableHead className="px-1 py-1 text-xs text-muted-foreground">ТМ</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {renderTotalsLines
+                .filter((line) => {
+                  const tb = totalsOver.find((c) => c.line === line)!
+                  const tm = totalsUnder.find((c) => c.line === line)!
+                  return !isDegeneratePair(tb, tm)
+                })
+                .map((line) => {
+                  const tb = totalsOver.find((c) => c.line === line)!
+                  const tm = totalsUnder.find((c) => c.line === line)!
+                  return (
+                    <TableRow key={`tb-${line}`}>
+                      <TableCell className="font-mono px-1 py-1 text-xs">{line}</TableCell>
+                      <TableCell
+                        className={`font-semibold text-center px-1 py-1 ${ratioColor(tb.hits, tb.total)}`}
+                      >
+                        <RatioDisplay hits={tb.hits} total={tb.total} />
+                      </TableCell>
+                      <TableCell
+                        className={`font-semibold text-center px-1 py-1 ${ratioColor(tm.hits, tm.total)}`}
+                      >
+                        <RatioDisplay hits={tm.hits} total={tm.total} />
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+            </TableBody>
+          </Table>
         </div>
 
-        {/* Матрица частот — 4 блока в одной строке */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* ТБ / ТМ */}
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/40 h-8">
-                  <TableHead className="w-12 px-1 py-1 text-xs text-muted-foreground"></TableHead>
-                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">ТБ</TableHead>
-                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">ТМ</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {renderTotalsLines
-                  .filter((line) => {
-                    const tb = totalsOver.find((c) => c.line === line)!
-                    const tm = totalsUnder.find((c) => c.line === line)!
-                    return !isDegeneratePair(tb, tm)
-                  })
-                  .map((line) => {
-                    const tb = totalsOver.find((c) => c.line === line)!
-                    const tm = totalsUnder.find((c) => c.line === line)!
-                    return (
-                      <TableRow key={`tb-${line}`}>
-                        <TableCell className="font-mono px-1 py-1 text-xs">{line}</TableCell>
-                        <TableCell
-                          className={`font-semibold text-center px-1 py-1 ${ratioColor(tb.hits, tb.total)}`}
-                        >
-                          <RatioDisplay hits={tb.hits} total={tb.total} />
-                        </TableCell>
-                        <TableCell
-                          className={`font-semibold text-center px-1 py-1 ${ratioColor(tm.hits, tm.total)}`}
-                        >
-                          <RatioDisplay hits={tm.hits} total={tm.total} />
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* ИТБ / ИТМ */}
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/40 h-8">
-                  <TableHead className="w-12 px-1 py-1 text-xs text-muted-foreground"></TableHead>
-                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">ИТБ</TableHead>
-                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">ИТМ</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {renderItLines
-                  .filter((line) => {
-                    const itb = itOver.find((c) => c.line === line)!
-                    const itm = itUnder.find((c) => c.line === line)!
-                    return !isDegeneratePair(itb, itm)
-                  })
-                  .map((line) => {
-                    const itb = itOver.find((c) => c.line === line)!
-                    const itm = itUnder.find((c) => c.line === line)!
-                    return (
-                      <TableRow key={`it-${line}`}>
-                        <TableCell className="font-mono px-1 py-1 text-xs">{line}</TableCell>
-                        <TableCell
-                          className={`font-semibold text-center px-1 py-1 ${ratioColor(itb.hits, itb.total)}`}
-                        >
-                          <RatioDisplay hits={itb.hits} total={itb.total} />
-                        </TableCell>
-                        <TableCell
-                          className={`font-semibold text-center px-1 py-1 ${ratioColor(itm.hits, itm.total)}`}
-                        >
-                          <RatioDisplay hits={itm.hits} total={itm.total} />
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* ИТ2Б / ИТ2М */}
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/40 h-8">
-                  <TableHead className="w-12 px-1 py-1 text-xs text-muted-foreground"></TableHead>
-                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">ИТ2Б</TableHead>
-                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">ИТ2М</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {renderIt2Lines
-                  .filter((line) => {
-                    const it2b = it2Over.find((c) => c.line === line)!
-                    const it2m = it2Under.find((c) => c.line === line)!
-                    return !isDegeneratePair(it2b, it2m)
-                  })
-                  .map((line) => {
-                    const it2b = it2Over.find((c) => c.line === line)!
-                    const it2m = it2Under.find((c) => c.line === line)!
-                    return (
-                      <TableRow key={`it2-${line}`}>
-                        <TableCell className="font-mono px-1 py-1 text-xs">{line}</TableCell>
-                        <TableCell
-                          className={`font-semibold text-center px-1 py-1 ${ratioColor(it2b.hits, it2b.total)}`}
-                        >
-                          <RatioDisplay hits={it2b.hits} total={it2b.total} />
-                        </TableCell>
-                        <TableCell
-                          className={`font-semibold text-center px-1 py-1 ${ratioColor(it2m.hits, it2m.total)}`}
-                        >
-                          <RatioDisplay hits={it2m.hits} total={it2m.total} />
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Ф1 / Ф2 */}
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/40 h-8">
-                  <TableHead className="w-12 px-1 py-1 text-xs text-muted-foreground"></TableHead>
-                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">Ф1</TableHead>
-                  <TableHead className="px-1 py-1 text-xs text-muted-foreground">Ф2</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {renderHcpLines
-                  .filter((h) => {
-                    const f = hcpTeam.find((c) => c.line === h)!
-                    const f2 = hcpOpp.find((c) => c.line === h)!
-                    return !isDegeneratePair(f, f2)
-                  })
-                  .map((h) => {
-                    const f = hcpTeam.find((c) => c.line === h)!
-                    const f2 = hcpOpp.find((c) => c.line === h)!
-                    return (
-                      <TableRow key={`hcp-${h}`}>
-                        <TableCell className="font-mono px-1 py-1 text-xs">{h > 0 ? `+${h}` : h}</TableCell>
-                        <TableCell
-                          className={`font-semibold text-center px-1 py-1 ${ratioColor(f.hits, f.total)}`}
-                        >
-                          <RatioDisplay hits={f.hits} total={f.total} />
-                        </TableCell>
-                        <TableCell
-                          className={`font-semibold text-center px-1 py-1 ${ratioColor(f2.hits, f2.total)}`}
-                        >
-                          <RatioDisplay hits={f2.hits} total={f2.total} />
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-              </TableBody>
-            </Table>
-          </div>
+        {/* ИТБ / ИТМ */}
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/40 h-8">
+                <TableHead className="w-12 px-1 py-1 text-xs text-muted-foreground"></TableHead>
+                <TableHead className="px-1 py-1 text-xs text-muted-foreground">ИТБ</TableHead>
+                <TableHead className="px-1 py-1 text-xs text-muted-foreground">ИТМ</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {renderItLines
+                .filter((line) => {
+                  const itb = itOver.find((c) => c.line === line)!
+                  const itm = itUnder.find((c) => c.line === line)!
+                  return !isDegeneratePair(itb, itm)
+                })
+                .map((line) => {
+                  const itb = itOver.find((c) => c.line === line)!
+                  const itm = itUnder.find((c) => c.line === line)!
+                  return (
+                    <TableRow key={`it-${line}`}>
+                      <TableCell className="font-mono px-1 py-1 text-xs">{line}</TableCell>
+                      <TableCell
+                        className={`font-semibold text-center px-1 py-1 ${ratioColor(itb.hits, itb.total)}`}
+                      >
+                        <RatioDisplay hits={itb.hits} total={itb.total} />
+                      </TableCell>
+                      <TableCell
+                        className={`font-semibold text-center px-1 py-1 ${ratioColor(itm.hits, itm.total)}`}
+                      >
+                        <RatioDisplay hits={itm.hits} total={itm.total} />
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+            </TableBody>
+          </Table>
         </div>
-      </CardContent>
-    </Card>
-  )
-}
 
-function AggTile({
-  label,
-  value,
-  muted = false,
-  variant = 'default',
-}: {
-  label: string
-  value: string
-  muted?: boolean
-  variant?: 'default' | 'success' | 'danger' | 'warning' | 'muted' | 'info' | 'primary'
-}) {
-  const wrapper = `rounded border p-2 flex flex-col justify-between ${muted ? 'opacity-70' : ''}`
-  const numberPalette: Record<string, string> = {
-    default: 'text-foreground',
-    success: 'text-green-700',
-    warning: 'text-yellow-700',
-    danger: 'text-red-700',
-    info: 'text-sky-700',
-    primary: 'text-indigo-700',
-    muted: 'text-muted-foreground',
-  }
-  const numberCls = numberPalette[variant] || numberPalette.default
+        {/* ИТ2Б / ИТ2М */}
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/40 h-8">
+                <TableHead className="w-12 px-1 py-1 text-xs text-muted-foreground"></TableHead>
+                <TableHead className="px-1 py-1 text-xs text-muted-foreground">ИТ2Б</TableHead>
+                <TableHead className="px-1 py-1 text-xs text-muted-foreground">ИТ2М</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {renderIt2Lines
+                .filter((line) => {
+                  const it2b = it2Over.find((c) => c.line === line)!
+                  const it2m = it2Under.find((c) => c.line === line)!
+                  return !isDegeneratePair(it2b, it2m)
+                })
+                .map((line) => {
+                  const it2b = it2Over.find((c) => c.line === line)!
+                  const it2m = it2Under.find((c) => c.line === line)!
+                  return (
+                    <TableRow key={`it2-${line}`}>
+                      <TableCell className="font-mono px-1 py-1 text-xs">{line}</TableCell>
+                      <TableCell
+                        className={`font-semibold text-center px-1 py-1 ${ratioColor(it2b.hits, it2b.total)}`}
+                      >
+                        <RatioDisplay hits={it2b.hits} total={it2b.total} />
+                      </TableCell>
+                      <TableCell
+                        className={`font-semibold text-center px-1 py-1 ${ratioColor(it2m.hits, it2m.total)}`}
+                      >
+                        <RatioDisplay hits={it2m.hits} total={it2m.total} />
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+            </TableBody>
+          </Table>
+        </div>
 
-  return (
-    <div className={wrapper}>
-      <div className="text-[10px] leading-3 text-muted-foreground text-center break-words">
-        {label}
+        {/* Ф1 / Ф2 */}
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/40 h-8">
+                <TableHead className="w-12 px-1 py-1 text-xs text-muted-foreground"></TableHead>
+                <TableHead className="px-1 py-1 text-xs text-muted-foreground">Ф1</TableHead>
+                <TableHead className="px-1 py-1 text-xs text-muted-foreground">Ф2</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {renderHcpLines
+                .filter((h) => {
+                  const f = hcpTeam.find((c) => c.line === h)!
+                  const f2 = hcpOpp.find((c) => c.line === h)!
+                  return !isDegeneratePair(f, f2)
+                })
+                .map((h) => {
+                  const f = hcpTeam.find((c) => c.line === h)!
+                  const f2 = hcpOpp.find((c) => c.line === h)!
+                  return (
+                    <TableRow key={`hcp-${h}`}>
+                      <TableCell className="font-mono px-1 py-1 text-xs">
+                        {h > 0 ? `+${h}` : h}
+                      </TableCell>
+                      <TableCell
+                        className={`font-semibold text-center px-1 py-1 ${ratioColor(f.hits, f.total)}`}
+                      >
+                        <RatioDisplay hits={f.hits} total={f.total} />
+                      </TableCell>
+                      <TableCell
+                        className={`font-semibold text-center px-1 py-1 ${ratioColor(f2.hits, f2.total)}`}
+                      >
+                        <RatioDisplay hits={f2.hits} total={f2.total} />
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+            </TableBody>
+          </Table>
+        </div>
       </div>
-      <div className={`text-sm leading-5 font-semibold font-mono text-center ${numberCls}`}>
-        {value}
-      </div>
-    </div>
+    </>
   )
 }
