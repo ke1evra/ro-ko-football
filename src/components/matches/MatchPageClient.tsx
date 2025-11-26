@@ -4,24 +4,11 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-// tabs удалены
-import { Separator } from '@/components/ui/separator'
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  Trophy,
-  Activity,
-  BarChart3,
-  Users,
-  Target,
-  AlertCircle,
-} from 'lucide-react'
+
+import { Activity, BarChart3, AlertCircle } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { TeamLogo } from '@/components/TeamLogo'
-import ComparativeTeamAnalysis from '@/components/fixtures/ComparativeTeamAnalysis'
-import { CountryFlagImage } from '@/components/CountryFlagImage'
 import PredictionModal from '@/components/predictions/PredictionModal'
 
 interface MatchInfo {
@@ -1030,13 +1017,6 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
           </div>
         </div>
       )}
-
-      {/* Сравнительный анализ команд по прошедшим матчам */}
-      <ComparativeTeamAnalysis
-        home={{ id: parseInt(String(matchInfo.home.id || '0')), name: matchInfo.home.name }}
-        away={{ id: parseInt(String(matchInfo.away.id || '0')), name: matchInfo.away.name }}
-        limit={10}
-      />
 
       {isScheduled && (
         <PredictionModal
