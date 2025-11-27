@@ -251,17 +251,43 @@ function AggBlock({
     return val.toFixed(2).replace(/\.0+$/, '')
   }
 
+  const ratio = (value: number): number => {
+    if (!agg.count) return 0
+    return (value / agg.count) * 100
+  }
+
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-5 gap-3">
-        <AggTile label="Победы" value={`${agg.wins}/${agg.count}`} variant="success" />
-        <AggTile label="Ничьи" value={`${agg.draws}/${agg.count}`} variant="warning" />
-        <AggTile label="Поражения" value={`${agg.losses}/${agg.count}`} variant="danger" />
-        <AggTile label="Обе забили" value={`${agg.btts}/${agg.count}`} variant="info" />
+        <AggTile
+          label="Победы"
+          value={`${agg.wins}/${agg.count}`}
+          variant="success"
+          progress={ratio(agg.wins)}
+        />
+        <AggTile
+          label="Ничьи"
+          value={`${agg.draws}/${agg.count}`}
+          variant="warning"
+          progress={ratio(agg.draws)}
+        />
+        <AggTile
+          label="Поражения"
+          value={`${agg.losses}/${agg.count}`}
+          variant="danger"
+          progress={ratio(agg.losses)}
+        />
+        <AggTile
+          label="Обе забили"
+          value={`${agg.btts}/${agg.count}`}
+          variant="info"
+          progress={ratio(agg.btts)}
+        />
         <AggTile
           label="Команда забивала"
           value={`${agg.teamScored}/${agg.count}`}
           variant="primary"
+          progress={ratio(agg.teamScored)}
         />
       </div>
       {/* Второй ряд: средние */}
