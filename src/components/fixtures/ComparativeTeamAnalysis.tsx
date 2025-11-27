@@ -261,40 +261,49 @@ function AggBlock({
       <div className="grid grid-cols-5 gap-3">
         <AggTile
           label="Победы"
-          value={`${agg.wins}/${agg.count}`}
+          numerator={agg.wins}
+          denominator={agg.count}
           variant="success"
           progress={ratio(agg.wins)}
         />
         <AggTile
           label="Ничьи"
-          value={`${agg.draws}/${agg.count}`}
+          numerator={agg.draws}
+          denominator={agg.count}
           variant="warning"
           progress={ratio(agg.draws)}
         />
         <AggTile
           label="Поражения"
-          value={`${agg.losses}/${agg.count}`}
+          numerator={agg.losses}
+          denominator={agg.count}
           variant="danger"
           progress={ratio(agg.losses)}
         />
         <AggTile
           label="Обе забили"
-          value={`${agg.btts}/${agg.count}`}
+          numerator={agg.btts}
+          denominator={agg.count}
           variant="info"
           progress={ratio(agg.btts)}
         />
         <AggTile
           label="Команда забивала"
-          value={`${agg.teamScored}/${agg.count}`}
+          numerator={agg.teamScored}
+          denominator={agg.count}
           variant="primary"
           progress={ratio(agg.teamScored)}
         />
       </div>
       {/* Второй ряд: средние */}
       <div className="grid grid-cols-3 gap-3">
-        <AggTile label="СР ИТ" value={formatValue(agg.avgStat)} variant="primary" />
-        <AggTile label="СР ИТ СОП" value={formatValue(agg.avgStatCon)} variant="primary" />
-        <AggTile label="СР Т" value={formatValue(agg.avgT)} variant="primary" />
+        <AggTile label="СР ИТ" numerator={Number(formatValue(agg.avgStat))} variant="primary" />
+        <AggTile
+          label="СР ИТ СОП"
+          numerator={Number(formatValue(agg.avgStatCon))}
+          variant="primary"
+        />
+        <AggTile label="СР Т" numerator={Number(formatValue(agg.avgT))} variant="primary" />
       </div>
     </div>
   )
