@@ -264,13 +264,37 @@ export default function DynamicEventsForm({
                                         (selectedOutcome === outcome.name &&
                                         selectedValue === val.value
                                           ? 'bg-primary text-primary-foreground '
-                                          : '') + 'w-full border-0'
+                                          : '') + 'w-full border-0 text-center'
                                       }
                                     >
-                                      <span className="opacity-50">{outcome.name}</span> {val.value}
+                                      <span className="text-xs opacity-30">{outcome.name}</span>{' '}
+                                      {val.value}
                                     </Button>
                                   ))}
                                 </div>
+                                {selectedOutcome === outcome.name && (
+                                  <div className="space-y-2 mt-2">
+                                    <Label>
+                                      Коэффициент для {selectedOutcome}
+                                      {selectedValue !== null ? ` ${selectedValue}` : ''}
+                                    </Label>
+                                    <div className="flex gap-2">
+                                      <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="1"
+                                        placeholder="1.85"
+                                        value={coefficient}
+                                        onChange={(e) => setCoefficient(e.target.value)}
+                                        className="flex-1"
+                                      />
+                                      <Button onClick={addEvent} disabled={!coefficient.trim()}>
+                                        <Check className="h-4 w-4 mr-2" />
+                                        Добавить
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -304,13 +328,37 @@ export default function DynamicEventsForm({
                                       (selectedOutcome === outcome.name &&
                                       selectedValue === val.value
                                         ? 'bg-primary text-primary-foreground '
-                                        : '') + 'w-full border-0'
+                                        : '') + 'w-full border-0 text-center'
                                     }
                                   >
-                                    <span className="opacity-50">{outcome.name}</span> {val.value}
+                                    <span className="text-xs opacity-30">{outcome.name}</span>{' '}
+                                    <span>{val.value}</span>
                                   </Button>
                                 ))}
                               </div>
+                              {selectedOutcome === outcome.name && (
+                                <div className="space-y-2 mt-2">
+                                  <Label>
+                                    Коэффициент для {selectedOutcome}
+                                    {selectedValue !== null ? ` ${selectedValue}` : ''}
+                                  </Label>
+                                  <div className="flex gap-2">
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      min="1"
+                                      placeholder="1.85"
+                                      value={coefficient}
+                                      onChange={(e) => setCoefficient(e.target.value)}
+                                      className="flex-1"
+                                    />
+                                    <Button onClick={addEvent} disabled={!coefficient.trim()}>
+                                      <Check className="h-4 w-4 mr-2" />
+                                      Добавить
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           ))}
                           {/* Для заполнения сетки до 3 колонок на последней строке добавляем пустые плейсхолдеры */}
@@ -356,19 +404,43 @@ export default function DynamicEventsForm({
                       return (
                         <div className={`mt-4 grid gap-2 ${gridColsClass}`}>
                           {noValue.map((outcome, outcomeIndex) => (
-                            <Button
-                              key={`no-${outcomeIndex}`}
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => selectValue(outcome.name, null)}
-                              className={
-                                (selectedOutcome === outcome.name && selectedValue === null
-                                  ? 'bg-primary text-primary-foreground '
-                                  : '') + 'w-full border-0'
-                              }
-                            >
-                              {outcome.name}
-                            </Button>
+                            <div key={`no-col-${outcomeIndex}`} className="flex flex-col gap-2">
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => selectValue(outcome.name, null)}
+                                className={
+                                  (selectedOutcome === outcome.name && selectedValue === null
+                                    ? 'bg-primary text-primary-foreground '
+                                    : '') + 'w-full border-0 text-center'
+                                }
+                              >
+                                {outcome.name}
+                              </Button>
+                              {selectedOutcome === outcome.name && (
+                                <div className="space-y-2 mt-2">
+                                  <Label>
+                                    Коэффициент для {selectedOutcome}
+                                    {selectedValue !== null ? ` ${selectedValue}` : ''}
+                                  </Label>
+                                  <div className="flex gap-2">
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      min="1"
+                                      placeholder="1.85"
+                                      value={coefficient}
+                                      onChange={(e) => setCoefficient(e.target.value)}
+                                      className="flex-1"
+                                    />
+                                    <Button onClick={addEvent} disabled={!coefficient.trim()}>
+                                      <Check className="h-4 w-4 mr-2" />
+                                      Добавить
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           ))}
                         </div>
                       )
@@ -385,19 +457,43 @@ export default function DynamicEventsForm({
                         {rows.map((row, rowIdx) => (
                           <div key={`no-row-${rowIdx}`} className="grid grid-cols-3 gap-2">
                             {row.map((outcome, idx) => (
-                              <Button
-                                key={`no-${rowIdx}-${idx}`}
-                                variant="secondary"
-                                size="sm"
-                                onClick={() => selectValue(outcome.name, null)}
-                                className={
-                                  (selectedOutcome === outcome.name && selectedValue === null
-                                    ? 'bg-primary text-primary-foreground '
-                                    : '') + 'w-full border-0'
-                                }
-                              >
-                                {outcome.name}
-                              </Button>
+                              <div key={`no-col-${rowIdx}-${idx}`} className="flex flex-col gap-2">
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => selectValue(outcome.name, null)}
+                                  className={
+                                    (selectedOutcome === outcome.name && selectedValue === null
+                                      ? 'bg-primary text-primary-foreground '
+                                      : '') + 'w-full border-0'
+                                  }
+                                >
+                                  {outcome.name}
+                                </Button>
+                                {selectedOutcome === outcome.name && (
+                                  <div className="space-y-2 mt-2">
+                                    <Label>
+                                      Коэффициент для {selectedOutcome}
+                                      {selectedValue !== null ? ` ${selectedValue}` : ''}
+                                    </Label>
+                                    <div className="flex gap-2">
+                                      <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="1"
+                                        placeholder="1.85"
+                                        value={coefficient}
+                                        onChange={(e) => setCoefficient(e.target.value)}
+                                        className="flex-1"
+                                      />
+                                      <Button onClick={addEvent} disabled={!coefficient.trim()}>
+                                        <Check className="h-4 w-4 mr-2" />
+                                        Добавить
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             ))}
                             {row.length < 3 &&
                               Array.from({ length: 3 - row.length }).map((_, i) => (
@@ -412,31 +508,6 @@ export default function DynamicEventsForm({
               </AccordionItem>
             ))}
           </Accordion>
-        )}
-
-        {/* Инпут для коэфа */}
-        {selectedOutcome && (
-          <div className="space-y-2">
-            <Label>
-              Коэффициент для {selectedOutcome}
-              {selectedValue !== null ? ` ${selectedValue}` : ''}
-            </Label>
-            <div className="flex gap-2">
-              <Input
-                type="number"
-                step="0.01"
-                min="1"
-                placeholder="1.85"
-                value={coefficient}
-                onChange={(e) => setCoefficient(e.target.value)}
-                className="flex-1"
-              />
-              <Button onClick={addEvent} disabled={!coefficient.trim()}>
-                <Check className="h-4 w-4 mr-2" />
-                Добавить
-              </Button>
-            </div>
-          </div>
         )}
 
         {events.length === 0 && (
