@@ -216,41 +216,198 @@ export default function DynamicEventsForm({
               <AccordionItem key={group.id} value={group.id}>
                 <AccordionTrigger>{group.name}</AccordionTrigger>
                 <AccordionContent>
-                  <div className="grid grid-cols-2 gap-2">
-                    {group.outcomes.map((outcome, outcomeIndex) =>
-                      outcome.values.length > 0
-                        ? outcome.values.map((val, valIndex) => (
+                  {/* Динамическое количество колонок: 1–5 => столько же колонок; больше 5 => строки по 3 колонки */}
+                  <div className="space-y-3">
+                    {(() => {
+                      const outcomesWithValues = group.outcomes.filter(
+                        (o) => o.values && o.values.length > 0,
+                      )
+
+                      if (outcomesWithValues.length <= 5) {
+                        const cols = Math.max(1, outcomesWithValues.length)
+                        let gridColsClass = 'grid-cols-1'
+                        switch (cols) {
+                          case 1:
+                            gridColsClass = 'grid-cols-1'
+                            break
+                          case 2:
+                            gridColsClass = 'grid-cols-2'
+                            break
+                          case 3:
+                            gridColsClass = 'grid-cols-3'
+                            break
+                          case 4:
+                            gridColsClass = 'grid-cols-4'
+                            break
+                          case 5:
+                            gridColsClass = 'grid-cols-5'
+                            break
+                          default:
+                            gridColsClass = 'grid-cols-3'
+                        }
+
+                        return (
+                          <div className={`grid ${gridColsClass} gap-3`}>
+                            {outcomesWithValues.map((outcome, colIdx) => (
+                              <div key={`single-row-col-${colIdx}`} className="flex flex-col gap-2">
+                                <div className="text-xs font-medium text-muted-foreground truncate">
+                                  {outcome.name}
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                  {outcome.values.map((val, valIdx) => (
+                                    <Button
+                                      key={`single-btn-${colIdx}-${valIdx}`}
+                                      variant="secondary"
+                                      size="sm"
+                                      onClick={() => selectValue(outcome.name, val.value)}
+                                      className={
+                                        (selectedOutcome === outcome.name &&
+                                        selectedValue === val.value
+                                          ? 'bg-primary text-primary-foreground '
+                                          : '') + 'w-full border-0'
+                                      }
+                                    >
+                                      <span className="opacity-50">{outcome.name}</span> {val.value}
+                                    </Button>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      }
+
+                      // > 5 исходов — разбивка по строкам по 3 колонки
+                      const rows: (typeof outcomesWithValues)[] = []
+                      for (let i = 0; i < outcomesWithValues.length; i += 3) {
+                        rows.push(outcomesWithValues.slice(i, i + 3))
+                      }
+
+                      return rows.map((row, rowIdx) => (
+                        <div
+                          key={`row-${rowIdx}`}
+                          className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+                        >
+                          {row.map((outcome, colIdx) => (
+                            <div key={`col-${rowIdx}-${colIdx}`} className="flex flex-col gap-2">
+                              <div className="text-xs font-medium text-muted-foreground truncate">
+                                {outcome.name}
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                {outcome.values.map((val, valIdx) => (
+                                  <Button
+                                    key={`btn-${rowIdx}-${colIdx}-${valIdx}`}
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => selectValue(outcome.name, val.value)}
+                                    className={
+                                      (selectedOutcome === outcome.name &&
+                                      selectedValue === val.value
+                                        ? 'bg-primary text-primary-foreground '
+                                        : '') + 'w-full border-0'
+                                    }
+                                  >
+                                    <span className="opacity-50">{outcome.name}</span> {val.value}
+                                  </Button>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                          {/* Для заполнения сетки до 3 колонок на последней строке добавляем пустые плейсхолдеры */}
+                          {row.length < 3 &&
+                            Array.from({ length: 3 - row.length }).map((_, i) => (
+                              <div key={`placeholder-${rowIdx}-${i}`} />
+                            ))}
+                        </div>
+                      ))
+                    })()}
+                  </div>
+
+                  {/* Исходы без значений: та же логика сетки — 1–5 в одну строку, >5 по 3 в ряд */}
+                  {(() => {
+                    const noValue = group.outcomes.filter(
+                      (outcome) => !outcome.values || outcome.values.length === 0,
+                    )
+
+                    if (noValue.length === 0) return null
+
+                    if (noValue.length <= 5) {
+                      const cols = Math.max(1, noValue.length)
+                      let gridColsClass = 'grid-cols-1'
+                      switch (cols) {
+                        case 1:
+                          gridColsClass = 'grid-cols-1'
+                          break
+                        case 2:
+                          gridColsClass = 'grid-cols-2'
+                          break
+                        case 3:
+                          gridColsClass = 'grid-cols-3'
+                          break
+                        case 4:
+                          gridColsClass = 'grid-cols-4'
+                          break
+                        case 5:
+                          gridColsClass = 'grid-cols-5'
+                          break
+                        default:
+                          gridColsClass = 'grid-cols-3'
+                      }
+                      return (
+                        <div className={`mt-4 grid gap-2 ${gridColsClass}`}>
+                          {noValue.map((outcome, outcomeIndex) => (
                             <Button
-                              key={`${outcomeIndex}-${valIndex}`}
+                              key={`no-${outcomeIndex}`}
                               variant="secondary"
-                              size="sm"
-                              onClick={() => selectValue(outcome.name, val.value)}
-                              className={
-                                selectedOutcome === outcome.name && selectedValue === val.value
-                                  ? 'bg-primary text-primary-foreground'
-                                  : ''
-                              }
-                            >
-                              {outcome.name} {val.value}
-                            </Button>
-                          ))
-                        : [
-                            <Button
-                              key={outcomeIndex}
-                              variant="outline"
                               size="sm"
                               onClick={() => selectValue(outcome.name, null)}
                               className={
-                                selectedOutcome === outcome.name && selectedValue === null
-                                  ? 'bg-primary text-primary-foreground'
-                                  : ''
+                                (selectedOutcome === outcome.name && selectedValue === null
+                                  ? 'bg-primary text-primary-foreground '
+                                  : '') + 'w-full border-0'
                               }
                             >
                               {outcome.name}
-                            </Button>,
-                          ],
-                    )}
-                  </div>
+                            </Button>
+                          ))}
+                        </div>
+                      )
+                    }
+
+                    // > 5 — по 3 колонки на строку
+                    const rows: (typeof noValue)[] = []
+                    for (let i = 0; i < noValue.length; i += 3) {
+                      rows.push(noValue.slice(i, i + 3))
+                    }
+
+                    return (
+                      <div className="mt-4 space-y-2">
+                        {rows.map((row, rowIdx) => (
+                          <div key={`no-row-${rowIdx}`} className="grid grid-cols-3 gap-2">
+                            {row.map((outcome, idx) => (
+                              <Button
+                                key={`no-${rowIdx}-${idx}`}
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => selectValue(outcome.name, null)}
+                                className={
+                                  (selectedOutcome === outcome.name && selectedValue === null
+                                    ? 'bg-primary text-primary-foreground '
+                                    : '') + 'w-full border-0'
+                                }
+                              >
+                                {outcome.name}
+                              </Button>
+                            ))}
+                            {row.length < 3 &&
+                              Array.from({ length: 3 - row.length }).map((_, i) => (
+                                <div key={`no-placeholder-${rowIdx}-${i}`} />
+                              ))}
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  })()}
                 </AccordionContent>
               </AccordionItem>
             ))}
