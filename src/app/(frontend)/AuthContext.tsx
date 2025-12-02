@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { getUser, logoutUser } from '@/lib/auth'
+import { logoutUser } from '@/lib/auth'
 import type { User } from '@/payload-types'
 
 interface AuthContextType {
@@ -19,8 +19,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUser = async () => {
     try {
-      const currentUser = await getUser()
-      setUser(currentUser)
+      const response = await fetch('/api/users/me', {
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        setUser(null)
+        return
+      }
+
+      const data = await response.json()
+      setUser(data.user || null)
     } catch (error) {
       console.error('Failed to fetch user', error)
       setUser(null)
