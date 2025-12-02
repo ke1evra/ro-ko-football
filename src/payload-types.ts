@@ -243,7 +243,7 @@ export interface Post {
    */
   slug?: string | null;
   postType: 'regular' | 'prediction';
-  content: {
+  content?: {
     root: {
       type: string;
       children: {
@@ -257,7 +257,7 @@ export interface Post {
       version: number;
     };
     [k: string]: unknown;
-  };
+  } | null;
   featuredImage?: (string | null) | Media;
   /**
    * ID матча из API для которого делается прогноз
