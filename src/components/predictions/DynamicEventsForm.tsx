@@ -255,46 +255,47 @@ export default function DynamicEventsForm({
                                 </div>
                                 <div className="flex flex-col gap-2">
                                   {outcome.values.map((val, valIdx) => (
-                                    <Button
-                                      key={`single-btn-${colIdx}-${valIdx}`}
-                                      variant="secondary"
-                                      size="sm"
-                                      onClick={() => selectValue(outcome.name, val.value)}
-                                      className={
-                                        (selectedOutcome === outcome.name &&
-                                        selectedValue === val.value
-                                          ? 'bg-primary text-primary-foreground '
-                                          : '') + 'w-full border-0 text-center'
-                                      }
-                                    >
-                                      <span className="text-xs opacity-30">{outcome.name}</span>{' '}
-                                      {val.value}
-                                    </Button>
+                                    <div key={`val-${colIdx}-${valIdx}`} className="flex flex-col gap-2">
+                                      <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() => selectValue(outcome.name, val.value)}
+                                        className={
+                                          (selectedOutcome === outcome.name &&
+                                          selectedValue === val.value
+                                            ? 'bg-primary text-primary-foreground '
+                                            : '') + 'w-full border-0 text-center'
+                                        }
+                                      >
+                                        <span className="text-xs opacity-30">{outcome.name}</span>{' '}
+                                        {val.value}
+                                      </Button>
+                                      {selectedOutcome === outcome.name && selectedValue === val.value && (
+                                        <div className="space-y-2 mt-2">
+                                          <Label>
+                                            Коэффициент для {selectedOutcome}
+                                            {selectedValue !== null ? ` ${selectedValue}` : ''}
+                                          </Label>
+                                          <div className="flex gap-2">
+                                            <Input
+                                              type="number"
+                                              step="0.01"
+                                              min="1"
+                                              placeholder="1.85"
+                                              value={coefficient}
+                                              onChange={(e) => setCoefficient(e.target.value)}
+                                              className="flex-1"
+                                            />
+                                            <Button onClick={addEvent} disabled={!coefficient.trim()}>
+                                              <Check className="h-4 w-4 mr-2" />
+                                              Добавить
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
                                   ))}
                                 </div>
-                                {selectedOutcome === outcome.name && (
-                                  <div className="space-y-2 mt-2">
-                                    <Label>
-                                      Коэффициент для {selectedOutcome}
-                                      {selectedValue !== null ? ` ${selectedValue}` : ''}
-                                    </Label>
-                                    <div className="flex gap-2">
-                                      <Input
-                                        type="number"
-                                        step="0.01"
-                                        min="1"
-                                        placeholder="1.85"
-                                        value={coefficient}
-                                        onChange={(e) => setCoefficient(e.target.value)}
-                                        className="flex-1"
-                                      />
-                                      <Button onClick={addEvent} disabled={!coefficient.trim()}>
-                                        <Check className="h-4 w-4 mr-2" />
-                                        Добавить
-                                      </Button>
-                                    </div>
-                                  </div>
-                                )}
                               </div>
                             ))}
                           </div>
@@ -319,46 +320,47 @@ export default function DynamicEventsForm({
                               </div>
                               <div className="flex flex-col gap-2">
                                 {outcome.values.map((val, valIdx) => (
-                                  <Button
-                                    key={`btn-${rowIdx}-${colIdx}-${valIdx}`}
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={() => selectValue(outcome.name, val.value)}
-                                    className={
-                                      (selectedOutcome === outcome.name &&
-                                      selectedValue === val.value
-                                        ? 'bg-primary text-primary-foreground '
-                                        : '') + 'w-full border-0 text-center'
-                                    }
-                                  >
-                                    <span className="text-xs opacity-30">{outcome.name}</span>{' '}
-                                    <span>{val.value}</span>
-                                  </Button>
+                                  <div key={`val-${rowIdx}-${colIdx}-${valIdx}`} className="flex flex-col gap-2">
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      onClick={() => selectValue(outcome.name, val.value)}
+                                      className={
+                                        (selectedOutcome === outcome.name &&
+                                        selectedValue === val.value
+                                          ? 'bg-primary text-primary-foreground '
+                                          : '') + 'w-full border-0 text-center'
+                                      }
+                                    >
+                                      <span className="text-xs opacity-30">{outcome.name}</span>{' '}
+                                      <span>{val.value}</span>
+                                    </Button>
+                                    {selectedOutcome === outcome.name && selectedValue === val.value && (
+                                      <div className="space-y-2 mt-2">
+                                        <Label>
+                                          Коэффициент для {selectedOutcome}
+                                          {selectedValue !== null ? ` ${selectedValue}` : ''}
+                                        </Label>
+                                        <div className="flex gap-2">
+                                          <Input
+                                            type="number"
+                                            step="0.01"
+                                            min="1"
+                                            placeholder="1.85"
+                                            value={coefficient}
+                                            onChange={(e) => setCoefficient(e.target.value)}
+                                            className="flex-1"
+                                          />
+                                          <Button onClick={addEvent} disabled={!coefficient.trim()}>
+                                            <Check className="h-4 w-4 mr-2" />
+                                            Добавить
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
                                 ))}
                               </div>
-                              {selectedOutcome === outcome.name && (
-                                <div className="space-y-2 mt-2">
-                                  <Label>
-                                    Коэффициент для {selectedOutcome}
-                                    {selectedValue !== null ? ` ${selectedValue}` : ''}
-                                  </Label>
-                                  <div className="flex gap-2">
-                                    <Input
-                                      type="number"
-                                      step="0.01"
-                                      min="1"
-                                      placeholder="1.85"
-                                      value={coefficient}
-                                      onChange={(e) => setCoefficient(e.target.value)}
-                                      className="flex-1"
-                                    />
-                                    <Button onClick={addEvent} disabled={!coefficient.trim()}>
-                                      <Check className="h-4 w-4 mr-2" />
-                                      Добавить
-                                    </Button>
-                                  </div>
-                                </div>
-                              )}
                             </div>
                           ))}
                           {/* Для заполнения сетки до 3 колонок на последней строке добавляем пустые плейсхолдеры */}
