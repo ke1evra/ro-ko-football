@@ -174,7 +174,10 @@ export function FormCanvas({
     const paddingBottom = compact ? 2 : 4
 
     const canvasHeight =
-      squareSize + (maxUpLevels + maxDownLevels) * Math.abs(verticalOffset) + paddingTop + paddingBottom
+      squareSize +
+      (maxUpLevels + maxDownLevels) * Math.abs(verticalOffset) +
+      paddingTop +
+      paddingBottom
 
     // Устанавливаем размеры canvas с учетом DPR
     canvas.width = canvasWidth * dpr

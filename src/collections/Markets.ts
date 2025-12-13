@@ -1,3 +1,4 @@
+import { descriptions } from '@/lib/admin/descriptions'
 import type { CollectionConfig } from 'payload'
 import type { PayloadRequest } from 'payload'
 
@@ -8,9 +9,14 @@ function isAdmin(req: PayloadRequest): boolean {
 
 export const Markets: CollectionConfig = {
   slug: 'bet-markets',
+  labels: {
+    singular: 'Рынок ставок',
+    plural: 'Рынки ставок',
+  },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'updatedAt'],
+    description: descriptions.markets,
   },
   access: {
     read: () => true,

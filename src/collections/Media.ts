@@ -1,8 +1,16 @@
 import type { CollectionConfig } from 'payload'
 import path from 'path'
+import { descriptions } from '@/lib/admin/descriptions'
 
 export const Media: CollectionConfig = {
   slug: 'media',
+  labels: {
+    singular: 'Медиафайл',
+    plural: 'Медиафайлы',
+  },
+  admin: {
+    description: descriptions.media,
+  },
   access: {
     read: () => true,
   },
@@ -10,12 +18,17 @@ export const Media: CollectionConfig = {
     {
       name: 'alt',
       type: 'text',
+      label: 'Альтернативный текст',
       required: true,
+      admin: {
+        description:
+          'Описание изображения для SEO и доступности (отображается если картинка не загрузилась)',
+      },
     },
   ],
   upload: {
     staticDir: path.resolve(process.cwd(), 'media'),
-    mimeTypes: ['image/*'],
+    mimeTypes: ['image/*'], // Только изображения
     imageSizes: [
       {
         name: 'thumbnail',
@@ -31,6 +44,6 @@ export const Media: CollectionConfig = {
       },
     ],
     adminThumbnail: 'thumbnail',
-    crop: false,
+    crop: false, // Отключаем обрезку, сохраняем оригинальные пропорции
   },
 }

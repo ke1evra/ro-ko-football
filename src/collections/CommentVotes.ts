@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import type { PayloadRequest } from 'payload'
+import { descriptions } from '@/lib/admin/descriptions'
 
 function isAdmin(req: PayloadRequest): boolean {
   const user: any = req.user
@@ -8,9 +9,14 @@ function isAdmin(req: PayloadRequest): boolean {
 
 export const CommentVotes: CollectionConfig = {
   slug: 'commentVotes',
+  labels: {
+    singular: 'Голос за комментарий',
+    plural: 'Голоса за комментарии',
+  },
   admin: {
     useAsTitle: 'id',
     defaultColumns: ['comment', 'user', 'value', 'createdAt'],
+    description: descriptions.commentVotes,
   },
   access: {
     read: () => true,

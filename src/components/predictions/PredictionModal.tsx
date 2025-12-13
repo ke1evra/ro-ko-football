@@ -448,8 +448,7 @@ export default function PredictionModal({
 
   console.log('[PredictionModal] render modal, isAuthenticated =', isAuthenticated)
 
-  const isCreateDisabled =
-    isSubmitting || !formData.title || !formData.content || !formData.event
+  const isCreateDisabled = isSubmitting || !formData.title || !formData.content || !formData.event
 
   return (
     <>
@@ -590,11 +589,7 @@ export default function PredictionModal({
               <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
                 Отмена
               </Button>
-              <Button
-                type="button"
-                onClick={handleCreatePrediction}
-                disabled={isCreateDisabled}
-              >
+              <Button type="button" onClick={handleCreatePrediction} disabled={isCreateDisabled}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isSubmitting ? 'Создание прогноза...' : 'Создать прогноз'}
               </Button>

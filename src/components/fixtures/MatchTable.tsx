@@ -332,8 +332,6 @@ export function MatchTable({
     })
   }, [rows])
 
-
-
   return (
     <Card className="shadow-sm">
       <CardHeader className="py-1 pb-1">
@@ -483,8 +481,6 @@ export function MatchTable({
             </TableBody>
           </Table>
         </div>
-
-
       </CardContent>
     </Card>
   )

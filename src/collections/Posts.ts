@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import type { PayloadRequest } from 'payload'
+import { descriptions } from '@/lib/admin/descriptions'
 
 // Транслитерация (минимум для кириллицы) и нормализация в slug
 function transliterate(input: string): string {
@@ -63,9 +64,14 @@ function isAdmin(req: PayloadRequest): boolean {
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
+  labels: {
+    singular: 'Публикация',
+    plural: 'Публикации',
+  },
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'postType', 'author', 'publishedAt', 'updatedAt'],
+    description: descriptions.posts,
   },
   access: {
     read: () => true,
@@ -77,55 +83,74 @@ export const Posts: CollectionConfig = {
     {
       name: 'title',
       type: 'text',
+      label: 'Заголовок',
       required: true,
+      admin: {
+        description: 'Название публикации (используется для генерации URL)',
+      },
     },
     {
       name: 'slug',
       type: 'text',
+      label: 'URL (slug)',
       unique: true,
       admin: {
-        description: 'Автогенерируется из заголовка при сохранении',
+        description:
+          'Автоматически генерируется из заголовка при сохранении (с транслитерацией кириллицы)',
+        readOnly: true,
       },
     },
     {
       name: 'postType',
       type: 'select',
+      label: 'Тип публикации',
       options: [
         { label: 'Обычный пост', value: 'regular' },
-        { label: 'Прогноз', value: 'prediction' },
+        { label: 'Прогноз на матч', value: 'prediction' },
       ],
       defaultValue: 'regular',
       required: true,
       admin: {
         position: 'sidebar',
+        description: 'Определяет структуру и отображение публикации',
       },
     },
     {
       name: 'content',
       type: 'richText',
+      label: 'Содержание',
       required: false,
+      admin: {
+        description: 'Основной текст публикации (поддерживает форматирование)',
+      },
     },
     {
       name: 'featuredImage',
       type: 'relationship',
       relationTo: 'media',
+      label: 'Обложка',
       required: false,
+      admin: {
+        description: 'Главное изображение публикации (отображается в превью)',
+      },
     },
-    // Поля для прогнозов
+    // Поля для прогнозов (отображаются только когда postType = prediction)
     {
       name: 'matchId',
       type: 'number',
+      label: 'ID матча',
       admin: {
         condition: (data) => data.postType === 'prediction',
-        description: 'ID матча из API для которого делается прогноз',
+        description: 'ID матча из внешнего API (LiveScore)',
       },
     },
     {
       name: 'fixtureId',
       type: 'number',
+      label: 'ID фикстуры',
       admin: {
         condition: (data) => data.postType === 'prediction',
-        description: 'ID фикстуры из API для которого делается прогноз',
+        description: 'ID предстоящего матча из внешнего API',
       },
     },
     {
@@ -442,16 +467,20 @@ export const Posts: CollectionConfig = {
       name: 'author',
       type: 'relationship',
       relationTo: 'users',
+      label: 'Автор',
       required: true,
       admin: {
         position: 'sidebar',
+        description: 'Пользователь, создавший публикацию (автоматически заполняется при создании)',
       },
     },
     {
       name: 'publishedAt',
       type: 'date',
+      label: 'Дата публикации',
       admin: {
         position: 'sidebar',
+        description: 'Дата и время создания публикации',
       },
       defaultValue: () => new Date().toISOString(),
     },

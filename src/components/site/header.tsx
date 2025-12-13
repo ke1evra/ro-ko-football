@@ -39,7 +39,6 @@ export const Header = () => {
         const items: HeaderMenuItem[] = Array.isArray(data?.items) ? data.items : []
         if (mounted) setMenu(items)
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.error('Не удалось загрузить меню хедера', e)
       }
     })()

@@ -1,4 +1,5 @@
 import type { CollectionConfig, PayloadRequest } from 'payload'
+import { descriptions } from '@/lib/admin/descriptions'
 
 function isAdmin(req: PayloadRequest): boolean {
   const user: any = req.user
@@ -7,11 +8,16 @@ function isAdmin(req: PayloadRequest): boolean {
 
 export const MatchStats: CollectionConfig = {
   slug: 'matchStats',
+  labels: {
+    singular: 'Статистика матча',
+    plural: 'Статистика матчей',
+  },
   admin: {
     useAsTitle: 'displayName',
     defaultColumns: ['displayName', 'match', 'lastSyncAt'],
     listSearchableFields: ['match'],
     group: 'Футбольные данные',
+    description: descriptions.matchStats,
     pagination: {
       defaultLimit: 25,
       limits: [10, 25, 50, 100],

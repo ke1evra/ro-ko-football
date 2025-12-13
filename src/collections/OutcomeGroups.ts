@@ -1,3 +1,4 @@
+import { descriptions } from '@/lib/admin/descriptions'
 import type { CollectionConfig } from 'payload'
 import type { PayloadRequest } from 'payload'
 
@@ -8,9 +9,14 @@ function isAdmin(req: PayloadRequest): boolean {
 
 export const OutcomeGroups: CollectionConfig = {
   slug: 'outcome-groups',
+  labels: {
+    singular: 'Группа исходов',
+    plural: 'Группы исходов',
+  },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'updatedAt'],
+    description: descriptions.outcomeGroups,
   },
   access: {
     read: () => true,

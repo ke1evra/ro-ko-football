@@ -1,0 +1,201 @@
+/* Основная карточка */
+.card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+  border: 1px solid #e1e8ed;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border-color: #d0d8e0;
+}
+
+/* Заголовок карточки */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e1e8ed;
+}
+
+.emoji {
+  font-size: 32px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  letter-spacing: -0.5px;
+}
+
+/* Содержимое */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Секции */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3748;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sectionIcon {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+/* Список */
+.list {
+  margin: 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.listItem {
+  margin: 0;
+  padding: 6px 0;
+  font-size: 13px;
+  color: #4a5568;
+  line-height: 1.5;
+  position: relative;
+  padding-left: 16px;
+}
+
+.listItem::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #3b82f6;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Предупреждение */
+.warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  border-radius: 6px;
+}
+
+.warningIcon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.warningText {
+  font-size: 13px;
+  color: #92400e;
+  line-height: 1.5;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .card {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .header {
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
+
+  .emoji {
+    width: 36px;
+    height: 36px;
+    font-size: 28px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .sectionTitle {
+    font-size: 13px;
+  }
+
+  .listItem {
+    font-size: 12px;
+  }
+}
+
+/* Тёмная тема (если используется) */
+@media (prefers-color-scheme: dark) {
+  .card {
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    border-color: #4a5568;
+  }
+
+  .card:hover {
+    border-color: #718096;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .header {
+    border-bottom-color: #4a5568;
+  }
+
+  .emoji {
+    background: rgba(59, 130, 246, 0.2);
+  }
+
+  .title {
+    color: #f7fafc;
+  }
+
+  .sectionTitle {
+    color: #e2e8f0;
+  }
+
+  .listItem {
+    color: #cbd5e0;
+  }
+
+  .warning {
+    background: #78350f;
+    border-left-color: #f59e0b;
+  }
+
+  .warningText {
+    color: #fef3c7;
+  }
+}

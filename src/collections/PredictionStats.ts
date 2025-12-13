@@ -1,3 +1,4 @@
+import { descriptions } from '@/lib/admin/descriptions'
 import type { CollectionConfig, PayloadRequest } from 'payload'
 
 function isAdmin(req: PayloadRequest): boolean {
@@ -7,10 +8,15 @@ function isAdmin(req: PayloadRequest): boolean {
 
 export const PredictionStats: CollectionConfig = {
   slug: 'predictionStats',
+  labels: {
+    singular: 'Статистика прогноза',
+    plural: 'Статистика прогнозов',
+  },
   admin: {
     useAsTitle: 'displayName',
     defaultColumns: ['post', 'author', 'status', 'evaluatedAt'],
     listSearchableFields: ['post', 'author', 'matchId', 'fixtureId'],
+    description: descriptions.predictionStats,
     pagination: {
       defaultLimit: 25,
       limits: [10, 25, 50, 100],
