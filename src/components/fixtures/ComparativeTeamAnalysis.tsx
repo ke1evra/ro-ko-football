@@ -573,7 +573,7 @@ export default function ComparativeTeamAnalysis({
     <Card className="rounded-lg shadow-sm">
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold flex items-center gap-2">
-          <h2>Сравнительный анализ</h2>
+          <span>Сравнительный анализ</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

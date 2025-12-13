@@ -2,33 +2,25 @@
 
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AlertCircle, Loader2, TrendingUp } from 'lucide-react'
-import DynamicEventsForm from './DynamicEventsForm'
+import { AlertCircle, Loader2, TrendingUp, X } from 'lucide-react'
+import DynamicEventsForm, { PredictionEvent } from './DynamicEventsForm'
 import LexicalEditorWithToolbar from '@/components/LexicalEditorWithToolbar'
-import { SubmitButton } from '@/components/auth/submit-button'
 import { loginUser } from '@/lib/auth'
 import { registerUser } from '@/lib/auth'
 import { validatePassword, validateEmail } from '@/lib/validation'
 import { PasswordInput } from '@/components/ui/password-input'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { useAuth } from '@/app/(frontend)/AuthContext'
 
-// Кастомная форма входа без перенаправления
+// Кастомная форма входа без HTML-формы
 function LoginFormWrapper({
   onSuccess,
   onRefreshUser,
@@ -41,8 +33,8 @@ function LoginFormWrapper({
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
+  async function handleLogin() {
+    if (isPending) return
     setIsPending(true)
 
     const res = await loginUser({ email, password, rememberMe })
@@ -73,11 +65,11 @@ function LoginFormWrapper({
   }
 
   return (
-    <form className="grid gap-6 my-6" onSubmit={handleSubmit}>
+    <div className="grid gap-6 my-6">
       <div className="grid gap-2">
-        <Label htmlFor="email">Электронная почта</Label>
+        <Label htmlFor="login-email">Электронная почта</Label>
         <Input
-          id="email"
+          id="login-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -88,9 +80,9 @@ function LoginFormWrapper({
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="password">Пароль</Label>
+        <Label htmlFor="login-password">Пароль</Label>
         <PasswordInput
-          id="password"
+          id="login-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
@@ -116,12 +108,15 @@ function LoginFormWrapper({
         </Label>
       </div>
 
-      <SubmitButton loading={isPending} text="Войти" />
-    </form>
+      <Button type="button" onClick={handleLogin} disabled={isPending}>
+        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        Войти
+      </Button>
+    </div>
   )
 }
 
-// Кастомная форма регистрации без перенаправления
+// Кастомная форма регистрации без HTML-формы
 function RegisterFormWrapper({
   onSuccess,
   onRefreshUser,
@@ -163,8 +158,8 @@ function RegisterFormWrapper({
     }
   }, [password])
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
+  async function handleRegister() {
+    if (isPending) return
     setIsPending(true)
 
     const emailValidation = validateEmail(email)
@@ -216,11 +211,11 @@ function RegisterFormWrapper({
   }
 
   return (
-    <form className="grid gap-6 my-6" onSubmit={handleSubmit}>
+    <div className="grid gap-6 my-6">
       <div className="grid gap-2">
-        <Label htmlFor="email">Электронная почта</Label>
+        <Label htmlFor="register-email">Электронная почта</Label>
         <Input
-          id="email"
+          id="register-email"
           type="email"
           name="email"
           value={email}
@@ -232,9 +227,9 @@ function RegisterFormWrapper({
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="password">Пароль</Label>
+        <Label htmlFor="register-password">Пароль</Label>
         <PasswordInput
-          id="password"
+          id="register-password"
           name="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -248,33 +243,30 @@ function RegisterFormWrapper({
             <div className="flex gap-1 h-1 mt-1">
               <div
                 className={`h-full w-1/3 rounded-l ${passwordStrength ? 'bg-red-500' : 'bg-gray-200'}`}
-              ></div>
+              />
               <div
                 className={`h-full w-1/3 ${passwordStrength === 'medium' || passwordStrength === 'strong' ? 'bg-yellow-500' : 'bg-gray-200'}`}
-              ></div>
+              />
               <div
                 className={`h-full w-1/3 rounded-r ${passwordStrength === 'strong' ? 'bg-green-500' : 'bg-gray-200'}`}
-              ></div>
+              />
             </div>
             {passwordFeedback && <p className="text-xs text-amber-600 mt-1">{passwordFeedback}</p>}
           </div>
         )}
 
         <div className="text-xs text-muted-foreground">
-          Пароль должен содержать не менее 8 символов, включая заглавные и строчные буквы, цифры и
+          Пар��ль должен содержать не менее 8 символов, включая заглавные и строчные буквы, цифры и
           специальные символы.
         </div>
       </div>
 
-      <SubmitButton loading={isPending} text="Зарегистрироваться" />
-    </form>
+      <Button type="button" onClick={handleRegister} disabled={isPending}>
+        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        Зарегистрироваться
+      </Button>
+    </div>
   )
-}
-
-interface PredictionEvent {
-  id: string
-  event: string
-  coefficient: number
 }
 
 interface PredictionModalProps {
@@ -295,7 +287,7 @@ interface PredictionModalProps {
 interface PredictionData {
   title: string
   content: any
-  events: PredictionEvent[]
+  event: PredictionEvent | null
 }
 
 export default function PredictionModal({
@@ -312,40 +304,66 @@ export default function PredictionModal({
   const [error, setError] = useState<string | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
 
+  const mountedRef = useRef(false)
+
   const [formData, setFormData] = useState<PredictionData>({
     title: `Прогноз на матч ${matchData.home.name} - ${matchData.away.name}`,
     content: null,
-    events: [],
+    event: null,
   })
 
-  // Проверяем авторизацию при открытии модального окна
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true
+      console.log('[PredictionModal] mount, isOpen =', isOpen)
+    } else {
+      console.log('[PredictionModal] isOpen changed to', isOpen)
+    }
+  }, [isOpen])
+
   useEffect(() => {
     if (isOpen) {
-      checkAuthentication()
+      console.log('[PredictionModal] isOpen true → checkAuthentication')
+      void checkAuthentication()
     }
   }, [isOpen])
 
   const checkAuthentication = async () => {
     try {
+      console.log('[PredictionModal] checkAuthentication start')
       const response = await fetch('/api/users/me', {
         credentials: 'include',
       })
+      console.log('[PredictionModal] /api/users/me status =', response.status)
       setIsAuthenticated(response.ok)
     } catch (err) {
+      console.log('[PredictionModal] checkAuthentication error', err)
       setIsAuthenticated(false)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleCreatePrediction = async () => {
+    console.log('[PredictionModal] handleCreatePrediction click')
+    if (isSubmitting) {
+      console.log('[PredictionModal] already submitting, skip')
+      return
+    }
+    if (!formData.event) {
+      console.log('[PredictionModal] no event selected, skip')
+      return
+    }
     setIsSubmitting(true)
     setError(null)
 
     try {
-      // Сначала получаем информацию о текущем пользователе
       const userResponse = await fetch('/api/users/me', {
         credentials: 'include',
       })
+
+      console.log(
+        '[PredictionModal] /api/users/me in handleCreatePrediction status =',
+        userResponse.status,
+      )
 
       if (!userResponse.ok) {
         throw new Error('Необходимо войти в систему для создания прогноза')
@@ -358,15 +376,14 @@ export default function PredictionModal({
       }
 
       const predictionPayload = {
-        title: formData.title, // Используем оригинальный заголовок
+        title: formData.title,
         content: formData.content,
         postType: 'prediction',
         fixtureId,
         matchId,
-        author: userData.user.id, // Добавляем ID автора
+        author: userData.user.id,
         prediction: {
-          events: formData.events,
-          // Добавляем информацию о матче
+          events: [formData.event],
           matchInfo: {
             home: matchData.home.name,
             away: matchData.away.name,
@@ -378,7 +395,7 @@ export default function PredictionModal({
         publishedAt: new Date().toISOString(),
       }
 
-      console.log('Sending prediction payload:', predictionPayload)
+      console.log('[PredictionModal] sending prediction payload', predictionPayload)
 
       const response = await fetch('/api/posts', {
         method: 'POST',
@@ -389,8 +406,7 @@ export default function PredictionModal({
         body: JSON.stringify(predictionPayload),
       })
 
-      console.log('Response status:', response.status)
-      console.log('Response headers:', response.headers)
+      console.log('[PredictionModal] /api/posts status =', response.status)
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -400,19 +416,16 @@ export default function PredictionModal({
         throw new Error(errorData.message || `Ошибка ${response.status}: ${response.statusText}`)
       }
 
-      const result = await response.json()
+      await response.json()
 
-      // Закрываем модальное окно
+      console.log('[PredictionModal] prediction created successfully → onClose()')
       onClose()
 
-      // Обновляем список прогнозов
       if (onPredictionCreated) {
         onPredictionCreated()
       }
-
-      // Показываем уведомление об успехе
-      // Можно добавить toast notification здесь
     } catch (err) {
+      console.log('[PredictionModal] handleCreatePrediction error', err)
       setError(err instanceof Error ? err.message : 'Произошла ошибка')
     } finally {
       setIsSubmitting(false)
@@ -423,135 +436,180 @@ export default function PredictionModal({
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleEventsChange = (events: PredictionEvent[]) => {
-    updateFormData('events', events)
+  const handleSelectedEventChange = (event: PredictionEvent | null) => {
+    console.log('[PredictionModal] selected event changed', event)
+    updateFormData('event', event)
   }
 
-  const handleClose = () => {
-    if (!isSubmitting) {
-      onClose()
-    }
+  if (!isOpen) {
+    console.log('[PredictionModal] render null because isOpen = false')
+    return null
   }
+
+  console.log('[PredictionModal] render modal, isAuthenticated =', isAuthenticated)
+
+  const isCreateDisabled =
+    isSubmitting || !formData.title || !formData.content || !formData.event
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-3xl max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            {isAuthenticated ? 'Создать прогноз' : 'Вход в систему'}
-          </DialogTitle>
-          <DialogDescription>
-            {matchData.home.name} — {matchData.away.name}
-            {matchData.competition?.name && ` • ${matchData.competition.name}`}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <div className="fixed inset-0 z-40 bg-black/50" />
 
-        {isAuthenticated === null ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            <span className="ml-2 text-muted-foreground">Проверка авторизации...</span>
-          </div>
-        ) : isAuthenticated ? (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {/* Основная информация */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Заголовок прогноза</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => updateFormData('title', e.target.value)}
-                  placeholder={`Прогноз на матч ${matchData.home.name} - ${matchData.away.name}`}
-                  className="bg-white"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="content">Описание и обоснование</Label>
-                <LexicalEditorWithToolbar
-                  value={formData.content}
-                  onChange={(value) => updateFormData('content', value)}
-                  placeholder="Опишите ваш прогноз и его обоснование..."
-                  className="bg-white"
-                />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+        <div className="bg-background rounded-lg border shadow-lg w-full max-w-3xl max-h-[90vh] flex flex-col pointer-events-auto">
+          {/* Header */}
+          <div className="sticky top-0 bg-background border-b p-6 flex items-center justify-between z-10">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              <div>
+                <h2 className="text-lg font-semibold">
+                  {isAuthenticated ? 'Создать прогноз' : 'Вход в систему'}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {matchData.home.name} — {matchData.away.name}
+                  {matchData.competition?.name && ` • ${matchData.competition.name}`}
+                </p>
               </div>
             </div>
+            <button
+              onClick={onClose}
+              className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+              disabled={isSubmitting}
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </button>
+          </div>
 
-            <Separator />
+          {/* Body */}
+          <div className="p-6 overflow-y-auto flex-1">
+            {isAuthenticated === null ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-muted-foreground">Проверка авторизации...</span>
+              </div>
+            ) : isAuthenticated ? (
+              <div className="space-y-6">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
 
-            {/* Динамическая форма событий */}
-            <DynamicEventsForm
-              matchData={matchData}
-              onEventsChange={handleEventsChange}
-              initialEvents={formData.events}
-            />
+                {/* Основная информация */}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Заголовок прогноза</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => updateFormData('title', e.target.value)}
+                      placeholder={`Прогноз на матч ${matchData.home.name} - ${matchData.away.name}`}
+                      className="bg-white"
+                      required
+                    />
+                  </div>
 
-            {/* Кнопки */}
-            <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
+                  <div className="space-y-2">
+                    <Label htmlFor="content">Описание и обоснование</Label>
+                    <LexicalEditorWithToolbar
+                      value={formData.content}
+                      onChange={(value) => {
+                        console.log('[PredictionModal] content change')
+                        updateFormData('content', value)
+                      }}
+                      placeholder="Опишите ваш прогноз и его обоснование..."
+                      className="bg-white"
+                    />
+                  </div>
+                </div>
+
+                <Separator />
+
+                <DynamicEventsForm
+                  matchData={matchData}
+                  onSelectedEventChange={handleSelectedEventChange}
+                  selectedEvent={formData.event}
+                />
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Для создания прогноза необходимо войти в систему или зарегистрироваться.
+                  </AlertDescription>
+                </Alert>
+
+                <Tabs defaultValue="login" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="login">Вход</TabsTrigger>
+                    <TabsTrigger value="register">Регистрация</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="login" className="space-y-4">
+                    <LoginFormWrapper
+                      onSuccess={() => {
+                        console.log(
+                          '[PredictionModal/LoginForm] success → set isAuthenticated true',
+                        )
+                        setIsAuthenticated(true)
+                      }}
+                      onRefreshUser={refreshUser}
+                    />
+                    <div className="flex justify-center">
+                      <Button variant="outline" onClick={checkAuthentication}>
+                        Уже авторизированы? Проверить авторизацию
+                      </Button>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="register" className="space-y-4">
+                    <RegisterFormWrapper
+                      onSuccess={() => {
+                        console.log(
+                          '[PredictionModal/RegisterForm] success → set isAuthenticated true',
+                        )
+                        setIsAuthenticated(true)
+                      }}
+                      onRefreshUser={refreshUser}
+                    />
+                    <div className="flex justify-center">
+                      <Button variant="outline" onClick={checkAuthentication}>
+                        Уже авторизированы? Проверить авторизацию
+                      </Button>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            )}
+          </div>
+
+          {/* Footer — всегда видим */}
+          {isAuthenticated && (
+            <div className="border-t bg-background px-6 py-4 flex justify-end gap-2 sticky bottom-0 z-10">
+              <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
                 Отмена
               </Button>
-              <Button type="submit" disabled={isSubmitting || !formData.title || !formData.content}>
+              <Button
+                type="button"
+                onClick={handleCreatePrediction}
+                disabled={isCreateDisabled}
+              >
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isSubmitting ? 'Создание прогноза...' : 'Создать прогноз'}
               </Button>
             </div>
-          </form>
-        ) : (
-          <div className="space-y-6">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Для создания прогноза необходимо войти в систему или зарегистрироваться.
-              </AlertDescription>
-            </Alert>
+          )}
 
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Вход</TabsTrigger>
-                <TabsTrigger value="register">Регистрация</TabsTrigger>
-              </TabsList>
-              <TabsContent value="login" className="space-y-4">
-                <LoginFormWrapper
-                  onSuccess={() => setIsAuthenticated(true)}
-                  onRefreshUser={refreshUser}
-                />
-                <div className="flex justify-center">
-                  <Button variant="outline" onClick={checkAuthentication}>
-                    Уже авторизированы? Проверить авторизацию
-                  </Button>
-                </div>
-              </TabsContent>
-              <TabsContent value="register" className="space-y-4">
-                <RegisterFormWrapper
-                  onSuccess={() => setIsAuthenticated(true)}
-                  onRefreshUser={refreshUser}
-                />
-                <div className="flex justify-center">
-                  <Button variant="outline" onClick={checkAuthentication}>
-                    Уже авторизированы? Проверить авторизацию
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
-
-            <div className="flex justify-end">
-              <Button variant="outline" onClick={handleClose}>
+          {!isAuthenticated && (
+            <div className="border-t bg-background px-6 py-4 flex justify-end gap-2 sticky bottom-0 z-10">
+              <Button type="button" variant="outline" onClick={onClose}>
                 Отмена
               </Button>
             </div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+          )}
+        </div>
+      </div>
+    </>
   )
 }

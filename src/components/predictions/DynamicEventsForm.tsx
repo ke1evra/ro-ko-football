@@ -7,14 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Plus, X, Check, TrendingUp } from 'lucide-react'
+import { X, TrendingUp } from 'lucide-react'
 import {
   Accordion,
   AccordionContent,
@@ -22,10 +15,12 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 
-interface PredictionEvent {
+export interface PredictionEvent {
   id: string
   event: string
   coefficient: number
+  market: string
+  marketLabel?: string
   v2?: any
 }
 
@@ -49,23 +44,22 @@ interface DynamicEventsFormProps {
     home: { name: string }
     away: { name: string }
   }
-  onEventsChange: (events: PredictionEvent[]) => void
-  initialEvents?: PredictionEvent[]
+  onSelectedEventChange: (event: PredictionEvent | null) => void
+  selectedEvent: PredictionEvent | null
 }
 
 export default function DynamicEventsForm({
   matchData,
-  onEventsChange,
-  initialEvents = [],
+  onSelectedEventChange,
+  selectedEvent,
 }: DynamicEventsFormProps) {
-  const [events, setEvents] = useState<PredictionEvent[]>(initialEvents)
   const [markets, setMarkets] = useState<Market[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedMarketId, setSelectedMarketId] = useState<string>('')
   const [selectedGroupId, setSelectedGroupId] = useState<string>('')
   const [selectedOutcome, setSelectedOutcome] = useState<string>('')
   const [selectedValue, setSelectedValue] = useState<number | null>(null)
-  const [coefficient, setCoefficient] = useState<string>('')
+  const [coefficientInput, setCoefficientInput] = useState<string>('')
 
   useEffect(() => {
     async function loadMarkets() {
@@ -73,7 +67,11 @@ export default function DynamicEventsForm({
         const response = await fetch('/api/custom/bet-markets')
         if (response.ok) {
           const data = await response.json()
-          setMarkets(data.docs || [])
+          const docs = data.docs || []
+          setMarkets(docs)
+          if (docs.length > 0) {
+            setSelectedMarketId(docs[0].id)
+          }
         }
       } catch (error) {
         console.error('Failed to load markets:', error)
@@ -81,8 +79,18 @@ export default function DynamicEventsForm({
         setLoading(false)
       }
     }
-    loadMarkets()
+    void loadMarkets()
   }, [])
+
+  useEffect(() => {
+    if (!selectedEvent) {
+      setSelectedOutcome('')
+      setSelectedValue(null)
+      setCoefficientInput('')
+      return
+    }
+    setCoefficientInput(String(selectedEvent.coefficient))
+  }, [selectedEvent])
 
   const selectedMarket = markets.find((m) => m.id === selectedMarketId)
   const selectedGroup = selectedMarket?.groups?.find((g) => g.id === selectedGroupId)
@@ -90,25 +98,41 @@ export default function DynamicEventsForm({
   function selectValue(outcomeName: string, value: number | null) {
     setSelectedOutcome(outcomeName)
     setSelectedValue(value)
+    onSelectedEventChange(null)
+    setCoefficientInput('')
   }
 
-  function addEvent() {
-    if (!selectedMarket || !selectedGroup || !selectedOutcome || !coefficient.trim()) return
+  function handleCoefficientChange(raw: string) {
+    setCoefficientInput(raw)
 
-    const c = parseFloat(coefficient)
-    if (!Number.isFinite(c) || c <= 0) return
+    const trimmed = raw.trim()
+    if (!selectedOutcome || !trimmed) {
+      onSelectedEventChange(null)
+      return
+    }
+
+    const c = parseFloat(trimmed.replace(',', '.'))
+    if (!Number.isFinite(c) || c <= 0) {
+      onSelectedEventChange(null)
+      return
+    }
 
     const eventLabel =
       selectedValue !== null ? `${selectedOutcome} ${selectedValue}` : selectedOutcome
+
+    const marketType = selectedValue !== null ? 'total' : 'main'
+
     const newEvent: PredictionEvent = {
-      id: Date.now().toString(),
+      id: `${selectedOutcome}-${selectedValue ?? 'novalue'}`,
       event: eventLabel,
       coefficient: c,
+      market: marketType,
+      marketLabel: selectedMarket?.name,
       v2: {
-        market: selectedValue !== null ? 'total' : 'main', // для исходов без значений - main
+        market: marketType,
         label: eventLabel,
         coefficient: c,
-        stat: 'goals', // по умолчанию
+        stat: 'goals',
         ...(selectedValue !== null && {
           kind: selectedOutcome.includes('ТБ') ? 'over' : 'under',
           line: selectedValue,
@@ -116,20 +140,14 @@ export default function DynamicEventsForm({
       },
     }
 
-    const updated = [...events, newEvent]
-    setEvents(updated)
-    onEventsChange(updated)
-
-    // Reset
-    setSelectedOutcome('')
-    setSelectedValue(null)
-    setCoefficient('')
+    onSelectedEventChange(newEvent)
   }
 
-  function removeEvent(eventId: string) {
-    const updated = events.filter((e) => e.id !== eventId)
-    setEvents(updated)
-    onEventsChange(updated)
+  function clearSelectedEvent() {
+    setSelectedOutcome('')
+    setSelectedValue(null)
+    setCoefficientInput('')
+    onSelectedEventChange(null)
   }
 
   if (loading) {
@@ -142,41 +160,48 @@ export default function DynamicEventsForm({
     )
   }
 
+  const isCoefficientValid = (() => {
+    const trimmed = coefficientInput.trim()
+    if (!trimmed) return false
+    const c = parseFloat(trimmed.replace(',', '.'))
+    return Number.isFinite(c) && c > 0
+  })()
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" />
-          События для прогноза
+          Событие и коэффициент
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
-        {/* Список добавленных событий */}
-        {events.length > 0 && (
+        {/* Текущее выбранное событие */}
+        {selectedEvent && (
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Выбранные события:</Label>
-            <div className="space-y-2">
-              {events.map((event) => (
-                <div
-                  key={event.id}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <Badge variant="secondary" className="text-sm py-1.5 px-2 h-auto rounded-md">
-                      {event.event}
-                    </Badge>
-                    <span className="text-sm">Коэффиц��ент: {event.coefficient}</span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeEvent(event.id)}
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+            <Label className="text-sm font-medium">Текущее событие:</Label>
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className="flex flex-col gap-1">
+                {selectedEvent.marketLabel && (
+                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    {selectedEvent.marketLabel}
+                  </span>
+                )}
+                <div className="flex items-center gap-3">
+                  <Badge variant="secondary" className="text-sm py-1.5 px-2 h-auto rounded-md">
+                    {selectedEvent.event}
+                  </Badge>
+                  <span className="text-sm">Коэффициент: {selectedEvent.coefficient}</span>
                 </div>
-              ))}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearSelectedEvent}
+                className="h-8 px-2 text-muted-foreground hover:text-destructive"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
             <Separator />
           </div>
@@ -185,27 +210,27 @@ export default function DynamicEventsForm({
         {/* Выбор маркета */}
         <div className="space-y-2">
           <Label>Маркет</Label>
-          <Select
-            value={selectedMarketId}
-            onValueChange={(value) => {
-              setSelectedMarketId(value)
-              setSelectedGroupId('') // reset group when market changes
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Выберите маркет" />
-            </SelectTrigger>
-            <SelectContent>
-              {markets.map((market) => (
-                <SelectItem key={market.id} value={market.id}>
-                  {market.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-wrap gap-2">
+            {markets.map((market) => (
+              <Button
+                key={market.id}
+                type="button"
+                variant={selectedMarketId === market.id ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setSelectedMarketId(market.id)
+                  setSelectedGroupId('')
+                  clearSelectedEvent()
+                }}
+                className="whitespace-nowrap"
+              >
+                {market.name}
+              </Button>
+            ))}
+          </div>
         </div>
 
-        {/* Г��уппы исходов */}
+        {/* Группы исходов */}
         {selectedMarket && (
           <Accordion
             type="multiple"
@@ -216,7 +241,6 @@ export default function DynamicEventsForm({
               <AccordionItem key={group.id} value={group.id}>
                 <AccordionTrigger>{group.name}</AccordionTrigger>
                 <AccordionContent>
-                  {/* Динамическое количество колонок: 1–5 => столько же колонок; больше 5 => строки по 3 колонки */}
                   <div className="space-y-3">
                     {(() => {
                       const outcomesWithValues = group.outcomes.filter(
@@ -255,7 +279,10 @@ export default function DynamicEventsForm({
                                 </div>
                                 <div className="flex flex-col gap-2">
                                   {outcome.values.map((val, valIdx) => (
-                                    <div key={`val-${colIdx}-${valIdx}`} className="flex flex-col gap-2">
+                                    <div
+                                      key={`val-${colIdx}-${valIdx}`}
+                                      className="flex flex-col gap-2"
+                                    >
                                       <Button
                                         variant="secondary"
                                         size="sm"
@@ -270,29 +297,6 @@ export default function DynamicEventsForm({
                                         <span className="text-xs opacity-30">{outcome.name}</span>{' '}
                                         {val.value}
                                       </Button>
-                                      {selectedOutcome === outcome.name && selectedValue === val.value && (
-                                        <div className="space-y-2 mt-2">
-                                          <Label>
-                                            Коэффициент для {selectedOutcome}
-                                            {selectedValue !== null ? ` ${selectedValue}` : ''}
-                                          </Label>
-                                          <div className="flex gap-2">
-                                            <Input
-                                              type="number"
-                                              step="0.01"
-                                              min="1"
-                                              placeholder="1.85"
-                                              value={coefficient}
-                                              onChange={(e) => setCoefficient(e.target.value)}
-                                              className="flex-1"
-                                            />
-                                            <Button onClick={addEvent} disabled={!coefficient.trim()}>
-                                              <Check className="h-4 w-4 mr-2" />
-                                              Добавить
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      )}
                                     </div>
                                   ))}
                                 </div>
@@ -302,7 +306,6 @@ export default function DynamicEventsForm({
                         )
                       }
 
-                      // > 5 исходов — разбивка по строкам по 3 колонки
                       const rows: (typeof outcomesWithValues)[] = []
                       for (let i = 0; i < outcomesWithValues.length; i += 3) {
                         rows.push(outcomesWithValues.slice(i, i + 3))
@@ -320,7 +323,10 @@ export default function DynamicEventsForm({
                               </div>
                               <div className="flex flex-col gap-2">
                                 {outcome.values.map((val, valIdx) => (
-                                  <div key={`val-${rowIdx}-${colIdx}-${valIdx}`} className="flex flex-col gap-2">
+                                  <div
+                                    key={`val-${rowIdx}-${colIdx}-${valIdx}`}
+                                    className="flex flex-col gap-2"
+                                  >
                                     <Button
                                       variant="secondary"
                                       size="sm"
@@ -335,35 +341,11 @@ export default function DynamicEventsForm({
                                       <span className="text-xs opacity-30">{outcome.name}</span>{' '}
                                       <span>{val.value}</span>
                                     </Button>
-                                    {selectedOutcome === outcome.name && selectedValue === val.value && (
-                                      <div className="space-y-2 mt-2">
-                                        <Label>
-                                          Коэффициент для {selectedOutcome}
-                                          {selectedValue !== null ? ` ${selectedValue}` : ''}
-                                        </Label>
-                                        <div className="flex gap-2">
-                                          <Input
-                                            type="number"
-                                            step="0.01"
-                                            min="1"
-                                            placeholder="1.85"
-                                            value={coefficient}
-                                            onChange={(e) => setCoefficient(e.target.value)}
-                                            className="flex-1"
-                                          />
-                                          <Button onClick={addEvent} disabled={!coefficient.trim()}>
-                                            <Check className="h-4 w-4 mr-2" />
-                                            Добавить
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    )}
                                   </div>
                                 ))}
                               </div>
                             </div>
                           ))}
-                          {/* Для заполнения сетки до 3 колонок на последней строке добавляем пустые плейсхолдеры */}
                           {row.length < 3 &&
                             Array.from({ length: 3 - row.length }).map((_, i) => (
                               <div key={`placeholder-${rowIdx}-${i}`} />
@@ -373,7 +355,7 @@ export default function DynamicEventsForm({
                     })()}
                   </div>
 
-                  {/* Исходы без значений: та же логика сетки — 1–5 в одну строку, >5 по 3 в ряд */}
+                  {/* Исходы без значений */}
                   {(() => {
                     const noValue = group.outcomes.filter(
                       (outcome) => !outcome.values || outcome.values.length === 0,
@@ -419,36 +401,12 @@ export default function DynamicEventsForm({
                               >
                                 {outcome.name}
                               </Button>
-                              {selectedOutcome === outcome.name && (
-                                <div className="space-y-2 mt-2">
-                                  <Label>
-                                    Коэффициент для {selectedOutcome}
-                                    {selectedValue !== null ? ` ${selectedValue}` : ''}
-                                  </Label>
-                                  <div className="flex gap-2">
-                                    <Input
-                                      type="number"
-                                      step="0.01"
-                                      min="1"
-                                      placeholder="1.85"
-                                      value={coefficient}
-                                      onChange={(e) => setCoefficient(e.target.value)}
-                                      className="flex-1"
-                                    />
-                                    <Button onClick={addEvent} disabled={!coefficient.trim()}>
-                                      <Check className="h-4 w-4 mr-2" />
-                                      Добавить
-                                    </Button>
-                                  </div>
-                                </div>
-                              )}
                             </div>
                           ))}
                         </div>
                       )
                     }
 
-                    // > 5 — по 3 колонки на строку
                     const rows: (typeof noValue)[] = []
                     for (let i = 0; i < noValue.length; i += 3) {
                       rows.push(noValue.slice(i, i + 3))
@@ -472,29 +430,6 @@ export default function DynamicEventsForm({
                                 >
                                   {outcome.name}
                                 </Button>
-                                {selectedOutcome === outcome.name && (
-                                  <div className="space-y-2 mt-2">
-                                    <Label>
-                                      Коэффициент для {selectedOutcome}
-                                      {selectedValue !== null ? ` ${selectedValue}` : ''}
-                                    </Label>
-                                    <div className="flex gap-2">
-                                      <Input
-                                        type="number"
-                                        step="0.01"
-                                        min="1"
-                                        placeholder="1.85"
-                                        value={coefficient}
-                                        onChange={(e) => setCoefficient(e.target.value)}
-                                        className="flex-1"
-                                      />
-                                      <Button onClick={addEvent} disabled={!coefficient.trim()}>
-                                        <Check className="h-4 w-4 mr-2" />
-                                        Добавить
-                                      </Button>
-                                    </div>
-                                  </div>
-                                )}
                               </div>
                             ))}
                             {row.length < 3 &&
@@ -506,17 +441,42 @@ export default function DynamicEventsForm({
                       </div>
                     )
                   })()}
+
+                  {/* Ввод коэффициента для выбранного исхода */}
+                  {selectedOutcome && (
+                    <div className="mt-4 space-y-2">
+                      <Label>
+                        Коэффициент для {selectedOutcome}
+                        {selectedValue !== null ? ` ${selectedValue}` : ''}
+                      </Label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="1"
+                          placeholder="1.85"
+                          value={coefficientInput}
+                          onChange={(e) => handleCoefficientChange(e.target.value)}
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
         )}
 
-        {events.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">Пока не добавлено ни одного события</p>
-            <p className="text-xs">Выберите группу и нажмите на значение для добавления</p>
+        {!selectedEvent && !selectedOutcome && (
+          <div className="text-center py-4 text-muted-foreground text-xs">
+            Выберите исход и укажите коэффициент, чтобы активировать создание прогноза.
+          </div>
+        )}
+
+        {selectedOutcome && !isCoefficientValid && (
+          <div className="text-xs text-amber-600">
+            Введите корректный коэффициент &gt; 0, чтобы использовать это событие в прогнозе.
           </div>
         )}
       </CardContent>
