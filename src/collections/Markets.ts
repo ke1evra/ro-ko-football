@@ -44,6 +44,61 @@ export const Markets: CollectionConfig = {
         sortOptions: 'name',
       },
     },
+    // Метаданные для автоматического маппинга на статистику матча
+    {
+      name: 'mappingConfig',
+      type: 'group',
+      label: 'Левая часть (метрика)',
+      admin: {
+        description:
+          'Левая часть формулы: откуда берём число. Укажите источник статистики (statPath) и тип (statType).',
+      },
+      fields: [
+        {
+          name: 'statPath',
+          type: 'select',
+          options: [
+            { label: 'Не использует статистику', value: '' },
+            { label: 'Владение мячом (%)', value: 'possession' },
+            { label: 'Удары', value: 'shots' },
+            { label: 'Удары в створ', value: 'shotsOnTarget' },
+            { label: 'Удары мимо створа', value: 'shotsOffTarget' },
+            { label: 'Заблокированные удары', value: 'shotsBlocked' },
+            { label: 'Угловые', value: 'corners' },
+            { label: 'Офсайды', value: 'offsides' },
+            { label: 'Фолы', value: 'fouls' },
+            { label: 'Жёлтые карточки', value: 'yellowCards' },
+            { label: 'Красные карточки', value: 'redCards' },
+            { label: 'Сейвы вратарей', value: 'saves' },
+            { label: 'Передачи', value: 'passes' },
+            { label: 'Точные передачи', value: 'passesAccurate' },
+            { label: 'Точность передач (%)', value: 'passAccuracy' },
+            { label: 'Атаки', value: 'attacks' },
+            { label: 'Опасные атаки', value: 'dangerousAttacks' },
+            { label: 'Исход матча', value: 'outcome' },
+            { label: 'Голы', value: 'goals' },
+          ],
+          admin: {
+            description:
+              'Выберите поле статистики из MatchStats. Это левая часть формулы для проверки прогноза.',
+          },
+        },
+        {
+          name: 'statType',
+          type: 'select',
+          options: [
+            { label: 'Не использует статистику', value: 'none' },
+            { label: 'Числовая статистика (угловые, карточки и т.д.)', value: 'numeric' },
+            { label: 'Исход матча (П1/Х/П2)', value: 'outcome' },
+            { label: 'Голы', value: 'goals' },
+          ],
+          defaultValue: 'none',
+          admin: {
+            description: 'Тип статистики для этого маркета',
+          },
+        },
+      ],
+    },
   ],
   timestamps: true,
 }

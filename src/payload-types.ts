@@ -1242,6 +1242,41 @@ export interface BetMarket {
    * Выберите группы исходов для этого маркета
    */
   groups?: (string | OutcomeGroup)[] | null;
+  /**
+   * Левая часть формулы: откуда берём число. Укажите источник статистики (statPath) и тип (statType).
+   */
+  mappingConfig?: {
+    /**
+     * Выберите поле статистики из MatchStats. Это левая часть формулы для проверки прогноза.
+     */
+    statPath?:
+      | (
+          | ''
+          | 'possession'
+          | 'shots'
+          | 'shotsOnTarget'
+          | 'shotsOffTarget'
+          | 'shotsBlocked'
+          | 'corners'
+          | 'offsides'
+          | 'fouls'
+          | 'yellowCards'
+          | 'redCards'
+          | 'saves'
+          | 'passes'
+          | 'passesAccurate'
+          | 'passAccuracy'
+          | 'attacks'
+          | 'dangerousAttacks'
+          | 'outcome'
+          | 'goals'
+        )
+      | null;
+    /**
+     * Тип статистики для этого маркета
+     */
+    statType?: ('none' | 'numeric' | 'outcome' | 'goals') | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -1260,16 +1295,64 @@ export interface OutcomeGroup {
    */
   name: string;
   /**
-   * Исходы, принадлежащие этой группе. Каждый исход - ��ростая строка.
+   * Правая часть формулы: как сравниваем метрику и с чем. Выберите оператор (comparisonOperator) и задайте значение/набор/диапазон/фильтр.
    */
   outcomes?:
     | {
         /**
-         * Название исхода
+         * Название исхода (например: "ТБ", "ТМ", "П1", "Х", "П2")
          */
         name: string;
         /**
-         * Значения для этого исхода (например, 1.5, 2.0 для тоталов). Оставьте пустым для исходов без значений.
+         * Оператор сравнения. ТБ → Больше (>), ТМ → Меньше (<). Для диапазонов используйте "Диапазон (между)" и задайте границы ниже. Для двойного шанса и схожих — "Принадлежность множеству".
+         */
+        comparisonOperator?:
+          | ('gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'neq' | 'between' | 'in' | 'even' | 'odd' | 'exists')
+          | null;
+        /**
+         * Область применения статистики. both = сумма home+away, home/away = значение команды, difference = home-away (для фор).
+         */
+        scope?: ('both' | 'home' | 'away' | 'difference') | null;
+        /**
+         * Способ вычисления фактического значения. Переопределяет поведение по умолчанию. Для «Обе забьют» выберите «Минимум». Для чёт/нечёт — «Чёт/Нечёт».
+         */
+        aggregation?: ('auto' | 'sum' | 'difference' | 'min' | 'max' | 'parity' | 'direct') | null;
+        /**
+         * Параметры для оператора "Диапазон (между)"
+         */
+        range?: {
+          /**
+           * Нижняя граница (включительно)
+           */
+          lower?: number | null;
+          /**
+           * Верхняя граница (включительно)
+           */
+          upper?: number | null;
+        };
+        /**
+         * Для оператора "Принадлежность множеству". Пример: П1/Х → [1, 0].
+         */
+        set?:
+          | {
+              value: number;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Параметры для оператора "Событие произошло": выберите тип события из MatchStats.events (например: red_card, penalty).
+         */
+        eventFilter?: {
+          type: 'goal' | 'own_goal' | 'penalty' | 'yellow_card' | 'red_card' | 'var' | 'substitution';
+          team?: ('any' | 'home' | 'away') | null;
+          period?: ('any' | '1h' | '2h') | null;
+        };
+        /**
+         * Значение исхода для сравнения (например, для "П1" = 1, для "Х" = 0, для "П2" = 2). Оставьте пустым, если используются динамические значения.
+         */
+        outcomeValue?: number | null;
+        /**
+         * Значения для этого исхода (например, 1.5, 2.0 для тоталов). Остав��те пустым для исходов без значений.
          */
         values?:
           | {
@@ -1280,6 +1363,61 @@ export interface OutcomeGroup {
               id?: string | null;
             }[]
           | null;
+        /**
+         * Для комбинированных прогнозов (ОЗ + ТБ, ОЗ + ТМ и т.д.). Добавьте дополнительные условия, которые должны выполняться одновременно с основным.
+         */
+        conditions?:
+          | {
+              /**
+               * Оператор сравнения для дополнительного условия
+               */
+              comparisonOperator: 'gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'neq' | 'between' | 'in' | 'even' | 'odd';
+              /**
+               * Область применения статистики для этого условия
+               */
+              scope?: ('both' | 'home' | 'away' | 'difference') | null;
+              /**
+               * Способ вычисления для этого условия
+               */
+              aggregation: 'auto' | 'sum' | 'difference' | 'min' | 'max' | 'parity' | 'direct';
+              /**
+               * Значения для сравнения в этом условии
+               */
+              values?:
+                | {
+                    value: number;
+                    id?: string | null;
+                  }[]
+                | null;
+              /**
+               * Параметры для оператора "Диапазон (между)"
+               */
+              range?: {
+                /**
+                 * Нижняя граница (включительно)
+                 */
+                lower?: number | null;
+                /**
+                 * Верхняя граница (включительно)
+                 */
+                upper?: number | null;
+              };
+              /**
+               * Для оператора "Принадлежность множеству"
+               */
+              set?:
+                | {
+                    value: number;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Логика объединения основного условия с дополнительными. AND = все условия истинны, OR = хотя бы одно истинно.
+         */
+        conditionLogic?: ('AND' | 'OR') | null;
         id?: string | null;
       }[]
     | null;
@@ -1955,6 +2093,12 @@ export interface PredictionStatsSelect<T extends boolean = true> {
 export interface BetMarketsSelect<T extends boolean = true> {
   name?: T;
   groups?: T;
+  mappingConfig?:
+    | T
+    | {
+        statPath?: T;
+        statType?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1968,12 +2112,62 @@ export interface OutcomeGroupsSelect<T extends boolean = true> {
     | T
     | {
         name?: T;
+        comparisonOperator?: T;
+        scope?: T;
+        aggregation?: T;
+        range?:
+          | T
+          | {
+              lower?: T;
+              upper?: T;
+            };
+        set?:
+          | T
+          | {
+              value?: T;
+              id?: T;
+            };
+        eventFilter?:
+          | T
+          | {
+              type?: T;
+              team?: T;
+              period?: T;
+            };
+        outcomeValue?: T;
         values?:
           | T
           | {
               value?: T;
               id?: T;
             };
+        conditions?:
+          | T
+          | {
+              comparisonOperator?: T;
+              scope?: T;
+              aggregation?: T;
+              values?:
+                | T
+                | {
+                    value?: T;
+                    id?: T;
+                  };
+              range?:
+                | T
+                | {
+                    lower?: T;
+                    upper?: T;
+                  };
+              set?:
+                | T
+                | {
+                    value?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+        conditionLogic?: T;
         id?: T;
       };
   updatedAt?: T;
