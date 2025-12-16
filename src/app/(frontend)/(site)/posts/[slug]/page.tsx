@@ -8,9 +8,11 @@ import { CommentsTree } from './post-comments-tree'
 import { UserAvatar } from '@/components/UserAvatar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { TrendingUp, Target, Trophy, Calendar } from 'lucide-react'
+import { TrendingUp, Target, Calendar } from 'lucide-react'
 import Link from 'next/link'
 import RichTextRenderer from '@/components/RichTextRenderer'
+import { generateMatchUrl, generateLegacyFixtureUrl } from '@/lib/match-url-utils'
+import type { Post, User } from '@/payload-types'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,13 +27,53 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
     depth: 2,
   })
 
-  const post = docs[0]
+  const post = docs[0] as Post
   if (!post) return notFound()
 
-  // Добавляем логирование для отладки
-  console.log('[PostPage] Post data:', JSON.stringify(post, null, 2))
-  console.log('[PostPage] Post type:', (post as any).postType)
-  console.log('[PostPage] Prediction data:', (post as any).prediction)
+  const isPrediction = post.postType === 'prediction'
+  const author = typeof post.author === 'object' ? (post.author as User) : null
+  const outcomes = isPrediction && post.prediction?.outcomes ? post.prediction.outcomes : []
+
+  // Проверяем есть ли текстовое содержание
+  const hasContent =
+    post.content &&
+    typeof post.content === 'object' &&
+    'root' in post.content &&
+    post.content.root?.children?.length > 0 &&
+    post.content.root.children.some((child: any) => child.children && child.children.length > 0)
+
+  // Определяем вариант отображения
+  const isExpress = outcomes.length > 1
+  const layoutVariant = !hasContent ? 'info-only' : isExpress ? 'express' : 'single'
+
+  // Генерируем URL матча
+  const getMatchUrl = (outcome: (typeof outcomes)[0]) => {
+    const matchInfo = outcome.matchInfo
+    if (!matchInfo || !outcome.fixtureId) {
+      return generateLegacyFixtureUrl(outcome.fixtureId || 0)
+    }
+
+    // Если есть все данные для полного URL
+    if (
+      matchInfo.homeTeamId &&
+      matchInfo.awayTeamId &&
+      matchInfo.date &&
+      matchInfo.home &&
+      matchInfo.away
+    ) {
+      return generateMatchUrl({
+        homeTeamName: matchInfo.home,
+        awayTeamName: matchInfo.away,
+        homeTeamId: matchInfo.homeTeamId,
+        awayTeamId: matchInfo.awayTeamId,
+        date: matchInfo.date,
+        fixtureId: outcome.fixtureId,
+      })
+    }
+
+    // Fallback на старый формат
+    return generateLegacyFixtureUrl(outcome.fixtureId)
+  }
 
   const comments = await payload.find({
     collection: 'comments',
@@ -47,16 +89,9 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         <header className="space-y-4">
           <h1 className="text-2xl font-semibold">{post.title}</h1>
           <div className="flex items-center gap-3">
-            <UserAvatar
-              user={typeof post.author === 'object' ? (post.author as any) : null}
-              size="md"
-            />
+            <UserAvatar user={author} size="md" />
             <div className="flex flex-col">
-              <div className="text-sm font-medium">
-                {typeof post.author === 'object'
-                  ? (post.author as any)?.name || (post.author as any)?.email
-                  : ''}
-              </div>
+              <div className="text-sm font-medium">{author?.name || author?.email}</div>
               <div className="text-xs text-muted-foreground">
                 {format(new Date(post.createdAt), 'd MMMM yyyy', { locale: ru })}
               </div>
@@ -64,51 +99,41 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           </div>
         </header>
 
-        {/* Макет для прогнозов: 2/3 контент + 1/3 детали */}
-        {(post as any).postType === 'prediction' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Контент прогноза - 2/3 ширины */}
-            <div className="lg:col-span-2">
-              <Prose>
-                <RichTextRenderer value={(post as any).content} />
-              </Prose>
-            </div>
-
-            {/* Детали прогноза - 1/3 ширины */}
-            <div className="lg:col-span-1">
-              {(post as any).prediction && (
-                <Card className="border-primary/20 bg-primary/5 sticky top-6">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                      Детали прогноза
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+        {/* Макет для прогнозов */}
+        {isPrediction ? (
+          <>
+            {/* Вариант 1: Только инфа (без текста) - на всю ширину */}
+            {layoutVariant === 'info-only' && outcomes.length > 0 && (
+              <Card className="border-primary/20 bg-primary/5">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    Детали прогноза
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Информация о матче */}
-                    {(post as any).prediction.matchInfo && (
+                    {outcomes[0].matchInfo && (
                       <div className="space-y-3">
                         <div className="space-y-1">
-                          <div className="text-lg font-semibold">
-                            {(post as any).prediction.matchInfo.home} —{' '}
-                            {(post as any).prediction.matchInfo.away}
+                          <div className="text-xl font-semibold">
+                            {outcomes[0].matchInfo.home} — {outcomes[0].matchInfo.away}
                           </div>
-                          {(post as any).prediction.matchInfo.competition && (
+                          {outcomes[0].matchInfo.competition && (
                             <div className="text-sm text-muted-foreground">
-                              {(post as any).prediction.matchInfo.competition}
+                              {outcomes[0].matchInfo.competition}
                             </div>
                           )}
-                          {((post as any).prediction.matchInfo.date ||
-                            (post as any).prediction.matchInfo.time) && (
+                          {(outcomes[0].matchInfo.date || outcomes[0].matchInfo.time) && (
                             <div className="text-sm text-muted-foreground">
-                              {(post as any).prediction.matchInfo.date}{' '}
-                              {(post as any).prediction.matchInfo.time}
+                              {outcomes[0].matchInfo.date} {outcomes[0].matchInfo.time}
                             </div>
                           )}
                         </div>
-                        {(post as any).fixtureId && (
+                        {outcomes[0].fixtureId && (
                           <Link
-                            href={`/fixtures/${(post as any).fixtureId}`}
+                            href={getMatchUrl(outcomes[0])}
                             className="text-primary hover:underline flex items-center gap-1 text-sm"
                           >
                             <Calendar className="h-4 w-4" />
@@ -118,38 +143,158 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                       </div>
                     )}
 
-                    {/* События прогноза */}
-                    {(post as any).prediction.events &&
-                      (post as any).prediction.events.length > 0 && (
-                        <div className="space-y-3">
-                          <h4 className="font-medium flex items-center gap-2">
-                            <Target className="h-4 w-4" />
-                            События прогноза
-                          </h4>
-                          <div className="space-y-2">
-                            {(post as any).prediction.events.map((event: any, index: number) => (
-                              <div
-                                key={index}
-                                className="flex items-center justify-between p-2 bg-background rounded border text-sm"
-                              >
-                                <span className="font-medium">{event.event}</span>
-                                <Badge variant="secondary" className="font-mono text-xs">
-                                  {event.coefficient}
-                                </Badge>
-                              </div>
-                            ))}
+                    {/* Исходы */}
+                    <div className="space-y-3">
+                      <h4 className="font-medium flex items-center gap-2">
+                        <Target className="h-4 w-4" />
+                        {isExpress ? `Экспресс (${outcomes.length} исхода)` : 'Исход прогноза'}
+                      </h4>
+                      <div className="space-y-2">
+                        {outcomes.map((outcome, index) => (
+                          <div
+                            key={outcome.id || index}
+                            className="flex flex-col gap-1 p-3 bg-background rounded border"
+                          >
+                            <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                              {outcome.marketName}
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium">
+                                {outcome.outcomeName}
+                                {outcome.value !== null && outcome.value !== undefined
+                                  ? ` ${outcome.value}`
+                                  : ''}
+                              </span>
+                              <Badge variant="secondary" className="font-mono text-xs">
+                                {outcome.coefficient}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {isExpress && (
+                        <div className="pt-2 border-t">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="font-medium">Общий коэффициент:</span>
+                            <Badge variant="default" className="font-mono">
+                              {outcomes
+                                .reduce((acc, o) => acc * (o.coefficient || 1), 1)
+                                .toFixed(2)}
+                            </Badge>
                           </div>
                         </div>
                       )}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Вариант 2 и 3: С текстом - 2/3 контент + 1/3 детали */}
+            {layoutVariant !== 'info-only' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Контент прогноза - 2/3 ширины */}
+                <div className="lg:col-span-2">
+                  <Prose>
+                    <RichTextRenderer value={post.content} />
+                  </Prose>
+                </div>
+
+                {/* Детали прогноза - 1/3 ширины */}
+                <div className="lg:col-span-1">
+                  {outcomes.length > 0 && (
+                    <Card className="border-primary/20 bg-primary/5 sticky top-6">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <TrendingUp className="h-5 w-5 text-primary" />
+                          Детали прогноза
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Информация о матче */}
+                        {outcomes[0].matchInfo && (
+                          <div className="space-y-3">
+                            <div className="space-y-1">
+                              <div className="text-lg font-semibold">
+                                {outcomes[0].matchInfo.home} — {outcomes[0].matchInfo.away}
+                              </div>
+                              {outcomes[0].matchInfo.competition && (
+                                <div className="text-sm text-muted-foreground">
+                                  {outcomes[0].matchInfo.competition}
+                                </div>
+                              )}
+                              {(outcomes[0].matchInfo.date || outcomes[0].matchInfo.time) && (
+                                <div className="text-sm text-muted-foreground">
+                                  {outcomes[0].matchInfo.date} {outcomes[0].matchInfo.time}
+                                </div>
+                              )}
+                            </div>
+                            {outcomes[0].fixtureId && (
+                              <Link
+                                href={getMatchUrl(outcomes[0])}
+                                className="text-primary hover:underline flex items-center gap-1 text-sm"
+                              >
+                                <Calendar className="h-4 w-4" />
+                                Перейти к матчу
+                              </Link>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Исходы прогноза */}
+                        <div className="space-y-3">
+                          <h4 className="font-medium flex items-center gap-2">
+                            <Target className="h-4 w-4" />
+                            {isExpress ? `Экспресс (${outcomes.length})` : 'Исход прогноза'}
+                          </h4>
+                          <div className="space-y-2">
+                            {outcomes.map((outcome, index) => (
+                              <div
+                                key={outcome.id || index}
+                                className="flex flex-col gap-1 p-3 bg-background rounded border"
+                              >
+                                <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                                  {outcome.marketName}
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium">
+                                    {outcome.outcomeName}
+                                    {outcome.value !== null && outcome.value !== undefined
+                                      ? ` ${outcome.value}`
+                                      : ''}
+                                  </span>
+                                  <Badge variant="secondary" className="font-mono text-xs">
+                                    {outcome.coefficient}
+                                  </Badge>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          {/* Общий коэффициент для экспресса */}
+                          {isExpress && (
+                            <div className="pt-2 border-t">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="font-medium">Общий кф:</span>
+                                <Badge variant="default" className="font-mono">
+                                  {outcomes
+                                    .reduce((acc, o) => acc * (o.coefficient || 1), 1)
+                                    .toFixed(2)}
+                                </Badge>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           /* Обычный макет для не-прогнозов */
           <Prose>
-            <RichTextRenderer value={(post as any).content} />
+            <RichTextRenderer value={post.content} />
           </Prose>
         )}
 

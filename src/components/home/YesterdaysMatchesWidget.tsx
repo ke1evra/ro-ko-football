@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { getPayloadClient } from '@/lib/payload-client'
 import { getLeagueNamesMap, getTopMatchesLeagueIds } from '@/lib/leagues'
-import { generateCompletedMatchUrl } from '@/lib/match-urls'
+import { generateMatchUrl } from '@/lib/match-url-utils'
 import FinishedMatchesClient, {
   type FinishedMatchItem,
 } from '@/components/home/FinishedMatchesClient'
@@ -87,15 +87,15 @@ export default async function YesterdaysMatchesWidget({ limit = 200 }: { limit?:
       typeof m.date === 'string'
         ? m.date.split('T')[0]
         : new Date(m.date as any).toISOString().split('T')[0]
-    const url = generateCompletedMatchUrl(
-      m.homeTeam || 'Команда дома',
-      m.awayTeam || 'Команда гостей',
-      dateOnly,
-      m.homeTeamId || 0,
-      m.awayTeamId || 0,
-      m.fixtureId || m.matchId,
-      m.matchId || m.fixtureId || 0,
-    )
+    const url = generateMatchUrl({
+      homeTeamName: m.homeTeam || 'Команда дома',
+      awayTeamName: m.awayTeam || 'Команда гостей',
+      homeTeamId: m.homeTeamId || 0,
+      awayTeamId: m.awayTeamId || 0,
+      date: dateOnly,
+      fixtureId: m.fixtureId || m.matchId,
+      matchId: m.matchId || m.fixtureId || 0,
+    })
 
     return {
       id: m.id,

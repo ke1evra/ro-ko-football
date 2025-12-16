@@ -228,9 +228,25 @@ export const Posts: CollectionConfig = {
                   label: 'Хозяева',
                 },
                 {
+                  name: 'homeTeamId',
+                  type: 'number',
+                  label: 'ID команды хозяев',
+                  admin: {
+                    description: 'ID команды из API для генерации URL',
+                  },
+                },
+                {
                   name: 'away',
                   type: 'text',
                   label: 'Гости',
+                },
+                {
+                  name: 'awayTeamId',
+                  type: 'number',
+                  label: 'ID команды гостей',
+                  admin: {
+                    description: 'ID команды из API для генерации URL',
+                  },
                 },
                 {
                   name: 'competition',

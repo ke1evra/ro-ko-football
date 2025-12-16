@@ -352,7 +352,15 @@ export interface Post {
            */
           matchInfo?: {
             home?: string | null;
+            /**
+             * ID команды из API для генерации URL
+             */
+            homeTeamId?: number | null;
             away?: string | null;
+            /**
+             * ID команды из API для генерации URL
+             */
+            awayTeamId?: number | null;
             competition?: string | null;
             date?: string | null;
             time?: string | null;
@@ -1493,7 +1501,9 @@ export interface PostsSelect<T extends boolean = true> {
                 | T
                 | {
                     home?: T;
+                    homeTeamId?: T;
                     away?: T;
+                    awayTeamId?: T;
                     competition?: T;
                     date?: T;
                     time?: T;

@@ -9,7 +9,7 @@ import {
   initializeLeaguesCache,
   getLeagueInfoClient,
 } from '@/lib/highlight-competitions-client'
-import { generateFixtureUrl } from '@/lib/match-urls'
+import { generateMatchUrl } from '@/lib/match-url-utils'
 import { TeamLogo } from '@/components/TeamLogo'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import { Button } from '@/components/ui/button'
@@ -173,14 +173,14 @@ function sortByPriorityAndTime(a: StripMatch, b: StripMatch) {
 }
 
 function MatchCard({ m }: { m: StripMatch }) {
-  const matchUrl = generateFixtureUrl(
-    m.home?.name || 'Команда дома',
-    m.away?.name || 'Команда гостей',
-    m.date,
-    m.home?.id || 0,
-    m.away?.id || 0,
-    m.id,
-  )
+  const matchUrl = generateMatchUrl({
+    homeTeamName: m.home?.name || 'Команда дома',
+    awayTeamName: m.away?.name || 'Команда гостей',
+    homeTeamId: m.home?.id || 0,
+    awayTeamId: m.away?.id || 0,
+    date: m.date,
+    fixtureId: m.id,
+  })
 
   return (
     <Link href={matchUrl} className="block h-full">

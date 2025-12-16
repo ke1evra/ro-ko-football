@@ -275,8 +275,8 @@ interface PredictionModalProps {
   fixtureId?: number
   matchId?: number
   matchData: {
-    home: { name: string }
-    away: { name: string }
+    home: { name: string; id: number }
+    away: { name: string; id: number }
     competition?: { name: string }
     date: string
     time: string

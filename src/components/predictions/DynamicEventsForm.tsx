@@ -30,7 +30,9 @@ export interface PredictionOutcome {
   // Информация о матче
   matchInfo: {
     home: string
+    homeTeamId?: number
     away: string
+    awayTeamId?: number
     competition?: string
     date: string
     time: string
@@ -55,8 +57,8 @@ interface Market {
 
 interface DynamicEventsFormProps {
   matchData: {
-    home: { name: string }
-    away: { name: string }
+    home: { name: string; id: number }
+    away: { name: string; id: number }
     competition?: { name: string }
     date: string
     time: string
@@ -153,7 +155,9 @@ export default function DynamicEventsForm({
       coefficient: c,
       matchInfo: {
         home: matchData.home.name,
+        homeTeamId: matchData.home.id,
         away: matchData.away.name,
+        awayTeamId: matchData.away.id,
         competition: matchData.competition?.name,
         date: matchData.date,
         time: matchData.time,

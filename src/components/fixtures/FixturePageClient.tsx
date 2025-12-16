@@ -431,8 +431,8 @@ export default function FixturePageClient({ fx, initialPredictions }: FixturePag
           onClose={() => setIsPredictionModalOpen(false)}
           fixtureId={fx.id}
           matchData={{
-            home: { name: fx.home.name },
-            away: { name: fx.away.name },
+            home: { name: fx.home.name, id: fx.home.id },
+            away: { name: fx.away.name, id: fx.away.id },
             competition: fx.competition,
             date: fx.date,
             time: fx.time,
