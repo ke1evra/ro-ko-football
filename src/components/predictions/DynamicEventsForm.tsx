@@ -16,17 +16,17 @@ import {
 } from '@/components/ui/accordion'
 
 export interface PredictionOutcome {
-  // IDs для связи с CMS
+  // IDs для связи с CMS (relationships)
   fixtureId?: number
-  marketId: string        // ID маркета из Markets
-  outcomeGroupId: string  // ID группы исходов из OutcomeGroups
-  
-  // Данные для отображения (дубликаты для удобства)
-  market: string          // "Тоталы"
-  outcome: string         // "ТБ"
-  value?: number | null   // 2.5
-  coefficient: number     // 1.85
-  
+  market: string // ID маркета (relationship)
+  outcomeGroup: string // ID группы исходов (relationship)
+
+  // Текстовые копии для отображения
+  marketName: string // "Тоталы"
+  outcomeName: string // "ТБ"
+  value?: number | null // 2.5
+  coefficient: number // 1.85
+
   // Информация о матче
   matchInfo: {
     home: string
@@ -114,8 +114,13 @@ export default function DynamicEventsForm({
 
   const selectedMarket = markets.find((m) => m.id === selectedMarketId)
 
-  function selectValue(groupId: string, outcomeId: string, outcomeName: string, value: number | null) {
-    setSelectedGroupId(groupId)
+  function selectValue(
+    outcomeGroupId: string,
+    outcomeId: string,
+    outcomeName: string,
+    value: number | null,
+  ) {
+    setSelectedGroupId(outcomeGroupId)
     setSelectedOutcomeId(outcomeId)
     setSelectedOutcome(outcomeName)
     setSelectedValue(value)
@@ -140,10 +145,10 @@ export default function DynamicEventsForm({
 
     const newOutcome: PredictionOutcome = {
       fixtureId,
-      marketId: selectedMarketId,
-      outcomeGroupId: selectedOutcomeId,
-      market: selectedMarket?.name || 'Неизвестный маркет',
-      outcome: selectedOutcome,
+      market: selectedMarketId,
+      outcomeGroup: selectedGroupId, // ID группы исходов (OutcomeGroups)
+      marketName: selectedMarket?.name || 'Неизвестный маркет',
+      outcomeName: selectedOutcome,
       value: selectedValue,
       coefficient: c,
       matchInfo: {
@@ -198,16 +203,19 @@ export default function DynamicEventsForm({
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
               <div className="flex flex-col gap-1">
                 <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  {selectedPredictionOutcome.market}
+                  {selectedPredictionOutcome.marketName}
                 </span>
                 <div className="flex items-center gap-3">
                   <Badge variant="secondary" className="text-sm py-1.5 px-2 h-auto rounded-md">
-                    {selectedPredictionOutcome.outcome}
-                    {selectedPredictionOutcome.value !== null && selectedPredictionOutcome.value !== undefined
+                    {selectedPredictionOutcome.outcomeName}
+                    {selectedPredictionOutcome.value !== null &&
+                    selectedPredictionOutcome.value !== undefined
                       ? ` ${selectedPredictionOutcome.value}`
                       : ''}
                   </Badge>
-                  <span className="text-sm">Коэффициент: {selectedPredictionOutcome.coefficient}</span>
+                  <span className="text-sm">
+                    Коэффициент: {selectedPredictionOutcome.coefficient}
+                  </span>
                 </div>
               </div>
               <Button
@@ -289,14 +297,18 @@ export default function DynamicEventsForm({
                         return (
                           <div className={`grid ${gridColsClass} gap-3`}>
                             {outcomesWithValues.map((outcome, colIdx) => (
-                              <div key={`single-row-col-${colIdx}`} className="flex flex-col gap-2 min-w-0">
+                              <div
+                                key={`single-row-col-${colIdx}`}
+                                className="flex flex-col gap-2 min-w-0"
+                              >
                                 <div className="text-xs font-medium text-muted-foreground truncate">
                                   {outcome.name}
                                 </div>
                                 <div className="flex flex-col gap-2">
                                   {(outcome.values || []).map((val, valIdx) => {
                                     const isSelected =
-                                      selectedOutcome === outcome.name && selectedValue === val.value
+                                      selectedOutcome === outcome.name &&
+                                      selectedValue === val.value
                                     return (
                                       <div
                                         key={`val-${colIdx}-${valIdx}`}
@@ -305,14 +317,25 @@ export default function DynamicEventsForm({
                                         <Button
                                           variant="secondary"
                                           size="sm"
-                                          onClick={() => selectValue(group.id, outcome.id, outcome.name, val.value)}
+                                          onClick={() =>
+                                            selectValue(
+                                              group.id,
+                                              outcome.id,
+                                              outcome.name,
+                                              val.value,
+                                            )
+                                          }
                                           className={
                                             isSelected
                                               ? 'bg-primary text-primary-foreground hover:bg-primary/90 w-full border-0 text-center'
                                               : 'w-full border-0 text-center'
                                           }
                                         >
-                                          <span className={isSelected ? 'text-xs' : 'text-xs opacity-30'}>
+                                          <span
+                                            className={
+                                              isSelected ? 'text-xs' : 'text-xs opacity-30'
+                                            }
+                                          >
                                             {outcome.name}
                                           </span>{' '}
                                           {val.value}
@@ -327,7 +350,9 @@ export default function DynamicEventsForm({
                                               min="1"
                                               placeholder="1.85"
                                               value={coefficientInput}
-                                              onChange={(e) => handleCoefficientChange(e.target.value)}
+                                              onChange={(e) =>
+                                                handleCoefficientChange(e.target.value)
+                                              }
                                               className="h-8 text-sm !shadow-none !px-2 w-full max-w-full"
                                               autoFocus
                                             />
@@ -354,7 +379,10 @@ export default function DynamicEventsForm({
                           className="grid grid-cols-1 sm:grid-cols-3 gap-3"
                         >
                           {row.map((outcome, colIdx) => (
-                            <div key={`col-${rowIdx}-${colIdx}`} className="flex flex-col gap-2 min-w-0">
+                            <div
+                              key={`col-${rowIdx}-${colIdx}`}
+                              className="flex flex-col gap-2 min-w-0"
+                            >
                               <div className="text-xs font-medium text-muted-foreground truncate">
                                 {outcome.name}
                               </div>
@@ -370,14 +398,18 @@ export default function DynamicEventsForm({
                                       <Button
                                         variant="secondary"
                                         size="sm"
-                                        onClick={() => selectValue(group.id, outcome.id, outcome.name, val.value)}
+                                        onClick={() =>
+                                          selectValue(group.id, outcome.id, outcome.name, val.value)
+                                        }
                                         className={
                                           isSelected
                                             ? 'bg-primary text-primary-foreground hover:bg-primary/90 w-full border-0 text-center'
                                             : 'w-full border-0 text-center'
                                         }
                                       >
-                                        <span className={isSelected ? 'text-xs' : 'text-xs opacity-30'}>
+                                        <span
+                                          className={isSelected ? 'text-xs' : 'text-xs opacity-30'}
+                                        >
                                           {outcome.name}
                                         </span>{' '}
                                         <span>{val.value}</span>
@@ -392,7 +424,9 @@ export default function DynamicEventsForm({
                                             min="1"
                                             placeholder="1.85"
                                             value={coefficientInput}
-                                            onChange={(e) => handleCoefficientChange(e.target.value)}
+                                            onChange={(e) =>
+                                              handleCoefficientChange(e.target.value)
+                                            }
                                             className="h-8 text-sm !shadow-none !px-2 w-full max-w-full"
                                             autoFocus
                                           />
@@ -453,7 +487,9 @@ export default function DynamicEventsForm({
                                 <Button
                                   variant="secondary"
                                   size="sm"
-                                  onClick={() => selectValue(group.id, outcome.id, outcome.name, null)}
+                                  onClick={() =>
+                                    selectValue(group.id, outcome.id, outcome.name, null)
+                                  }
                                   className={
                                     isSelected
                                       ? 'bg-primary text-primary-foreground hover:bg-primary/90 w-full border-0 text-center'
@@ -499,7 +535,9 @@ export default function DynamicEventsForm({
                                 <Button
                                   variant="secondary"
                                   size="sm"
-                                  onClick={() => selectValue(group.id, outcome.id, outcome.name, null)}
+                                  onClick={() =>
+                                    selectValue(group.id, outcome.id, outcome.name, null)
+                                  }
                                   className={
                                     (selectedOutcome === outcome.name && selectedValue === null
                                       ? 'bg-primary text-primary-foreground '

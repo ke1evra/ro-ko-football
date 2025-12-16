@@ -154,35 +154,55 @@ export const Posts: CollectionConfig = {
               name: 'fixtureId',
               type: 'number',
               label: 'ID фикстуры',
-            },
-            {
-              name: 'marketId',
-              type: 'text',
-              label: 'ID маркета',
-              required: true,
-            },
-            {
-              name: 'outcomeGroupId',
-              type: 'text',
-              label: 'ID группы исходов',
-              required: true,
+              admin: {
+                description: 'ID матча из API для связи со статистикой',
+              },
             },
             {
               name: 'market',
-              type: 'text',
-              label: 'Название маркета',
+              type: 'relationship',
+              relationTo: 'bet-markets',
+              label: 'Маркет',
               required: true,
+              admin: {
+                description: 'Связь с маркетом (автоматически подтягивается при depth > 0)',
+              },
             },
             {
-              name: 'outcome',
-              type: 'text',
-              label: 'Название исхода',
+              name: 'outcomeGroup',
+              type: 'relationship',
+              relationTo: 'outcome-groups',
+              label: 'Группа исходов',
               required: true,
+              admin: {
+                description: 'Связь с группой исходов (содержит conditions для подсчёта)',
+              },
+            },
+            {
+              name: 'marketName',
+              type: 'text',
+              label: 'Название маркета (копия)',
+              required: true,
+              admin: {
+                description: 'Текстовая копия для отображения (на случай удаления маркета)',
+              },
+            },
+            {
+              name: 'outcomeName',
+              type: 'text',
+              label: 'Название исхода (копия)',
+              required: true,
+              admin: {
+                description: 'Текстовая копия для отображения',
+              },
             },
             {
               name: 'value',
               type: 'number',
               label: 'Значение (для линий)',
+              admin: {
+                description: 'Например: 2.5 для "ТБ 2.5"',
+              },
             },
             {
               name: 'coefficient',
@@ -190,6 +210,9 @@ export const Posts: CollectionConfig = {
               label: 'Коэффициент',
               required: true,
               min: 1,
+              admin: {
+                description: 'Коэффициент ставки',
+              },
             },
             {
               name: 'matchInfo',
