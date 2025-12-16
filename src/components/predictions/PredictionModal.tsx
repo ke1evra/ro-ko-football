@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AlertCircle, Loader2, TrendingUp, X } from 'lucide-react'
-import DynamicEventsForm, { PredictionEvent } from './DynamicEventsForm'
+import DynamicEventsForm, { PredictionOutcome } from './DynamicEventsForm'
 import LexicalEditorWithToolbar from '@/components/LexicalEditorWithToolbar'
 import { loginUser } from '@/lib/auth'
 import { registerUser } from '@/lib/auth'
@@ -287,7 +287,7 @@ interface PredictionModalProps {
 interface PredictionData {
   title: string
   content: any
-  event: PredictionEvent | null
+  outcome: PredictionOutcome | null
 }
 
 export default function PredictionModal({
@@ -309,7 +309,7 @@ export default function PredictionModal({
   const [formData, setFormData] = useState<PredictionData>({
     title: `Прогноз на матч ${matchData.home.name} - ${matchData.away.name}`,
     content: null,
-    event: null,
+    outcome: null,
   })
 
   useEffect(() => {
@@ -348,8 +348,8 @@ export default function PredictionModal({
       console.log('[PredictionModal] already submitting, skip')
       return
     }
-    if (!formData.event) {
-      console.log('[PredictionModal] no event selected, skip')
+    if (!formData.outcome) {
+      console.log('[PredictionModal] no outcome selected, skip')
       return
     }
     setIsSubmitting(true)
@@ -379,18 +379,9 @@ export default function PredictionModal({
         title: formData.title,
         content: formData.content,
         postType: 'prediction',
-        fixtureId,
-        matchId,
         author: userData.user.id,
         prediction: {
-          events: [formData.event],
-          matchInfo: {
-            home: matchData.home.name,
-            away: matchData.away.name,
-            competition: matchData.competition?.name,
-            date: matchData.date,
-            time: matchData.time,
-          },
+          outcomes: [formData.outcome],
         },
         publishedAt: new Date().toISOString(),
       }
@@ -418,7 +409,12 @@ export default function PredictionModal({
 
       await response.json()
 
-      console.log('[PredictionModal] prediction created successfully → onClose()')
+      console.log('[PredictionModal] prediction created successfully')
+      toast.success('Прогноз создан!', {
+        description: 'Ваш прогноз успешно опубликован',
+      })
+
+      // Закрываем модалку только после успеха
       onClose()
 
       if (onPredictionCreated) {
@@ -436,9 +432,9 @@ export default function PredictionModal({
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleSelectedEventChange = (event: PredictionEvent | null) => {
-    console.log('[PredictionModal] selected event changed', event)
-    updateFormData('event', event)
+  const handleSelectedOutcomeChange = (outcome: PredictionOutcome | null) => {
+    console.log('[PredictionModal] selected outcome changed', outcome)
+    updateFormData('outcome', outcome)
   }
 
   if (!isOpen) {
@@ -448,14 +444,19 @@ export default function PredictionModal({
 
   console.log('[PredictionModal] render modal, isAuthenticated =', isAuthenticated)
 
-  const isCreateDisabled = isSubmitting || !formData.title || !formData.content || !formData.event
+  const isCreateDisabled = isSubmitting || !formData.title || !formData.content || !formData.outcome
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-black/50" />
+      {/* Overlay - клик закрывает модалку */}
+      <div className="fixed inset-0 z-40 bg-black/50" onClick={onClose} aria-hidden="true" />
 
+      {/* Контейнер модалки - клики НЕ всплывают */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div className="bg-background rounded-lg border shadow-lg w-full max-w-3xl max-h-[90vh] flex flex-col pointer-events-auto">
+        <div
+          className="bg-background rounded-lg border shadow-lg w-full max-w-3xl max-h-[90vh] flex flex-col pointer-events-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Header */}
           <div className="sticky top-0 bg-background border-b p-6 flex items-center justify-between z-10">
             <div className="flex items-center gap-2">
@@ -528,8 +529,9 @@ export default function PredictionModal({
 
                 <DynamicEventsForm
                   matchData={matchData}
-                  onSelectedEventChange={handleSelectedEventChange}
-                  selectedEvent={formData.event}
+                  fixtureId={fixtureId}
+                  onSelectedOutcomeChange={handleSelectedOutcomeChange}
+                  selectedOutcome={formData.outcome}
                 />
               </div>
             ) : (

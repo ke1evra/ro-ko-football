@@ -313,170 +313,32 @@ export interface Post {
    * Главное изображение публикации (отображается в превью)
    */
   featuredImage?: (string | null) | Media;
-  /**
-   * ID матча из внешнего API (LiveScore)
-   */
-  matchId?: number | null;
-  /**
-   * ID предстоящего матча из внешнего API
-   */
-  fixtureId?: number | null;
   prediction?: {
     /**
-     * Прогноз исхода матча
+     * Новая структура: исходы с привязкой к CMS маркетам
      */
-    outcome?: ('home' | 'draw' | 'away') | null;
-    score?: {
-      /**
-       * Голы хозяев
-       */
-      home?: number | null;
-      /**
-       * Голы гостей
-       */
-      away?: number | null;
-    };
-    fouls?: {
-      /**
-       * Общее количество фолов
-       */
-      total?: number | null;
-      overUnder?: ('over' | 'under') | null;
-    };
-    corners?: {
-      /**
-       * Общее количество угловых
-       */
-      total?: number | null;
-      /**
-       * Угловые хозяев
-       */
-      home?: number | null;
-      /**
-       * Угловые гостей
-       */
-      away?: number | null;
-    };
-    yellowCards?: {
-      /**
-       * Общее количество желтых карточек
-       */
-      total?: number | null;
-      /**
-       * Желтые карточки хозяев
-       */
-      home?: number | null;
-      /**
-       * Желтые карточки гостей
-       */
-      away?: number | null;
-    };
-    /**
-     * Рекомендуется: структурированное хранение событий с энумами
-     */
-    events?:
+    outcomes?:
       | {
-          market:
-            | 'main'
-            | 'doubleChance'
-            | 'btts'
-            | 'total'
-            | 'statOutcome'
-            | 'statDoubleChance'
-            | 'teamTotal'
-            | 'handicap'
-            | 'combo';
-          /**
-           * Область применения (для голов и основных рынков)
-           */
-          scope?: ('ft' | '1h' | '2h') | null;
-          /**
-           * Показатель (для статистических рынков)
-           */
-          stat?:
-            | (
-                | 'goals'
-                | 'corners'
-                | 'yellowCards'
-                | 'redCards'
-                | 'fouls'
-                | 'throw_ins'
-                | 'goal_kicks'
-                | 'shotsOnTarget'
-                | 'shots'
-                | 'saves'
-                | 'offsides'
-                | 'substitutions'
-              )
-            | null;
-          /**
-           * Для market=main
-           */
-          outcome?: ('P1' | 'X' | 'P2') | null;
-          /**
-           * Для market=doubleChance/statDoubleChance
-           */
-          dc?: ('1X' | '12' | 'X2') | null;
-          /**
-           * Для market=btts
-           */
-          btts?: ('yes' | 'no') | null;
-          /**
-           * Для тоталов: market=total/teamTotal/combo
-           */
-          kind?: ('over' | 'under') | null;
-          /**
-           * Линия (если требуется рынком)
-           */
-          line?: number | null;
-          /**
-           * Для ИТ/фор
-           */
-          team?: ('home' | 'away') | null;
-          /**
-           * Для market=combo
-           */
-          comboDc?: ('1X' | 'X2') | null;
-          /**
-           * Для market=combo
-           */
-          comboKind?: ('over' | 'under') | null;
-          /**
-           * Коэффициент на событие
-           */
+          fixtureId?: number | null;
+          marketId: string;
+          outcomeGroupId: string;
+          market: string;
+          outcome: string;
+          value?: number | null;
           coefficient: number;
           /**
-           * Человекочитаемое представление события (опционально)
+           * Данные матча на момент создания прогноза
            */
-          label?: string | null;
+          matchInfo?: {
+            home?: string | null;
+            away?: string | null;
+            competition?: string | null;
+            date?: string | null;
+            time?: string | null;
+          };
           id?: string | null;
         }[]
       | null;
-    /**
-     * Информация о матче на момент создания прогноза
-     */
-    matchInfo?: {
-      /**
-       * Название команды хозяев
-       */
-      home?: string | null;
-      /**
-       * Название команды гостей
-       */
-      away?: string | null;
-      /**
-       * Название турнира/лиги
-       */
-      competition?: string | null;
-      /**
-       * Дата матча
-       */
-      date?: string | null;
-      /**
-       * Время матча
-       */
-      time?: string | null;
-    };
   };
   /**
    * Пользователь, создавший публикацию (автоматически заполняется при создании)
@@ -1593,64 +1455,29 @@ export interface PostsSelect<T extends boolean = true> {
   postType?: T;
   content?: T;
   featuredImage?: T;
-  matchId?: T;
-  fixtureId?: T;
   prediction?:
     | T
     | {
-        outcome?: T;
-        score?:
+        outcomes?:
           | T
           | {
-              home?: T;
-              away?: T;
-            };
-        fouls?:
-          | T
-          | {
-              total?: T;
-              overUnder?: T;
-            };
-        corners?:
-          | T
-          | {
-              total?: T;
-              home?: T;
-              away?: T;
-            };
-        yellowCards?:
-          | T
-          | {
-              total?: T;
-              home?: T;
-              away?: T;
-            };
-        events?:
-          | T
-          | {
+              fixtureId?: T;
+              marketId?: T;
+              outcomeGroupId?: T;
               market?: T;
-              scope?: T;
-              stat?: T;
               outcome?: T;
-              dc?: T;
-              btts?: T;
-              kind?: T;
-              line?: T;
-              team?: T;
-              comboDc?: T;
-              comboKind?: T;
+              value?: T;
               coefficient?: T;
-              label?: T;
+              matchInfo?:
+                | T
+                | {
+                    home?: T;
+                    away?: T;
+                    competition?: T;
+                    date?: T;
+                    time?: T;
+                  };
               id?: T;
-            };
-        matchInfo?:
-          | T
-          | {
-              home?: T;
-              away?: T;
-              competition?: T;
-              date?: T;
-              time?: T;
             };
       };
   author?: T;

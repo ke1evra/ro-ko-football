@@ -18,11 +18,19 @@ export const revalidate = 300
 function makeApiUrl(path: string): string {
   const isProd = process.env.NODE_ENV === 'production'
   const baseUrl = process.env.APP_URL
-  if (isProd || baseUrl) {
-    return `${baseUrl || ''}${path}`
+  
+  if (isProd && baseUrl) {
+    return `${baseUrl}${path}`
   }
-  // В dev без APP_URL используем относительные пути
-  return path
+  
+  // В dev используем APP_URL или дефолтный localhost:3000
+  if (baseUrl) {
+    return `${baseUrl}${path}`
+  }
+  
+  // Fallback для SSR в dev: используем localhost с портом из переменной или 3000
+  const port = process.env.PORT || '3000'
+  return `http://localhost:${port}${path}`
 }
 
 interface MatchParams {

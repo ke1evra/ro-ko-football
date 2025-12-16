@@ -136,24 +136,6 @@ export const Posts: CollectionConfig = {
     },
     // Поля для прогнозов (отображаются только когда postType = prediction)
     {
-      name: 'matchId',
-      type: 'number',
-      label: 'ID матча',
-      admin: {
-        condition: (data) => data.postType === 'prediction',
-        description: 'ID матча из внешнего API (LiveScore)',
-      },
-    },
-    {
-      name: 'fixtureId',
-      type: 'number',
-      label: 'ID фикстуры',
-      admin: {
-        condition: (data) => data.postType === 'prediction',
-        description: 'ID предстоящего матча из внешнего API',
-      },
-    },
-    {
       name: 'prediction',
       type: 'group',
       admin: {
@@ -161,303 +143,88 @@ export const Posts: CollectionConfig = {
       },
       fields: [
         {
-          name: 'outcome',
-          type: 'select',
-          options: [
-            { label: 'Победа хозяев', value: 'home' },
-            { label: 'Ничья', value: 'draw' },
-            { label: 'Победа гостей', value: 'away' },
-          ],
-          admin: {
-            description: 'Прогноз исхода матча',
-          },
-        },
-        {
-          name: 'score',
-          type: 'group',
-          fields: [
-            {
-              name: 'home',
-              type: 'number',
-              min: 0,
-              admin: {
-                description: 'Голы хозяев',
-              },
-            },
-            {
-              name: 'away',
-              type: 'number',
-              min: 0,
-              admin: {
-                description: 'Голы гостей',
-              },
-            },
-          ],
-        },
-        {
-          name: 'fouls',
-          type: 'group',
-          fields: [
-            {
-              name: 'total',
-              type: 'number',
-              min: 0,
-              admin: {
-                description: 'Общее количество фолов',
-              },
-            },
-            {
-              name: 'overUnder',
-              type: 'select',
-              options: [
-                { label: 'Больше 25.5', value: 'over' },
-                { label: 'Меньше 25.5', value: 'under' },
-              ],
-            },
-          ],
-        },
-        {
-          name: 'corners',
-          type: 'group',
-          fields: [
-            {
-              name: 'total',
-              type: 'number',
-              min: 0,
-              admin: {
-                description: 'Общее количество угловых',
-              },
-            },
-            {
-              name: 'home',
-              type: 'number',
-              min: 0,
-              admin: {
-                description: 'Угловые хозяев',
-              },
-            },
-            {
-              name: 'away',
-              type: 'number',
-              min: 0,
-              admin: {
-                description: 'Угловые гостей',
-              },
-            },
-          ],
-        },
-        {
-          name: 'yellowCards',
-          type: 'group',
-          fields: [
-            {
-              name: 'total',
-              type: 'number',
-              min: 0,
-              admin: {
-                description: 'Общее количество желтых карточек',
-              },
-            },
-            {
-              name: 'home',
-              type: 'number',
-              min: 0,
-              admin: {
-                description: 'Желтые карточки хозяев',
-              },
-            },
-            {
-              name: 'away',
-              type: 'number',
-              min: 0,
-              admin: {
-                description: 'Желтые карточки гостей',
-              },
-            },
-          ],
-        },
-
-        {
-          name: 'events',
+          name: 'outcomes',
           type: 'array',
-          label: 'События (структурированные)',
+          label: 'Исходы прогноза',
           admin: {
-            description: 'Рекомендуется: структурированное хранение событий с энумами',
+            description: 'Новая структура: исходы с привязкой к CMS маркетам',
           },
           fields: [
+            {
+              name: 'fixtureId',
+              type: 'number',
+              label: 'ID фикстуры',
+            },
+            {
+              name: 'marketId',
+              type: 'text',
+              label: 'ID маркета',
+              required: true,
+            },
+            {
+              name: 'outcomeGroupId',
+              type: 'text',
+              label: 'ID группы исходов',
+              required: true,
+            },
             {
               name: 'market',
-              type: 'select',
+              type: 'text',
+              label: 'Название маркета',
               required: true,
-              options: [
-                { label: 'Основные исходы', value: 'main' },
-                { label: 'Двойной шанс', value: 'doubleChance' },
-                { label: 'Обе забьют', value: 'btts' },
-                { label: 'Тотал', value: 'total' },
-                { label: 'Исход (статистика)', value: 'statOutcome' },
-                { label: 'Двойной шанс (статистика)', value: 'statDoubleChance' },
-                { label: 'Индивидуальный тотал', value: 'teamTotal' },
-                { label: 'Фора', value: 'handicap' },
-                { label: 'Комбо', value: 'combo' },
-              ],
-            },
-            {
-              name: 'scope',
-              type: 'select',
-              options: [
-                { label: 'Полный матч', value: 'ft' },
-                { label: '1-й тайм', value: '1h' },
-                { label: '2-й тайм', value: '2h' },
-              ],
-              admin: { description: 'Область применения (для голов и основных рынков)' },
-            },
-            {
-              name: 'stat',
-              type: 'select',
-              options: [
-                { label: 'Голы', value: 'goals' },
-                { label: 'Угловые', value: 'corners' },
-                { label: 'ЖК', value: 'yellowCards' },
-                { label: 'КК', value: 'redCards' },
-                { label: 'Фолы', value: 'fouls' },
-                { label: 'Ауты', value: 'throw_ins' },
-                { label: 'От ворот', value: 'goal_kicks' },
-                { label: 'Удары в створ', value: 'shotsOnTarget' },
-                { label: 'Удары', value: 'shots' },
-                { label: 'Сейвы', value: 'saves' },
-                { label: 'Офсайды', value: 'offsides' },
-                { label: 'Замены', value: 'substitutions' },
-              ],
-              admin: { description: 'Показатель (для статистических рынков)' },
             },
             {
               name: 'outcome',
-              type: 'select',
-              options: [
-                { label: 'П1', value: 'P1' },
-                { label: 'Х', value: 'X' },
-                { label: 'П2', value: 'P2' },
-              ],
-              admin: { description: 'Для market=main' },
+              type: 'text',
+              label: 'Название исхода',
+              required: true,
             },
             {
-              name: 'dc',
-              type: 'select',
-              options: [
-                { label: '1X', value: '1X' },
-                { label: '12', value: '12' },
-                { label: 'X2', value: 'X2' },
-              ],
-              admin: { description: 'Для market=doubleChance/statDoubleChance' },
-            },
-            {
-              name: 'btts',
-              type: 'select',
-              options: [
-                { label: 'Да', value: 'yes' },
-                { label: 'Нет', value: 'no' },
-              ],
-              admin: { description: 'Для market=btts' },
-            },
-            {
-              name: 'kind',
-              type: 'select',
-              options: [
-                { label: 'ТБ (over)', value: 'over' },
-                { label: 'ТМ (under)', value: 'under' },
-              ],
-              admin: { description: 'Для тоталов: market=total/teamTotal/combo' },
-            },
-            {
-              name: 'line',
+              name: 'value',
               type: 'number',
-              admin: { description: 'Линия (если требуется рынком)' },
-            },
-            {
-              name: 'team',
-              type: 'select',
-              options: [
-                { label: 'Хозяева', value: 'home' },
-                { label: 'Гости', value: 'away' },
-              ],
-              admin: { description: 'Для ИТ/фор' },
-            },
-            // Комбо-поля: "1X и ТБ/ТМ <линия>" (по голам)
-            {
-              name: 'comboDc',
-              type: 'select',
-              options: [
-                { label: '1X', value: '1X' },
-                { label: 'X2', value: 'X2' },
-              ],
-              admin: { description: 'Для market=combo' },
-            },
-            {
-              name: 'comboKind',
-              type: 'select',
-              options: [
-                { label: 'ТБ (over)', value: 'over' },
-                { label: 'ТМ (under)', value: 'under' },
-              ],
-              admin: { description: 'Для market=combo' },
+              label: 'Значение (для линий)',
             },
             {
               name: 'coefficient',
               type: 'number',
+              label: 'Коэффициент',
               required: true,
               min: 1,
-              admin: {
-                description: 'Коэффициент на событие',
-              },
             },
             {
-              name: 'label',
-              type: 'text',
-              admin: { description: 'Человекочитаемое представление события (опционально)' },
-            },
-          ],
-        },
-        {
-          name: 'matchInfo',
-          type: 'group',
-          admin: {
-            description: 'Информация о матче на момент создания прогноза',
-          },
-          fields: [
-            {
-              name: 'home',
-              type: 'text',
+              name: 'matchInfo',
+              type: 'group',
+              label: 'Информация о матче',
               admin: {
-                description: 'Название команды хозяев',
+                description: 'Данные матча на момент создания прогноза',
               },
-            },
-            {
-              name: 'away',
-              type: 'text',
-              admin: {
-                description: 'Название команды гостей',
-              },
-            },
-            {
-              name: 'competition',
-              type: 'text',
-              admin: {
-                description: 'Название турнира/лиги',
-              },
-            },
-            {
-              name: 'date',
-              type: 'text',
-              admin: {
-                description: 'Дата матча',
-              },
-            },
-            {
-              name: 'time',
-              type: 'text',
-              admin: {
-                description: 'Время матча',
-              },
+              fields: [
+                {
+                  name: 'home',
+                  type: 'text',
+                  label: 'Хозяева',
+                },
+                {
+                  name: 'away',
+                  type: 'text',
+                  label: 'Гости',
+                },
+                {
+                  name: 'competition',
+                  type: 'text',
+                  label: 'Турнир',
+                },
+                {
+                  name: 'date',
+                  type: 'text',
+                  label: 'Дата',
+                },
+                {
+                  name: 'time',
+                  type: 'text',
+                  label: 'Время',
+                },
+              ],
             },
           ],
         },
