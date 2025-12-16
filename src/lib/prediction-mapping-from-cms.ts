@@ -155,169 +155,64 @@ export interface MarketData {
  */
 export interface OutcomeData {
   name: string
-  comparisonOperator?: ComparisonOperator
-  // числовой операнд (линия) — берём из values[].value
-  value?: number
-  // фиксированное значение, например outcomeValue: 1/0/2
-  outcomeValue?: number
-  // between
-  range?: { lower?: number; upper?: number }
-  // in
-  set?: Array<number | string>
-  // exists
-  eventFilter?: PredictionMapping['eventFilter']
-  // область применения статистики (перемещено из маркета)
-  scope?: 'both' | 'home' | 'away' | 'difference'
-  // способ агрегирования (перемещено из маркета)
-  aggregation?: 'auto' | 'sum' | 'difference' | 'min' | 'max' | 'parity' | 'direct'
-  // дополнительные условия для комбинированных прогнозов
+
+  // Массив условий (новая структура)
   conditions?: Array<{
     comparisonOperator: ComparisonOperator
-    scope?: 'both' | 'home' | 'away' | 'difference'
-    aggregation: 'auto' | 'sum' | 'difference' | 'min' | 'max' | 'parity' | 'direct'
+
+    // Для исходов матча
+    outcomeValue?: number
+    set?: Array<number | { value: number }>
+
+    // Для обычных исходов
+    calculationType?: 'sum' | 'min' | 'max' | 'home' | 'away' | 'difference'
     value?: number
-    values?: Array<{ value: number }>
+
+    // Для специальных операторов
     range?: { lower?: number; upper?: number }
-    set?: Array<{ value: number | string }>
+    eventFilter?: {
+      type: 'goal' | 'own_goal' | 'penalty' | 'yellow_card' | 'red_card' | 'var' | 'substitution'
+      team?: 'any' | 'home' | 'away'
+      period?: 'any' | '1h' | '2h'
+    }
   }>
-  // логика объединения условий
+
   conditionLogic?: 'AND' | 'OR'
+
+  // Старая структура (для обратной совместимости)
+  comparisonOperator?: ComparisonOperator
+  calculationType?: 'sum' | 'min' | 'max' | 'home' | 'away' | 'difference'
+  value?: number
+  outcomeValue?: number
+  set?: Array<number | { value: number }>
+  range?: { lower?: number; upper?: number }
+  eventFilter?: {
+    type: 'goal' | 'own_goal' | 'penalty' | 'yellow_card' | 'red_card' | 'var' | 'substitution'
+    team?: 'any' | 'home' | 'away'
+    period?: 'any' | '1h' | '2h'
+  }
 }
 
 /**
- * Вспомогательная функция: определить calculationType и конечный statPath из market.mappingConfig, outcome.scope и outcome.aggregation
+ * Маппинг calculationType в CalculationType
  */
-function deriveCalculation(
-  config: NonNullable<MarketData['mappingConfig']>,
-  scope: string = 'both',
-  aggregation: string = 'auto',
-): { calculationType: CalculationType; statPath: string } | null {
-  const { statType, statPath: basePath } = config
-  if (!statType || statType === 'none') return null
-
-  // Исход матча — отдельный тип
-  if (statType === 'outcome') {
-    return { calculationType: 'outcome', statPath: 'outcome' }
-  }
-
-  // Голы могут подтягиваться из Matches
-  if (statType === 'goals') {
-    if (aggregation === 'difference' || scope === 'difference') {
-      return { calculationType: 'difference', statPath: 'goals' }
-    }
-    if (aggregation === 'min') return { calculationType: 'min', statPath: 'goals' }
-    if (aggregation === 'max') return { calculationType: 'max', statPath: 'goals' }
-    if (aggregation === 'parity') return { calculationType: 'parity', statPath: 'goals' }
-    if (aggregation === 'sum' || scope === 'both')
-      return { calculationType: 'sum', statPath: 'goals' }
-    if (aggregation === 'direct' && basePath) {
-      // Прямое значение для конкретной команды через пути goals.home/goals.away не задаём через statPath,
-      // т.к. голы берем из Matches. Оставляем сумму по умолчанию.
-      return { calculationType: 'sum', statPath: 'goals' }
-    }
-    // По умолчанию — сумма
-    return { calculationType: 'sum', statPath: 'goals' }
-  }
-
-  // Числовая статистика (угловые/карточки/фолы/удары/...) из MatchStats
-  if (!basePath) return null
-
-  if (aggregation !== 'auto') {
-    // Явное переопределение
-    switch (aggregation) {
-      case 'sum':
-        return { calculationType: 'sum', statPath: basePath }
-      case 'difference':
-        return { calculationType: 'difference', statPath: basePath }
-      case 'min':
-        return { calculationType: 'min', statPath: basePath }
-      case 'max':
-        return { calculationType: 'max', statPath: basePath }
-      case 'parity':
-        return { calculationType: 'parity', statPath: basePath }
-      case 'direct':
-        // direct подразумевает конкретную команду
-        if (scope === 'home') return { calculationType: 'direct', statPath: `${basePath}.home` }
-        if (scope === 'away') return { calculationType: 'direct', statPath: `${basePath}.away` }
-        // если команда не указана — дефолт к сумме
-        return { calculationType: 'sum', statPath: basePath }
-    }
-  }
-
-  // AUTO по scope
-  switch (scope) {
+function mapCalculationType(ct: string): CalculationType {
+  switch (ct) {
+    case 'sum':
+      return 'sum'
+    case 'min':
+      return 'min'
+    case 'max':
+      return 'max'
     case 'home':
-      return { calculationType: 'direct', statPath: `${basePath}.home` }
+      return 'direct'
     case 'away':
-      return { calculationType: 'direct', statPath: `${basePath}.away` }
+      return 'direct'
     case 'difference':
-      return { calculationType: 'difference', statPath: basePath }
-    case 'both':
+      return 'difference'
     default:
-      return { calculationType: 'sum', statPath: basePath }
+      return 'sum'
   }
-}
-
-/**
- * Универсальный конструктор маппинга по данным CMS
- */
-export function createMappingFromCMS(
-  market: MarketData,
-  outcome: OutcomeData,
-): PredictionMapping | null {
-  const config = market.mappingConfig
-  if (!config) return null
-
-  const calc = deriveCalculation(config, outcome.scope || 'both', outcome.aggregation || 'auto')
-  if (!calc) return null
-
-  const mapping: PredictionMapping = {
-    statPath: calc.statPath,
-    calculationType: calc.calculationType,
-    comparisonOperator: outcome.comparisonOperator || 'eq',
-  }
-
-  // Операнд/доп.поля по оператору
-  switch (mapping.comparisonOperator) {
-    case 'between': {
-      const lower = outcome.range?.lower
-      const upper = outcome.range?.upper
-      if (typeof lower === 'number') mapping.rangeLower = lower
-      if (typeof upper === 'number') mapping.rangeUpper = upper
-      break
-    }
-    case 'in': {
-      // Если явно передали множество — используем его
-      if (Array.isArray(outcome.set) && outcome.set.length > 0) {
-        mapping.setValues = outcome.set
-        break
-      }
-      // Популярные предустановки для двойного шанса, если set не задан
-      if (outcome.name === '1X') mapping.setValues = [1, 0]
-      if (outcome.name === '12') mapping.setValues = [1, 2]
-      if (outcome.name === 'X2') mapping.setValues = [0, 2]
-      break
-    }
-    case 'even':
-    case 'odd': {
-      // operand не требуется
-      break
-    }
-    case 'exists': {
-      if (outcome.eventFilter) mapping.eventFilter = outcome.eventFilter
-      break
-    }
-    default: {
-      // Числовые операторы и eq по числам
-      if (typeof outcome.outcomeValue === 'number') {
-        mapping.predictedValue = outcome.outcomeValue
-      } else if (typeof outcome.value === 'number') {
-        mapping.predictedValue = outcome.value
-      }
-    }
-  }
-
-  return mapping
 }
 
 /**
@@ -597,7 +492,7 @@ export function validateOutcomeForMapping(outcome: OutcomeData): {
 }
 
 /**
- * Создать маппинг из дополнительного условия
+ * Создать маппинг из одного условия
  */
 function createMappingFromCondition(
   market: MarketData,
@@ -606,54 +501,68 @@ function createMappingFromCondition(
   const config = market.mappingConfig
   if (!config) return null
 
-  const calc = deriveCalculation(
-    config,
-    condition.scope || 'both',
-    condition.aggregation || 'auto',
-  )
-  if (!calc) return null
-
   const mapping: PredictionMapping = {
-    statPath: calc.statPath,
-    calculationType: calc.calculationType,
     comparisonOperator: condition.comparisonOperator,
   }
 
-  // Операнд/доп.поля по оператору
-  switch (mapping.comparisonOperator) {
-    case 'between': {
-      const lower = condition.range?.lower
-      const upper = condition.range?.upper
-      if (typeof lower === 'number') mapping.rangeLower = lower
-      if (typeof upper === 'number') mapping.rangeUpper = upper
-      break
+  // Исход матча
+  if (config.statType === 'outcome') {
+    mapping.statPath = 'outcome'
+    mapping.calculationType = 'outcome'
+
+    if (condition.outcomeValue !== undefined) {
+      mapping.predictedValue = condition.outcomeValue
     }
-    case 'in': {
-      if (Array.isArray(condition.set) && condition.set.length > 0) {
-        mapping.setValues = condition.set.map((item) =>
-          typeof item === 'object' && 'value' in item ? item.value : item,
-        )
-      }
-      break
+    if (condition.set) {
+      mapping.setValues = condition.set.map((item) =>
+        typeof item === 'object' && 'value' in item ? item.value : item,
+      )
     }
-    case 'even':
-    case 'odd': {
-      // operand не требуется
-      break
+
+    return mapping
+  }
+
+  // Голы или числовая статистика
+  const basePath = config.statPath || 'goals'
+
+  // Определяем calculationType
+  if (condition.calculationType) {
+    mapping.calculationType = mapCalculationType(condition.calculationType)
+
+    // Для home/away добавляем путь
+    if (condition.calculationType === 'home') {
+      mapping.statPath = `${basePath}.home`
+    } else if (condition.calculationType === 'away') {
+      mapping.statPath = `${basePath}.away`
+    } else {
+      mapping.statPath = basePath
     }
-    default: {
-      // Числовые операторы
-      if (typeof condition.value === 'number') {
-        mapping.predictedValue = condition.value
-      } else if (Array.isArray(condition.values) && condition.values.length > 0) {
-        const firstValue = condition.values[0]
-        if (typeof firstValue === 'object' && 'value' in firstValue) {
-          mapping.predictedValue = firstValue.value
-        } else if (typeof firstValue === 'number') {
-          mapping.predictedValue = firstValue
-        }
-      }
-    }
+  } else {
+    mapping.statPath = basePath
+    mapping.calculationType = 'sum'
+  }
+
+  // Значение
+  if (condition.value !== undefined) {
+    mapping.predictedValue = condition.value
+  }
+
+  // Диапазон
+  if (condition.range) {
+    mapping.rangeLower = condition.range.lower
+    mapping.rangeUpper = condition.range.upper
+  }
+
+  // Множество
+  if (condition.set) {
+    mapping.setValues = condition.set.map((item) =>
+      typeof item === 'object' && 'value' in item ? item.value : item,
+    )
+  }
+
+  // Фильтр событий
+  if (condition.eventFilter) {
+    mapping.eventFilter = condition.eventFilter
   }
 
   return mapping
@@ -668,44 +577,36 @@ export function evaluateOutcome(
   market: MarketData,
   outcome: OutcomeData,
 ): boolean | null {
-  // Создаём основной маппинг
-  const primaryMapping = createMappingFromCMS(market, outcome)
-  if (!primaryMapping) return null
-
-  // Оцениваем основное условие
-  const primaryResult = evaluateMapping(match, matchStats, primaryMapping)
-  if (primaryResult === null) return null
-
-  // Если нет дополнительных условий — возвращаем результат основного
   if (!outcome.conditions || outcome.conditions.length === 0) {
-    return primaryResult
+    return null
   }
 
-  // Оцениваем дополнительные условия
-  const conditionResults: boolean[] = [primaryResult]
+  // Оцениваем все условия
+  const results: (boolean | null)[] = []
 
   for (const condition of outcome.conditions) {
-    const conditionMapping = createMappingFromCondition(market, condition)
-    if (!conditionMapping) return null
+    const mapping = createMappingFromCondition(market, condition)
+    if (!mapping) return null
 
-    const conditionResult = evaluateMapping(match, matchStats, conditionMapping)
-    if (conditionResult === null) return null
+    const result = evaluateMapping(match, matchStats, mapping)
+    if (result === null) return null
 
-    conditionResults.push(conditionResult)
+    results.push(result)
+  }
+
+  // Если одно условие — возвращаем его
+  if (results.length === 1) {
+    return results[0]
   }
 
   // Применяем логику объединения
   const logic = outcome.conditionLogic || 'AND'
 
-  if (logic === 'AND') {
-    // Все условия должны быть истинны
-    return conditionResults.every((result) => result === true)
-  } else if (logic === 'OR') {
-    // Хотя бы одно условие должно быть истинно
-    return conditionResults.some((result) => result === true)
+  if (logic === 'OR') {
+    return results.some((r) => r === true)
+  } else {
+    return results.every((r) => r === true)
   }
-
-  return null
 }
 
 /**

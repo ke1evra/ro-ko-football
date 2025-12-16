@@ -32,7 +32,7 @@ interface Market {
     name: string
     outcomes: Array<{
       name: string
-      values: Array<{
+      values?: Array<{
         value: number
       }>
     }>
@@ -278,7 +278,7 @@ export default function DynamicEventsForm({
                                   {outcome.name}
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                  {outcome.values.map((val, valIdx) => (
+                                  {(outcome.values || []).map((val, valIdx) => (
                                     <div
                                       key={`val-${colIdx}-${valIdx}`}
                                       className="flex flex-col gap-2"
@@ -322,7 +322,7 @@ export default function DynamicEventsForm({
                                 {outcome.name}
                               </div>
                               <div className="flex flex-col gap-2">
-                                {outcome.values.map((val, valIdx) => (
+                                {(outcome.values || []).map((val, valIdx) => (
                                   <div
                                     key={`val-${rowIdx}-${colIdx}-${valIdx}`}
                                     className="flex flex-col gap-2"

@@ -135,13 +135,11 @@ export const OutcomeGroups: CollectionConfig = {
                   // Показываем только для min (ОЗ) и max (ре��ко)
                   // НЕ показываем для sum (ТБ/ТМ), home (ИТБ1), away (ИТБ2), difference (Форы)
                   const showForTypes = ['min', 'max']
-                  
+
                   return (
                     siblingData?.calculationType &&
                     showForTypes.includes(siblingData.calculationType) &&
-                    !['between', 'in', 'even', 'odd'].includes(
-                      siblingData?.comparisonOperator,
-                    )
+                    !['between', 'in', 'even', 'odd'].includes(siblingData?.comparisonOperator)
                   )
                 },
               },
@@ -152,8 +150,7 @@ export const OutcomeGroups: CollectionConfig = {
               admin: {
                 description: 'Значение исхода матча (1 = П1, 0 = Х, 2 = П2)',
                 condition: (_, siblingData) =>
-                  !siblingData?.calculationType &&
-                  siblingData?.comparisonOperator === 'eq',
+                  !siblingData?.calculationType && siblingData?.comparisonOperator === 'eq',
               },
             },
             {
@@ -161,10 +158,8 @@ export const OutcomeGroups: CollectionConfig = {
               type: 'array',
               label: 'Множество значений',
               admin: {
-                description:
-                  'Для оператора "Принадлежность множеству". Пример: 1Х → [1, 0]',
-                condition: (_, siblingData) =>
-                  siblingData?.comparisonOperator === 'in',
+                description: 'Для оператора "Принадлежность множеству". Пример: 1Х → [1, 0]',
+                condition: (_, siblingData) => siblingData?.comparisonOperator === 'in',
               },
               fields: [{ name: 'value', type: 'number', required: true }],
             },
@@ -173,8 +168,7 @@ export const OutcomeGroups: CollectionConfig = {
               type: 'group',
               admin: {
                 description: 'Для оператора "Диапазон (между)"',
-                condition: (_, siblingData) =>
-                  siblingData?.comparisonOperator === 'between',
+                condition: (_, siblingData) => siblingData?.comparisonOperator === 'between',
               },
               fields: [
                 {
@@ -238,8 +232,7 @@ export const OutcomeGroups: CollectionConfig = {
             description:
               'Логика объединения условий. Показывается только если условий больше одного.',
             condition: (_, siblingData) =>
-              Array.isArray(siblingData?.conditions) &&
-              siblingData.conditions.length > 1,
+              Array.isArray(siblingData?.conditions) && siblingData.conditions.length > 1,
           },
         },
       ],
