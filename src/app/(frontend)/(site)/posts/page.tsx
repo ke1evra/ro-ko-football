@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { getUser } from '@/lib/auth'
-import { UserAvatar } from '@/components/UserAvatar'
+import { UserAvatarLink } from '@/components/UserAvatarLink'
 import { extractTextFromLexical, truncateText } from '@/lib/lexical-utils'
 
 export const dynamic = 'force-dynamic'
@@ -71,7 +71,7 @@ export default async function PostsPage({
               return (
                 <article key={post.id} className="border rounded-md p-4">
                   <div className="flex items-start gap-3">
-                    <UserAvatar user={author} size="md" />
+                    <UserAvatarLink user={author} size="md" />
                     <div className="flex-1 min-w-0">
                       <h2 className="text-lg font-medium">
                         <Link href={`/posts/${post.slug}`} className="hover:underline">

@@ -90,9 +90,9 @@ export const Header = () => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/profile">
+                  <Link href="/my-profile">
                     <UserIcon className="mr-2 h-4 w-4" />
-                    <span>Профиль</span>
+                    <span>Мой профиль</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

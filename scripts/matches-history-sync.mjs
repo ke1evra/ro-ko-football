@@ -933,7 +933,7 @@ async function fetchMatchStatsDTO(matchId, retries = 3) {
 
   return result
 }
-async function fetchAndUpsertStatsForMatch(payload, payloadMatchId, matchId) {
+async function fetchAndUpsertStatsForMatch(payload, payloadMatchId, matchId, fixtureId) {
   try {
     const dto = await fetchMatchStatsDTO(matchId)
     const existing = await payload.find({
@@ -943,7 +943,7 @@ async function fetchAndUpsertStatsForMatch(payload, payloadMatchId, matchId) {
       depth: 0,
       overrideAccess: true,
     })
-    // Подсчет непустых метрик перед з��писью
+    // Подсчет непустых метрик перед записью
     const isPair = (p) => p && typeof p === 'object' && (p.home != null || p.away != null)
     const metricsPresent = [
       dto.possession,
@@ -987,6 +987,21 @@ async function fetchAndUpsertStatsForMatch(payload, payloadMatchId, matchId) {
       data: { hasStats: true, lastSyncAt: new Date().toISOString() },
       overrideAccess: true,
     })
+
+    // Подсчитать статистику прогнозов для этого матча
+    if (fixtureId) {
+      try {
+        const { calculatePredictionsForMatch } = await import(
+          './calculate-predictions-for-match.mjs'
+        )
+        await calculatePredictionsForMatch(payload, fixtureId)
+      } catch (predError) {
+        console.warn(
+          `[PREDICTIONS] Ошибка подсчёта прогнозов для fixtureId=${fixtureId}:`,
+          predError?.message || predError,
+        )
+      }
+    }
   } catch (e) {
     if (e?.code === 'REQUEST_BUDGET_EXHAUSTED') throw e
     console.warn(`[STATS] Ошибка для matchId=${matchId}:`, e?.message || e)
@@ -1114,7 +1129,7 @@ async function processDay(
 
           // Подтягиваем статистику для завершённых матчей (только если включено)
           if (withStats && doc.status === 'finished' && id) {
-            await fetchAndUpsertStatsForMatch(payload, id, doc.matchId)
+            await fetchAndUpsertStatsForMatch(payload, id, doc.matchId, doc.fixtureId)
           }
 
           return { action, matchId: doc.matchId }

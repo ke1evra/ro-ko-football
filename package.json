@@ -50,7 +50,13 @@
     "matches:import:forward": "node --loader @esbuild-kit/esm-loader scripts/import-matches-forward.mjs",
     "matches:import:backward": "node --loader @esbuild-kit/esm-loader scripts/import-matches-backward.mjs",
     "matches:import:forward:loop": "pnpm run matches:import:forward -- --loop --interval=600000",
-    "matches:import:backward:loop": "pnpm run matches:import:backward -- --loop"
+    "matches:import:backward:loop": "pnpm run matches:import:backward -- --loop",
+    "predictions:stats:calc": "node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.mjs",
+    "predictions:stats:calc:force": "node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.mjs --force",
+    "predictions:stats:recalc": "node --loader @esbuild-kit/esm-loader scripts/prediction-stats/recalculate-all.mjs",
+    "predictions:stats:by-match": "node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-by-match.mjs",
+    "predictions:stats:by-user": "node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-by-user.mjs",
+    "predictions:stats:by-post": "node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-by-post.mjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

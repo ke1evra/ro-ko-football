@@ -8,8 +8,11 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { AvatarUpload } from '@/components/AvatarUpload'
 import { Container, Section } from '@/components/ds'
+import { PredictionStatsCard } from '@/components/profile/PredictionStatsCard'
+import { UserPredictionsList } from '@/components/profile/UserPredictionsList'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-export default function ProfilePage() {
+export default function MyProfilePage() {
   const { user, isLoading, refreshUser } = useAuth()
   const [form, setForm] = useState({
     name: '',
@@ -156,7 +159,71 @@ export default function ProfilePage() {
             )}
           </div>
         </form>
+
+        {/* Статистика прогнозов */}
+        <div className="border-t pt-8">
+          <h2 className="text-2xl font-bold mb-6">Статистика прогнозов</h2>
+          <Tabs defaultValue="stats" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="stats">Общая статистика</TabsTrigger>
+              <TabsTrigger value="predictions">Мои прогнозы</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="stats" className="space-y-4">
+              <PredictionStatsContainer userId={user.id} />
+            </TabsContent>
+
+            <TabsContent value="predictions" className="space-y-4">
+              <UserPredictionsList userId={user.id} />
+            </TabsContent>
+          </Tabs>
+        </div>
       </Container>
     </Section>
   )
+}
+
+// Компонент для загрузки и отображения статистики
+function PredictionStatsContainer({ userId }: { userId: string }) {
+  const [stats, setStats] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        const response = await fetch(`/api/predictions/stats/${userId}`)
+
+        if (!response.ok) {
+          throw new Error('Ошибка загрузки статистики')
+        }
+
+        const data = await response.json()
+        setStats(data.stats)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Неизвестная ошибка')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStats()
+  }, [userId])
+
+  if (loading) {
+    return <div className="text-center py-8 text-muted-foreground">Загрузка статистики...</div>
+  }
+
+  if (error) {
+    return <div className="text-center py-8 text-red-600">{error}</div>
+  }
+
+  if (!stats) {
+    return <div className="text-center py-8 text-muted-foreground">Статистика ещё не доступна</div>
+  }
+
+  return <PredictionStatsCard stats={stats} />
 }
