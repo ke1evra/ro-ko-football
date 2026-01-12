@@ -4,7 +4,7 @@ services:
   matches_import_forward:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.worker
     # Доступ к хостовым сервисам (Mongo и т.п.) как у app
     network_mode: "host"
     env_file:

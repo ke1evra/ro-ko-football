@@ -1,0 +1,30 @@
+# Легкий Dockerfile для воркеров (импорт матчей, расчет статистики)
+FROM node:22.12.0-alpine AS base
+
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml ./
+ENV COREPACK_INTEGRITY_KEYS=0
+RUN corepack enable pnpm && pnpm i --no-frozen-lockfile
+
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV COREPACK_INTEGRITY_KEYS=0
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 worker
+
+COPY --from=deps /app/node_modules ./node_modules
+RUN corepack enable pnpm
+
+COPY --chown=worker:nodejs package.json pnpm-lock.yaml ./
+COPY --chown=worker:nodejs scripts ./scripts
+COPY --chown=worker:nodejs src ./src
+
+USER worker
+
+CMD ["pnpm", "run", "predictions:stats:calc:loop"]
