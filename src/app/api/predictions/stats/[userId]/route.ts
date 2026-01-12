@@ -1,12 +1,12 @@
 import { getPayload } from 'payload'
-import config from '@/payload.config'
+import configPromise from '@payload-config'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   try {
     const { userId } = await params
 
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await configPromise })
 
     // Получить все статистики прогнозов пользователя
     const statsResponse = await payload.find({

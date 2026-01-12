@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
-import config from '@payload-config'
+import configPromise from '@payload-config'
 import { getUser } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File size must be less than 5MB' }, { status: 400 })
     }
 
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await configPromise })
 
     // Создаем новый медиа файл
     const result = await payload.create({

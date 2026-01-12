@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
-import config from '@/payload.config'
+import configPromise from '@payload-config'
 
 export async function GET(request: NextRequest) {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await configPromise })
 
     const markets = await payload.find({
       collection: 'bet-markets',
