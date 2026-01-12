@@ -1,12 +1,13 @@
 # Worker Services
 
-Отдельные worker-сервисы для периодических задач импорта матчей.
+Отдельные worker-сервисы для периодических задач импорта матчей и расчета статистики прогнозов.
 
 ## Структура
 
 - `docker-compose.yml` — основной сервис app
 - `docker-compose.matches-import-forward.yml` — worker импорта матчей вперёд (новые матчи)
 - `docker-compose.matches-import-backward.yml` — worker импорта матчей назад (история)
+- `docker-compose.prediction-stats.yml` — worker расчета статистики прогнозов
 
 ## Запуск
 
@@ -22,11 +23,23 @@ docker compose -f docker-compose.matches-import-forward.yml up -d
 docker compose -f docker-compose.matches-import-backward.yml up -d
 ```
 
-### Оба worker'а одновременно
+### Расчет статистики прогнозов (интервал 10 минут)
 
 ```bash
+docker compose -f docker-compose.prediction-stats.yml up -d
+```
+
+### Все worker'ы одновременно (рекомендуется для продакшена)
+
+```bash
+# Импорт матчей + расчет статистики
+docker compose -f docker-compose.matches-import-forward.yml up -d
+docker compose -f docker-compose.prediction-stats.yml up -d
+
+# Или с историей
 docker compose -f docker-compose.matches-import-forward.yml up -d
 docker compose -f docker-compose.matches-import-backward.yml up -d
+docker compose -f docker-compose.prediction-stats.yml up -d
 ```
 
 ## Управление
@@ -39,6 +52,9 @@ docker compose -f docker-compose.matches-import-forward.yml logs -f
 
 # Логи backward worker'а
 docker compose -f docker-compose.matches-import-backward.yml logs -f
+
+# Логи prediction stats worker'а
+docker compose -f docker-compose.prediction-stats.yml logs -f
 ```
 
 ### Остановка
@@ -126,5 +142,12 @@ Worker'ы запускают следующие npm-скрипты:
 
 - `matches:import:forward:loop` — импорт новых матчей с интервалом 10 минут
 - `matches:import:backward:loop` — импорт истории матчей
+- `predictions:stats:calc:loop` — расчет статистики прогнозов с интервалом 10 минут
 
 Скрипты определены в `package.json`.
+
+## Дополнительная документация
+
+- `PREDICTION_STATS_DOCKER.md` — подробная документация по расчету статистики прогнозов
+- `docs/PREDICTION_STATS_CALCULATION.md` — алгоритм расчета статистики
+- `scripts/prediction-stats/README.md` — документация по скриптам расчета

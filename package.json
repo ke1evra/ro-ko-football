@@ -53,6 +53,7 @@
     "matches:import:backward:loop": "pnpm run matches:import:backward -- --loop",
     "predictions:stats:calc": "tsx scripts/prediction-stats/calculate-all.mjs",
     "predictions:stats:calc:force": "tsx scripts/prediction-stats/calculate-all.mjs --force",
+    "predictions:stats:calc:loop": "tsx scripts/prediction-stats/calculate-all.mjs --loop --interval=600000",
     "predictions:stats:recalc": "tsx scripts/prediction-stats/recalculate-all.mjs",
     "predictions:stats:by-match": "tsx scripts/prediction-stats/calculate-by-match.mjs",
     "predictions:stats:by-user": "tsx scripts/prediction-stats/calculate-by-user.mjs",

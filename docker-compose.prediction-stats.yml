@@ -1,0 +1,18 @@
+name: appstack-prediction-stats
+
+services:
+  prediction_stats_calculator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Доступ к хостовым сервисам (Mongo и т.п.) как у app
+    network_mode: "host"
+    env_file:
+      - ./.env
+    environment:
+      DATABASE_URI: "mongodb://syncadmin:syncadminsyncadmin123qQ!@127.0.0.1:27017/payload?authSource=admin"
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+      NODE_ENV: ${NODE_ENV}
+      APP_URL: "http://localhost:3100"
+    command: pnpm predictions:stats:calc:loop
+    restart: unless-stopped

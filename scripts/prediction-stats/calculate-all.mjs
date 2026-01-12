@@ -5,6 +5,7 @@
  * Использование:
  *   node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.mjs
  *   node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.mjs --force  # Пересчитать все, включая существующие
+ *   node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.mjs --loop --interval=600000  # Запуск в режиме постоянной работы
  */
 
 import dotenv from 'dotenv'
@@ -34,13 +35,24 @@ for (const p of envCandidates) {
 
 const { default: config } = await import('../../src/payload.config.ts')
 
+function parseArg(name, def = undefined) {
+  const k = `--${name}=`
+  const found = process.argv.find((a) => a.startsWith(k))
+  if (found) return found.slice(k.length)
+  return def
+}
+
+function hasFlag(name) {
+  return process.argv.includes(`--${name}`)
+}
+
 const args = process.argv.slice(2)
-const force = args.includes('--force')
+const force = hasFlag('force')
+const loop = hasFlag('loop')
+const interval = Number(parseArg('interval', 600000)) // 10 минут по умолчанию
 
-async function main() {
+async function runOnce(payload) {
   console.log('🚀 Запуск массового подсчёта статистики прогнозов...\n')
-
-  const payload = await getPayload({ config })
 
   // Найти все прогнозы
   const predictions = await payload.find({
@@ -126,7 +138,40 @@ async function main() {
   console.log(`Ошибок: ${errors}`)
   console.log('='.repeat(50))
 
-  process.exit(0)
+  return { processed, created, updated, skipped, errors }
+}
+
+async function runLoop(payload, interval) {
+  console.log(`[LOOP] Запуск в режиме постоянной работы с интервалом ${interval / 1000} сек`)
+
+  let iteration = 0
+  while (true) {
+    iteration++
+    console.log(`\n[LOOP] === Итерация ${iteration} ===`)
+
+    try {
+      await runOnce(payload)
+    } catch (error) {
+      console.error(`[LOOP] Ошибка в итерации ${iteration}:`, error.message)
+      if (process.env.DEBUG === '1') {
+        console.error('[DEBUG] Полная ошибка:', error)
+      }
+    }
+
+    console.log(`[LOOP] Ожидание ${interval / 1000} сек до следующей итерации...`)
+    await new Promise((resolve) => setTimeout(resolve, interval))
+  }
+}
+
+async function main() {
+  const payload = await getPayload({ config })
+
+  if (loop) {
+    await runLoop(payload, interval)
+  } else {
+    await runOnce(payload)
+    process.exit(0)
+  }
 }
 
 main().catch((error) => {
