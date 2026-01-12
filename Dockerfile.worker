@@ -22,6 +22,7 @@ COPY --from=deps /app/node_modules ./node_modules
 RUN corepack enable pnpm
 
 COPY --chown=worker:nodejs package.json pnpm-lock.yaml ./
+COPY --chown=worker:nodejs tsconfig.json ./
 COPY --chown=worker:nodejs scripts ./scripts
 COPY --chown=worker:nodejs src ./src
 
