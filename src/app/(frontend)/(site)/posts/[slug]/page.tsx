@@ -137,7 +137,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
         {/* Макет для прогнозов */}
         {isPrediction ? (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Левая колонка: Детали прогноза + контент */}
             <div className="lg:col-span-2 space-y-6">
               {/* Детали прогноза - всегда сверху */}
@@ -152,7 +152,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                             <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-primary/20 rounded text-xs font-medium text-primary">
                               <Calendar className="h-3 w-3" />
                               {outcomes[0].matchInfo.competition}
-                          </div>
+                            </div>
                           )}
                           <h2 className="text-xl font-bold leading-tight">
                             {outcomes[0].matchInfo.home} — {outcomes[0].matchInfo.away}
@@ -166,8 +166,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                         {outcomes[0].fixtureId && (
                           <Link href={getMatchUrl(outcomes[0])}>
                             <Button variant="outline" size="sm" className="gap-2 shrink-0">
-                              <Calendar className="h-4 w-4" />
-                              К матчу
+                              <Calendar className="h-4 w-4" />К матчу
                             </Button>
                           </Link>
                         )}
@@ -213,7 +212,10 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                         >
                           {/* Маркет и группа исходов */}
                           <div className="flex items-center gap-2 mb-3 flex-wrap">
-                            <Badge variant="default" className="text-xs font-semibold bg-primary text-primary-foreground">
+                            <Badge
+                              variant="default"
+                              className="text-xs font-semibold bg-primary text-primary-foreground"
+                            >
                               {outcome.marketName}
                             </Badge>
                             {outcomeGroupName && (
@@ -224,22 +226,27 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                                 </Badge>
                               </>
                             )}
-                          {isExpress && (
+                            {isExpress && (
                               <Badge variant="secondary" className="ml-auto text-xs">
                                 #{index + 1}
                               </Badge>
-                                )}
-                              </div>
+                            )}
+                          </div>
 
                           {/* Исход и коэффициент */}
                           <div className="flex items-center justify-between gap-4">
                             <div className="flex items-baseline gap-2">
                               <div className="flex items-center gap-2">
                                 <Target className="h-4 w-4 text-primary shrink-0" />
-                                <span className="text-xl font-bold text-foreground">{outcome.outcomeName}</span>
+                                <span className="text-xl font-bold text-foreground">
+                                  {outcome.outcomeName}
+                                </span>
                               </div>
                               {outcome.value !== null && outcome.value !== undefined && (
-                                <Badge variant="outline" className="text-base text-primary font-semibold border-primary/50">
+                                <Badge
+                                  variant="outline"
+                                  className="text-base text-primary font-semibold border-primary/50"
+                                >
                                   {outcome.value}
                                 </Badge>
                               )}
@@ -247,7 +254,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-muted-foreground uppercase">КФ</span>
                               <Badge className="font-mono text-base px-3 py-1 bg-primary">
-                                    {outcome.coefficient}
+                                {outcome.coefficient}
                               </Badge>
                             </div>
                           </div>
@@ -255,19 +262,19 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                       )
                     })}
 
-                      {/* Общий коэффициент для экспресса */}
-                      {isExpress && (
+                    {/* Общий коэффициент для экспресса */}
+                    {isExpress && (
                       <div className="pt-3 mt-3 border-t">
-                          <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-muted-foreground">
-                                Итоговый коэффициент
-                              </span>
+                            Итоговый коэффициент
+                          </span>
                           <Badge className="font-mono text-base px-3 py-1 bg-primary">
                             {outcomes.reduce((acc, o) => acc * (o.coefficient || 1), 1).toFixed(2)}
                           </Badge>
-                          </div>
                         </div>
-                      )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}
@@ -275,10 +282,10 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
               {/* Контент (текст), если есть */}
               {hasContent && (
                 <div className="prose max-w-none">
-                    <RichTextRenderer value={post.content} />
-                                </div>
-                              )}
-                            </div>
+                  <RichTextRenderer value={post.content} />
+                </div>
+              )}
+            </div>
 
             {/* Правая колонка: Результат прогноза + О прогнозисте */}
             <div className="lg:col-span-1 space-y-4">
@@ -287,8 +294,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
               {/* О прогнозисте */}
               <PredictorCard author={author} currentPostId={String(post.id)} />
-                </div>
-              </div>
+            </div>
+          </div>
         ) : (
           /* Обычный макет для не-прогнозов */
           <Prose>
