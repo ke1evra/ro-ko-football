@@ -47,16 +47,16 @@
     "leagues:names:translate": "node scripts/translate-league-names.mjs",
     "leagues:names:translate:latest": "sh scripts/leagues-names-translate-latest.sh",
     "leagues:names:import": "node --loader @esbuild-kit/esm-loader scripts/import-league-names.mjs",
-    "matches:import:forward": "node --loader @esbuild-kit/esm-loader scripts/import-matches-forward.mjs",
-    "matches:import:backward": "node --loader @esbuild-kit/esm-loader scripts/import-matches-backward.mjs",
+    "matches:import:forward": "tsx scripts/import-matches-forward.mjs",
+    "matches:import:backward": "tsx scripts/import-matches-backward.mjs",
     "matches:import:forward:loop": "pnpm run matches:import:forward -- --loop --interval=600000",
     "matches:import:backward:loop": "pnpm run matches:import:backward -- --loop",
-    "predictions:stats:calc": "node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.mjs",
-    "predictions:stats:calc:force": "node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.mjs --force",
-    "predictions:stats:recalc": "node --loader @esbuild-kit/esm-loader scripts/prediction-stats/recalculate-all.mjs",
-    "predictions:stats:by-match": "node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-by-match.mjs",
-    "predictions:stats:by-user": "node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-by-user.mjs",
-    "predictions:stats:by-post": "node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-by-post.mjs"
+    "predictions:stats:calc": "tsx scripts/prediction-stats/calculate-all.mjs",
+    "predictions:stats:calc:force": "tsx scripts/prediction-stats/calculate-all.mjs --force",
+    "predictions:stats:recalc": "tsx scripts/prediction-stats/recalculate-all.mjs",
+    "predictions:stats:by-match": "tsx scripts/prediction-stats/calculate-by-match.mjs",
+    "predictions:stats:by-user": "tsx scripts/prediction-stats/calculate-by-user.mjs",
+    "predictions:stats:by-post": "tsx scripts/prediction-stats/calculate-by-post.mjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -137,6 +137,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss": "^4.1.12",
     "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.19.2",
     "vaul": "^1.1.2",
     "zod": "^4.1.5"
   },

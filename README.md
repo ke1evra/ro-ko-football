@@ -213,6 +213,18 @@ This project is ready to deploy on Vercel:
 3. Configure all required environment variables
 4. Deploy!
 
+## Troubleshooting
+
+### MongoDB Issues
+
+Если MongoDB падает на production: [MONGODB_CRASH_FIX.md](./MONGODB_CRASH_FIX.md)
+
+### Other Issues
+
+- **Server Issues**: [SERVER_TROUBLESHOOTING.md](./SERVER_TROUBLESHOOTING.md)
+- **Docker Deployment**: [DOCKER_DEPLOY.md](./DOCKER_DEPLOY.md)
+- **Workers**: [WORKERS.md](./WORKERS.md)
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
