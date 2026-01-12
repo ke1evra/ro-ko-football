@@ -43,22 +43,13 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   if (isPrediction && outcomes.length > 0 && outcomes[0].fixtureId) {
     try {
       const fixtureId = outcomes[0].fixtureId
-      console.log('[PostPage] Fetching match data for fixtureId:', fixtureId)
       const matchesResult = await payload.find({
         collection: 'matches',
         where: { fixtureId: { equals: fixtureId } },
         limit: 1,
       })
-      console.log('[PostPage] Matches found:', matchesResult.docs.length)
       if (matchesResult.docs.length > 0) {
         const match = matchesResult.docs[0] as any
-        console.log('[PostPage] Match data:', {
-          status: match.status,
-          homeScore: match.homeScore,
-          awayScore: match.awayScore,
-          homeTeam: match.homeTeam,
-          awayTeam: match.awayTeam,
-        })
         if (match.status === 'finished' && match.homeScore !== null && match.awayScore !== null) {
           matchData = {
             home: match.homeTeam,
@@ -68,22 +59,11 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             homeScoreHalftime: match.homeScoreHalftime,
             awayScoreHalftime: match.awayScoreHalftime,
           }
-          console.log('[PostPage] Match data set:', matchData)
-        } else {
-          console.log('[PostPage] Match not finished or missing scores')
         }
-      } else {
-        console.log('[PostPage] No match found in Payload for fixtureId:', fixtureId)
       }
     } catch (error) {
-      console.error('[PostPage] Error fetching match data:', error)
+      // Ошибка получения данных матча - не критично
     }
-  } else {
-    console.log('[PostPage] Skipping match data fetch:', {
-      isPrediction,
-      hasOutcomes: outcomes.length > 0,
-      hasFixtureId: outcomes.length > 0 ? !!outcomes[0].fixtureId : false,
-    })
   }
 
   // Проверяем есть ли текстовое содержание
