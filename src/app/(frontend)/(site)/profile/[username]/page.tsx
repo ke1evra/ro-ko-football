@@ -306,7 +306,7 @@ export default async function UserPublicProfilePage({
 
 export async function generateMetadata({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params
-  const payload = await getPayload({ config })
+  const payload = await getPayload({ config: await configPromise })
 
   const users = await payload.find({
     collection: 'users',

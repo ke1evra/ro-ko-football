@@ -1,5 +1,6 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { logErrorWithDigest } from './error-logger'
 
 /**
  * Получить настройки лиг для виджета топ матчей
@@ -14,7 +15,12 @@ export async function getTopMatchesLeagues() {
 
     return data
   } catch (error) {
-    console.error('Ошибка при получении настроек топ матчей:', error)
+    logErrorWithDigest(error as Error & { digest?: string }, 'getTopMatchesLeagues')
+    console.error('[LEAGUES] getTopMatchesLeagues error details:', {
+      message: (error as Error).message,
+      stack: (error as Error).stack,
+      digest: (error as Error & { digest?: string }).digest,
+    })
     return null
   }
 }

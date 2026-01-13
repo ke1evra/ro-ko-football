@@ -13,8 +13,11 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    // Логируем ошибку в консоль для отладки
-    console.error('[Home Error Boundary]', error)
+    // Логируем ошибку в консоль для отладки с полным стеком
+    console.error('[Home Error Boundary] Digest:', error.digest)
+    console.error('[Home Error Boundary] Message:', error.message)
+    console.error('[Home Error Boundary] Stack:', error.stack)
+    console.error('[Home Error Boundary] Full error:', error)
   }, [error])
 
   return (

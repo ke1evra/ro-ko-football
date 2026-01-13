@@ -15,7 +15,12 @@ export default async function MatchesV2Layout({ children }: { children: React.Re
     settings = await getTopMatchesLeagues()
     leagueIds = await getTopMatchesLeagueIds()
   } catch (error) {
-    console.error('[MATCHES_V2_LAYOUT] Ошибка загрузки настроек из Payload:', error)
+    const err = error as Error & { digest?: string }
+    console.error('[MATCHES_V2_LAYOUT] Ошибка загрузки настроек из Payload')
+    console.error('[MATCHES_V2_LAYOUT] Digest:', err.digest)
+    console.error('[MATCHES_V2_LAYOUT] Message:', err.message)
+    console.error('[MATCHES_V2_LAYOUT] Stack:', err.stack)
+    console.error('[MATCHES_V2_LAYOUT] Full error:', err)
   }
 
   return (

@@ -15,7 +15,12 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     settings = await getTopMatchesLeagues()
     leagueIds = await getTopMatchesLeagueIds()
   } catch (error) {
-    console.error('[LAYOUT] Ошибка загрузки настроек из Payload:', error)
+    const err = error as Error & { digest?: string }
+    console.error('[LAYOUT] Ошибка загрузки настроек из Payload')
+    console.error('[LAYOUT] Digest:', err.digest)
+    console.error('[LAYOUT] Message:', err.message)
+    console.error('[LAYOUT] Stack:', err.stack)
+    console.error('[LAYOUT] Full error:', err)
   }
 
   return (
