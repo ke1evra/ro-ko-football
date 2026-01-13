@@ -1,5 +1,5 @@
 import { getPayload } from 'payload'
-import config from '@/payload.config'
+import configPromise from '@payload-config'
 
 let cachedPayload: any = null
 
@@ -12,7 +12,7 @@ export async function getPayloadClient() {
   }
 
   try {
-    cachedPayload = await getPayload({ config })
+    cachedPayload = await getPayload({ config: await configPromise })
     return cachedPayload
   } catch (error) {
     console.error('[getPayloadClient] Error initializing Payload:', error)

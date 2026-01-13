@@ -3,7 +3,6 @@
 import { cookies, headers as getHeaders } from 'next/headers'
 import { getPayload } from 'payload'
 import type { Payload } from 'payload'
-import config from '@payload-config'
 import configPromise from '@payload-config'
 import { redirect } from 'next/navigation'
 import type { User } from '@/payload-types'
@@ -109,7 +108,7 @@ export async function loginUser({
   }
 
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await configPromise })
 
     // Track login attempts (could be extended with rate limiting)
     try {
@@ -228,7 +227,7 @@ export async function registerUser({ email, password }: RegisterParams): Promise
   }
 
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await configPromise })
 
     try {
       // Generate email verification token

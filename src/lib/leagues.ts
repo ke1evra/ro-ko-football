@@ -1,12 +1,12 @@
 import { getPayload } from 'payload'
-import config from '@/payload.config'
+import configPromise from '@payload-config'
 
 /**
  * Получить настройки лиг для виджета топ матчей
  */
 export async function getTopMatchesLeagues() {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await configPromise })
     const data = await payload.findGlobal({
       slug: 'topMatchesLeagues',
       depth: 2, // Загружаем связанные лиги
@@ -24,7 +24,7 @@ export async function getTopMatchesLeagues() {
  */
 export async function getSidebarLeagues() {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await configPromise })
     const data = await payload.findGlobal({
       slug: 'sidebarLeagues',
       depth: 2, // Загружаем связанные лиги
@@ -180,7 +180,7 @@ export async function getLeagueDisplayNameById(competitionId: number): Promise<s
   const cached = leagueNameCache.get(competitionId)
   if (cached && cached.expires > now) return cached.value
 
-  const payload = await getPayload({ config })
+  const payload = await getPayload({ config: await configPromise })
   const res = await payload.find({
     collection: 'leagues',
     where: { competitionId: { equals: competitionId } },
@@ -213,7 +213,7 @@ export async function getLeagueNamesMap(competitionIds: number[]): Promise<Recor
   }
 
   if (toFetch.length) {
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await configPromise })
     const res = await payload.find({
       collection: 'leagues',
       where: { competitionId: { in: toFetch } },

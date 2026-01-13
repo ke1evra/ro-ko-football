@@ -4,7 +4,7 @@
  */
 
 import { getPayload } from 'payload'
-import config from '@/payload.config'
+import configPromise from '@payload-config'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -39,7 +39,7 @@ export default async function CompetitionStandingsTable({
     )
 
     // Код для работы с коллекцией standings (будет активирован после создания коллекции):
-    // const payload = await getPayload({ config })
+    // const payload = await getPayload({ config: await configPromise })
     // const standings = await payload.find({
     //   collection: 'standings',
     //   where: {

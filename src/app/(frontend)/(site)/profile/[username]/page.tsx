@@ -1,6 +1,6 @@
 import React from 'react'
 import { getPayload } from 'payload'
-import config from '@payload-config'
+import configPromise from '@payload-config'
 import Link from 'next/link'
 import { Container, Section } from '@/components/ds'
 import { UserAvatar } from '@/components/UserAvatar'
@@ -23,7 +23,7 @@ export default async function UserPublicProfilePage({
 }: {
   params: Promise<{ username: string }>
 }) {
-  const payload = await getPayload({ config })
+  const payload = await getPayload({ config: await configPromise })
 
   const { username } = await params
 

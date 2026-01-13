@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ArrowLeft, AlertCircle } from 'lucide-react'
 import { getPayload } from 'payload'
-import config from '@/payload.config'
+import configPromise from '@payload-config'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import LeaguesGroupedSearch from '@/components/league/LeaguesGroupedSearch'
@@ -56,7 +56,7 @@ function matchByPatterns(name?: string, patterns: RegExp[] = []) {
 
 async function getSidebarLeagues(): Promise<CompetitionItem[]> {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await configPromise })
 
     // Получаем настройки сайдбара
     const sidebarSettings = await payload.findGlobal({
@@ -107,7 +107,7 @@ async function getCompetitions(
   federationName?: string
 }> {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await configPromise })
 
     // Строим условия фильтрации
     const where: any = { active: { equals: true } }

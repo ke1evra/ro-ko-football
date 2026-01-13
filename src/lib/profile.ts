@@ -1,7 +1,7 @@
 'use server'
 
 import { getPayload } from 'payload'
-import config from '@payload-config'
+import configPromise from '@payload-config'
 import { getUser } from './auth'
 
 export type UpdateProfileInput = {
@@ -40,7 +40,7 @@ export async function updateProfile(
   }
 
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await configPromise })
 
     await payload.update({
       collection: 'users',
