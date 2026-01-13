@@ -100,7 +100,7 @@ function headingIdFor(node: LexicalNode, rootNodes: LexicalNode[]): string | und
     )
     const findIndex = headings.findIndex((item: any) => {
       const a = (item?.children?.[0] as any)?.text
-      const b = (node?.children?.[0] as any)?.text
+      const b = ((node as any)?.children?.[0] as any)?.text
       return a === b
     })
     const id = `title-${findIndex}`

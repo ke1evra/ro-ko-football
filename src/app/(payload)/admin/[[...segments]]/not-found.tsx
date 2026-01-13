@@ -17,8 +17,7 @@ type Args = {
 
 export const generateMetadata = async ({ params, searchParams }: Args): Promise<Metadata> => {
   try {
-    const config = await configPromise
-    return generatePageMetadata({ config, params, searchParams })
+    return generatePageMetadata({ config: configPromise, params, searchParams })
   } catch (error) {
     const err = error as Error & { digest?: string }
     console.error('[PAYLOAD NOT-FOUND] ========== ERROR ==========')
@@ -31,8 +30,7 @@ export const generateMetadata = async ({ params, searchParams }: Args): Promise<
 
 const NotFound = async ({ params, searchParams }: Args) => {
   try {
-    const config = await configPromise
-    return NotFoundPage({ config, params, searchParams, importMap })
+    return NotFoundPage({ config: configPromise, params, searchParams, importMap })
   } catch (error) {
     const err = error as Error & { digest?: string }
     console.error('[PAYLOAD NOT-FOUND PAGE] ========== ERROR ==========')

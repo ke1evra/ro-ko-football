@@ -89,7 +89,7 @@ export default async function StandingsTable({
       lang: 'ru',
     })
 
-    const standings = response.data?.data?.table || []
+    const standings: TableRowData[] = (response.data?.data?.table || []) as TableRowData[]
 
     if (!standings || standings.length === 0) {
       return (

@@ -6,8 +6,8 @@ import type { Payload } from 'payload'
 import type { Post, Match, OutcomeGroup } from '../payload-types'
 
 // Типы для работы
-type PredictionOutcome = NonNullable<Post['prediction']>['outcomes'][0]
-type OutcomeCondition = OutcomeGroup['outcomes'][0]['conditions'][0]
+type PredictionOutcome = NonNullable<NonNullable<Post['prediction']>['outcomes']>[number]
+type OutcomeCondition = NonNullable<NonNullable<OutcomeGroup['outcomes']>[number]['conditions']>[number]
 type ConditionLogic = 'AND' | 'OR'
 
 interface CalculationResult {
@@ -45,7 +45,7 @@ interface PredictionStatsData {
  * Получить исход матча (1 = П1, 0 = Х, 2 = П2)
  */
 function getMatchOutcome(match: Match): number {
-  if (match.homeScore === null || match.awayScore === null) {
+  if (match.homeScore == null || match.awayScore == null) {
     throw new Error('Match score is not available')
   }
   if (match.homeScore > match.awayScore) return 1
@@ -95,7 +95,7 @@ function checkSingleCondition(
     throw new Error('calculationType is required for this condition')
   }
 
-  if (match.homeScore === null || match.awayScore === null) {
+  if (match.homeScore == null || match.awayScore == null) {
     throw new Error('Match score is not available')
   }
 
@@ -225,7 +225,7 @@ async function calculateOutcomeResult(
   }
 
   // Проверить наличие счёта
-  if (match.homeScore === null || match.awayScore === null) {
+  if (match.homeScore == null || match.awayScore == null) {
     return {
       event: eventName,
       coefficient: outcome.coefficient,
@@ -273,7 +273,7 @@ async function calculateOutcomeResult(
     const checkResult = checkConditions(
       outcomeDefinition.conditions,
       match,
-      outcome.value,
+      outcome.value ?? null,
       outcomeDefinition.conditionLogic || 'AND',
     )
 
@@ -334,7 +334,7 @@ export async function calculatePredictionStats(
 
   const outcomes = post.prediction.outcomes
 
-  if (outcomes.length === 0) {
+  if (!Array.isArray(outcomes) || outcomes.length === 0) {
     console.log(`Post ${post.id} has no outcomes`)
     return null
   }
@@ -395,7 +395,7 @@ export async function calculatePredictionStats(
   return {
     post: post.id,
     author: typeof post.author === 'object' ? post.author.id : post.author,
-    fixtureId: outcomes[0].fixtureId,
+    fixtureId: outcomes[0]?.fixtureId ?? undefined,
     status: 'settled',
     evaluatedAt: new Date().toISOString(),
     summary: {

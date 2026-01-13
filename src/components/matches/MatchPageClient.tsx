@@ -1024,8 +1024,8 @@ export default function MatchPageClient({ matchId, initialMatchInfo }: MatchPage
           onClose={() => setIsPredictionModalOpen(false)}
           matchId={matchId}
           matchData={{
-            home: { name: matchInfo.home.name },
-            away: { name: matchInfo.away.name },
+            home: { id: Number((matchInfo as any)?.home?.id ?? 0), name: matchInfo.home.name },
+            away: { id: Number((matchInfo as any)?.away?.id ?? 0), name: matchInfo.away.name },
             competition: matchInfo.competition,
             date: matchInfo.date || '',
             time: matchInfo.time || '',

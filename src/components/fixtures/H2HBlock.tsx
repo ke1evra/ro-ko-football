@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactElement } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -170,7 +170,7 @@ function getMatchResult(match: any, teamName: string): 'W' | 'D' | 'L' {
   return 'D'
 }
 
-function ResultPill({ res }: { res: 'W' | 'D' | 'L' }): JSX.Element {
+function ResultPill({ res }: { res: 'W' | 'D' | 'L' }): ReactElement {
   const map: Record<'W' | 'D' | 'L', string> = {
     W: 'bg-green-100 text-green-800 border border-green-300',
     D: 'bg-yellow-100 text-yellow-800 border border-yellow-300',
@@ -184,7 +184,7 @@ function ResultPill({ res }: { res: 'W' | 'D' | 'L' }): JSX.Element {
   )
 }
 
-function MatchTable({ title, rows }: { title: string; rows: MatchRow[] }): JSX.Element {
+function MatchTable({ title, rows }: { title: string; rows: MatchRow[] }): ReactElement {
   const getResultColor = (result: 'W' | 'D' | 'L'): string => {
     switch (result) {
       case 'W':

@@ -183,7 +183,10 @@ export async function POST(request: NextRequest) {
       const details = evalRes.details.map((d, idx) => ({
         event: events[idx] || '',
         coefficient: coeffs[idx],
-        result: d.won == null ? 'undecided' : d.won ? 'won' : 'lost',
+        result: (d.won == null ? 'undecided' : d.won ? 'won' : 'lost') as
+          | 'won'
+          | 'lost'
+          | 'undecided',
         reason: d.reason,
       }))
 

@@ -17,11 +17,9 @@ const serverFunction: ServerFunctionClient = async function (args) {
   'use server'
   try {
     console.log('[PAYLOAD LAYOUT] serverFunction called')
-    const config = await configPromise
-    console.log('[PAYLOAD LAYOUT] configPromise resolved')
     return handleServerFunctions({
       ...args,
-      config,
+      config: configPromise,
       importMap,
     })
   } catch (error) {
@@ -37,9 +35,8 @@ const serverFunction: ServerFunctionClient = async function (args) {
 }
 
 const Layout = async ({ children }: Args) => {
-  const config = await configPromise
   return (
-    <RootLayout config={config} importMap={importMap} serverFunction={serverFunction}>
+    <RootLayout config={configPromise} importMap={importMap} serverFunction={serverFunction}>
       {children}
     </RootLayout>
   )

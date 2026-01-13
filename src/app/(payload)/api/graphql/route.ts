@@ -16,15 +16,16 @@ async function loadRoutes() {
 }
 
 async function getConfig() {
-  return await configPromise
+  return configPromise
 }
 
 export const POST = async (req: any, context: any) => {
-  const [routes, config] = await Promise.all([loadRoutes(), getConfig()])
-  return routes.GRAPHQL_POST(config)(req, context)
+  const routes = await loadRoutes()
+  return routes.GRAPHQL_POST(configPromise)(req)
 }
 
 export const OPTIONS = async (req: any, context: any) => {
-  const [routes, config] = await Promise.all([loadRoutes(), getConfig()])
-  return routes.REST_OPTIONS(config)(req, context)
+  const routes = await loadRoutes()
+  // REST_OPTIONS expects (request, { params })
+  return routes.REST_OPTIONS(configPromise)(req, context)
 }

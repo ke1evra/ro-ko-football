@@ -16,10 +16,11 @@ async function loadRoutes() {
 }
 
 async function getConfig() {
-  return await configPromise
+  return configPromise
 }
 
 export const GET = async (req: any, context: any) => {
-  const [routes, config] = await Promise.all([loadRoutes(), getConfig()])
-  return routes.GRAPHQL_PLAYGROUND_GET(config)(req, context)
+  const routes = await loadRoutes()
+  // GRAPHQL_PLAYGROUND_GET expects config as Promise<SanitizedConfig>
+  return routes.GRAPHQL_PLAYGROUND_GET(configPromise)(req)
 }
