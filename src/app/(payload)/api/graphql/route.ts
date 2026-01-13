@@ -1,8 +1,16 @@
 /* THIS FILE WAS GENERATED AUTOMATICALLY BY PAYLOAD. */
 /* DO NOT MODIFY IT BECAUSE IT COULD BE REWRITTEN AT ANY TIME. */
-import config from '@payload-config'
+import configPromise from '@payload-config'
 import { GRAPHQL_POST, REST_OPTIONS } from '@payloadcms/next/routes'
 
-export const POST = GRAPHQL_POST(config)
+const getConfig = async () => await configPromise
 
-export const OPTIONS = REST_OPTIONS(config)
+export const POST = async (req: any, context: any) => {
+  const config = await getConfig()
+  return GRAPHQL_POST(config)(req, context)
+}
+
+export const OPTIONS = async (req: any, context: any) => {
+  const config = await getConfig()
+  return REST_OPTIONS(config)(req, context)
+}

@@ -7,6 +7,12 @@ const nextConfig = {
   // Lightweight build settings for low-RAM VPS
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
+  // Включаем детальное логирование ошибок в production
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
+  },
   webpack: (config, { dev }) => {
     if (!dev) {
       config.optimization.minimize = false
