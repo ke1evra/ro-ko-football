@@ -2,6 +2,13 @@ rocoscore.ru {
     # Включить сжатие gzip и zstd
     encode gzip zstd
 
+    # Avoid caching HTML/RSC across deploys (otherwise clients can keep old Server Action IDs)
+    @next_static path /_next/static/*
+    header @next_static Cache-Control "public, max-age=31536000, immutable"
+
+    @not_static not path /_next/static/*
+    header @not_static Cache-Control "no-store"
+
     # Проксировать все запросы на работающее Next.js приложение
     reverse_proxy localhost:3100
 }

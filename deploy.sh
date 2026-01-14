@@ -316,7 +316,7 @@ else
 fi
 
 run "$COMPOSE_CMD build --pull"
-run "$COMPOSE_CMD up -d"
+run "$COMPOSE_CMD up -d --force-recreate --remove-orphans"
 run "$COMPOSE_CMD ps"
 
 # -------------------- wait health --------------------
