@@ -10,10 +10,14 @@
 
 ```javascript
 import config from '../../dist/payload.config.js'
-import { calculatePredictionStats, savePredictionStats } from '../../dist/lib/prediction-stats-calculator.js'
+import {
+  calculatePredictionStats,
+  savePredictionStats,
+} from '../../dist/lib/prediction-stats-calculator.js'
 ```
 
 Однако Next.js не компилирует TypeScript файлы в `dist/`, что приводило к ошибке:
+
 ```
 Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/ko/payload-starter/dist/payload.config.js'
 ```
@@ -97,6 +101,7 @@ $ node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.m
 ## Документация
 
 Обновлен файл `README.md` с:
+
 - Правильными командами запуска для всех скриптов
 - Примерами использования
 - Инструкциями по автоматизации (cron, PM2)
@@ -111,6 +116,7 @@ $ node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.m
 ## Совместимость
 
 Эти изменения совместимы с:
+
 - Node.js 18.20.2+
 - Payload CMS 3.51.0
 - @esbuild-kit/esm-loader (уже установлен в проекте)

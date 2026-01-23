@@ -3,10 +3,7 @@
  * Помогает найти конкретное место ошибки по digest в production
  */
 
-export function logErrorWithDigest(
-  error: Error & { digest?: string },
-  context?: string,
-) {
+export function logErrorWithDigest(error: Error & { digest?: string }, context?: string) {
   const digest = error.digest || 'no-digest'
   const contextStr = context ? `[${context}]` : '[ERROR]'
 

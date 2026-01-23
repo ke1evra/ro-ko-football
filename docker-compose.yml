@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     # Используем сеть хоста напрямую. Это самый надежный способ
     # для контейнера получить доступ к сервисам, запущенным на хосте.
-    network_mode: "host"
+    network_mode: 'host'
     # Директивы 'ports' и 'extra_hosts' игнорируются при network_mode: host
 
     # Файл .env будет по-прежнему использоваться для PAYLOAD_SECRET и т.д.
@@ -16,10 +16,10 @@ services:
 
     # Переопределяем DATABASE_URI для работы с network_mode: host
     environment:
-      DATABASE_URI: "mongodb://syncadmin:syncadminsyncadmin123qQ!@127.0.0.1:27017/payload?authSource=admin"
+      DATABASE_URI: 'mongodb://syncadmin:syncadminsyncadmin123qQ!@127.0.0.1:27017/payload?authSource=admin'
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
       NODE_ENV: ${NODE_ENV}
-      APP_URL: "http://localhost:3100"
+      APP_URL: 'http://localhost:3100'
       LIVESCORE_KEY: ${LIVESCORE_KEY}
       LIVESCORE_SECRET: ${LIVESCORE_SECRET}
 
@@ -32,7 +32,13 @@ services:
           cpus: '1.0'
           memory: 2g
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:3100').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3100').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
       interval: 30s
       timeout: 5s
       retries: 5

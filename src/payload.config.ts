@@ -19,6 +19,12 @@ import { PredictionStats } from './collections/PredictionStats'
 import { Markets } from './collections/Markets'
 import { OutcomeGroups } from './collections/OutcomeGroups'
 import ApiRequestLogs from './collections/ApiRequestLogs'
+import Fixtures from './collections/Fixtures'
+import Seasons from './collections/Seasons'
+import Standings from './collections/Standings'
+import MatchEvents from './collections/MatchEvents'
+import Teams from './collections/Teams'
+import Countries from './collections/Countries'
 
 import { TopMatchesLeagues } from './globals/TopMatchesLeagues'
 import { SidebarLeagues } from './globals/SidebarLeagues'
@@ -43,7 +49,7 @@ export default buildConfig({
   // Коллекции данных (основные сущности системы)
   collections: [
     Users, // Пользователи и аутентификация
-    Media, // Медиафайлы (изображения, докумен��ы)
+    Media, // Медиафайлы (изображения, документы)
     Posts, // Публикации и новости
     Comments, // Комментарии к публикациям
     CommentVotes, // Голоса за комментарии
@@ -54,6 +60,12 @@ export default buildConfig({
     Markets, // Рынки ставок
     OutcomeGroups, // Группы исходов
     ApiRequestLogs, // Логи запросов к LiveScore API
+    Fixtures, // Фикстуры матчей
+    Seasons, // Сезоны лиг
+    Standings, // Турнирные таблицы
+    MatchEvents, // События матчей
+    Teams, // Футбольные команды
+    Countries, // Страны
   ],
   // Глобальные настройки (единичные документы)
   globals: [

@@ -2,7 +2,10 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ postId: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ postId: string }> },
+) {
   try {
     const { postId } = await params
 

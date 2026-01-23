@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   console.log('[LAYOUT] SiteLayout started')
-  
+
   // Получаем настройки из Payload для виджета
   let settings = null
   let leagueIds: number[] = []
@@ -18,7 +18,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     console.log('[LAYOUT] Calling getTopMatchesLeagues()')
     settings = await getTopMatchesLeagues()
     console.log('[LAYOUT] getTopMatchesLeagues() completed, settings:', settings ? 'found' : 'null')
-    
+
     console.log('[LAYOUT] Calling getTopMatchesLeagueIds()')
     leagueIds = await getTopMatchesLeagueIds()
     console.log('[LAYOUT] getTopMatchesLeagueIds() completed, count:', leagueIds.length)

@@ -54,13 +54,7 @@ export function createCustomFetch({
       body?: TBody
     } & RequestConfig,
   ): Promise<{ data: TRes; status: number; statusText: string }> {
-    const {
-      method = 'GET',
-      url: configUrl = '',
-      params,
-      timeoutMs = 8000,
-      ...restConfig
-    } = config
+    const { method = 'GET', url: configUrl = '', params, timeoutMs = 8000, ...restConfig } = config
 
     // Поддержка только GET запросов для LiveScore API
     if (method !== 'GET') {
@@ -139,17 +133,17 @@ export function createCustomFetch({
       console.error(`[customFetch] Ошибка запроса ${endpoint}:`, error)
 
       // Преобразуем ошибку в формат kubb
-      if (error.status) {
+      if (error && typeof error === 'object' && 'status' in error) {
         return {
-          data: error.data || {},
-          status: error.status,
-          statusText: error.statusText || 'Error',
+          data: (error as any).data || {},
+          status: (error as any).status,
+          statusText: (error as any).statusText || 'Error',
         }
       }
 
       // Неизвестная ошибка
       return {
-        data: { error: error.message || 'Unknown error' },
+        data: { error: error instanceof Error ? error.message : 'Unknown error' } as any,
         status: 500,
         statusText: 'Internal Server Error',
       }

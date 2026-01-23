@@ -31,7 +31,7 @@ function patchClientComponentRendererLogger(content) {
   // Snapshot `__next_app__` once
   content = content.replace(
     'function wrapClientComponentLoader(ComponentMod) {',
-    "function wrapClientComponentLoader(ComponentMod) {\n    const nextApp = ComponentMod.__next_app__;"
+    'function wrapClientComponentLoader(ComponentMod) {\n    const nextApp = ComponentMod.__next_app__;',
   )
 
   // Prefer snapshot everywhere
@@ -43,7 +43,7 @@ function patchClientComponentRendererLogger(content) {
   if (!content.includes('if (!nextApp) {')) {
     content = content.replace(
       "if (!('performance' in globalThis)) {",
-      "if (!nextApp) {\n        return nextApp;\n    }\n    if (!('performance' in globalThis)) {"
+      "if (!nextApp) {\n        return nextApp;\n    }\n    if (!('performance' in globalThis)) {",
     )
   }
 
@@ -56,18 +56,18 @@ function patchAppRender(content) {
   // Snapshot __next_app__ once and pass stable wrapper into wrapClientComponentLoader
   content = content.replace(
     'if (ComponentMod.__next_app__) {',
-    'const __next_app__ = ComponentMod.__next_app__;\n    if (__next_app__) {'
+    'const __next_app__ = ComponentMod.__next_app__;\n    if (__next_app__) {',
   )
 
   content = content.replace(
     '(0, _clientcomponentrendererlogger.wrapClientComponentLoader)(ComponentMod);',
-    '(0, _clientcomponentrendererlogger.wrapClientComponentLoader)({ __next_app__ });'
+    '(0, _clientcomponentrendererlogger.wrapClientComponentLoader)({ __next_app__ });',
   )
 
   // Safety for minor formatting differences
   content = content.replace(
     '(0, _clientcomponentrendererlogger.wrapClientComponentLoader)(ComponentMod)',
-    '(0, _clientcomponentrendererlogger.wrapClientComponentLoader)({ __next_app__ })'
+    '(0, _clientcomponentrendererlogger.wrapClientComponentLoader)({ __next_app__ })',
   )
 
   return content
@@ -76,9 +76,15 @@ function patchAppRender(content) {
 function main() {
   const projectRoot = process.cwd()
   const targets = [
-    { rel: 'node_modules/next/dist/server/client-component-renderer-logger.js', patch: patchClientComponentRendererLogger },
+    {
+      rel: 'node_modules/next/dist/server/client-component-renderer-logger.js',
+      patch: patchClientComponentRendererLogger,
+    },
     { rel: 'node_modules/next/dist/server/app-render/app-render.js', patch: patchAppRender },
-    { rel: 'node_modules/next/dist/esm/server/client-component-renderer-logger.js', patch: patchClientComponentRendererLogger },
+    {
+      rel: 'node_modules/next/dist/esm/server/client-component-renderer-logger.js',
+      patch: patchClientComponentRendererLogger,
+    },
     { rel: 'node_modules/next/dist/esm/server/app-render/app-render.js', patch: patchAppRender },
   ]
 
@@ -89,7 +95,7 @@ function main() {
   if (changed.length > 0) {
     console.log(
       `[prebuild] Patched Next.js client component loader (__next_app__ snapshot):\n` +
-        changed.map((r) => `- ${r.filePath}`).join('\n')
+        changed.map((r) => `- ${r.filePath}`).join('\n'),
     )
   } else {
     console.log('[prebuild] Next.js patch not applied (already patched or files missing).')
@@ -97,10 +103,9 @@ function main() {
 
   if (skipped.length > 0) {
     console.log(
-      `[prebuild] Skipped missing files:\n` + skipped.map((r) => `- ${r.filePath}`).join('\n')
+      `[prebuild] Skipped missing files:\n` + skipped.map((r) => `- ${r.filePath}`).join('\n'),
     )
   }
 }
 
 main()
-

@@ -1,4 +1,4 @@
-import { CollectionConfig } from 'payload/types'
+import type { CollectionConfig } from 'payload'
 
 const ApiRequestLogs: CollectionConfig = {
   slug: 'apiRequestLogs',
@@ -8,8 +8,9 @@ const ApiRequestLogs: CollectionConfig = {
     group: 'API & Кэширование',
   },
   access: {
-    read: ({ req: { user } }) => {
+    read: ({ req }) => {
       // Только админы могут видеть логи
+      const user = req.user as any
       return Boolean(user?.roles?.includes('admin'))
     },
     create: () => false, // Создание только через код

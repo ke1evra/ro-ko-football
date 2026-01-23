@@ -32,7 +32,7 @@ export type CacheStats = {
 
 export type LogEntry = {
   endpoint: string
-  params: Record<string, any>
+  params: Record<string, unknown>
   source: string
   statusCode: number
   duration: number
@@ -65,7 +65,7 @@ export class LoggedFetch {
    */
   async get<T>(
     endpoint: string,
-    params: Record<string, any> = {},
+    params: Record<string, unknown> = {},
     options: {
       source?: string
       request?: NextRequest
@@ -84,12 +84,12 @@ export class LoggedFetch {
     const cacheKey = this.buildCacheKey(endpoint, params)
 
     // Метаданные запроса
-    const userId = request?.user?.id
+    const userId = (request as any)?.user?.id
     const ipAddress = this.getClientIP(request)
     const userAgent = request?.headers?.get('user-agent') || undefined
 
     let cacheLevel: CacheLevel = 'livescore'
-    let cacheStats: CacheStats = this.createEmptyCacheStats()
+    const cacheStats: CacheStats = this.createEmptyCacheStats()
     let statusCode = 200
     let result: T
 
@@ -155,7 +155,6 @@ export class LoggedFetch {
       // await this.saveToDatabase(endpoint, params, result)
 
       console.log(`[LoggedFetch] Запрос к LiveScore API выполнен: ${endpoint} (${apiDuration}ms)`)
-
     } catch (error) {
       statusCode = 500
       console.error(`[LoggedFetch] Ошибка запроса ${endpoint}:`, error)
@@ -197,13 +196,16 @@ export class LoggedFetch {
   /**
    * Построить ключ кэша
    */
-  private buildCacheKey(endpoint: string, params: Record<string, any>): string {
+  private buildCacheKey(endpoint: string, params: Record<string, unknown>): string {
     const sortedParams = Object.keys(params)
       .sort()
-      .reduce((result, key) => {
-        result[key] = params[key]
-        return result
-      }, {} as Record<string, any>)
+      .reduce(
+        (result, key) => {
+          result[key] = params[key]
+          return result
+        },
+        {} as Record<string, unknown>,
+      )
 
     return `${endpoint}:${JSON.stringify(sortedParams)}`
   }
@@ -237,7 +239,10 @@ export class LoggedFetch {
   /**
    * Выполнить запрос к LiveScore API
    */
-  private async makeApiRequest(endpoint: string, params: Record<string, any>): Promise<Response> {
+  private async makeApiRequest(
+    endpoint: string,
+    params: Record<string, unknown>,
+  ): Promise<Response> {
     const baseUrl = process.env.LIVESCORE_API_URL || 'https://www.livescore.com/api'
     const url = new URL(endpoint, baseUrl)
 
@@ -251,7 +256,7 @@ export class LoggedFetch {
     const response = await fetch(url.toString(), {
       headers: {
         'User-Agent': 'Livescore-App/1.0',
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
       // Таймаут 10 секунд
       signal: AbortSignal.timeout(10000),
@@ -271,17 +276,18 @@ export class LoggedFetch {
     const realIP = request.headers.get('x-real-ip')
     const cfIP = request.headers.get('cf-connecting-ip')
 
-    return forwarded?.split(',')[0]?.trim() ||
-           realIP ||
-           cfIP ||
-           undefined
+    return forwarded?.split(',')[0]?.trim() || realIP || cfIP || undefined
   }
 
   /**
    * Проверить данные в Payload (БД)
    * TODO: реализовать после создания коллекций
    */
-  private async checkDatabaseCache(endpoint: string, params: Record<string, any>): Promise<any> {
+
+  private async checkDatabaseCache(
+    _endpoint: string,
+    _params: Record<string, unknown>,
+  ): Promise<unknown> {
     // Заглушка для будущего
     return null
   }
@@ -290,7 +296,12 @@ export class LoggedFetch {
    * Сохранить данные в Payload (БД)
    * TODO: реализовать после создания коллекций
    */
-  private async saveToDatabase(endpoint: string, params: Record<string, any>, data: any): Promise<void> {
+
+  private async saveToDatabase(
+    _endpoint: string,
+    _params: Record<string, unknown>,
+    _data: unknown,
+  ): Promise<void> {
     // Заглушка для будущего
   }
 
@@ -329,7 +340,7 @@ export class LoggedFetch {
         memoryHits: entry.cacheStats.memoryCache.hit ? 1 : 0,
         databaseHits: entry.cacheStats.database.hit ? 1 : 0,
         livescoreApiCalls: entry.cacheStats.livescoreApi.called ? 1 : 0,
-        cacheHitRate: (entry.cacheStats.memoryCache.hit || entry.cacheStats.database.hit) ? 100 : 0,
+        cacheHitRate: entry.cacheStats.memoryCache.hit || entry.cacheStats.database.hit ? 100 : 0,
         avgDuration: entry.duration,
       }
 
@@ -342,7 +353,6 @@ export class LoggedFetch {
       })
 
       console.log(`[LoggedFetch] Запрос залогирован: ${entry.endpoint} (${entry.cacheLevel})`)
-
     } catch (error) {
       console.error('[LoggedFetch] Ошибка логирования:', error)
       // Не бросаем ошибку, чтобы не ломать основной поток

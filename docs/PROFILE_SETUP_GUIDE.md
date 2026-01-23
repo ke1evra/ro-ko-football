@@ -45,6 +45,7 @@ http://localhost:3100/profile
 ```
 
 **Метрики:**
+
 - **Всего событий** - сумма всех событий из всех прогнозов
 - **Выиграло** - количество выигранных событий
 - **Проиграло** - количество проигранных событий
@@ -74,6 +75,7 @@ http://localhost:3100/profile
 ```
 
 **Сортировка:**
+
 - **Новые сначала** - по дате создания (убывание)
 - **Старые сначала** - по дате создания (возрастание)
 - **Лучшие** - по hit rate (убывание)
@@ -148,6 +150,7 @@ const stats = await payload.find({
 ### shadcn/ui компоненты
 
 Используются стандартные компоненты:
+
 - `Card` - контейнер
 - `Badge` - бейджи со статусом
 - `Button` - кнопки
@@ -228,7 +231,7 @@ db.posts.find({ author: ObjectId("..."), postType: "prediction" })
 ```typescript
 useEffect(() => {
   console.log('Загрузка статистики для пользователя:', userId)
-  
+
   const fetchStats = async () => {
     console.log('Запрос к API...')
     const response = await fetch(`/api/predictions/stats/${userId}`)
@@ -237,7 +240,7 @@ useEffect(() => {
     console.log('Данные:', data)
     setStats(data.stats)
   }
-  
+
   fetchStats()
 }, [userId])
 ```
@@ -249,9 +252,10 @@ useEffect(() => {
 ### Оптимизация запросов
 
 1. **Кэширование на клиенте**
+
    ```typescript
    const [cache, setCache] = useState({})
-   
+
    if (cache[userId]) {
      setStats(cache[userId])
      return
@@ -259,13 +263,12 @@ useEffect(() => {
    ```
 
 2. **Пагинация**
+
    ```typescript
    const [page, setPage] = useState(1)
    const limit = 20
-   
-   const response = await fetch(
-     `/api/predictions/user/${userId}?page=${page}&limit=${limit}`
-   )
+
+   const response = await fetch(`/api/predictions/user/${userId}?page=${page}&limit=${limit}`)
    ```
 
 3. **Фильтрация на сервере**
@@ -295,9 +298,9 @@ describe('PredictionStatsCard', () => {
       hitRate: 0.6,
       roi: 0.12,
     }
-    
+
     render(<PredictionStatsCard stats={stats} />)
-    
+
     expect(screen.getByText('50')).toBeInTheDocument()
     expect(screen.getByText('30')).toBeInTheDocument()
   })
@@ -312,14 +315,14 @@ import { test, expect } from '@playwright/test'
 
 test('профиль отображает статистику', async ({ page }) => {
   await page.goto('/profile')
-  
+
   // Проверить что вкладки видны
   await expect(page.locator('text=Общая статистика')).toBeVisible()
   await expect(page.locator('text=Мои прогнозы')).toBeVisible()
-  
+
   // Переключиться на вкладку статистики
   await page.click('text=Общая статистика')
-  
+
   // Проверить что статистика загружена
   await expect(page.locator('text=Всего событий')).toBeVisible()
 })
@@ -345,18 +348,23 @@ test('профиль отображает статистику', async ({ page }
 ## Часто задаваемые вопросы
 
 ### Q: Почему статистика не обновляется?
+
 A: Статистика загружается один раз при открытии вкладки. Обновите страницу или переключитесь на другую вкладку и обратно.
 
 ### Q: Как добавить новую метрику?
+
 A: Отредактируйте `PredictionStatsCard.tsx` и добавьте новый блок в сетку.
 
 ### Q: Как изменить сортировку по умолчанию?
+
 A: Измените параметр `sort` в `UserPredictionsList.tsx`:
+
 ```typescript
 const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'best' | 'worst'>('best')
 ```
 
 ### Q: Как скрыть вкладку "Мои прогнозы"?
+
 A: Удалите `TabsContent` для вкладки "predictions" из `profile/page.tsx`.
 
 ---

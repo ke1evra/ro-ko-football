@@ -3,7 +3,7 @@
  * Хранит сырые данные от API с TTL
  */
 
-type CacheEntry<T = any> = {
+type CacheEntry<T = unknown> = {
   data: T
   expiresAt: number
   createdAt: number
@@ -36,7 +36,7 @@ class ApiCache {
 
     // Кэш устарел или отсутствует
     console.log(`[ApiCache] MISS: ${key}`)
-    return fetcher().then(data => {
+    return fetcher().then((data) => {
       this.set(key, data, ttlMs)
       return data
     })

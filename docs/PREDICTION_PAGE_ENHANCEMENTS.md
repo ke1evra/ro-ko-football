@@ -18,6 +18,7 @@
 Компонент для отображения результата прогноза с полной статистикой.
 
 **Показатели:**
+
 - Выиграло (количество и процент)
 - Проиграло (количество и процент)
 - Hit Rate (процент точности)
@@ -27,11 +28,13 @@
 - Нач��слено очков (если есть)
 
 **Визуализация:**
+
 - Цветные блоки для каждой метрики (зелёный, красный, синий, изумрудный)
 - Прогресс-бар с распределением результатов
 - Адаптивный дизайн
 
 **Props:**
+
 ```typescript
 interface PredictionResultCardProps {
   result: {
@@ -47,6 +50,7 @@ interface PredictionResultCardProps {
 ```
 
 **Состояния:**
+
 - `result === null` - статистика не рассчитана (показывает сообщение)
 - `status === 'pending'` - матч ещё не завершён
 - `status === 'settled'` - результат рассчитан
@@ -60,6 +64,7 @@ interface PredictionResultCardProps {
 Компонент для отображения информации о прогнозисте.
 
 **Функции:**
+
 - Аватар и имя прогнозиста
 - Биография (если есть)
 - Рейтинг (если есть)
@@ -70,6 +75,7 @@ interface PredictionResultCardProps {
 - Социальные сети (сайт, Twitter, GitHub)
 
 **Props:**
+
 ```typescript
 interface PredictorCardProps {
   author: User | null
@@ -78,6 +84,7 @@ interface PredictorCardProps {
 ```
 
 **Загрузка данных:**
+
 - Получает статистику из `/api/predictions/stats/[userId]`
 - Получает последние прогнозы из `/api/predictions/user/[userId]?sort=recent&limit=3`
 - Исключает текущий прогноз из списка последних
@@ -91,9 +98,11 @@ interface PredictorCardProps {
 Получить результат прогноза.
 
 **Параметры:**
+
 - `postId` - ID поста-прогноза (path parameter)
 
 **Ответ:**
+
 ```json
 {
   "success": true,
@@ -112,6 +121,7 @@ interface PredictorCardProps {
 ```
 
 **Если результата нет:**
+
 ```json
 {
   "success": true,
@@ -327,11 +337,13 @@ curl http://localhost:3100/api/predictions/user/USER_ID?sort=recent&limit=3
 ### Результат не отображается
 
 **Причины:**
+
 1. Статистика не рассчитана - запустите скрипт подсчёта
 2. API маршрут не работает - проверьте консоль браузера
 3. Неверный postId - проверьте URL
 
 **Решение:**
+
 ```bash
 node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.mjs
 ```
@@ -339,11 +351,13 @@ node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.mjs
 ### Информация о прогнозисте не загружается
 
 **Причины:**
+
 1. Пользователь не авторизован
 2. API маршрут не работает
 3. Нет статистики для пользователя
 
 **Решение:**
+
 - Проверьте консоль браузера на ошибки
 - Проверьте сетевые запросы в DevTools
 - Убедитесь что у пользователя есть прогнозы

@@ -26,17 +26,21 @@ class RateLimiter {
     this.checkAndResetDailyCounter()
 
     if (this.requestsToday >= this.MAX_DAILY_REQUESTS) {
-      console.error(`[RateLimiter] ❌ ЛИМИТ ПРЕВЫШЕН: ${this.requestsToday}/${this.MAX_DAILY_REQUESTS}`)
+      console.error(
+        `[RateLimiter] ❌ ЛИМИТ ПРЕВЫШЕН: ${this.requestsToday}/${this.MAX_DAILY_REQUESTS}`,
+      )
       throw new Error(
         `Превышен дневной лимит запросов к LiveScore API (${this.MAX_DAILY_REQUESTS}). ` +
-        `Сегодня уже выполнено: ${this.requestsToday} запросов.`
+          `Сегодня уже выполнено: ${this.requestsToday} запросов.`,
       )
     }
 
     // Предупреждение при достижении 80%
     const usagePercent = (this.requestsToday / this.MAX_DAILY_REQUESTS) * 100
     if (usagePercent >= this.WARNING_THRESHOLD * 100) {
-      console.warn(`[RateLimiter] ⚠️ БЛИЗКО К ЛИМИТУ: ${this.requestsToday}/${this.MAX_DAILY_REQUESTS} (${usagePercent.toFixed(1)}%)`)
+      console.warn(
+        `[RateLimiter] ⚠️ БЛИЗКО К ЛИМИТУ: ${this.requestsToday}/${this.MAX_DAILY_REQUESTS} (${usagePercent.toFixed(1)}%)`,
+      )
     }
   }
 
@@ -45,7 +49,9 @@ class RateLimiter {
    */
   registerRequest(): void {
     this.requestsToday++
-    console.log(`[RateLimiter] ✅ Запрос зарегистрирован: ${this.requestsToday}/${this.MAX_DAILY_REQUESTS}`)
+    console.log(
+      `[RateLimiter] ✅ Запрос зарегистрирован: ${this.requestsToday}/${this.MAX_DAILY_REQUESTS}`,
+    )
   }
 
   /**
@@ -82,7 +88,7 @@ class RateLimiter {
     if (this.lastResetDate !== today) {
       const yesterdayCount = this.requestsToday
       console.log(
-        `[RateLimiter] 🌅 Новый день! Сброс счётчика. Вчера было: ${yesterdayCount} запросов`
+        `[RateLimiter] 🌅 Новый день! Сброс счётчика. Вчера было: ${yesterdayCount} запросов`,
       )
       this.requestsToday = 0
       this.lastResetDate = today

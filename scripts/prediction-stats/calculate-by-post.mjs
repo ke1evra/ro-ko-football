@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Подсчёт статистики для конкретного прогноза
- * 
+ *
  * Использование:
  *   node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-by-post.mjs <postId>
  *   node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-by-post.mjs 67890abcdef
@@ -12,7 +12,10 @@ import dotenv from 'dotenv'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { getPayload } from 'payload'
-import { calculatePredictionStats, savePredictionStats } from '../../src/lib/prediction-stats-calculator.ts'
+import {
+  calculatePredictionStats,
+  savePredictionStats,
+} from '../../src/lib/prediction-stats-calculator.ts'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -44,9 +47,9 @@ if (!postId) {
 
 async function main() {
   console.log(`🚀 Подсчёт статистики для прогноза ${postId}...\n`)
-  
+
   const payload = await getPayload({ config })
-  
+
   // Получить прогноз
   let post
   try {
@@ -59,23 +62,23 @@ async function main() {
     console.error(`❌ Прогноз с ID ${postId} не найден`)
     process.exit(1)
   }
-  
+
   console.log(`📝 Прогноз: ${post.title}`)
   console.log(`   Тип: ${post.postType}`)
-  
+
   if (post.postType !== 'prediction') {
     console.error('❌ Это не прогноз')
     process.exit(1)
   }
-  
+
   const outcomes = post.prediction?.outcomes || []
   console.log(`   Исходов: ${outcomes.length}\n`)
-  
+
   if (outcomes.length === 0) {
     console.error('❌ В прогнозе нет исходов')
     process.exit(1)
   }
-  
+
   // Проверить существует ли статистика
   if (!force) {
     const existing = await payload.find({
@@ -83,24 +86,26 @@ async function main() {
       where: { post: { equals: post.id } },
       limit: 1,
     })
-    
+
     if (existing.totalDocs > 0) {
       console.log('⚠️  Статистика уже существует. Используйте --force для пересчёта')
       console.log('\nТекущая статистика:')
       const stats = existing.docs[0]
-      console.log(`   Результат: ${stats.summary.won}/${stats.summary.total} (${(stats.summary.hitRate * 100).toFixed(1)}%)`)
+      console.log(
+        `   Результат: ${stats.summary.won}/${stats.summary.total} (${(stats.summary.hitRate * 100).toFixed(1)}%)`,
+      )
       console.log(`   ROI: ${(stats.summary.roi * 100).toFixed(1)}%`)
       console.log(`   Рассчитано: ${new Date(stats.evaluatedAt).toLocaleString('ru-RU')}`)
       process.exit(0)
     }
   }
-  
+
   console.log('🔄 Расчёт статистики...\n')
-  
+
   try {
     // Рассчитать статистику
     const statsData = await calculatePredictionStats(payload, post)
-    
+
     if (!statsData) {
       console.log('⚠️  Не удалось рассчитать статистику')
       console.log('Возможные причины:')
@@ -109,10 +114,10 @@ async function main() {
       console.log('  - Отсутствуют fixtureId')
       process.exit(0)
     }
-    
+
     // Сохранить
     await savePredictionStats(payload, statsData)
-    
+
     console.log('\n' + '='.repeat(50))
     console.log('✅ СТАТИСТИКА РАССЧИТАНА')
     console.log('='.repeat(50))
@@ -124,7 +129,7 @@ async function main() {
     console.log(`ROI: ${(statsData.summary.roi * 100).toFixed(1)}%`)
     console.log(`Очки: ${statsData.scoring.points}`)
     console.log('='.repeat(50))
-    
+
     console.log('\nДетали:')
     statsData.details.forEach((detail, index) => {
       const icon = detail.result === 'won' ? '✅' : detail.result === 'lost' ? '❌' : '⚠️'
@@ -136,13 +141,12 @@ async function main() {
         console.log(`     Причина: ${detail.reason}`)
       }
     })
-    
   } catch (error) {
     console.error('❌ Ошибка при расчёте:', error.message)
     console.error(error.stack)
     process.exit(1)
   }
-  
+
   process.exit(0)
 }
 

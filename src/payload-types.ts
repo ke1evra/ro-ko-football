@@ -59,87 +59,89 @@ export type SupportedTimezones =
   | 'Pacific/Guam'
   | 'Pacific/Noumea'
   | 'Pacific/Auckland'
-  | 'Pacific/Fiji';
+  | 'Pacific/Fiji'
 
 export interface Config {
   auth: {
-    users: UserAuthOperations;
-  };
-  blocks: {};
+    users: UserAuthOperations
+  }
+  blocks: {}
   collections: {
-    users: User;
-    media: Media;
-    posts: Post;
-    comments: Comment;
-    commentVotes: CommentVote;
-    leagues: League;
-    matches: Match;
-    matchStats: MatchStat;
-    predictionStats: PredictionStat;
-    'bet-markets': BetMarket;
-    'outcome-groups': OutcomeGroup;
-    'payload-locked-documents': PayloadLockedDocument;
-    'payload-preferences': PayloadPreference;
-    'payload-migrations': PayloadMigration;
-  };
-  collectionsJoins: {};
+    users: User
+    media: Media
+    posts: Post
+    comments: Comment
+    commentVotes: CommentVote
+    leagues: League
+    matches: Match
+    matchStats: MatchStat
+    predictionStats: PredictionStat
+    'bet-markets': BetMarket
+    'outcome-groups': OutcomeGroup
+    'payload-locked-documents': PayloadLockedDocument
+    'payload-preferences': PayloadPreference
+    'payload-migrations': PayloadMigration
+  }
+  collectionsJoins: {}
   collectionsSelect: {
-    users: UsersSelect<false> | UsersSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
-    posts: PostsSelect<false> | PostsSelect<true>;
-    comments: CommentsSelect<false> | CommentsSelect<true>;
-    commentVotes: CommentVotesSelect<false> | CommentVotesSelect<true>;
-    leagues: LeaguesSelect<false> | LeaguesSelect<true>;
-    matches: MatchesSelect<false> | MatchesSelect<true>;
-    matchStats: MatchStatsSelect<false> | MatchStatsSelect<true>;
-    predictionStats: PredictionStatsSelect<false> | PredictionStatsSelect<true>;
-    'bet-markets': BetMarketsSelect<false> | BetMarketsSelect<true>;
-    'outcome-groups': OutcomeGroupsSelect<false> | OutcomeGroupsSelect<true>;
-    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
-    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
-    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
-  };
+    users: UsersSelect<false> | UsersSelect<true>
+    media: MediaSelect<false> | MediaSelect<true>
+    posts: PostsSelect<false> | PostsSelect<true>
+    comments: CommentsSelect<false> | CommentsSelect<true>
+    commentVotes: CommentVotesSelect<false> | CommentVotesSelect<true>
+    leagues: LeaguesSelect<false> | LeaguesSelect<true>
+    matches: MatchesSelect<false> | MatchesSelect<true>
+    matchStats: MatchStatsSelect<false> | MatchStatsSelect<true>
+    predictionStats: PredictionStatsSelect<false> | PredictionStatsSelect<true>
+    'bet-markets': BetMarketsSelect<false> | BetMarketsSelect<true>
+    'outcome-groups': OutcomeGroupsSelect<false> | OutcomeGroupsSelect<true>
+    'payload-locked-documents':
+      | PayloadLockedDocumentsSelect<false>
+      | PayloadLockedDocumentsSelect<true>
+    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>
+    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>
+  }
   db: {
-    defaultIDType: string;
-  };
+    defaultIDType: string
+  }
   globals: {
-    topMatchesLeagues: TopMatchesLeague;
-    sidebarLeagues: SidebarLeague;
-    'outcome-manager': OutcomeManager;
-    'header-menu': HeaderMenu;
-  };
+    topMatchesLeagues: TopMatchesLeague
+    sidebarLeagues: SidebarLeague
+    'outcome-manager': OutcomeManager
+    'header-menu': HeaderMenu
+  }
   globalsSelect: {
-    topMatchesLeagues: TopMatchesLeaguesSelect<false> | TopMatchesLeaguesSelect<true>;
-    sidebarLeagues: SidebarLeaguesSelect<false> | SidebarLeaguesSelect<true>;
-    'outcome-manager': OutcomeManagerSelect<false> | OutcomeManagerSelect<true>;
-    'header-menu': HeaderMenuSelect<false> | HeaderMenuSelect<true>;
-  };
-  locale: null;
+    topMatchesLeagues: TopMatchesLeaguesSelect<false> | TopMatchesLeaguesSelect<true>
+    sidebarLeagues: SidebarLeaguesSelect<false> | SidebarLeaguesSelect<true>
+    'outcome-manager': OutcomeManagerSelect<false> | OutcomeManagerSelect<true>
+    'header-menu': HeaderMenuSelect<false> | HeaderMenuSelect<true>
+  }
+  locale: null
   user: User & {
-    collection: 'users';
-  };
+    collection: 'users'
+  }
   jobs: {
-    tasks: unknown;
-    workflows: unknown;
-  };
+    tasks: unknown
+    workflows: unknown
+  }
 }
 export interface UserAuthOperations {
   forgotPassword: {
-    email: string;
-    password: string;
-  };
+    email: string
+    password: string
+  }
   login: {
-    email: string;
-    password: string;
-  };
+    email: string
+    password: string
+  }
   registerFirstUser: {
-    email: string;
-    password: string;
-  };
+    email: string
+    password: string
+  }
   unlock: {
-    email: string;
-    password: string;
-  };
+    email: string
+    password: string
+  }
 }
 /**
  * 👥 Управление пользователями
@@ -150,80 +152,80 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: string
   /**
    * Роль определяет уровень доступа в системе
    */
-  role: 'admin' | 'user';
+  role: 'admin' | 'user'
   /**
    * Уникальный идентификатор для публичного профиля (используется в URL)
    */
-  username?: string | null;
+  username?: string | null
   /**
    * Отображаемое имя пользователя на сайте
    */
-  name?: string | null;
+  name?: string | null
   /**
    * Биография пользователя для публичного профиля
    */
-  bio?: string | null;
+  bio?: string | null
   /**
    * Загрузите изображение профиля через медиабиблиотеку
    */
-  avatar?: (string | null) | Media;
+  avatar?: (string | null) | Media
   /**
    * Альтернатива загруженному файлу - укажите прямую ссылку на изображение
    */
-  avatarUrl?: string | null;
+  avatarUrl?: string | null
   /**
    * Ссылки на профили пользователя в социальных сетях
    */
   links?: {
-    website?: string | null;
-    twitter?: string | null;
-    github?: string | null;
-  };
+    website?: string | null
+    twitter?: string | null
+    github?: string | null
+  }
   /**
    * Рейтинг пользователя на основе прогнозов (редактируется только администратором)
    */
-  rating?: number | null;
+  rating?: number | null
   /**
    * Подтвердил ли пользователь свой email адрес
    */
-  emailVerified?: boolean | null;
+  emailVerified?: boolean | null
   /**
    * Служебное поле для верификации email
    */
-  emailVerificationToken?: string | null;
+  emailVerificationToken?: string | null
   /**
    * Дата истечения токена подтверждения email
    */
-  emailVerificationExpires?: string | null;
+  emailVerificationExpires?: string | null
   /**
    * Служебное поле для восстановления пароля
    */
-  passwordResetToken?: string | null;
+  passwordResetToken?: string | null
   /**
    * Дата истечения токена сброса пароля
    */
-  passwordResetExpires?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
+  passwordResetExpires?: string | null
+  updatedAt: string
+  createdAt: string
+  email: string
+  resetPasswordToken?: string | null
+  resetPasswordExpiration?: string | null
+  salt?: string | null
+  hash?: string | null
+  loginAttempts?: number | null
+  lockUntil?: string | null
   sessions?:
     | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
+        id: string
+        createdAt?: string | null
+        expiresAt: string
       }[]
-    | null;
-  password?: string | null;
+    | null
+  password?: string | null
 }
 /**
  * 🖼️ Библиотека медиафайлов
@@ -234,40 +236,40 @@ export interface User {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: string
   /**
    * Описание изображения для SEO и доступности (отображается если картинка не загрузилась)
    */
-  alt: string;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
+  alt: string
+  updatedAt: string
+  createdAt: string
+  url?: string | null
+  thumbnailURL?: string | null
+  filename?: string | null
+  mimeType?: string | null
+  filesize?: number | null
+  width?: number | null
+  height?: number | null
+  focalX?: number | null
+  focalY?: number | null
   sizes?: {
     thumbnail?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
+      url?: string | null
+      width?: number | null
+      height?: number | null
+      mimeType?: string | null
+      filesize?: number | null
+      filename?: string | null
+    }
     card?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
+      url?: string | null
+      width?: number | null
+      height?: number | null
+      mimeType?: string | null
+      filesize?: number | null
+      filename?: string | null
+    }
+  }
 }
 /**
  * 📝 Публикации пользователей
@@ -278,41 +280,41 @@ export interface Media {
  * via the `definition` "posts".
  */
 export interface Post {
-  id: string;
+  id: string
   /**
    * Название публикации (используется для генерации URL)
    */
-  title: string;
+  title: string
   /**
    * Автоматически генерируется из заголовка при сохранении (с транслитерацией кириллицы)
    */
-  slug?: string | null;
+  slug?: string | null
   /**
    * Определяет структуру и отображение публикации
    */
-  postType: 'regular' | 'prediction';
+  postType: 'regular' | 'prediction'
   /**
    * Основной текст публикации (поддерживает форматирование)
    */
   content?: {
     root: {
-      type: string;
+      type: string
       children: {
-        type: string;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
+        type: string
+        version: number
+        [k: string]: unknown
+      }[]
+      direction: ('ltr' | 'rtl') | null
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | ''
+      indent: number
+      version: number
+    }
+    [k: string]: unknown
+  } | null
   /**
    * Главное изображение публикации (отображается в превью)
    */
-  featuredImage?: (string | null) | Media;
+  featuredImage?: (string | null) | Media
   prediction?: {
     /**
      * Новая структура: исходы с привязкой к CMS маркетам
@@ -322,63 +324,63 @@ export interface Post {
           /**
            * ID матча из API для связи со статистикой
            */
-          fixtureId?: number | null;
+          fixtureId?: number | null
           /**
            * Связь с маркетом (автоматически подтягивается при depth > 0)
            */
-          market: string | BetMarket;
+          market: string | BetMarket
           /**
            * Связь с группой исходов (содержит conditions для подсчёта)
            */
-          outcomeGroup: string | OutcomeGroup;
+          outcomeGroup: string | OutcomeGroup
           /**
            * Текстовая копия для отображения (на случай удаления маркета)
            */
-          marketName: string;
+          marketName: string
           /**
            * Текстовая копия для отображения
            */
-          outcomeName: string;
+          outcomeName: string
           /**
            * Например: 2.5 для "ТБ 2.5"
            */
-          value?: number | null;
+          value?: number | null
           /**
            * Коэффициент ставки
            */
-          coefficient: number;
+          coefficient: number
           /**
            * Данные матча на момент создания прогноза
            */
           matchInfo?: {
-            home?: string | null;
+            home?: string | null
             /**
              * ID команды из API для генерации URL
              */
-            homeTeamId?: number | null;
-            away?: string | null;
+            homeTeamId?: number | null
+            away?: string | null
             /**
              * ID команды из API для генерации URL
              */
-            awayTeamId?: number | null;
-            competition?: string | null;
-            date?: string | null;
-            time?: string | null;
-          };
-          id?: string | null;
+            awayTeamId?: number | null
+            competition?: string | null
+            date?: string | null
+            time?: string | null
+          }
+          id?: string | null
         }[]
-      | null;
-  };
+      | null
+  }
   /**
    * Пользователь, создавший публикацию (автоматически заполняется при создании)
    */
-  author: string | User;
+  author: string | User
   /**
    * Дата и время создания публикации
    */
-  publishedAt?: string | null;
-  updatedAt: string;
-  createdAt: string;
+  publishedAt?: string | null
+  updatedAt: string
+  createdAt: string
 }
 /**
  * 🎯 Рынки ставок для прогнозов
@@ -389,15 +391,15 @@ export interface Post {
  * via the `definition` "bet-markets".
  */
 export interface BetMarket {
-  id: string;
+  id: string
   /**
    * Название маркета (основные исходы, ЖК, КК, фолы, ауты и т.д.)
    */
-  name: string;
+  name: string
   /**
    * Выберите группы исходов для этого маркета
    */
-  groups?: (string | OutcomeGroup)[] | null;
+  groups?: (string | OutcomeGroup)[] | null
   /**
    * Левая часть формулы: откуда берём число. Укажите источник статистики (statPath) и тип (statType).
    */
@@ -427,14 +429,14 @@ export interface BetMarket {
           | 'possession'
           | 'saves'
         )
-      | null;
+      | null
     /**
      * Тип статистики для этого маркета
      */
-    statType?: ('none' | 'numeric' | 'outcome' | 'goals') | null;
-  };
-  updatedAt: string;
-  createdAt: string;
+    statType?: ('none' | 'numeric' | 'outcome' | 'goals') | null
+  }
+  updatedAt: string
+  createdAt: string
 }
 /**
  * 🎲 Группы исходов для рынков ставок
@@ -449,11 +451,11 @@ export interface BetMarket {
  * via the `definition` "outcome-groups".
  */
 export interface OutcomeGroup {
-  id: string;
+  id: string
   /**
    * Название группы исходов (тоталы, форы, обе забьют и т.д.)
    */
-  name: string;
+  name: string
   /**
    * 📋 Массив исходов для этой группы. Каждый исход содержит название и массив условий для проверки.
    *
@@ -467,7 +469,7 @@ export interface OutcomeGroup {
         /**
          * Название исхода (например: "ТБ 2.5", "П1", "ОЗ + ТБ 2.5")
          */
-        name: string;
+        name: string
         /**
          * ⚙️ Добавьте условия для проверки исхода:
          * 1️⃣ Выберите оператор сравнения
@@ -478,7 +480,17 @@ export interface OutcomeGroup {
           /**
            * Оператор сравнения. ТБ → Больше (>), ТМ → Меньше (<). Для двойного шанса — "Принадлежность множеству".
            */
-          comparisonOperator: 'gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'neq' | 'between' | 'in' | 'even' | 'odd';
+          comparisonOperator:
+            | 'gt'
+            | 'gte'
+            | 'lt'
+            | 'lte'
+            | 'eq'
+            | 'neq'
+            | 'between'
+            | 'in'
+            | 'even'
+            | 'odd'
           /**
            * 📊 Способ вычисления значения.
            *
@@ -489,7 +501,7 @@ export interface OutcomeGroup {
            * • away - для ИТБ(2)/ИТМ(2) (голы гостей)
            * • difference - для фор (разница голов)
            */
-          calculationType?: ('sum' | 'min' | 'max' | 'home' | 'away' | 'difference') | null;
+          calculationType?: ('sum' | 'min' | 'max' | 'home' | 'away' | 'difference') | null
           /**
            * 🔢 Фиксированное значение для проверки условия.
            *
@@ -499,20 +511,20 @@ export interface OutcomeGroup {
            * 💡 Для ТБ/ТМ/ИТБ/ИТМ/Фор это поле НЕ показывается.
            * Пользователь выберет значение из "Values" ниже.
            */
-          value?: number | null;
+          value?: number | null
           /**
            * Значение исхода матча (1 = П1, 0 = Х, 2 = П2)
            */
-          outcomeValue?: number | null;
+          outcomeValue?: number | null
           /**
            * Для оператора "Принадлежность множеству". Пример: 1Х → [1, 0]
            */
           set?:
             | {
-                value: number;
-                id?: string | null;
+                value: number
+                id?: string | null
               }[]
-            | null;
+            | null
           /**
            * Для оператора "Диапазон (между)"
            */
@@ -520,14 +532,14 @@ export interface OutcomeGroup {
             /**
              * Нижняя граница (включительно)
              */
-            lower?: number | null;
+            lower?: number | null
             /**
              * Верхняя граница (включительно)
              */
-            upper?: number | null;
-          };
-          id?: string | null;
-        }[];
+            upper?: number | null
+          }
+          id?: string | null
+        }[]
         /**
          * 📊 Массив значений для выбора пользователем.
          *
@@ -549,19 +561,19 @@ export interface OutcomeGroup {
               /**
                * Числовое значение (например, 2.5)
                */
-              value: number;
-              id?: string | null;
+              value: number
+              id?: string | null
             }[]
-          | null;
+          | null
         /**
          * Логика объединения условий. Показывается только если условий больше одного.
          */
-        conditionLogic?: ('AND' | 'OR') | null;
-        id?: string | null;
+        conditionLogic?: ('AND' | 'OR') | null
+        id?: string | null
       }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
+    | null
+  updatedAt: string
+  createdAt: string
 }
 /**
  * 💬 Комментарии к публикациям
@@ -572,37 +584,37 @@ export interface OutcomeGroup {
  * via the `definition` "comments".
  */
 export interface Comment {
-  id: string;
+  id: string
   /**
    * Публикация, к которой относится комментарий
    */
-  post: string | Post;
+  post: string | Post
   /**
    * Если это ответ на другой комментарий, укажите родительский комментарий
    */
-  parent?: (string | null) | Comment;
+  parent?: (string | null) | Comment
   /**
    * Содержание комментария (обычный текст)
    */
-  content: string;
+  content: string
   /**
    * Пользователь, написавший комментарий
    */
-  author: string | User;
+  author: string | User
   /**
    * Количество положительных оценок (автоматически)
    */
-  upvotes: number;
+  upvotes: number
   /**
    * Количество отрицательных оценок (автоматически)
    */
-  downvotes: number;
+  downvotes: number
   /**
    * Итоговый рейтинг (upvotes - downvotes)
    */
-  score: number;
-  updatedAt: string;
-  createdAt: string;
+  score: number
+  updatedAt: string
+  createdAt: string
 }
 /**
  * 👍 Система голосования за комментарии
@@ -613,15 +625,15 @@ export interface Comment {
  * via the `definition` "commentVotes".
  */
 export interface CommentVote {
-  id: string;
-  comment: string | Comment;
-  user: string | User;
+  id: string
+  comment: string | Comment
+  user: string | User
   /**
    * 1 — плюс, -1 — минус
    */
-  value: number;
-  updatedAt: string;
-  createdAt: string;
+  value: number
+  updatedAt: string
+  createdAt: string
 }
 /**
  * ⚽ Футбольные лиги и турниры
@@ -632,77 +644,77 @@ export interface CommentVote {
  * via the `definition` "leagues".
  */
 export interface League {
-  id: string;
+  id: string
   /**
    * ID соревнования из внешнего API
    */
-  competitionId: number;
+  competitionId: number
   /**
    * Внешний идентификатор (если отличается от competitionId)
    */
-  externalId?: string | null;
+  externalId?: string | null
   /**
    * Оригинальное название лиги из API
    */
-  name: string;
+  name: string
   /**
    * Пользовательское название лиги (переводы, сокращения и т.д.)
    */
-  customName?: string | null;
-  displayName?: string | null;
+  customName?: string | null
+  displayName?: string | null
   /**
    * ID страны первого вхождения (если применимо)
    */
-  countryId?: number | null;
+  countryId?: number | null
   /**
    * Название страны (первое вхождение из списка стран)
    */
-  countryName?: string | null;
-  isLeague?: boolean | null;
-  isCup?: boolean | null;
+  countryName?: string | null
+  isLeague?: boolean | null
+  isCup?: boolean | null
   /**
    * Дивизион (1 — высший)
    */
-  tier?: number | null;
-  hasGroups?: boolean | null;
-  active?: boolean | null;
+  tier?: number | null
+  hasGroups?: boolean | null
+  active?: boolean | null
   /**
    * Только национальные сборные
    */
-  nationalTeamsOnly?: boolean | null;
+  nationalTeamsOnly?: boolean | null
   /**
    * Страны, относящиеся к соревнованию
    */
   countries?:
     | {
-        id: number;
-        name: string;
+        id: number
+        name: string
       }[]
-    | null;
+    | null
   /**
    * Федерации, относящиеся к соревнованию
    */
   federations?:
     | {
-        id: number;
-        name: string;
+        id: number
+        name: string
       }[]
-    | null;
+    | null
   /**
    * Текущий сезон
    */
   season?: {
-    id?: number | null;
-    name?: string | null;
-    start?: string | null;
-    end?: string | null;
-  };
+    id?: number | null
+    name?: string | null
+    start?: string | null
+    end?: string | null
+  }
   /**
    * Меньше — выше приоритет
    */
-  priority?: number | null;
-  updatedAt: string;
-  createdAt: string;
+  priority?: number | null
+  updatedAt: string
+  createdAt: string
 }
 /**
  * ⚽ База данных футбольных матчей
@@ -713,264 +725,274 @@ export interface League {
  * via the `definition` "matches".
  */
 export interface Match {
-  id: string;
+  id: string
   /**
    * ID матча из внешнего API
    */
-  matchId: number;
+  matchId: number
   /**
    * ID фикстуры из внешнего API (если отличается от matchId)
    */
-  fixtureId?: number | null;
+  fixtureId?: number | null
   /**
    * Дополнительный внешний идентификатор
    */
-  externalId?: string | null;
-  displayName?: string | null;
+  externalId?: string | null
+  displayName?: string | null
   /**
    * Дата матча (ISO-8601, UTC)
    */
-  date: string;
-  status: 'scheduled' | 'live' | 'halftime' | 'finished' | 'cancelled' | 'postponed' | 'suspended';
+  date: string
+  status: 'scheduled' | 'live' | 'halftime' | 'finished' | 'cancelled' | 'postponed' | 'suspended'
   /**
    * Минута матча (для live)
    */
-  minute?: number | null;
-  period?: ('not_started' | 'first_half' | 'halftime' | 'second_half' | 'extra_time' | 'penalties' | 'finished') | null;
+  minute?: number | null
+  period?:
+    | (
+        | 'not_started'
+        | 'first_half'
+        | 'halftime'
+        | 'second_half'
+        | 'extra_time'
+        | 'penalties'
+        | 'finished'
+      )
+    | null
   /**
    * Строка времени из API (например, FT)
    */
-  time?: string | null;
+  time?: string | null
   /**
    * Плановое время начала (например, 00:30)
    */
-  scheduled?: string | null;
+  scheduled?: string | null
   /**
    * Время добавления матча в провайдере
    */
-  addedAt?: string | null;
+  addedAt?: string | null
   /**
    * Время последнего изменения в провайдере
    */
-  lastChangedAt?: string | null;
+  lastChangedAt?: string | null
   /**
    * Название команды хозяев
    */
-  homeTeam: string;
+  homeTeam: string
   /**
    * ID команды хозяев из API
    */
-  homeTeamId?: number | null;
+  homeTeamId?: number | null
   /**
    * URL логотипа хозяев
    */
-  homeLogo?: string | null;
+  homeLogo?: string | null
   /**
    * Страна хозяев (ID)
    */
-  homeCountryId?: number | null;
+  homeCountryId?: number | null
   /**
    * Стадион хозяев (из API)
    */
-  homeStadium?: string | null;
+  homeStadium?: string | null
   /**
    * Название команды гостей
    */
-  awayTeam: string;
+  awayTeam: string
   /**
    * ID команды гостей из API
    */
-  awayTeamId?: number | null;
+  awayTeamId?: number | null
   /**
    * URL логотипа гостей
    */
-  awayLogo?: string | null;
+  awayLogo?: string | null
   /**
    * Страна гостей (ID)
    */
-  awayCountryId?: number | null;
+  awayCountryId?: number | null
   /**
    * Стадион гостей (из API)
    */
-  awayStadium?: string | null;
+  awayStadium?: string | null
   /**
    * Голы хозяев
    */
-  homeScore?: number | null;
+  homeScore?: number | null
   /**
    * Голы гостей
    */
-  awayScore?: number | null;
+  awayScore?: number | null
   /**
    * Голы хозяев к перерыву
    */
-  homeScoreHalftime?: number | null;
+  homeScoreHalftime?: number | null
   /**
    * Голы гостей к перерыву
    */
-  awayScoreHalftime?: number | null;
+  awayScoreHalftime?: number | null
   /**
    * Голы хозяев в доп. время
    */
-  homeScoreExtraTime?: number | null;
+  homeScoreExtraTime?: number | null
   /**
    * Голы гостей в доп. время
    */
-  awayScoreExtraTime?: number | null;
+  awayScoreExtraTime?: number | null
   /**
    * Голы хозяев в серии пенальти
    */
-  homeScorePenalties?: number | null;
+  homeScorePenalties?: number | null
   /**
    * Голы гостей в серии пенальти
    */
-  awayScorePenalties?: number | null;
+  awayScorePenalties?: number | null
   /**
    * Исходные строковые значения счёта из API
    */
   scoresRaw?: {
-    score?: string | null;
-    htScore?: string | null;
-    ftScore?: string | null;
-    etScore?: string | null;
-    psScore?: string | null;
-  };
+    score?: string | null
+    htScore?: string | null
+    ftScore?: string | null
+    etScore?: string | null
+    psScore?: string | null
+  }
   /**
    * Название соревнования
    */
-  competition?: string | null;
+  competition?: string | null
   /**
    * ID соревнования из API
    */
-  competitionId?: number | null;
+  competitionId?: number | null
   /**
    * Доп. детали соревнования из API
    */
   competitionDetails?: {
-    isCup?: boolean | null;
-    isLeague?: boolean | null;
-    hasGroups?: boolean | null;
-    nationalTeamsOnly?: boolean | null;
-    active?: boolean | null;
-    tier?: number | null;
-  };
+    isCup?: boolean | null
+    isLeague?: boolean | null
+    hasGroups?: boolean | null
+    nationalTeamsOnly?: boolean | null
+    active?: boolean | null
+    tier?: number | null
+  }
   /**
    * Федерация (если есть)
    */
   federation?: {
-    federationId?: number | null;
-    name?: string | null;
-  };
+    federationId?: number | null
+    name?: string | null
+  }
   /**
    * Страна матча (если есть)
    */
   country?: {
-    countryId?: number | null;
-    name?: string | null;
-    flag?: string | null;
-    fifaCode?: string | null;
-    uefaCode?: string | null;
-    isReal?: boolean | null;
-  };
+    countryId?: number | null
+    name?: string | null
+    flag?: string | null
+    fifaCode?: string | null
+    uefaCode?: string | null
+    isReal?: boolean | null
+  }
   /**
    * Группа/подгруппа (если есть)
    */
-  groupId?: number | null;
+  groupId?: number | null
   /**
    * Связь с лигой из нашей базы
    */
-  league?: (string | null) | League;
+  league?: (string | null) | League
   /**
    * Информация о сезоне
    */
   season?: {
-    seasonId?: number | null;
-    name?: string | null;
-    year?: string | null;
-  };
+    seasonId?: number | null
+    name?: string | null
+    year?: string | null
+  }
   /**
    * Тур/раунд соревнования
    */
-  round?: string | null;
+  round?: string | null
   /**
    * Локация из API (строка)
    */
-  location?: string | null;
+  location?: string | null
   /**
    * Информация о стадионе
    */
   venue?: {
-    name?: string | null;
-    city?: string | null;
-    country?: string | null;
-  };
+    name?: string | null
+    city?: string | null
+    country?: string | null
+  }
   /**
    * Главный судья
    */
-  referee?: string | null;
+  referee?: string | null
   /**
    * Исходы из API (строки: 1/X/2)
    */
   outcomes?: {
-    halfTime?: string | null;
-    fullTime?: string | null;
-    extraTime?: string | null;
-    penaltyShootout?: string | null;
-  };
+    halfTime?: string | null
+    fullTime?: string | null
+    extraTime?: string | null
+    penaltyShootout?: string | null
+  }
   /**
    * Коэффициенты
    */
   odds?: {
     pre?: {
-      home?: number | null;
-      draw?: number | null;
-      away?: number | null;
-    };
+      home?: number | null
+      draw?: number | null
+      away?: number | null
+    }
     live?: {
-      home?: number | null;
-      draw?: number | null;
-      away?: number | null;
-    };
-  };
+      home?: number | null
+      draw?: number | null
+      away?: number | null
+    }
+  }
   /**
    * Ссылки на события/статистику/составы/Н2Н
    */
   urls?: {
-    events?: string | null;
-    statistics?: string | null;
-    lineups?: string | null;
-    head2head?: string | null;
-  };
+    events?: string | null
+    statistics?: string | null
+    lineups?: string | null
+    head2head?: string | null
+  }
   /**
    * Время последней синхронизации
    */
-  lastSyncAt?: string | null;
+  lastSyncAt?: string | null
   /**
    * Источник данных
    */
-  syncSource?: ('history' | 'live' | 'fixtures' | 'manual') | null;
+  syncSource?: ('history' | 'live' | 'fixtures' | 'manual') | null
   /**
    * Есть ли статистика матча
    */
-  hasStats?: boolean | null;
+  hasStats?: boolean | null
   /**
    * Приоритет матча (меньше = выше)
    */
-  priority?: number | null;
+  priority?: number | null
   /**
    * Оригинальный объект матча из API
    */
   raw?:
     | {
-        [k: string]: unknown;
+        [k: string]: unknown
       }
     | unknown[]
     | string
     | number
     | boolean
-    | null;
-  updatedAt: string;
-  createdAt: string;
+    | null
+  updatedAt: string
+  createdAt: string
 }
 /**
  * 📊 Детальная статистика матчей
@@ -981,213 +1003,221 @@ export interface Match {
  * via the `definition` "matchStats".
  */
 export interface MatchStat {
-  id: string;
+  id: string
   /**
    * ID матча из внешнего API
    */
-  matchId: number;
+  matchId: number
   /**
    * Связь с матчем
    */
-  match: string | Match;
-  displayName?: string | null;
+  match: string | Match
+  displayName?: string | null
   /**
    * Владение мячом (%)
    */
   possession?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Удары
    */
   shots?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Удары в створ
    */
   shotsOnTarget?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Удары мимо створа
    */
   shotsOffTarget?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Заблокирован��ые удары
    */
   shotsBlocked?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Угловые
    */
   corners?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Офсайды
    */
   offsides?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Фолы
    */
   fouls?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Жёлтые карточки
    */
   yellowCards?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Красные карточки
    */
   redCards?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * ��ейвы вратарей
    */
   saves?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Передачи
    */
   passes?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Точные передачи
    */
   passesAccurate?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Точность передач (%)
    */
   passAccuracy?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Атаки
    */
   attacks?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Опасные атаки
    */
   dangerousAttacks?: {
-    home?: number | null;
-    away?: number | null;
-  };
+    home?: number | null
+    away?: number | null
+  }
   /**
    * Оригинальный ответ API статистики
    */
   additionalStats?:
     | {
-        [k: string]: unknown;
+        [k: string]: unknown
       }
     | unknown[]
     | string
     | number
     | boolean
-    | null;
+    | null
   /**
    * События матча (голы, карточки, замены)
    */
   events?:
     | {
-        minute: number;
-        type: 'goal' | 'own_goal' | 'penalty' | 'yellow_card' | 'red_card' | 'substitution' | 'var' | 'other';
-        team: 'home' | 'away';
-        player?: string | null;
-        assistPlayer?: string | null;
-        playerOut?: string | null;
-        playerIn?: string | null;
-        description?: string | null;
-        id?: string | null;
+        minute: number
+        type:
+          | 'goal'
+          | 'own_goal'
+          | 'penalty'
+          | 'yellow_card'
+          | 'red_card'
+          | 'substitution'
+          | 'var'
+          | 'other'
+        team: 'home' | 'away'
+        player?: string | null
+        assistPlayer?: string | null
+        playerOut?: string | null
+        playerIn?: string | null
+        description?: string | null
+        id?: string | null
       }[]
-    | null;
+    | null
   /**
    * Составы команд
    */
   lineups?: {
     home?: {
-      formation?: string | null;
+      formation?: string | null
       startingXI?:
         | {
-            number?: number | null;
-            name: string;
-            position?: string | null;
-            id?: string | null;
+            number?: number | null
+            name: string
+            position?: string | null
+            id?: string | null
           }[]
-        | null;
+        | null
       substitutes?:
         | {
-            number?: number | null;
-            name: string;
-            position?: string | null;
-            id?: string | null;
+            number?: number | null
+            name: string
+            position?: string | null
+            id?: string | null
           }[]
-        | null;
-    };
+        | null
+    }
     away?: {
-      formation?: string | null;
+      formation?: string | null
       startingXI?:
         | {
-            number?: number | null;
-            name: string;
-            position?: string | null;
-            id?: string | null;
+            number?: number | null
+            name: string
+            position?: string | null
+            id?: string | null
           }[]
-        | null;
+        | null
       substitutes?:
         | {
-            number?: number | null;
-            name: string;
-            position?: string | null;
-            id?: string | null;
+            number?: number | null
+            name: string
+            position?: string | null
+            id?: string | null
           }[]
-        | null;
-    };
-  };
+        | null
+    }
+  }
   /**
    * Время последней синхронизации
    */
-  lastSyncAt?: string | null;
+  lastSyncAt?: string | null
   /**
    * Источник данных
    */
-  syncSource?: ('stats' | 'events' | 'lineups' | 'manual') | null;
+  syncSource?: ('stats' | 'events' | 'lineups' | 'manual') | null
   /**
    * Качество данных
    */
-  dataQuality?: ('complete' | 'partial' | 'minimal' | 'none') | null;
-  updatedAt: string;
-  createdAt: string;
+  dataQuality?: ('complete' | 'partial' | 'minimal' | 'none') | null
+  updatedAt: string
+  createdAt: string
 }
 /**
  * 📈 Результаты и статистика прогнозов
@@ -1198,29 +1228,29 @@ export interface MatchStat {
  * via the `definition` "predictionStats".
  */
 export interface PredictionStat {
-  id: string;
-  displayName?: string | null;
+  id: string
+  displayName?: string | null
   /**
    * Пост-прогноз, к которому относится статистика
    */
-  post: string | Post;
+  post: string | Post
   /**
    * Автор прогноза
    */
-  author: string | User;
+  author: string | User
   /**
    * ID матча (из API)
    */
-  matchId?: number | null;
+  matchId?: number | null
   /**
    * ID фикстуры (из API)
    */
-  fixtureId?: number | null;
-  status: 'pending' | 'settled';
+  fixtureId?: number | null
+  status: 'pending' | 'settled'
   /**
    * Время расчёта прогноза
    */
-  evaluatedAt?: string | null;
+  evaluatedAt?: string | null
   /**
    * Сводная статистика по событиям прогноза
    */
@@ -1228,28 +1258,28 @@ export interface PredictionStat {
     /**
      * Всего событий
      */
-    total?: number | null;
+    total?: number | null
     /**
      * Выиграло
      */
-    won?: number | null;
+    won?: number | null
     /**
      * Проиграло
      */
-    lost?: number | null;
+    lost?: number | null
     /**
      * Не определено (нет данных/матч не окончен)
      */
-    undecided?: number | null;
+    undecided?: number | null
     /**
      * Процент попаданий (0..1)
      */
-    hitRate?: number | null;
+    hitRate?: number | null
     /**
      * ROI по коэффициентам (если заданы), например 0.12 = +12%
      */
-    roi?: number | null;
-  };
+    roi?: number | null
+  }
   /**
    * Результаты по отдельным событиям
    */
@@ -1258,22 +1288,30 @@ export interface PredictionStat {
         /**
          * Строка события (например, "ТБ 2.5", "УГ ТМ 9.5")
          */
-        event: string;
+        event: string
         /**
          * Коэффициент (если есть)
          */
-        coefficient?: number | null;
+        coefficient?: number | null
         /**
          * Итог по событию
          */
-        result: 'won' | 'lost' | 'undecided';
+        result: 'won' | 'lost' | 'undecided'
         /**
          * Причина, если результат не определён
          */
-        reason?: ('unsupported_event' | 'match_not_finished' | 'no_score' | 'stat_unavailable' | 'unreachable') | null;
-        id?: string | null;
+        reason?:
+          | (
+              | 'unsupported_event'
+              | 'match_not_finished'
+              | 'no_score'
+              | 'stat_unavailable'
+              | 'unreachable'
+            )
+          | null
+        id?: string | null
       }[]
-    | null;
+    | null
   /**
    * Начисленные очки по прогнозу
    */
@@ -1281,742 +1319,742 @@ export interface PredictionStat {
     /**
      * Сумма очков
      */
-    points?: number | null;
+    points?: number | null
     /**
      * Детализация расчёта (JSON)
      */
     breakdown?:
       | {
-          [k: string]: unknown;
+          [k: string]: unknown
         }
       | unknown[]
       | string
       | number
       | boolean
-      | null;
-  };
-  updatedAt: string;
-  createdAt: string;
+      | null
+  }
+  updatedAt: string
+  createdAt: string
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: string
   document?:
     | ({
-        relationTo: 'users';
-        value: string | User;
+        relationTo: 'users'
+        value: string | User
       } | null)
     | ({
-        relationTo: 'media';
-        value: string | Media;
+        relationTo: 'media'
+        value: string | Media
       } | null)
     | ({
-        relationTo: 'posts';
-        value: string | Post;
+        relationTo: 'posts'
+        value: string | Post
       } | null)
     | ({
-        relationTo: 'comments';
-        value: string | Comment;
+        relationTo: 'comments'
+        value: string | Comment
       } | null)
     | ({
-        relationTo: 'commentVotes';
-        value: string | CommentVote;
+        relationTo: 'commentVotes'
+        value: string | CommentVote
       } | null)
     | ({
-        relationTo: 'leagues';
-        value: string | League;
+        relationTo: 'leagues'
+        value: string | League
       } | null)
     | ({
-        relationTo: 'matches';
-        value: string | Match;
+        relationTo: 'matches'
+        value: string | Match
       } | null)
     | ({
-        relationTo: 'matchStats';
-        value: string | MatchStat;
+        relationTo: 'matchStats'
+        value: string | MatchStat
       } | null)
     | ({
-        relationTo: 'predictionStats';
-        value: string | PredictionStat;
+        relationTo: 'predictionStats'
+        value: string | PredictionStat
       } | null)
     | ({
-        relationTo: 'bet-markets';
-        value: string | BetMarket;
+        relationTo: 'bet-markets'
+        value: string | BetMarket
       } | null)
     | ({
-        relationTo: 'outcome-groups';
-        value: string | OutcomeGroup;
-      } | null);
-  globalSlug?: string | null;
+        relationTo: 'outcome-groups'
+        value: string | OutcomeGroup
+      } | null)
+  globalSlug?: string | null
   user: {
-    relationTo: 'users';
-    value: string | User;
-  };
-  updatedAt: string;
-  createdAt: string;
+    relationTo: 'users'
+    value: string | User
+  }
+  updatedAt: string
+  createdAt: string
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: string
   user: {
-    relationTo: 'users';
-    value: string | User;
-  };
-  key?: string | null;
+    relationTo: 'users'
+    value: string | User
+  }
+  key?: string | null
   value?:
     | {
-        [k: string]: unknown;
+        [k: string]: unknown
       }
     | unknown[]
     | string
     | number
     | boolean
-    | null;
-  updatedAt: string;
-  createdAt: string;
+    | null
+  updatedAt: string
+  createdAt: string
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
-  name?: string | null;
-  batch?: number | null;
-  updatedAt: string;
-  createdAt: string;
+  id: string
+  name?: string | null
+  batch?: number | null
+  updatedAt: string
+  createdAt: string
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  role?: T;
-  username?: T;
-  name?: T;
-  bio?: T;
-  avatar?: T;
-  avatarUrl?: T;
+  role?: T
+  username?: T
+  name?: T
+  bio?: T
+  avatar?: T
+  avatarUrl?: T
   links?:
     | T
     | {
-        website?: T;
-        twitter?: T;
-        github?: T;
-      };
-  rating?: T;
-  emailVerified?: T;
-  emailVerificationToken?: T;
-  emailVerificationExpires?: T;
-  passwordResetToken?: T;
-  passwordResetExpires?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
+        website?: T
+        twitter?: T
+        github?: T
+      }
+  rating?: T
+  emailVerified?: T
+  emailVerificationToken?: T
+  emailVerificationExpires?: T
+  passwordResetToken?: T
+  passwordResetExpires?: T
+  updatedAt?: T
+  createdAt?: T
+  email?: T
+  resetPasswordToken?: T
+  resetPasswordExpiration?: T
+  salt?: T
+  hash?: T
+  loginAttempts?: T
+  lockUntil?: T
   sessions?:
     | T
     | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
+        id?: T
+        createdAt?: T
+        expiresAt?: T
+      }
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
-  alt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
+  alt?: T
+  updatedAt?: T
+  createdAt?: T
+  url?: T
+  thumbnailURL?: T
+  filename?: T
+  mimeType?: T
+  filesize?: T
+  width?: T
+  height?: T
+  focalX?: T
+  focalY?: T
   sizes?:
     | T
     | {
         thumbnail?:
           | T
           | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
+              url?: T
+              width?: T
+              height?: T
+              mimeType?: T
+              filesize?: T
+              filename?: T
+            }
         card?:
           | T
           | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-      };
+              url?: T
+              width?: T
+              height?: T
+              mimeType?: T
+              filesize?: T
+              filename?: T
+            }
+      }
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
-  title?: T;
-  slug?: T;
-  postType?: T;
-  content?: T;
-  featuredImage?: T;
+  title?: T
+  slug?: T
+  postType?: T
+  content?: T
+  featuredImage?: T
   prediction?:
     | T
     | {
         outcomes?:
           | T
           | {
-              fixtureId?: T;
-              market?: T;
-              outcomeGroup?: T;
-              marketName?: T;
-              outcomeName?: T;
-              value?: T;
-              coefficient?: T;
+              fixtureId?: T
+              market?: T
+              outcomeGroup?: T
+              marketName?: T
+              outcomeName?: T
+              value?: T
+              coefficient?: T
               matchInfo?:
                 | T
                 | {
-                    home?: T;
-                    homeTeamId?: T;
-                    away?: T;
-                    awayTeamId?: T;
-                    competition?: T;
-                    date?: T;
-                    time?: T;
-                  };
-              id?: T;
-            };
-      };
-  author?: T;
-  publishedAt?: T;
-  updatedAt?: T;
-  createdAt?: T;
+                    home?: T
+                    homeTeamId?: T
+                    away?: T
+                    awayTeamId?: T
+                    competition?: T
+                    date?: T
+                    time?: T
+                  }
+              id?: T
+            }
+      }
+  author?: T
+  publishedAt?: T
+  updatedAt?: T
+  createdAt?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "comments_select".
  */
 export interface CommentsSelect<T extends boolean = true> {
-  post?: T;
-  parent?: T;
-  content?: T;
-  author?: T;
-  upvotes?: T;
-  downvotes?: T;
-  score?: T;
-  updatedAt?: T;
-  createdAt?: T;
+  post?: T
+  parent?: T
+  content?: T
+  author?: T
+  upvotes?: T
+  downvotes?: T
+  score?: T
+  updatedAt?: T
+  createdAt?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "commentVotes_select".
  */
 export interface CommentVotesSelect<T extends boolean = true> {
-  comment?: T;
-  user?: T;
-  value?: T;
-  updatedAt?: T;
-  createdAt?: T;
+  comment?: T
+  user?: T
+  value?: T
+  updatedAt?: T
+  createdAt?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "leagues_select".
  */
 export interface LeaguesSelect<T extends boolean = true> {
-  competitionId?: T;
-  externalId?: T;
-  name?: T;
-  customName?: T;
-  displayName?: T;
-  countryId?: T;
-  countryName?: T;
-  isLeague?: T;
-  isCup?: T;
-  tier?: T;
-  hasGroups?: T;
-  active?: T;
-  nationalTeamsOnly?: T;
+  competitionId?: T
+  externalId?: T
+  name?: T
+  customName?: T
+  displayName?: T
+  countryId?: T
+  countryName?: T
+  isLeague?: T
+  isCup?: T
+  tier?: T
+  hasGroups?: T
+  active?: T
+  nationalTeamsOnly?: T
   countries?:
     | T
     | {
-        id?: T;
-        name?: T;
-      };
+        id?: T
+        name?: T
+      }
   federations?:
     | T
     | {
-        id?: T;
-        name?: T;
-      };
+        id?: T
+        name?: T
+      }
   season?:
     | T
     | {
-        id?: T;
-        name?: T;
-        start?: T;
-        end?: T;
-      };
-  priority?: T;
-  updatedAt?: T;
-  createdAt?: T;
+        id?: T
+        name?: T
+        start?: T
+        end?: T
+      }
+  priority?: T
+  updatedAt?: T
+  createdAt?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "matches_select".
  */
 export interface MatchesSelect<T extends boolean = true> {
-  matchId?: T;
-  fixtureId?: T;
-  externalId?: T;
-  displayName?: T;
-  date?: T;
-  status?: T;
-  minute?: T;
-  period?: T;
-  time?: T;
-  scheduled?: T;
-  addedAt?: T;
-  lastChangedAt?: T;
-  homeTeam?: T;
-  homeTeamId?: T;
-  homeLogo?: T;
-  homeCountryId?: T;
-  homeStadium?: T;
-  awayTeam?: T;
-  awayTeamId?: T;
-  awayLogo?: T;
-  awayCountryId?: T;
-  awayStadium?: T;
-  homeScore?: T;
-  awayScore?: T;
-  homeScoreHalftime?: T;
-  awayScoreHalftime?: T;
-  homeScoreExtraTime?: T;
-  awayScoreExtraTime?: T;
-  homeScorePenalties?: T;
-  awayScorePenalties?: T;
+  matchId?: T
+  fixtureId?: T
+  externalId?: T
+  displayName?: T
+  date?: T
+  status?: T
+  minute?: T
+  period?: T
+  time?: T
+  scheduled?: T
+  addedAt?: T
+  lastChangedAt?: T
+  homeTeam?: T
+  homeTeamId?: T
+  homeLogo?: T
+  homeCountryId?: T
+  homeStadium?: T
+  awayTeam?: T
+  awayTeamId?: T
+  awayLogo?: T
+  awayCountryId?: T
+  awayStadium?: T
+  homeScore?: T
+  awayScore?: T
+  homeScoreHalftime?: T
+  awayScoreHalftime?: T
+  homeScoreExtraTime?: T
+  awayScoreExtraTime?: T
+  homeScorePenalties?: T
+  awayScorePenalties?: T
   scoresRaw?:
     | T
     | {
-        score?: T;
-        htScore?: T;
-        ftScore?: T;
-        etScore?: T;
-        psScore?: T;
-      };
-  competition?: T;
-  competitionId?: T;
+        score?: T
+        htScore?: T
+        ftScore?: T
+        etScore?: T
+        psScore?: T
+      }
+  competition?: T
+  competitionId?: T
   competitionDetails?:
     | T
     | {
-        isCup?: T;
-        isLeague?: T;
-        hasGroups?: T;
-        nationalTeamsOnly?: T;
-        active?: T;
-        tier?: T;
-      };
+        isCup?: T
+        isLeague?: T
+        hasGroups?: T
+        nationalTeamsOnly?: T
+        active?: T
+        tier?: T
+      }
   federation?:
     | T
     | {
-        federationId?: T;
-        name?: T;
-      };
+        federationId?: T
+        name?: T
+      }
   country?:
     | T
     | {
-        countryId?: T;
-        name?: T;
-        flag?: T;
-        fifaCode?: T;
-        uefaCode?: T;
-        isReal?: T;
-      };
-  groupId?: T;
-  league?: T;
+        countryId?: T
+        name?: T
+        flag?: T
+        fifaCode?: T
+        uefaCode?: T
+        isReal?: T
+      }
+  groupId?: T
+  league?: T
   season?:
     | T
     | {
-        seasonId?: T;
-        name?: T;
-        year?: T;
-      };
-  round?: T;
-  location?: T;
+        seasonId?: T
+        name?: T
+        year?: T
+      }
+  round?: T
+  location?: T
   venue?:
     | T
     | {
-        name?: T;
-        city?: T;
-        country?: T;
-      };
-  referee?: T;
+        name?: T
+        city?: T
+        country?: T
+      }
+  referee?: T
   outcomes?:
     | T
     | {
-        halfTime?: T;
-        fullTime?: T;
-        extraTime?: T;
-        penaltyShootout?: T;
-      };
+        halfTime?: T
+        fullTime?: T
+        extraTime?: T
+        penaltyShootout?: T
+      }
   odds?:
     | T
     | {
         pre?:
           | T
           | {
-              home?: T;
-              draw?: T;
-              away?: T;
-            };
+              home?: T
+              draw?: T
+              away?: T
+            }
         live?:
           | T
           | {
-              home?: T;
-              draw?: T;
-              away?: T;
-            };
-      };
+              home?: T
+              draw?: T
+              away?: T
+            }
+      }
   urls?:
     | T
     | {
-        events?: T;
-        statistics?: T;
-        lineups?: T;
-        head2head?: T;
-      };
-  lastSyncAt?: T;
-  syncSource?: T;
-  hasStats?: T;
-  priority?: T;
-  raw?: T;
-  updatedAt?: T;
-  createdAt?: T;
+        events?: T
+        statistics?: T
+        lineups?: T
+        head2head?: T
+      }
+  lastSyncAt?: T
+  syncSource?: T
+  hasStats?: T
+  priority?: T
+  raw?: T
+  updatedAt?: T
+  createdAt?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "matchStats_select".
  */
 export interface MatchStatsSelect<T extends boolean = true> {
-  matchId?: T;
-  match?: T;
-  displayName?: T;
+  matchId?: T
+  match?: T
+  displayName?: T
   possession?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   shots?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   shotsOnTarget?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   shotsOffTarget?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   shotsBlocked?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   corners?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   offsides?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   fouls?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   yellowCards?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   redCards?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   saves?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   passes?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   passesAccurate?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   passAccuracy?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   attacks?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
+        home?: T
+        away?: T
+      }
   dangerousAttacks?:
     | T
     | {
-        home?: T;
-        away?: T;
-      };
-  additionalStats?: T;
+        home?: T
+        away?: T
+      }
+  additionalStats?: T
   events?:
     | T
     | {
-        minute?: T;
-        type?: T;
-        team?: T;
-        player?: T;
-        assistPlayer?: T;
-        playerOut?: T;
-        playerIn?: T;
-        description?: T;
-        id?: T;
-      };
+        minute?: T
+        type?: T
+        team?: T
+        player?: T
+        assistPlayer?: T
+        playerOut?: T
+        playerIn?: T
+        description?: T
+        id?: T
+      }
   lineups?:
     | T
     | {
         home?:
           | T
           | {
-              formation?: T;
+              formation?: T
               startingXI?:
                 | T
                 | {
-                    number?: T;
-                    name?: T;
-                    position?: T;
-                    id?: T;
-                  };
+                    number?: T
+                    name?: T
+                    position?: T
+                    id?: T
+                  }
               substitutes?:
                 | T
                 | {
-                    number?: T;
-                    name?: T;
-                    position?: T;
-                    id?: T;
-                  };
-            };
+                    number?: T
+                    name?: T
+                    position?: T
+                    id?: T
+                  }
+            }
         away?:
           | T
           | {
-              formation?: T;
+              formation?: T
               startingXI?:
                 | T
                 | {
-                    number?: T;
-                    name?: T;
-                    position?: T;
-                    id?: T;
-                  };
+                    number?: T
+                    name?: T
+                    position?: T
+                    id?: T
+                  }
               substitutes?:
                 | T
                 | {
-                    number?: T;
-                    name?: T;
-                    position?: T;
-                    id?: T;
-                  };
-            };
-      };
-  lastSyncAt?: T;
-  syncSource?: T;
-  dataQuality?: T;
-  updatedAt?: T;
-  createdAt?: T;
+                    number?: T
+                    name?: T
+                    position?: T
+                    id?: T
+                  }
+            }
+      }
+  lastSyncAt?: T
+  syncSource?: T
+  dataQuality?: T
+  updatedAt?: T
+  createdAt?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "predictionStats_select".
  */
 export interface PredictionStatsSelect<T extends boolean = true> {
-  displayName?: T;
-  post?: T;
-  author?: T;
-  matchId?: T;
-  fixtureId?: T;
-  status?: T;
-  evaluatedAt?: T;
+  displayName?: T
+  post?: T
+  author?: T
+  matchId?: T
+  fixtureId?: T
+  status?: T
+  evaluatedAt?: T
   summary?:
     | T
     | {
-        total?: T;
-        won?: T;
-        lost?: T;
-        undecided?: T;
-        hitRate?: T;
-        roi?: T;
-      };
+        total?: T
+        won?: T
+        lost?: T
+        undecided?: T
+        hitRate?: T
+        roi?: T
+      }
   details?:
     | T
     | {
-        event?: T;
-        coefficient?: T;
-        result?: T;
-        reason?: T;
-        id?: T;
-      };
+        event?: T
+        coefficient?: T
+        result?: T
+        reason?: T
+        id?: T
+      }
   scoring?:
     | T
     | {
-        points?: T;
-        breakdown?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
+        points?: T
+        breakdown?: T
+      }
+  updatedAt?: T
+  createdAt?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "bet-markets_select".
  */
 export interface BetMarketsSelect<T extends boolean = true> {
-  name?: T;
-  groups?: T;
+  name?: T
+  groups?: T
   mappingConfig?:
     | T
     | {
-        statPath?: T;
-        statType?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
+        statPath?: T
+        statType?: T
+      }
+  updatedAt?: T
+  createdAt?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "outcome-groups_select".
  */
 export interface OutcomeGroupsSelect<T extends boolean = true> {
-  name?: T;
+  name?: T
   outcomes?:
     | T
     | {
-        name?: T;
+        name?: T
         conditions?:
           | T
           | {
-              comparisonOperator?: T;
-              calculationType?: T;
-              value?: T;
-              outcomeValue?: T;
+              comparisonOperator?: T
+              calculationType?: T
+              value?: T
+              outcomeValue?: T
               set?:
                 | T
                 | {
-                    value?: T;
-                    id?: T;
-                  };
+                    value?: T
+                    id?: T
+                  }
               range?:
                 | T
                 | {
-                    lower?: T;
-                    upper?: T;
-                  };
-              id?: T;
-            };
+                    lower?: T
+                    upper?: T
+                  }
+              id?: T
+            }
         values?:
           | T
           | {
-              value?: T;
-              id?: T;
-            };
-        conditionLogic?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
+              value?: T
+              id?: T
+            }
+        conditionLogic?: T
+        id?: T
+      }
+  updatedAt?: T
+  createdAt?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents_select".
  */
 export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
-  document?: T;
-  globalSlug?: T;
-  user?: T;
-  updatedAt?: T;
-  createdAt?: T;
+  document?: T
+  globalSlug?: T
+  user?: T
+  updatedAt?: T
+  createdAt?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-preferences_select".
  */
 export interface PayloadPreferencesSelect<T extends boolean = true> {
-  user?: T;
-  key?: T;
-  value?: T;
-  updatedAt?: T;
-  createdAt?: T;
+  user?: T
+  key?: T
+  value?: T
+  updatedAt?: T
+  createdAt?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-migrations_select".
  */
 export interface PayloadMigrationsSelect<T extends boolean = true> {
-  name?: T;
-  batch?: T;
-  updatedAt?: T;
-  createdAt?: T;
+  name?: T
+  batch?: T
+  updatedAt?: T
+  createdAt?: T
 }
 /**
  * ⚽ **Виджет топ-матчей на главной странице**
@@ -2045,19 +2083,19 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  * via the `definition` "topMatchesLeagues".
  */
 export interface TopMatchesLeague {
-  id: string;
+  id: string
   /**
    * Показывать ли виджет топ матчей на сайте
    */
-  enabled?: boolean | null;
+  enabled?: boolean | null
   /**
    * Заголовок, который будет отображаться над виджетом
    */
-  title?: string | null;
+  title?: string | null
   /**
    * Максимальное количество матчей для показа в виджете
    */
-  maxMatches?: number | null;
+  maxMatches?: number | null
   /**
    * Выберите лиги для отображения в виджете топ матчей
    */
@@ -2066,18 +2104,18 @@ export interface TopMatchesLeague {
         /**
          * Выберите лигу
          */
-        league: string | League;
+        league: string | League
         /**
          * Приоритет лиги (меньше число = выше приоритет)
          */
-        priority?: number | null;
+        priority?: number | null
         /**
          * Показывать ли матчи из этой лиги
          */
-        enabled?: boolean | null;
-        id?: string | null;
+        enabled?: boolean | null
+        id?: string | null
       }[]
-    | null;
+    | null
   /**
    * Дополнительные настройки для фильтрации матчей
    */
@@ -2085,18 +2123,18 @@ export interface TopMatchesLeague {
     /**
      * Показывать матчи только из активных лиг
      */
-    showOnlyActive?: boolean | null;
+    showOnlyActive?: boolean | null
     /**
      * В каком временном диапазоне искать матчи
      */
-    timeRange?: ('today' | 'tomorrow' | 'week' | 'month') | null;
+    timeRange?: ('today' | 'tomorrow' | 'week' | 'month') | null
     /**
      * Не показывать завершённые матчи
      */
-    excludeFinished?: boolean | null;
-  };
-  updatedAt?: string | null;
-  createdAt?: string | null;
+    excludeFinished?: boolean | null
+  }
+  updatedAt?: string | null
+  createdAt?: string | null
 }
 /**
  * 📋 **Настройка лиг в боковом меню**
@@ -2129,27 +2167,27 @@ export interface TopMatchesLeague {
  * via the `definition` "sidebarLeagues".
  */
 export interface SidebarLeague {
-  id: string;
+  id: string
   /**
    * Включить/выключить отображение списка лиг в сайдбаре
    */
-  enabled?: boolean | null;
+  enabled?: boolean | null
   /**
    * Заголовок секции с лигами в сайдбаре
    */
-  title?: string | null;
+  title?: string | null
   /**
    * Максимальное количество лиг для показа в сайдбаре
    */
-  maxItems?: number | null;
+  maxItems?: number | null
   /**
    * Отображать флаги стран рядом с названиями лиг
    */
-  showFlags?: boolean | null;
+  showFlags?: boolean | null
   /**
    * Группировать лиги по странам в сайдбаре
    */
-  groupByCountry?: boolean | null;
+  groupByCountry?: boolean | null
   /**
    * Выберите лиги для отображения в сайдбаре
    */
@@ -2158,30 +2196,30 @@ export interface SidebarLeague {
         /**
          * Выберите лигу
          */
-        league: string | League;
+        league: string | League
         /**
          * Оставьте пустым для использования оригинального названия лиги
          */
-        customName?: string | null;
+        customName?: string | null
         /**
          * Порядок отображения в сайдбаре (меньше число = выше в списке)
          */
-        priority?: number | null;
+        priority?: number | null
         /**
          * Показывать ли эту лигу в сайдбаре
          */
-        enabled?: boolean | null;
+        enabled?: boolean | null
         /**
          * HEX-код цвета для выделения лиги (например, #ff0000)
          */
-        highlightColor?: string | null;
+        highlightColor?: string | null
         /**
          * Отображать количество предстоящих матчей рядом с названием лиги
          */
-        showMatchCount?: boolean | null;
-        id?: string | null;
+        showMatchCount?: boolean | null
+        id?: string | null
       }[]
-    | null;
+    | null
   /**
    * Дополнительные настройки внешнего вида сайдбара
    */
@@ -2189,22 +2227,22 @@ export interface SidebarLeague {
     /**
      * Показывать только активные лиги
      */
-    showOnlyActive?: boolean | null;
+    showOnlyActive?: boolean | null
     /**
      * Отображать уровень лиги (1-я лига, 2-я лига �� т.д.)
      */
-    showTiers?: boolean | null;
+    showTiers?: boolean | null
     /**
      * Более компактное отображение списка лиг
      */
-    compactMode?: boolean | null;
+    compactMode?: boolean | null
     /**
      * Отображать логотипы лиг (если доступны)
      */
-    showLogos?: boolean | null;
-  };
-  updatedAt?: string | null;
-  createdAt?: string | null;
+    showLogos?: boolean | null
+  }
+  updatedAt?: string | null
+  createdAt?: string | null
 }
 /**
  * ⚙️ **Центр управления исходами ставок**
@@ -2236,13 +2274,13 @@ export interface SidebarLeague {
  * via the `definition` "outcome-manager".
  */
 export interface OutcomeManager {
-  id: string;
+  id: string
   /**
    * Описание управления исходами.
    */
-  description?: string | null;
-  updatedAt?: string | null;
-  createdAt?: string | null;
+  description?: string | null
+  updatedAt?: string | null
+  createdAt?: string | null
 }
 /**
  * 🔗 **Настройка меню в шапке сайта**
@@ -2268,89 +2306,89 @@ export interface OutcomeManager {
  * via the `definition` "header-menu".
  */
 export interface HeaderMenu {
-  id: string;
+  id: string
   items?:
     | {
-        label: string;
+        label: string
         /**
          * Абсолютный или относительный URL (например, /leagues или https://example.com)
          */
-        url: string;
-        id?: string | null;
+        url: string
+        id?: string | null
       }[]
-    | null;
-  updatedAt?: string | null;
-  createdAt?: string | null;
+    | null
+  updatedAt?: string | null
+  createdAt?: string | null
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "topMatchesLeagues_select".
  */
 export interface TopMatchesLeaguesSelect<T extends boolean = true> {
-  enabled?: T;
-  title?: T;
-  maxMatches?: T;
+  enabled?: T
+  title?: T
+  maxMatches?: T
   leagues?:
     | T
     | {
-        league?: T;
-        priority?: T;
-        enabled?: T;
-        id?: T;
-      };
+        league?: T
+        priority?: T
+        enabled?: T
+        id?: T
+      }
   filterSettings?:
     | T
     | {
-        showOnlyActive?: T;
-        timeRange?: T;
-        excludeFinished?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
+        showOnlyActive?: T
+        timeRange?: T
+        excludeFinished?: T
+      }
+  updatedAt?: T
+  createdAt?: T
+  globalType?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "sidebarLeagues_select".
  */
 export interface SidebarLeaguesSelect<T extends boolean = true> {
-  enabled?: T;
-  title?: T;
-  maxItems?: T;
-  showFlags?: T;
-  groupByCountry?: T;
+  enabled?: T
+  title?: T
+  maxItems?: T
+  showFlags?: T
+  groupByCountry?: T
   leagues?:
     | T
     | {
-        league?: T;
-        customName?: T;
-        priority?: T;
-        enabled?: T;
-        highlightColor?: T;
-        showMatchCount?: T;
-        id?: T;
-      };
+        league?: T
+        customName?: T
+        priority?: T
+        enabled?: T
+        highlightColor?: T
+        showMatchCount?: T
+        id?: T
+      }
   displaySettings?:
     | T
     | {
-        showOnlyActive?: T;
-        showTiers?: T;
-        compactMode?: T;
-        showLogos?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
+        showOnlyActive?: T
+        showTiers?: T
+        compactMode?: T
+        showLogos?: T
+      }
+  updatedAt?: T
+  createdAt?: T
+  globalType?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "outcome-manager_select".
  */
 export interface OutcomeManagerSelect<T extends boolean = true> {
-  description?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
+  description?: T
+  updatedAt?: T
+  createdAt?: T
+  globalType?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2360,22 +2398,21 @@ export interface HeaderMenuSelect<T extends boolean = true> {
   items?:
     | T
     | {
-        label?: T;
-        url?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
+        label?: T
+        url?: T
+        id?: T
+      }
+  updatedAt?: T
+  createdAt?: T
+  globalType?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "auth".
  */
 export interface Auth {
-  [k: string]: unknown;
+  [k: string]: unknown
 }
-
 
 declare module 'payload' {
   export interface GeneratedTypes extends Config {}

@@ -3,6 +3,7 @@
 ## Проблема
 
 При использовании основного `Dockerfile` для воркеров происходит:
+
 - Полная сборка Next.js (не нужна для воркеров)
 - Копирование всего проекта (423MB+)
 - Долгое время сборки (10+ минут)
@@ -10,6 +11,7 @@
 ## Решение
 
 Создан отдельный `Dockerfile.worker` для воркеров:
+
 - ✅ Без сборки Next.js
 - ✅ Только установка зависимостей
 - ✅ Копирование только необходимых файлов
@@ -18,10 +20,13 @@
 ## Файлы
 
 ### `Dockerfile.worker`
+
 Легкий образ для воркеров (импорт матчей, расчет статистики)
 
 ### `.dockerignore`
+
 Исключает ненужные файлы из контекста сборки:
+
 - `node_modules/`
 - `.next/`
 - `db-backups/`
@@ -32,34 +37,36 @@
 ## Использование
 
 ### Воркеры используют `Dockerfile.worker`:
+
 ```yaml
 # docker-compose.prediction-stats.yml
 services:
   prediction_stats_calculator:
     build:
       context: .
-      dockerfile: Dockerfile.worker  # ← Легкий образ
+      dockerfile: Dockerfile.worker # ← Легкий образ
 ```
 
 ### Основное приложение использует `Dockerfile`:
+
 ```yaml
 # docker-compose.yml
 services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile  # ← Полная сборка Next.js
+      dockerfile: Dockerfile # ← Полная сборка Next.js
 ```
 
 ## Сравнение
 
-| Параметр | Dockerfile | Dockerfile.worker |
-|----------|-----------|-------------------|
-| Сборка Next.js | ✅ Да | ❌ Нет |
-| Время сборки | ~10-15 мин | ~2-3 мин |
-| Размер контекста | 423MB+ | ~50MB |
-| Размер образа | ~500MB | ~200MB |
-| Использование | Основное приложение | Воркеры |
+| Параметр         | Dockerfile          | Dockerfile.worker |
+| ---------------- | ------------------- | ----------------- |
+| Сборка Next.js   | ✅ Да               | ❌ Нет            |
+| Время сборки     | ~10-15 мин          | ~2-3 мин          |
+| Размер контекста | 423MB+              | ~50MB             |
+| Размер образа    | ~500MB              | ~200MB            |
+| Использование    | Основное приложение | Воркеры           |
 
 ## Первый запуск на сервере
 
@@ -83,6 +90,7 @@ docker compose -f docker-compose.prediction-stats.yml up -d
 ```
 
 ### Последующие запуски будут мгновенными:
+
 ```bash
 docker compose -f docker-compose.prediction-stats.yml up -d
 # [+] Running 1/1
@@ -118,11 +126,13 @@ docker rmi appstack-prediction-stats-prediction_stats_calculator
 **Причина**: Копируется слишком много файлов
 
 **Решение**: Проверьте `.dockerignore`:
+
 ```bash
 cat .dockerignore
 ```
 
 Должны быть исключены:
+
 - `node_modules/`
 - `.next/`
 - `db-backups/`
@@ -133,6 +143,7 @@ cat .dockerignore
 **Причина**: Заполнен диск
 
 **Решение**: Очистите Docker:
+
 ```bash
 # Удалить все неиспользуемые данные
 docker system prune -a --volumes
@@ -145,14 +156,16 @@ df -h
 
 **Причина**: Медленное интернет-соединение или много зависимостей
 
-**Решение**: 
+**Решение**:
+
 1. Используйте кеш Docker
 2. Или соберите образ локально и загрузите на сервер:
+
    ```bash
    # Локально
    docker build -f Dockerfile.worker -t my-worker .
    docker save my-worker > worker.tar
-   
+
    # На сервере
    docker load < worker.tar
    ```

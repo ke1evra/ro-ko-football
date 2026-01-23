@@ -3,22 +3,26 @@
 ## 🔴 Проблема 1: DATABASE_URI не загружается
 
 ### Симптомы
+
 ```
 ERROR: Invalid scheme, expected connection string to start with "mongodb://" or "mongodb+srv://"
 ```
 
 ### Причина
+
 `.env` файл не загружается правильно или DATABASE_URI содержит неправильное значение.
 
 ### Решение
 
 #### Шаг 1: Проверить .env файл
+
 ```bash
 cd /root/ro-ko-football
 cat .env | grep DATABASE_URI
 ```
 
 Должно быть:
+
 ```
 DATABASE_URI=mongodb://localhost:27017/your-database
 # или
@@ -26,17 +30,20 @@ DATABASE_URI=mongodb+srv://user:password@cluster.mongodb.net/database
 ```
 
 #### Шаг 2: Проверить что .env в корне проекта
+
 ```bash
 ls -la /root/ro-ko-football/.env
 ```
 
 #### Шаг 3: Если .env отсутствует, соз��ать
+
 ```bash
 cd /root/ro-ko-football
 nano .env
 ```
 
 Добавить:
+
 ```env
 DATABASE_URI=mongodb://localhost:27017/ro-ko-football
 PAYLOAD_SECRET=your-secret-key-here
@@ -45,6 +52,7 @@ LIVESCORE_SECRET=your-secret
 ```
 
 #### Шаг 4: Проверить права доступа
+
 ```bash
 chmod 600 .env
 ```
@@ -54,11 +62,13 @@ chmod 600 .env
 ## 🔴 Проблема 2: Cannot find module Users
 
 ### Симптомы
+
 ```
 Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/root/ro-ko-football/src/collections/Users'
 ```
 
 ### Причина
+
 Node.js ESM требует явных расширений файлов в импортах, но TypeScript компилируется без них.
 
 ### Решение
@@ -99,6 +109,7 @@ node --import @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.mjs
 ## 🔴 Проблема 3: ExperimentalWarning
 
 ### Симптомы
+
 ```
 ExperimentalWarning: `--experimental-loader` may be removed in the future
 ```
@@ -136,6 +147,7 @@ cat .env
 ```
 
 Должен содержать:
+
 ```env
 DATABASE_URI=mongodb://localhost:27017/ro-ko-football
 PAYLOAD_SECRET=your-secret-here
@@ -151,6 +163,7 @@ nano package.json
 ```
 
 Изменить скрипты:
+
 ```json
 {
   "scripts": {
@@ -206,7 +219,7 @@ services:
     image: mongo:7
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - '27017:27017'
     volumes:
       - mongodb_data:/data/db
     environment:
@@ -308,6 +321,7 @@ pm2 logs
 ## 📞 Если ничего не помогает
 
 1. Проверить логи:
+
 ```bash
 pm2 logs
 journalctl -u matches-import -f
@@ -315,17 +329,20 @@ docker-compose logs -f
 ```
 
 2. Запустить с отладкой:
+
 ```bash
 DEBUG=* pnpm matches:import:forward --days=1
 ```
 
 3. Проверить права доступа:
+
 ```bash
 ls -la /root/ro-ko-football
 chmod -R 755 /root/ro-ko-football
 ```
 
 4. Переустановить зависимости:
+
 ```bash
 rm -rf node_modules pnpm-lock.yaml
 pnpm install

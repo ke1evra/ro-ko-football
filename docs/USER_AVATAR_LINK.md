@@ -34,12 +34,7 @@ export function MyComponent({ user }: { user: User }) {
 ### С кастомным классом
 
 ```tsx
-<UserAvatarLink 
-  user={user} 
-  size="md" 
-  className="custom-class"
-  nameClassName="text-lg font-bold"
-/>
+<UserAvatarLink user={user} size="md" className="custom-class" nameClassName="text-lg font-bold" />
 ```
 
 ---
@@ -58,24 +53,24 @@ interface UserAvatarLinkProps {
 
 ### Параметры
 
-| Параметр | Тип | По умолчанию | Описание |
-|----------|-----|--------------|---------|
-| `user` | `User \| null \| undefined` | - | Объект пользователя |
-| `size` | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | Размер аватара |
-| `className` | `string` | - | Кастомный класс для контейнера ссылки |
-| `showName` | `boolean` | `false` | Показывать ли имя пользователя рядом с аватаром |
-| `nameClassName` | `string` | - | Кастомный класс для имени пользователя |
+| Параметр        | Тип                            | По умолчанию | Описание                                        |
+| --------------- | ------------------------------ | ------------ | ----------------------------------------------- |
+| `user`          | `User \| null \| undefined`    | -            | Объект пользователя                             |
+| `size`          | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'`       | Размер аватара                                  |
+| `className`     | `string`                       | -            | Кастомный класс для контейнера ссылки           |
+| `showName`      | `boolean`                      | `false`      | Показывать ли имя пользователя рядом с аватаром |
+| `nameClassName` | `string`                       | -            | Кастомный класс для имени пользователя          |
 
 ---
 
 ## Размеры
 
-| Размер | Класс | Пиксели |
-|--------|-------|---------|
-| `sm` | `h-6 w-6` | 24px |
-| `md` | `h-8 w-8` | 32px |
-| `lg` | `h-10 w-10` | 40px |
-| `xl` | `h-16 w-16` | 64px |
+| Размер | Класс       | Пиксели |
+| ------ | ----------- | ------- |
+| `sm`   | `h-6 w-6`   | 24px    |
+| `md`   | `h-8 w-8`   | 32px    |
+| `lg`   | `h-10 w-10` | 40px    |
+| `xl`   | `h-16 w-16` | 64px    |
 
 ---
 
@@ -94,9 +89,7 @@ export function PostsList({ posts }) {
           <UserAvatarLink user={post.author} size="md" />
           <div>
             <h3>{post.title}</h3>
-            <p className="text-sm text-muted-foreground">
-              {post.author?.name}
-            </p>
+            <p className="text-sm text-muted-foreground">{post.author?.name}</p>
           </div>
         </div>
       ))}
@@ -113,15 +106,8 @@ import { UserAvatarLink } from '@/components/UserAvatarLink'
 export function UserCard({ user }) {
   return (
     <div className="border rounded-lg p-4">
-      <UserAvatarLink 
-        user={user} 
-        size="lg" 
-        showName={true}
-        nameClassName="text-lg font-semibold"
-      />
-      <p className="text-sm text-muted-foreground mt-2">
-        {user.bio}
-      </p>
+      <UserAvatarLink user={user} size="lg" showName={true} nameClassName="text-lg font-semibold" />
+      <p className="text-sm text-muted-foreground mt-2">{user.bio}</p>
     </div>
   )
 }
@@ -157,9 +143,7 @@ export function PredictorCard({ predictor }) {
         <UserAvatarLink user={predictor} size="lg" />
         <div>
           <h3 className="font-semibold">{predictor.name}</h3>
-          <p className="text-sm text-muted-foreground">
-            Hit Rate: {predictor.stats.hitRate}%
-          </p>
+          <p className="text-sm text-muted-foreground">Hit Rate: {predictor.stats.hitRate}%</p>
         </div>
       </div>
     </div>
@@ -223,11 +207,7 @@ export function PredictorCard({ predictor }) {
 По умолчанию имя имеет класс `font-medium`. Можно переопределить через `nameClassName`:
 
 ```tsx
-<UserAvatarLink 
-  user={user} 
-  showName={true}
-  nameClassName="text-lg font-bold text-primary"
-/>
+<UserAvatarLink user={user} showName={true} nameClassName="text-lg font-bold text-primary" />
 ```
 
 ---
@@ -249,12 +229,12 @@ export function PredictorCard({ predictor }) {
 
 ## О��личие от UserAvatar
 
-| Функция | UserAvatar | UserAvatarLink |
-|---------|-----------|-----------------|
-| Отображение аватара | ✅ | ✅ |
-| Ссылка на профиль | ❌ | ✅ |
-| Показ имени | ❌ | ✅ (опционально) |
-| Кликабельность | ❌ | ✅ |
+| Функция             | UserAvatar | UserAvatarLink   |
+| ------------------- | ---------- | ---------------- |
+| Отображение аватара | ✅         | ✅               |
+| Ссылка на профиль   | ❌         | ✅               |
+| Показ имени         | ❌         | ✅ (опционально) |
+| Кликабельность      | ❌         | ✅               |
 
 ---
 

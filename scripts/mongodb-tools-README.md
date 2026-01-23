@@ -7,11 +7,13 @@
 Собирает полную информацию о состоянии MongoDB и системы.
 
 **Использование:**
+
 ```bash
 bash scripts/diagnose-mongodb.sh
 ```
 
 **Что проверяет:**
+
 - ✅ Статус MongoDB
 - ✅ Использование памяти (RAM и swap)
 - ✅ Использование диска
@@ -22,6 +24,7 @@ bash scripts/diagnose-mongodb.sh
 - ✅ Версию MongoDB
 
 **Вывод:**
+
 - Детальная информация о системе
 - Рекомендации по исправлению проблем
 
@@ -32,6 +35,7 @@ bash scripts/diagnose-mongodb.sh
 Автоматически исправляет типичные проблемы с MongoDB.
 
 **Использование:**
+
 ```bash
 sudo bash scripts/fix-mongodb.sh
 ```
@@ -39,6 +43,7 @@ sudo bash scripts/fix-mongodb.sh
 **⚠️ Требует права root!**
 
 **Что делает:**
+
 - ✅ Останавливает MongoDB
 - ✅ Создаёт backup конфигурации
 - ✅ Настраивает ограничение памяти (cacheSizeGB: 0.5)
@@ -51,6 +56,7 @@ sudo bash scripts/fix-mongodb.sh
 - ✅ Создаёт индексы для оптимизации
 
 **Backup файлы:**
+
 - `/etc/mongod.conf.backup.YYYYMMDD_HHMMSS`
 - `/var/log/mongodb/mongod.log.backup.YYYYMMDD_HHMMSS`
 
@@ -63,11 +69,13 @@ sudo bash scripts/fix-mongodb.sh
 **Использование:**
 
 #### Разовый запуск:
+
 ```bash
 bash scripts/monitor-mongodb.sh
 ```
 
 #### Автоматический запуск через crontab:
+
 ```bash
 # Открыть crontab
 crontab -e
@@ -77,6 +85,7 @@ crontab -e
 ```
 
 **Что проверяет:**
+
 - ✅ Статус MongoDB (автоперезапуск при падении)
 - ✅ Использование памяти MongoDB
 - ✅ Использование памяти системы
@@ -87,9 +96,11 @@ crontab -e
 - ✅ Размер лога MongoDB
 
 **Логи:**
+
 - `/var/log/mongodb-monitor.log`
 
 **Просмотр логов:**
+
 ```bash
 # Последние 50 строк
 tail -n 50 /var/log/mongodb-monitor.log
@@ -149,6 +160,7 @@ crontab -l
 ### Диагностика (diagnose-mongodb.sh)
 
 #### ✅ Всё хорошо:
+
 ```
 ✅ MongoDB запущен
 ✅ Swap настроен
@@ -157,6 +169,7 @@ crontab -l
 ```
 
 #### ⚠️ Требуется внимание:
+
 ```
 ⚠️ Мало памяти (1024MB). Рекомендуется минимум 2GB
 ⚠️ Swap не настроен
@@ -165,6 +178,7 @@ crontab -l
 ```
 
 #### 🔴 Критические проблемы:
+
 ```
 × MongoDB не запущен
 killed process (mongod)
@@ -174,6 +188,7 @@ Out of memory
 ### Мониторинг (monitor-mongodb.sh)
 
 #### ✅ Нормальная работа:
+
 ```
 [2026-01-12 10:00:00] ✅ MongoDB работает
 [2026-01-12 10:00:00] ✅ Использование памяти MongoDB: 45%
@@ -183,6 +198,7 @@ Out of memory
 ```
 
 #### ⚠️ Предупреждения:
+
 ```
 [2026-01-12 10:00:00] ⚠️ WARNING: Высокое использование памяти MongoDB: 85%
 [2026-01-12 10:00:00] ⚠️ WARNING: Мало места на диске: 85%
@@ -190,6 +206,7 @@ Out of memory
 ```
 
 #### 🔴 Критические события:
+
 ```
 [2026-01-12 10:00:00] 🔴 CRITICAL: MongoDB не запущен! Попытка перезапуска...
 [2026-01-12 10:00:05] ✅ MongoDB успешно перезапущен
@@ -200,11 +217,13 @@ Out of memory
 ## 🔧 Ручные команды
 
 ### Проверка статуса
+
 ```bash
 systemctl status mongod
 ```
 
 ### Просмотр логов
+
 ```bash
 # Последние 100 строк
 journalctl -u mongod -n 100 --no-pager
@@ -217,6 +236,7 @@ journalctl -u mongod | grep -i "error\|fatal"
 ```
 
 ### Проверка памяти
+
 ```bash
 # Общая память
 free -h
@@ -229,6 +249,7 @@ ps aux | grep mongod
 ```
 
 ### Проверка диска
+
 ```bash
 # Общее использование
 df -h
@@ -238,11 +259,13 @@ du -sh /var/lib/mongodb/*
 ```
 
 ### Проверка подключений
+
 ```bash
 mongosh --eval "db.serverStatus().connections"
 ```
 
 ### Перезапуск MongoDB
+
 ```bash
 sudo systemctl restart mongod
 sudo systemctl status mongod
@@ -269,11 +292,13 @@ curl -X POST "https://api.telegram.org/bot<ВАШ_ТОКЕН>/sendMessage" \
 ### Email уведомления
 
 Установить `mailutils`:
+
 ```bash
 sudo apt install mailutils
 ```
 
 Добавить в `monitor-mongodb.sh`:
+
 ```bash
 echo "MongoDB был перезапущен" | mail -s "MongoDB Alert" your@email.com
 ```
@@ -283,6 +308,7 @@ echo "MongoDB был перезапущен" | mail -s "MongoDB Alert" your@emai
 ## 🧪 Тестирование
 
 ### Тест падения MongoDB
+
 ```bash
 # Убить процесс MongoDB
 sudo pkill -9 mongod
@@ -293,6 +319,7 @@ tail -f /var/log/mongodb-monitor.log
 ```
 
 ### Тест высокой нагрузки
+
 ```bash
 # Создать много подключений
 for i in {1..50}; do
@@ -316,25 +343,33 @@ tail -f /var/log/mongodb-monitor.log
 ## ❓ FAQ
 
 ### Q: Как часто запускать мониторинг?
+
 **A:** Рекоме��дуется каждые 5 минут через crontab.
 
 ### Q: Нужны ли права root для всех скриптов?
-**A:** 
+
+**A:**
+
 - `diagnose-mongodb.sh` - нет
 - `fix-mongodb.sh` - да (sudo)
 - `monitor-mongodb.sh` - нет, но для автоперезапуска нужны права
 
 ### Q: Что делать если fix-mongodb.sh не помог?
-**A:** 
+
+**A:**
+
 1. Запустить `diagnose-mongodb.sh` и сохранить вывод
 2. Проверить логи: `journalctl -u mongod -n 200`
 3. См. подробное руководство в `MONGODB_CRASH_FIX.md`
 
 ### Q: Можно ли запускать скрипты на локальной машине?
+
 **A:** Да, но они предназначены для production серверов.
 
 ### Q: Как удалить все изменения?
+
 **A:**
+
 ```bash
 # Восстановить конфигурацию из backup
 sudo cp /etc/mongod.conf.backup.* /etc/mongod.conf

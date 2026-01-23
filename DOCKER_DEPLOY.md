@@ -118,6 +118,7 @@ docker-compose -f docker-compose.matches-import-forward.yml logs --tail=100
 ```
 
 Должны увидеть:
+
 ```
 [LOOP] Запуск в режиме постоянной работы с интервалом 600 сек
 [SYNC] Синхронизация матчей...
@@ -150,6 +151,7 @@ db.predictionStats.countDocuments()
 **Причина:** Старый loader не работает с TypeScript импортами
 
 **Решение:**
+
 ```bash
 # Убедитесь что package.json обновлён с tsx
 cat package.json | grep "tsx scripts"
@@ -168,6 +170,7 @@ docker-compose -f docker-compose.matches-import-forward.yml up -d
 **Причина:** .env файл не загружается или DATABASE_URI неправильный
 
 **Решение:**
+
 ```bash
 # Проверить .env
 cat .env | grep DATABASE_URI
@@ -199,7 +202,7 @@ services:
   matches_import_forward:
     # ... остальное
     healthcheck:
-      test: ["CMD", "pgrep", "-f", "tsx"]
+      test: ['CMD', 'pgrep', '-f', 'tsx']
       interval: 30s
       timeout: 10s
       retries: 3
