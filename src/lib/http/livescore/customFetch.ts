@@ -1,9 +1,17 @@
 /*
-  Тонкая обёртка над fetch для клиентов Kubb.
+  Тонкая обёртка над fetch для клиентов Kubb с логированием и кэшированием.
   Автоматически добавляет key, secret и lang=ru к query-параметрам.
   ВНИМАНИЕ: ключи читаются из серверных переменных окружения (LIVESCORE_*).
   Не используйте этот клиент в браузере напрямую — вызывайте из server actions/route handlers.
+
+  Теперь использует loggedFetch для:
+  - Логирования всех запросов в ApiRequestLogs
+  - Контроля лимита 45,000 запросов/день
+  - Кэширования ответов
 */
+
+import { loggedFetch } from './logged-fetch'
+import { NextRequest } from 'next/server'
 
 export type FetchLike = typeof fetch
 
@@ -50,10 +58,14 @@ export function createCustomFetch({
       method = 'GET',
       url: configUrl = '',
       params,
-      body,
       timeoutMs = 8000,
       ...restConfig
     } = config
+
+    // Поддержка только GET запросов для LiveScore API
+    if (method !== 'GET') {
+      throw new Error('LiveScore API поддерживает только GET запросы')
+    }
 
     // Нормализуем базовый URL и путь
     const base = new URL(baseUrl.endsWith('/') ? baseUrl : baseUrl + '/')
@@ -93,112 +105,55 @@ export function createCustomFetch({
 
     fullUrl.search = searchParams.toString()
 
-    const init: RequestInit = {
-      method,
-      ...restConfig,
-      headers: {
-        accept: 'application/json',
-        ...(restConfig.headers || {}),
-      },
+    // Определяем TTL на основе типа запроса
+    const endpoint = path
+    let ttl = 120000 // 2 минуты по умолчанию
+
+    if (endpoint.includes('/matches/live')) {
+      ttl = 30000 // 30 секунд для лайф матчей
+    } else if (endpoint.includes('/fixtures/')) {
+      ttl = 120000 // 2 минуты для фикстур
+    } else if (endpoint.includes('/competitions/standings')) {
+      ttl = 300000 // 5 минут для таблиц
     }
 
-    // По умолчанию отключаем кэш и ISR для всех запросов через клиент,
-    // чтобы избежать ошибок "Failed to set fetch cache" при сетевых таймаутах
-    if (!('cache' in init)) {
-      init.cache = 'no-store'
-    }
-    ;(init as any).next = (init as any).next ?? { revalidate: 0 }
+    // Получаем request из restConfig (для SSR)
+    const request = (restConfig as any).request as NextRequest | undefined
 
-    // Поддержка тела запроса для не-GET методов
-    if (body !== undefined && String(method).toUpperCase() !== 'GET') {
-      if (typeof FormData !== 'undefined' && body instanceof FormData) {
-        init.body = body as any
-      } else if (
-        typeof body === 'string' ||
-        (typeof Blob !== 'undefined' && body instanceof Blob)
-      ) {
-        init.body = body as any
-      } else {
-        init.body = JSON.stringify(body)
-        const hdrs = (init.headers ||= {}) as Record<string, string>
-        if (typeof hdrs === 'object' && hdrs && !('content-type' in hdrs)) {
-          hdrs['content-type'] = 'application/json'
-        }
+    try {
+      // Используем loggedFetch для выполнения запроса с логированием
+      const data = await loggedFetch.get<TRes>(endpoint, params || {}, {
+        source: 'api-route',
+        request,
+        ttl,
+        skipCache: false, // Используем кэширование
+      })
+
+      return {
+        data,
+        status: 200,
+        statusText: 'OK',
       }
-    }
+    } catch (error: any) {
+      // Логирование ошибки уже выполнено в loggedFetch
+      console.error(`[customFetch] Ошибка запроса ${endpoint}:`, error)
 
-    // Повторные попытки и корректная обработка AbortError
-    const maxAttempts = Math.max(1, Number((restConfig as any).retries ?? 2))
-    const baseTimeout = typeof timeoutMs === 'number' ? timeoutMs : 12000
-    let lastError: any = null
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      let timeoutHandle: any = null
-      let ac: AbortController | null = null
-
-      try {
-        // Настраиваем таймаут и AbortController на каждую попытку
-        if (typeof AbortController !== 'undefined') {
-          ac = new AbortController()
-          const origSignal = (restConfig as any).signal as AbortSignal | undefined
-          if (origSignal && 'addEventListener' in origSignal) {
-            origSignal.addEventListener('abort', () => ac?.abort(), { once: true } as any)
-          }
-          ;(init as any).signal = ac.signal
-          const attemptTimeout = attempt === 1 ? baseTimeout : Math.round(baseTimeout * 1.5)
-          timeoutHandle = setTimeout(() => ac?.abort(), attemptTimeout)
-        }
-
-        const response = await fetchImpl(fullUrl.toString(), init)
-
-        let data: any
-        try {
-          data = await response.json()
-        } catch {
-          data = {}
-        }
-
-        if (!response.ok) {
-          lastError = { status: response.status, statusText: response.statusText, data }
-          // Повторяем на 408/429/5xx кроме последней попытки
-          if (
-            attempt < maxAttempts &&
-            (response.status === 408 || response.status === 429 || response.status >= 500)
-          ) {
-            await new Promise((r) => setTimeout(r, 200 * attempt))
-            continue
-          }
-          throw lastError
-        }
-
+      // Преобразуем ошибку в формат kubb
+      if (error.status) {
         return {
-          data,
-          status: response.status,
-          statusText: response.statusText,
+          data: error.data || {},
+          status: error.status,
+          statusText: error.statusText || 'Error',
         }
-      } catch (e: any) {
-        lastError = e
-        const isAbort = e?.name === 'AbortError'
-        // Повторяем на AbortError или сетевых ошибках
-        if (attempt < maxAttempts && (isAbort || e?.status >= 500 || e?.code === 'ECONNRESET')) {
-          await new Promise((r) => setTimeout(r, 200 * attempt))
-          continue
-        }
-        if (isAbort) {
-          throw {
-            status: 504,
-            statusText: 'Gateway Timeout',
-            data: { error: 'Request aborted by timeout', url: fullUrl.toString() },
-          }
-        }
-        throw e
-      } finally {
-        if (timeoutHandle) clearTimeout(timeoutHandle)
+      }
+
+      // Неизвестная ошибка
+      return {
+        data: { error: error.message || 'Unknown error' },
+        status: 500,
+        statusText: 'Internal Server Error',
       }
     }
-
-    // Если все попытки исчерпаны
-    throw lastError || { status: 500, statusText: 'Fetch Failed', data: {} }
   }
 }
 
