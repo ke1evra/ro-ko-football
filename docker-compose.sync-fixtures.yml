@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  sync-fixtures:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URI=${DATABASE_URI}
+      - PAYLOAD_SECRET=${PAYLOAD_SECRET}
+      - LIVESCORE_API_BASE=${LIVESCORE_API_BASE}
+      - LIVESCORE_KEY=${LIVESCORE_KEY}
+      - LIVESCORE_SECRET=${LIVESCORE_SECRET}
+    command: ["node", "scripts/sync-fixtures.mjs"]
+    restart: "no"  # Одноразовый запуск
+    networks:
+      - app-network
+    depends_on:
+      - mongodb
+
+  # Cron job для ежечасного запуска
+  sync-fixtures-cron:
+    image: alpine:latest
+    command: sh -c "echo '0 * * * * /usr/local/bin/docker-compose -f docker-compose.sync-fixtures.yml up sync-fixtures' >> /etc/crontabs/root && crond -f"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker-compose.sync-fixtures.yml:/app/docker-compose.sync-fixtures.yml
+      - /usr/local/bin/docker-compose:/usr/local/bin/docker-compose
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    external: true

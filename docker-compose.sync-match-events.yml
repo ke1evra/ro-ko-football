@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  sync-match-events:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URI=${DATABASE_URI}
+      - PAYLOAD_SECRET=${PAYLOAD_SECRET}
+      - LIVESCORE_API_BASE=${LIVESCORE_API_BASE}
+      - LIVESCORE_KEY=${LIVESCORE_KEY}
+      - LIVESCORE_SECRET=${LIVESCORE_SECRET}
+    command: ["node", "scripts/sync-match-events.mjs"]
+    restart: "no"  # Одноразовый запуск
+    networks:
+      - app-network
+    depends_on:
+      - mongodb
+
+  # Cron job для запуска каждые 15 секунд (вперёд/назад/луп)
+  sync-match-events-cron:
+    image: alpine:latest
+    command: sh -c "echo '*/1 * * * * /usr/local/bin/docker-compose -f docker-compose.sync-match-events.yml up sync-match-events' >> /etc/crontabs/root && crond -f"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker-compose.sync-match-events.yml:/app/docker-compose.sync-match-events.yml
+      - /usr/local/bin/docker-compose:/usr/local/bin/docker-compose
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    external: true
