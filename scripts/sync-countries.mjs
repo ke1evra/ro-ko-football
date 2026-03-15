@@ -23,10 +23,14 @@ async function syncCountries() {
     const payload = await getPayload({ config })
 
     // Получаем список всех стран
-    const countriesData = await loggedFetch.get('/countries/list.json', {}, {
-      source: 'script',
-      ttl: 86400000 // 24 часа кэш (страны меняются очень редко)
-    })
+    const countriesData = await loggedFetch.get(
+      '/countries/list.json',
+      {},
+      {
+        source: 'script',
+        ttl: 86400000, // 24 часа кэш (страны меняются очень редко)
+      },
+    )
 
     if (!countriesData?.countries) {
       console.error('[sync-countries] Нет данных о странах')
@@ -44,16 +48,16 @@ async function syncCountries() {
           name: country.name,
           flag: country.flag || null,
           fifaCode: country.fifaCode || null,
-          lastSyncAt: new Date()
+          lastSyncAt: new Date(),
         }
 
         // Проверяем существует ли уже такая страна
         const existing = await payload.find({
           collection: 'countries',
           where: {
-            countryId: { equals: normalizedCountry.countryId }
+            countryId: { equals: normalizedCountry.countryId },
           },
-          limit: 1
+          limit: 1,
         })
 
         if (existing.docs.length > 0) {
@@ -61,14 +65,14 @@ async function syncCountries() {
           await payload.update({
             collection: 'countries',
             id: existing.docs[0].id,
-            data: normalizedCountry
+            data: normalizedCountry,
           })
           updated++
         } else {
           // Создаём новую страну
           await payload.create({
             collection: 'countries',
-            data: normalizedCountry
+            data: normalizedCountry,
           })
           created++
 
@@ -76,7 +80,6 @@ async function syncCountries() {
         }
 
         processed++
-
       } catch (error) {
         console.error(`[sync-countries] Ошибка обработки страны ${country.name}:`, error)
         errors++
@@ -86,8 +89,9 @@ async function syncCountries() {
     // Выводим статистику
     const duration = Date.now() - startTime
     console.log(`[sync-countries] Синхронизация завершена за ${duration}ms`)
-    console.log(`[sync-countries] Обработано: ${processed}, Создано: ${created}, Обновлено: ${updated}, Ошибок: ${errors}`)
-
+    console.log(
+      `[sync-countries] Обработано: ${processed}, Создано: ${created}, Обновлено: ${updated}, Ошибок: ${errors}`,
+    )
   } catch (error) {
     console.error('[sync-countries] Критическая ошибка:', error)
     process.exit(1)

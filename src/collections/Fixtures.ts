@@ -400,10 +400,6 @@ const Fixtures: CollectionConfig = {
   // Индексы для быстрого поиска
   indexes: [
     {
-      fields: ['fixtureId'],
-      unique: true,
-    },
-    {
       fields: ['league'],
     },
     {

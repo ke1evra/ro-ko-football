@@ -936,6 +936,8 @@ async function fetchMatchStatsDTO(matchId, retries = 3) {
 async function fetchAndUpsertStatsForMatch(payload, payloadMatchId, matchId, fixtureId) {
   try {
     const dto = await fetchMatchStatsDTO(matchId)
+
+    // Сохраняем статистику матча
     const existing = await payload.find({
       collection: 'matchStats',
       where: { matchId: { equals: Number(matchId) } },
@@ -981,6 +983,12 @@ async function fetchAndUpsertStatsForMatch(payload, payloadMatchId, matchId, fix
         `[STATS] CREATED (statsId=${created.id}) для matchId=${matchId}; metrics=${metricsPresent}`,
       )
     }
+
+    // Сохраняем события матча (если есть)
+    if (dto.events && Array.isArray(dto.events) && dto.events.length > 0) {
+      await upsertMatchEvents(payload, payloadMatchId, dto.events)
+    }
+
     await payload.update({
       collection: 'matches',
       id: payloadMatchId,
@@ -1127,8 +1135,8 @@ async function processDay(
           const { action, id } = await upsertMatch(payload, doc)
           console.log(`    ↳ ${action.toUpperCase()}${id ? ` (payloadId=${id})` : ''}`)
 
-          // Подтягиваем статистику для завершённых матчей (только если включено)
-          if (withStats && doc.status === 'finished' && id) {
+          // Подтягиваем статистику и события для матчей (только если включено)
+          if (withStats && id) {
             await fetchAndUpsertStatsForMatch(payload, id, doc.matchId, doc.fixtureId)
           }
 

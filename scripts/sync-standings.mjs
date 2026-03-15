@@ -29,7 +29,7 @@ async function syncStandings(leagueId = null, seasonId = null) {
       // Синхронизация конкретной лиги
       const league = await payload.findByID({
         collection: 'leagues',
-        id: leagueId
+        id: leagueId,
       })
       targetLeagues = [league]
     } else {
@@ -37,9 +37,9 @@ async function syncStandings(leagueId = null, seasonId = null) {
       const leagues = await payload.find({
         collection: 'leagues',
         where: {
-          active: { equals: true }
+          active: { equals: true },
         },
-        limit: 50
+        limit: 50,
       })
       targetLeagues = leagues.docs
     }
@@ -58,7 +58,7 @@ async function syncStandings(leagueId = null, seasonId = null) {
           // Конкретный сезон
           targetSeason = await payload.findByID({
             collection: 'seasons',
-            id: seasonId
+            id: seasonId,
           })
         } else {
           // Текущий сезон лиги
@@ -66,9 +66,9 @@ async function syncStandings(leagueId = null, seasonId = null) {
             collection: 'seasons',
             where: {
               league: { equals: league.id },
-              isCurrent: { equals: true }
+              isCurrent: { equals: true },
             },
-            limit: 1
+            limit: 1,
           })
 
           if (currentSeason.docs.length > 0) {
@@ -82,13 +82,17 @@ async function syncStandings(leagueId = null, seasonId = null) {
         }
 
         // Получаем таблицу
-        const standingsData = await loggedFetch.get('/competitions/standings.json', {
-          leagueId: league.leagueId,
-          seasonId: targetSeason.seasonId
-        }, {
-          source: 'script',
-          ttl: 1800000 // 30 минут кэш (тяжёлые данные)
-        })
+        const standingsData = await loggedFetch.get(
+          '/competitions/standings.json',
+          {
+            leagueId: league.leagueId,
+            seasonId: targetSeason.seasonId,
+          },
+          {
+            source: 'script',
+            ttl: 1800000, // 30 минут кэш (тяжёлые данные)
+          },
+        )
 
         if (!standingsData?.standings) {
           console.warn(`[sync-standings] Нет данных таблицы для лиги ${league.name}`)
@@ -98,7 +102,6 @@ async function syncStandings(leagueId = null, seasonId = null) {
         // Обрабатываем таблицу
         await processLeagueStandings(payload, standingsData.standings, league, targetSeason)
         processed++
-
       } catch (error) {
         console.error(`[sync-standings] Ошибка обработки лиги ${league.name}:`, error)
         errors++
@@ -108,8 +111,9 @@ async function syncStandings(leagueId = null, seasonId = null) {
     // Выводим статистику
     const duration = Date.now() - startTime
     console.log(`[sync-standings] Синхронизация завершена за ${duration}ms`)
-    console.log(`[sync-standings] Обработано: ${processed}, Создано: ${created}, Обновлено: ${updated}, Ошибок: ${errors}`)
-
+    console.log(
+      `[sync-standings] Обработано: ${processed}, Создано: ${created}, Обновлено: ${updated}, Ошибок: ${errors}`,
+    )
   } catch (error) {
     console.error('[sync-standings] Критическая ошибка:', error)
     process.exit(1)
@@ -129,7 +133,7 @@ async function processLeagueStandings(payload, standings, league, season) {
         position: standing.position,
         team: {
           id: standing.team.id,
-          name: standing.team.name
+          name: standing.team.name,
         },
         played: standing.played,
         won: standing.won,
@@ -139,7 +143,7 @@ async function processLeagueStandings(payload, standings, league, season) {
         goalsAgainst: standing.goalsAgainst,
         points: standing.points,
         form: standing.form || '',
-        lastSyncAt: new Date()
+        lastSyncAt: new Date(),
       }
 
       // Проверяем существует ли уже такая запись
@@ -148,9 +152,9 @@ async function processLeagueStandings(payload, standings, league, season) {
         where: {
           league: { equals: league.id },
           season: { equals: season.id },
-          'team.id': { equals: standing.team.id }
+          'team.id': { equals: standing.team.id },
         },
-        limit: 1
+        limit: 1,
       })
 
       if (existing.docs.length > 0) {
@@ -158,18 +162,17 @@ async function processLeagueStandings(payload, standings, league, season) {
         await payload.update({
           collection: 'standings',
           id: existing.docs[0].id,
-          data: normalizedStanding
+          data: normalizedStanding,
         })
         updated++
       } else {
         // Создаём новую запись
         await payload.create({
           collection: 'standings',
-          data: normalizedStanding
+          data: normalizedStanding,
         })
         created++
       }
-
     } catch (error) {
       console.error(`[sync-standings] Ошибка обработки команды ${standing.team.name}:`, error)
       errors++

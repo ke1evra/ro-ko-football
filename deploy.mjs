@@ -62,6 +62,20 @@ function run(cmd, opts = {}) {
     fail(`Команда завершилась с ошибкой: ${cmd}`)
   }
 }
+// Аналог run(), но бросает Error вместо process.exit() — нужен для try/catch блоков
+function runThrows(cmd, opts = {}) {
+  log(`$ ${cmd}`)
+  try {
+    const out = execSync(cmd, { stdio: 'pipe', encoding: 'utf8', ...opts })
+    if (out) writeLog(`STDOUT:\n${out}`)
+    return out
+  } catch (e) {
+    if (e.stdout) writeLog(`STDOUT:\n${e.stdout.toString()}`)
+    if (e.stderr) writeLog(`STDERR:\n${e.stderr.toString()}`)
+    writeLog(`EXIT_CODE: ${e.status ?? 'unknown'}`)
+    throw new Error(`Команда завершилась с ошибкой: ${cmd}`)
+  }
+}
 function tryRun(cmd, opts = {}) {
   writeLog(`$ ${cmd}`)
   try {
@@ -185,7 +199,7 @@ if (!cmdExists('docker')) {
   // затем пробуем официальный docker-ce.
   let installed = false
   try {
-    run(
+    runThrows(
       `${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker.io docker-compose-plugin`,
     )
     installed = true
@@ -193,7 +207,7 @@ if (!cmdExists('docker')) {
     warn('Установка docker.io не удалась. Попытка автоматического исправления и повтор...')
     aptFix()
     try {
-      run(
+      runThrows(
         `${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker.io docker-compose-plugin`,
       )
       installed = true
@@ -201,14 +215,14 @@ if (!cmdExists('docker')) {
       warn('Повт��рная установка docker.io не удалась. Пытаюсь установить официальный docker-ce...')
       aptFix()
       try {
-        run(
+        runThrows(
           `${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin`,
         )
         installed = true
       } catch (eB) {
         aptFix()
         try {
-          run(
+          runThrows(
             `${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin`,
           )
           installed = true

@@ -26,9 +26,9 @@ async function syncSeasons() {
     const leagues = await payload.find({
       collection: 'leagues',
       where: {
-        active: { equals: true }
+        active: { equals: true },
       },
-      limit: 100
+      limit: 100,
     })
 
     console.log(`[sync-seasons] Найдено ${leagues.docs.length} активных лиг`)
@@ -36,15 +36,21 @@ async function syncSeasons() {
     // Обрабатываем каждую лигу
     for (const league of leagues.docs) {
       try {
-        console.log(`[sync-seasons] Синхронизация сезонов лиги: ${league.name} (ID: ${league.leagueId})`)
+        console.log(
+          `[sync-seasons] Синхронизация сезонов лиги: ${league.name} (ID: ${league.leagueId})`,
+        )
 
         // Получаем сезоны для этой лиги
-        const seasonsData = await loggedFetch.get('/seasons/list.json', {
-          leagueId: league.leagueId
-        }, {
-          source: 'script',
-          ttl: 3600000 // 1 час кэш (данные меняются редко)
-        })
+        const seasonsData = await loggedFetch.get(
+          '/seasons/list.json',
+          {
+            leagueId: league.leagueId,
+          },
+          {
+            source: 'script',
+            ttl: 3600000, // 1 час кэш (данные меняются редко)
+          },
+        )
 
         if (!seasonsData?.seasons) {
           console.warn(`[sync-seasons] Нет данных о сезонах для лиги ${league.name}`)
@@ -54,7 +60,6 @@ async function syncSeasons() {
         // Обрабатываем сезоны
         await processLeagueSeasons(payload, seasonsData.seasons, league)
         processed++
-
       } catch (error) {
         console.error(`[sync-seasons] Ошибка обработки лиги ${league.name}:`, error)
         errors++
@@ -64,8 +69,9 @@ async function syncSeasons() {
     // Выводим статистику
     const duration = Date.now() - startTime
     console.log(`[sync-seasons] Синхронизация завершена за ${duration}ms`)
-    console.log(`[sync-seasons] Обработано: ${processed}, Создано: ${created}, Обновлено: ${updated}, Ошибок: ${errors}`)
-
+    console.log(
+      `[sync-seasons] Обработано: ${processed}, Создано: ${created}, Обновлено: ${updated}, Ошибок: ${errors}`,
+    )
   } catch (error) {
     console.error('[sync-seasons] Критическая ошибка:', error)
     process.exit(1)
@@ -86,16 +92,16 @@ async function processLeagueSeasons(payload, seasons, league) {
         endDate: season.endDate ? new Date(season.endDate) : null,
         isCurrent: season.isCurrent || false,
         league: league.id, // relationship
-        lastSyncAt: new Date()
+        lastSyncAt: new Date(),
       }
 
       // Проверяем существует ли уже такой сезон
       const existing = await payload.find({
         collection: 'seasons',
         where: {
-          seasonId: { equals: normalizedSeason.seasonId }
+          seasonId: { equals: normalizedSeason.seasonId },
         },
-        limit: 1
+        limit: 1,
       })
 
       if (existing.docs.length > 0) {
@@ -103,20 +109,19 @@ async function processLeagueSeasons(payload, seasons, league) {
         await payload.update({
           collection: 'seasons',
           id: existing.docs[0].id,
-          data: normalizedSeason
+          data: normalizedSeason,
         })
         updated++
       } else {
         // Создаём новую запись
         await payload.create({
           collection: 'seasons',
-          data: normalizedSeason
+          data: normalizedSeason,
         })
         created++
 
         console.log(`[sync-seasons] Создан сезон: ${normalizedSeason.name} для лиги ${league.name}`)
       }
-
     } catch (error) {
       console.error(`[sync-seasons] Ошибка обработки сезона ${season.name}:`, error)
       errors++

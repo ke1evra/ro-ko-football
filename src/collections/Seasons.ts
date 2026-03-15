@@ -89,10 +89,6 @@ const Seasons: CollectionConfig = {
   // Индексы для быстрого поиска
   indexes: [
     {
-      fields: ['seasonId'],
-      unique: true,
-    },
-    {
       fields: ['league'],
     },
     {

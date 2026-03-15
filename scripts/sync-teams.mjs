@@ -29,14 +29,14 @@ async function syncTeams(countryId = null) {
       // Синхронизация конкретной страны
       const country = await payload.findByID({
         collection: 'countries',
-        id: countryId
+        id: countryId,
       })
       targetCountries = [country]
     } else {
       // Синхронизация всех стран
       const countries = await payload.find({
         collection: 'countries',
-        limit: 50
+        limit: 50,
       })
       targetCountries = countries.docs
     }
@@ -49,12 +49,16 @@ async function syncTeams(countryId = null) {
         console.log(`[sync-teams] Синхронизация команд страны: ${country.name}`)
 
         // Получаем команды для этой страны
-        const teamsData = await loggedFetch.get('/teams/list.json', {
-          countryId: country.countryId
-        }, {
-          source: 'script',
-          ttl: 3600000 // 1 час кэш (справочные данные)
-        })
+        const teamsData = await loggedFetch.get(
+          '/teams/list.json',
+          {
+            countryId: country.countryId,
+          },
+          {
+            source: 'script',
+            ttl: 3600000, // 1 час кэш (справочные данные)
+          },
+        )
 
         if (!teamsData?.teams) {
           console.warn(`[sync-teams] Нет данных о командах для страны ${country.name}`)
@@ -64,7 +68,6 @@ async function syncTeams(countryId = null) {
         // Обрабатываем команды
         await processCountryTeams(payload, teamsData.teams, country)
         processed++
-
       } catch (error) {
         console.error(`[sync-teams] Ошибка обработки страны ${country.name}:`, error)
         errors++
@@ -74,8 +77,9 @@ async function syncTeams(countryId = null) {
     // Выводим статистику
     const duration = Date.now() - startTime
     console.log(`[sync-teams] Синхронизация завершена за ${duration}ms`)
-    console.log(`[sync-teams] Обработано: ${processed}, Создано: ${created}, Обновлено: ${updated}, Ошибок: ${errors}`)
-
+    console.log(
+      `[sync-teams] Обработано: ${processed}, Создано: ${created}, Обновлено: ${updated}, Ошибок: ${errors}`,
+    )
   } catch (error) {
     console.error('[sync-teams] Критическая ошибка:', error)
     process.exit(1)
@@ -94,20 +98,20 @@ async function processCountryTeams(payload, teams, country) {
         name: team.name,
         country: {
           id: country.countryId,
-          name: country.name
+          name: country.name,
         },
         logo: team.logo || null,
         stadium: team.stadium || null,
-        lastSyncAt: new Date()
+        lastSyncAt: new Date(),
       }
 
       // Проверяем существует ли уже такая команда
       const existing = await payload.find({
         collection: 'teams',
         where: {
-          teamId: { equals: normalizedTeam.teamId }
+          teamId: { equals: normalizedTeam.teamId },
         },
-        limit: 1
+        limit: 1,
       })
 
       if (existing.docs.length > 0) {
@@ -115,20 +119,19 @@ async function processCountryTeams(payload, teams, country) {
         await payload.update({
           collection: 'teams',
           id: existing.docs[0].id,
-          data: normalizedTeam
+          data: normalizedTeam,
         })
         updated++
       } else {
         // Создаём новую команду
         await payload.create({
           collection: 'teams',
-          data: normalizedTeam
+          data: normalizedTeam,
         })
         created++
 
         console.log(`[sync-teams] Создана команда: ${normalizedTeam.name}`)
       }
-
     } catch (error) {
       console.error(`[sync-teams] Ошибка обработки команды ${team.name}:`, error)
       errors++

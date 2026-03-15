@@ -29,11 +29,11 @@ async function syncOddsHistory() {
       collection: 'fixtures',
       where: {
         status: {
-          in: ['scheduled', 'live']
-        }
+          in: ['scheduled', 'live'],
+        },
       },
       limit: MAX_ACTIVE_FIXTURES,
-      sort: 'date' // Сначала ближайшие матчи
+      sort: 'date', // Сначала ближайшие матчи
     })
 
     console.log(`[sync-odds-history] Найдено ${activeFixtures.docs.length} активных фикстур`)
@@ -46,14 +46,15 @@ async function syncOddsHistory() {
       processed += batch.length
 
       // Небольшая пауза между пачками
-      await new Promise(resolve => setTimeout(resolve, 200))
+      await new Promise((resolve) => setTimeout(resolve, 200))
     }
 
     // Выводим статистику
     const duration = Date.now() - startTime
     console.log(`[sync-odds-history] Синхронизация завершена за ${duration}ms`)
-    console.log(`[sync-odds-history] Обработано: ${processed}, Обновлено: ${updated}, Ошибок: ${errors}`)
-
+    console.log(
+      `[sync-odds-history] Обработано: ${processed}, Обновлено: ${updated}, Ошибок: ${errors}`,
+    )
   } catch (error) {
     console.error('[sync-odds-history] Критическая ошибка:', error)
     process.exit(1)
@@ -67,13 +68,17 @@ async function processOddsBatch(payload, fixtures) {
   for (const fixture of fixtures) {
     try {
       // Получаем свежие коэффициенты для этого матча
-      const oddsData = await loggedFetch.get('/odds/history.json', {
-        matchId: fixture.fixtureId,
-        hours: 24 // Последние 24 часа
-      }, {
-        source: 'script',
-        ttl: 30000 // 30 секунд кэш
-      })
+      const oddsData = await loggedFetch.get(
+        '/odds/history.json',
+        {
+          matchId: fixture.fixtureId,
+          hours: 24, // Последние 24 часа
+        },
+        {
+          source: 'script',
+          ttl: 30000, // 30 секунд кэш
+        },
+      )
 
       if (!oddsData?.odds) {
         continue // Нет данных о коэффициентах
@@ -94,14 +99,13 @@ async function processOddsBatch(payload, fixtures) {
             odds: currentOdds,
             oddsHistory: newOddsHistory,
             lastSyncAt: new Date(),
-            syncSource: 'odds-history'
-          }
+            syncSource: 'odds-history',
+          },
         })
 
         updated++
         console.log(`[sync-odds-history] Обновлены коэффициенты для матча ${fixture.fixtureId}`)
       }
-
     } catch (error) {
       console.error(`[sync-odds-history] Ошибка обработки матча ${fixture.fixtureId}:`, error)
       errors++
@@ -119,24 +123,28 @@ function normalizeOddsHistory(apiOdds, existingHistory) {
   for (const oddsEntry of apiOdds) {
     const timestamp = new Date(oddsEntry.timestamp * 1000)
     const existingIndex = normalized.findIndex(
-      entry => entry.timestamp.getTime() === timestamp.getTime()
+      (entry) => entry.timestamp.getTime() === timestamp.getTime(),
     )
 
     const normalizedEntry = {
       timestamp,
       odds: {
-        pre: oddsEntry.Pre ? {
-          home: oddsEntry.Pre.Home,
-          draw: oddsEntry.Pre.Draw,
-          away: oddsEntry.Pre.Away
-        } : null,
-        live: oddsEntry.Live ? {
-          home: oddsEntry.Live.Home,
-          draw: oddsEntry.Live.Draw,
-          away: oddsEntry.Live.Away
-        } : null
+        pre: oddsEntry.Pre
+          ? {
+              home: oddsEntry.Pre.Home,
+              draw: oddsEntry.Pre.Draw,
+              away: oddsEntry.Pre.Away,
+            }
+          : null,
+        live: oddsEntry.Live
+          ? {
+              home: oddsEntry.Live.Home,
+              draw: oddsEntry.Live.Draw,
+              away: oddsEntry.Live.Away,
+            }
+          : null,
       },
-      source: 'api'
+      source: 'api',
     }
 
     if (existingIndex >= 0) {

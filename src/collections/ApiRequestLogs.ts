@@ -71,15 +71,6 @@ const ApiRequestLogs: CollectionConfig = {
         description: 'Общее время выполнения запроса в миллисекундах',
       },
     },
-    {
-      name: 'createdAt',
-      type: 'date',
-      required: true,
-      label: 'Время создания',
-      admin: {
-        description: 'Когда был сделан запрос',
-      },
-    },
 
     // Детальное логирование кэширования
     {
@@ -341,7 +332,7 @@ const ApiRequestLogs: CollectionConfig = {
   ],
 
   // Настройки коллекции
-  timestamps: false, // Используем свой createdAt
+  timestamps: true, // Автоматическое управление createdAt
   versions: false, // Не нужно версионирование для логов
 }
 

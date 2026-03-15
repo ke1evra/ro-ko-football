@@ -243,13 +243,31 @@ export class LoggedFetch {
     endpoint: string,
     params: Record<string, unknown>,
   ): Promise<Response> {
-    const baseUrl = process.env.LIVESCORE_API_URL || 'https://www.livescore.com/api'
+    const baseUrl = process.env.LIVESCORE_API_BASE || 'https://livescore-api.com/api-client'
     const url = new URL(endpoint, baseUrl)
+
+    // Добавляем авторизацию
+    const apiKey = process.env.LIVESCORE_KEY || ''
+    const apiSecret = process.env.LIVESCORE_SECRET || ''
+
+    if (apiKey) url.searchParams.set('key', apiKey)
+    if (apiSecret) url.searchParams.set('secret', apiSecret)
+    url.searchParams.set('lang', 'ru') // Язык по умолчанию
 
     // Добавляем параметры
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
-        url.searchParams.set(key, String(value))
+        let formatted: string
+        if (value instanceof Date) {
+          // Нормализуем дату в формат YYYY-MM-DD
+          formatted = value.toISOString().split('T')[0]
+        } else if (Array.isArray(value)) {
+          // Поддержка массивов параметров
+          formatted = value.map((v) => String(v)).join(',')
+        } else {
+          formatted = String(value)
+        }
+        url.searchParams.set(key, formatted)
       }
     })
 

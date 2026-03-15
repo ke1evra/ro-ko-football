@@ -68,10 +68,6 @@ const Countries: CollectionConfig = {
   // Индексы для быстрого поиска
   indexes: [
     {
-      fields: ['countryId'],
-      unique: true,
-    },
-    {
       fields: ['name'],
     },
     {

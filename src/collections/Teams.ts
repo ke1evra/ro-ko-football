@@ -90,10 +90,6 @@ const Teams: CollectionConfig = {
   // Индексы для быстрого поиска
   indexes: [
     {
-      fields: ['teamId'],
-      unique: true,
-    },
-    {
       fields: ['name'],
     },
     {

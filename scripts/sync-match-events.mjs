@@ -29,9 +29,9 @@ async function syncMatchEvents() {
     const liveMatches = await payload.find({
       collection: 'matches',
       where: {
-        status: { equals: 'live' }
+        status: { equals: 'live' },
       },
-      limit: MAX_LIVE_MATCHES
+      limit: MAX_LIVE_MATCHES,
     })
 
     console.log(`[sync-match-events] Найдено ${liveMatches.docs.length} live матчей`)
@@ -44,14 +44,15 @@ async function syncMatchEvents() {
       processed += batch.length
 
       // Пауза между пачками
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 500))
     }
 
     // Выводим статистику
     const duration = Date.now() - startTime
     console.log(`[sync-match-events] Синхронизация завершена за ${duration}ms`)
-    console.log(`[sync-match-events] Обработано: ${processed}, Создано: ${created}, Обновлено: ${updated}, Ошибок: ${errors}`)
-
+    console.log(
+      `[sync-match-events] Обработано: ${processed}, Создано: ${created}, Обновлено: ${updated}, Ошибок: ${errors}`,
+    )
   } catch (error) {
     console.error('[sync-match-events] Критическая ошибка:', error)
     process.exit(1)
@@ -65,20 +66,23 @@ async function processMatchesBatch(payload, matches) {
   for (const match of matches) {
     try {
       // Получаем события матча
-      const eventsData = await loggedFetch.get('/matches/events.json', {
-        matchId: match.matchId
-      }, {
-        source: 'script',
-        ttl: 15000 // 15 секунд кэш для live данных
-      })
+      const eventsData = await loggedFetch.get(
+        '/scores/events.json',
+        {
+          id: match.matchId,
+        },
+        {
+          source: 'script',
+          ttl: 15000, // 15 секунд кэш для live данных
+        },
+      )
 
-      if (!eventsData?.events) {
+      if (!eventsData?.event || !Array.isArray(eventsData.event)) {
         continue // Нет событий
       }
 
       // Обрабатываем события
-      await processMatchEvents(payload, match, eventsData.events)
-
+      await processMatchEvents(payload, match, eventsData.event)
     } catch (error) {
       console.error(`[sync-match-events] Ошибка обработки матча ${match.matchId}:`, error)
       errors++
@@ -97,26 +101,28 @@ async function processMatchEvents(payload, match, events) {
         collection: 'matchEvents',
         where: {
           match: { equals: match.id },
-          minute: { equals: event.Minute },
-          type: { equals: normalizeEventType(event.Type) }
+          minute: { equals: event.time },
+          type: { equals: normalizeEventType(event.event) },
         },
-        limit: 1
+        limit: 1,
       })
 
       const normalizedEvent = {
         match: match.id, // relationship
-        minute: event.Minute,
-        type: normalizeEventType(event.Type),
-        team: event.IsHome ? 'home' : 'away',
-        player: event.Player ? {
-          id: event.Player.Id,
-          name: event.Player.Name
-        } : null,
-        assistPlayer: event.AssistPlayer?.Name || null,
-        playerOut: event.PlayerOut?.Name || null,
-        playerIn: event.PlayerIn?.Name || null,
-        description: event.Description || null,
-        lastSyncAt: new Date()
+        minute: event.time,
+        type: normalizeEventType(event.event),
+        team: event.is_home ? 'home' : 'away',
+        player: event.player
+          ? {
+              id: event.player.id,
+              name: event.player.name,
+            }
+          : null,
+        assistPlayer: event.info?.name || null, // ассистент или заменяемый игрок
+        playerOut: null, // для замен нужно дополнительная логика
+        playerIn: null, // для замен нужно дополнительная логика
+        description: event.label || null,
+        lastSyncAt: new Date(),
       }
 
       if (existing.docs.length > 0) {
@@ -124,20 +130,21 @@ async function processMatchEvents(payload, match, events) {
         await payload.update({
           collection: 'matchEvents',
           id: existing.docs[0].id,
-          data: normalizedEvent
+          data: normalizedEvent,
         })
         updated++
       } else {
         // Создаём новое событие
         await payload.create({
           collection: 'matchEvents',
-          data: normalizedEvent
+          data: normalizedEvent,
         })
         created++
 
-        console.log(`[sync-match-events] Новое событие: ${normalizedEvent.type} в матче ${match.matchId}`)
+        console.log(
+          `[sync-match-events] Новое событие: ${normalizedEvent.type} в матче ${match.matchId}`,
+        )
       }
-
     } catch (error) {
       console.error(`[sync-match-events] Ошибка обработки события матча ${match.matchId}:`, error)
       errors++
@@ -149,26 +156,19 @@ async function processMatchEvents(payload, match, events) {
  * Нормализует тип события из API
  */
 function normalizeEventType(apiType) {
-  switch (apiType) {
-    case 'goal':
-    case 'Goal':
+  switch (apiType?.toUpperCase()) {
+    case 'GOAL':
       return 'goal'
-    case 'yellow':
-    case 'Yellow Card':
+    case 'YELLOW CARD':
       return 'yellow'
-    case 'red':
-    case 'Red Card':
+    case 'RED CARD':
       return 'red'
-    case 'substitution':
-    case 'Substitution':
+    case 'SUBSTITUTION':
       return 'substitution'
-    case 'own_goal':
-    case 'Own Goal':
+    case 'OWN GOAL':
       return 'own_goal'
-    case 'penalty':
-    case 'Penalty':
+    case 'PENALTY':
       return 'penalty'
-    case 'var':
     case 'VAR':
       return 'var'
     default:

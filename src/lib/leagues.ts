@@ -11,6 +11,7 @@ export async function getTopMatchesLeagues() {
     const data = await payload.findGlobal({
       slug: 'topMatchesLeagues',
       depth: 2, // Загружаем связанные лиги
+      overrideAccess: true,
     })
 
     return data
@@ -34,6 +35,7 @@ export async function getSidebarLeagues() {
     const data = await payload.findGlobal({
       slug: 'sidebarLeagues',
       depth: 2, // Загружаем связанные лиги
+      overrideAccess: true,
     })
 
     return data

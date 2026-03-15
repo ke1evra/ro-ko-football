@@ -1,36 +1,22 @@
-version: '3.8'
+name: appstack-sync-match-events
 
 services:
   sync-match-events:
     build:
       context: .
       dockerfile: Dockerfile.worker
+    # Доступ к хостовым сервисам (Mongo и т.п.) как у app
+    network_mode: 'host'
+    # Файл .env будет по-прежнему использоваться для PAYLOAD_SECRET и т.д.
+    env_file:
+      - ./.env
+    # Переопределяем DATABASE_URI для работы с network_mode: host
     environment:
-      - NODE_ENV=production
-      - DATABASE_URI=${DATABASE_URI}
-      - PAYLOAD_SECRET=${PAYLOAD_SECRET}
-      - LIVESCORE_API_BASE=${LIVESCORE_API_BASE}
-      - LIVESCORE_KEY=${LIVESCORE_KEY}
-      - LIVESCORE_SECRET=${LIVESCORE_SECRET}
-    command: ["node", "scripts/sync-match-events.mjs"]
-    restart: "no"  # Одноразовый запуск
-    networks:
-      - app-network
-    depends_on:
-      - mongodb
-
-  # Cron job для запуска каждые 15 секунд (вперёд/назад/луп)
-  sync-match-events-cron:
-    image: alpine:latest
-    command: sh -c "echo '*/1 * * * * /usr/local/bin/docker-compose -f docker-compose.sync-match-events.yml up sync-match-events' >> /etc/crontabs/root && crond -f"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./docker-compose.sync-match-events.yml:/app/docker-compose.sync-match-events.yml
-      - /usr/local/bin/docker-compose:/usr/local/bin/docker-compose
-    networks:
-      - app-network
+      DATABASE_URI: 'mongodb://syncadmin:syncadminsyncadmin123qQ!@127.0.0.1:27017/payload?authSource=admin'
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+      NODE_ENV: ${NODE_ENV}
+      APP_URL: 'http://localhost:3100'
+      LIVESCORE_KEY: ${LIVESCORE_KEY}
+      LIVESCORE_SECRET: ${LIVESCORE_SECRET}
+    command: ['node', 'scripts/sync-match-events.mjs']
     restart: unless-stopped
-
-networks:
-  app-network:
-    external: true
