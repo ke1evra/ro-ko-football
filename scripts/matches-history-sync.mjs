@@ -5,7 +5,6 @@
  * Используется обоими скриптами (forward / backward), у которых различается только логика расчёта дат.
  */
 
-import https from 'https'
 
 // ===== Request budget limiter =====
 let REQUEST_BUDGET = Infinity
@@ -41,45 +40,49 @@ export function maskUrlForLog(rawUrl) {
   }
 }
 
-export async function requestJson(url) {
+export async function requestJson(url, timeoutMs = 30000) {
   const shownUrl = maskUrlForLog(url)
   console.log(`[HTTP] → GET ${shownUrl}`)
   ensureBudgetOrThrow()
-  return new Promise((resolve, reject) => {
-    https
-      .get(url, (res) => {
-        const { statusCode } = res
-        let data = ''
-        res.on('data', (chunk) => (data += chunk))
-        res.on('end', () => {
-          console.log(`[HTTP] ← ${statusCode} ${shownUrl}`)
 
-          // Проверяем HTTP статус код
-          if (statusCode >= 400) {
-            const error = new Error(`HTTP ${statusCode}: ${data.slice(0, 200)}`)
-            error.statusCode = statusCode
-            error.responseBody = data
-            reject(error)
-            return
-          }
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Livescore-App/1.0',
+        Accept: 'application/json',
+        // Отключаем keep-alive: undici переиспользует stale-соединения → ETIMEDOUT
+        Connection: 'close',
+      },
+      signal: AbortSignal.timeout(timeoutMs),
+    })
 
-          try {
-            resolve(JSON.parse(data))
-          } catch (e) {
-            console.error('[HTTP] JSON parse error:', e.message)
-            console.error('[HTTP] Response body preview:', data.slice(0, 200))
-            const error = new Error(`JSON parse error: ${e.message}`)
-            error.statusCode = statusCode
-            error.responseBody = data
-            reject(error)
-          }
-        })
-      })
-      .on('error', (err) => {
-        console.error('[HTTP] network error:', err.message)
-        reject(err)
-      })
-  })
+    console.log(`[HTTP] ← ${response.status} ${shownUrl}`)
+
+    if (response.status >= 400) {
+      const text = await response.text().catch(() => '')
+      const error = new Error(`HTTP ${response.status}: ${text.slice(0, 200)}`)
+      error.statusCode = response.status
+      error.responseBody = text
+      throw error
+    }
+
+    const text = await response.text()
+    try {
+      return JSON.parse(text)
+    } catch (e) {
+      console.error('[HTTP] JSON parse error:', e.message)
+      console.error('[HTTP] Response body preview:', text.slice(0, 200))
+      throw new Error(`JSON parse error: ${e.message}`)
+    }
+  } catch (e) {
+    if (e.name === 'TimeoutError' || e.name === 'AbortError') {
+      console.error(`[HTTP] ⏱ Таймаут (${timeoutMs}ms): ${shownUrl}`)
+      const err = new Error(`Request timeout after ${timeoutMs}ms: ${shownUrl}`)
+      err.code = 'ETIMEDOUT'
+      throw err
+    }
+    throw e
+  }
 }
 
 export async function fetchMatchesHistory({
@@ -933,6 +936,69 @@ async function fetchMatchStatsDTO(matchId, retries = 3) {
 
   return result
 }
+
+/**
+ * Сохраняет события матча в коллекцию matchEvents
+ */
+async function upsertMatchEvents(payload, payloadMatchId, events) {
+  let created = 0
+
+  for (const event of events) {
+    try {
+      // Проверяем, существует ли уже такое событие
+      const existing = await payload.find({
+        collection: 'matchEvents',
+        where: {
+          match: { equals: payloadMatchId },
+          minute: { equals: event.minute },
+          type: { equals: event.type },
+        },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      })
+
+      if (existing.docs.length > 0) {
+        // Событие уже существует, пропускаем
+        continue
+      }
+
+      const eventData = {
+        match: payloadMatchId,
+        minute: event.minute,
+        type: event.type,
+        team: event.team,
+        player: event.player
+          ? {
+              id: null,
+              name: event.player,
+            }
+          : null,
+        assistPlayer: event.assistPlayer || null,
+        playerOut: event.playerOut || null,
+        playerIn: event.playerIn || null,
+        description: event.description || null,
+        lastSyncAt: new Date().toISOString(),
+      }
+
+      await payload.create({
+        collection: 'matchEvents',
+        data: eventData,
+        overrideAccess: true,
+      })
+
+      created++
+    } catch (error) {
+      console.warn(
+        `[EVENTS] Ошибка сохранения события матча ${payloadMatchId}:`,
+        error?.message || error,
+      )
+    }
+  }
+
+  return created
+}
+
 async function fetchAndUpsertStatsForMatch(payload, payloadMatchId, matchId, fixtureId) {
   try {
     const dto = await fetchMatchStatsDTO(matchId)
@@ -1000,7 +1066,7 @@ async function fetchAndUpsertStatsForMatch(payload, payloadMatchId, matchId, fix
     if (fixtureId) {
       try {
         const { calculatePredictionsForMatch } = await import(
-          './calculate-predictions-for-match.mjs'
+          './prediction-stats/calculate-by-match.mjs'
         )
         await calculatePredictionsForMatch(payload, fixtureId)
       } catch (predError) {

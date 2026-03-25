@@ -5,39 +5,78 @@
  * Запускается каждый час для обновления предстоящих матчей
  */
 
+import dotenv from 'dotenv'
 import { getPayload } from 'payload'
-import { loggedFetch } from '../src/lib/http/livescore/logged-fetch.js'
-import config from '../src/payload.config.js'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { loggedFetch } from '../src/lib/http/livescore/logged-fetch.ts'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Загрузка env
+const envCandidates = [
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(process.cwd(), '.env.local'),
+  path.resolve(__dirname, '.env'),
+  path.resolve(__dirname, '.env.local'),
+  path.resolve(process.cwd(), '.env.docker'),
+  path.resolve(__dirname, '.env.docker'),
+]
+for (const p of envCandidates) {
+  dotenv.config({ path: p })
+}
 
 const BATCH_SIZE = 50 // Обрабатывать по 50 матчей за раз
-const MAX_FIXTURES = 1000 // Максимум 1000 фикстур за раз
+const SYNC_DAYS = 7 // Синхронизировать фикстуры на ближайшие 7 дней
+
+const mask = (v) =>
+  typeof v === 'string' && v.length > 6 ? `${v.slice(0, 3)}***${v.slice(-2)}` : v ? 'set' : 'empty'
 
 async function syncFixtures() {
   console.log('[sync-fixtures] Начинаем синхронизацию фикстур...')
-  console.log('[sync-fixtures] === НОВАЯ ВЕРСИЯ СКРИПТА ===')
 
   const startTime = Date.now()
   let processed = 0
-  let created = 0
-  let updated = 0
-  let errors = 0
+  // created, updated, errors — module-level, shared with processFixturesBatch
+  created = 0
+  updated = 0
+  errors = 0
 
   try {
+    // Выводим информацию о переменных окружения
+    console.log('[INIT] Загрузка окружения:')
+    console.log(`       DATABASE_URI: ${process.env.DATABASE_URI ? 'set' : 'empty'}`)
+    console.log(`       PAYLOAD_SECRET: ${process.env.PAYLOAD_SECRET ? 'set' : 'empty'}`)
+    console.log(`       LIVESCORE_KEY: ${mask(process.env.LIVESCORE_KEY)}`)
+    console.log(`       LIVESCORE_SECRET: ${mask(process.env.LIVESCORE_SECRET)}`)
+
+    // Проверяем переменные окружения
+    if (!process.env.DATABASE_URI) {
+      console.error('Ошибка: не задан DATABASE_URI в .env')
+      process.exit(1)
+    }
+    if (!process.env.PAYLOAD_SECRET) {
+      console.error('Ошибка: не задан PAYLOAD_SECRET в .env')
+      process.exit(1)
+    }
+
     // Инициализируем Payload
+    console.log('[STEP] Подключение к базе и подготовка Payload Local API')
+    const { default: config } = await import('../src/payload.config.ts')
     const payload = await getPayload({ config })
 
     // Получаем лиги из глобала TopMatchesLeagues
     let topMatches
     try {
       console.log('[sync-fixtures] Пытаемся получить глобал TopMatchesLeagues с depth=2...')
-      topMatches = await payload.findGlobal({ 
-        slug: 'topMatchesLeagues', 
-        depth: 2, 
+      topMatches = await payload.findGlobal({
+        slug: 'topMatchesLeagues',
+        depth: 2,
         draft: false,
-        overrideAccess: true 
+        overrideAccess: true,
       })
       console.log('[sync-fixtures] Глобал получен успешно')
-      console.log('[sync-fixtures] topMatches:', JSON.stringify(topMatches, null, 2))
     } catch (e) {
       console.error('[sync-fixtures] ОШИБКА при получении глобала TopMatchesLeagues:')
       console.error('[sync-fixtures] Сообщение:', e?.message || e)
@@ -46,25 +85,18 @@ async function syncFixtures() {
     }
 
     let leagueItems = Array.isArray(topMatches?.leagues) ? topMatches.leagues : []
-    
-    console.log('[sync-fixtures] ===== ДИАГНОСТИКА ГЛОБАЛА =====')
-    console.log(`[sync-fixtures] topMatches объект: ${topMatches ? 'существует' : 'null'}`)
-    console.log(`[sync-fixtures] topMatches.enabled: ${topMatches?.enabled}`)
-    console.log(`[sync-fixtures] topMatches.leagues тип: ${typeof topMatches?.leagues}`)
-    console.log(`[sync-fixtures] topMatches.leagues is array: ${Array.isArray(topMatches?.leagues)}`)
-    console.log(`[sync-fixtures] leagueItems.length: ${leagueItems.length}`)
-    if (leagueItems.length > 0) {
-      console.log(`[sync-fixtures] первая лига: ${JSON.stringify(leagueItems[0], null, 2)}`)
-    }
-    console.log('[sync-fixtures] ===== КОНЕЦ ДИАГНОСТИКИ =====')
 
     // Если лиги не загружены с depth=2, получаем их напрямую из коллекции
     if (leagueItems.length === 0 && topMatches?.leagues && Array.isArray(topMatches.leagues)) {
-      console.log('[sync-fixtures] Лиги не загружены с depth=2, получаем их напрямую ��з коллекции...')
+      console.log(
+        '[sync-fixtures] Лиги не загружены с depth=2, получаем их напрямую ��з коллекции...',
+      )
       const leagueIds = topMatches.leagues
         .filter((item) => item?.league)
-        .map((item) => (typeof item.league === 'string' ? item.league : item.league.id || item.league._id))
-      
+        .map((item) =>
+          typeof item.league === 'string' ? item.league : item.league.id || item.league._id,
+        )
+
       if (leagueIds.length > 0) {
         const leaguesFromDb = await payload.find({
           collection: 'leagues',
@@ -75,16 +107,17 @@ async function syncFixtures() {
           depth: 0,
           overrideAccess: true,
         })
-        
+
         leagueItems = topMatches.leagues.map((item) => {
-          const leagueId = typeof item.league === 'string' ? item.league : item.league.id || item.league._id
+          const leagueId =
+            typeof item.league === 'string' ? item.league : item.league.id || item.league._id
           const leagueData = leaguesFromDb.docs.find((doc) => doc.id === leagueId)
           return {
             ...item,
             league: leagueData || item.league,
           }
         })
-        
+
         console.log(`[sync-fixtures] Загружено ${leagueItems.length} лиг из коллекции`)
       }
     }
@@ -92,6 +125,7 @@ async function syncFixtures() {
     const enabledLeagueIds = leagueItems
       .filter((item) => item?.enabled !== false && item?.league?.competitionId)
       .map((item) => ({
+        id: item.league.id, // Payload document ID for relationship
         competitionId: item.league.competitionId,
         name: item.league.displayName || item.league.name || `League ${item.league.competitionId}`,
       }))
@@ -99,7 +133,9 @@ async function syncFixtures() {
     console.log(`[sync-fixtures] Отфильтровано лиг с competitionId: ${enabledLeagueIds.length}`)
 
     if (!topMatches?.enabled || enabledLeagueIds.length === 0) {
-      console.warn('[sync-fixtures] TopMatchesLeagues пуст или выключен. Завершаем без синхронизации (0 лиг).')
+      console.warn(
+        '[sync-fixtures] TopMatchesLeagues пуст или выключен. Завершаем без синхронизации (0 лиг).',
+      )
       const duration = Date.now() - startTime
       console.log(`[sync-fixtures] Синхронизация завершена за ${duration}ms`)
       console.log(
@@ -117,44 +153,70 @@ async function syncFixtures() {
     // Обрабатываем каждую лигу из глобала
     for (const league of enabledLeagueIds) {
       try {
-        console.log(`[sync-fixtures] Синхронизация лиги: ${league.name} (competitionId: ${league.competitionId})`)
-
-        // Получаем фикстуры для этой лиги
-        const fixturesData = await loggedFetch.get(
-          '/fixtures/matches.json',
-          {
-            competition_id: league.competitionId,
-            limit: MAX_FIXTURES,
-          },
-          {
-            source: 'script',
-            ttl: 300000, // 5 минут кэш
-          },
+        console.log(
+          `[sync-fixtures] Синхронизация лиги: ${league.name} (competitionId: ${league.competitionId})`,
         )
 
-        if (!fixturesData?.Stages) {
+        // Запрашиваем фикстуры по одному дню (без даты API отдаёт весь сезон — очень медленно)
+        const allFixtures = []
+        const today = new Date()
+
+        for (let dayOffset = 0; dayOffset < SYNC_DAYS; dayOffset++) {
+          const date = new Date(today)
+          date.setUTCDate(today.getUTCDate() + dayOffset)
+          const dateStr = date.toISOString().split('T')[0] // YYYY-MM-DD
+
+          let pageData
+          try {
+            pageData = await loggedFetch.get(
+              '/fixtures/list.json',
+              {
+                competition_id: league.competitionId,
+                date: dateStr,
+              },
+              {
+                source: 'script',
+                ttl: 300000, // 5 минут кэш
+              },
+            )
+          } catch (dateErr) {
+            console.warn(
+              `[sync-fixtures] Ошибка запроса на дату ${dateStr} (лига ${league.name}): ${dateErr.message}`,
+            )
+            continue
+          }
+
+          if (pageData?.success === false) {
+            console.warn(
+              `[sync-fixtures] API отказал для даты ${dateStr}: ${pageData.error || 'unknown error'}`,
+            )
+            continue
+          }
+
+          const fixtures = pageData?.data?.fixtures
+          if (fixtures && fixtures.length > 0) {
+            allFixtures.push(...fixtures)
+          }
+        }
+
+        if (allFixtures.length === 0) {
           console.warn(`[sync-fixtures] Нет данных для лиги ${league.name}`)
           continue
         }
 
-        // Обрабатываем фикстуры пачками
-        for (const stage of fixturesData.Stages) {
-          const fixtures = stage.Events || []
+        console.log(
+          `[sync-fixtures] Обработка ${allFixtures.length} фикстур для лиги: ${league.name}`,
+        )
 
-          console.log(
-            `[sync-fixtures] Обработка ${fixtures.length} фикстур для стадии: ${stage.Snm}`,
-          )
+        // Разбиваем на пачки
+        for (let i = 0; i < allFixtures.length; i += BATCH_SIZE) {
+          const batch = allFixtures.slice(i, i + BATCH_SIZE)
 
-          // Разбиваем на пачки
-          for (let i = 0; i < fixtures.length; i += BATCH_SIZE) {
-            const batch = fixtures.slice(i, i + BATCH_SIZE)
+          await processFixturesBatch(payload, batch, league)
+          processed += batch.length
 
-            await processFixturesBatch(payload, batch, league, stage)
-            processed += batch.length
-
-            // Небольшая пауза между пачками
-            await new Promise((resolve) => setTimeout(resolve, 100))
-          }
+          // Небольшая пауза между пачками
+          await new Promise((resolve) => setTimeout(resolve, 100))
         }
       } catch (error) {
         console.error(`[sync-fixtures] Ошибка обработки лиги ${league.name}:`, error)
@@ -177,13 +239,13 @@ async function syncFixtures() {
 /**
  * Обрабатывает пачку фикстур
  */
-async function processFixturesBatch(payload, fixtures, league, stage) {
+async function processFixturesBatch(payload, fixtures, league) {
   const operations = []
 
   for (const fixture of fixtures) {
     try {
       // Нормализуем данные фикстуры
-      const normalizedFixture = normalizeFixture(fixture, league, stage)
+      const normalizedFixture = normalizeFixture(fixture, league)
 
       // Проверяем существует ли уже такая фикстура
       const existing = await payload.find({
@@ -224,17 +286,18 @@ async function processFixturesBatch(payload, fixtures, league, stage) {
         })
       }
     } catch (error) {
-      console.error(`[sync-fixtures] Ошибка обработки фикстуры ${fixture.Eid}:`, error)
+      console.error(`[sync-fixtures] Ошибка обработки фикстуры ${fixture.id}:`, error)
     }
   }
 
-  // Выполняем операции
+  // Выполняем операции (overrideAccess т.к. коллекция закрыта для внешних записей)
   for (const operation of operations) {
     try {
       if (operation.type === 'create') {
         await payload.create({
           collection: 'fixtures',
           data: operation.data,
+          overrideAccess: true,
         })
         created++
       } else if (operation.type === 'update') {
@@ -242,6 +305,7 @@ async function processFixturesBatch(payload, fixtures, league, stage) {
           collection: 'fixtures',
           id: operation.id,
           data: operation.data,
+          overrideAccess: true,
         })
         updated++
       }
@@ -253,92 +317,81 @@ async function processFixturesBatch(payload, fixtures, league, stage) {
 }
 
 /**
- * Нормализует данные фикстуры из API в формат Payload
+ * Нормализует данные фикстуры из livescore-api.com в формат Payload
+ *
+ * Реальный формат ответа API:
+ * { id, date, time, round, group_id, location,
+ *   home: {id, name, logo}, away: {id, name, logo},
+ *   competition: {id, name}, country, federation,
+ *   odds: { pre: {"1":..., "X":..., "2":...}, live: {...} } }
  */
-function normalizeFixture(fixture, league, stage) {
-  return {
-    fixtureId: fixture.Eid,
-    date: fixture.Esd ? new Date(fixture.Esd * 1000) : null,
-    time: fixture.Esd
-      ? new Date(fixture.Esd * 1000).toISOString().split('T')[1].substring(0, 5)
-      : null,
+/**
+ * Формат ответа /fixtures/list.json:
+ * { id, date, time, round, group_id, location,
+ *   home: {id, name, logo, stadium, country_id},
+ *   away: {id, name, logo, stadium, country_id},
+ *   competition: {id, name, ...}, country: {...}, federation: {...},
+ *   odds: { pre: {"1":..., "X":..., "2":...}, live: {...} } }
+ */
+function normalizeFixture(fixture, league) {
+  const dateStr = fixture.date
+  const timeStr = fixture.time || '00:00:00'
+  const matchDate = dateStr ? new Date(`${dateStr}T${timeStr}Z`) : null
+  const timeFormatted = timeStr ? timeStr.substring(0, 5) : null
 
-    // Команды
+  return {
+    fixtureId: fixture.id,
+    date: matchDate,
+    time: timeFormatted,
+
     homeTeam: {
-      id: fixture.T1?.[0]?.ID,
-      name: fixture.T1?.[0]?.Nm,
-      logo: fixture.T1?.[0]?.Img,
+      id: fixture.home?.id,
+      name: fixture.home?.name,
+      logo: fixture.home?.logo || null,
     },
     awayTeam: {
-      id: fixture.T2?.[0]?.ID,
-      name: fixture.T2?.[0]?.Nm,
-      logo: fixture.T2?.[0]?.Img,
+      id: fixture.away?.id,
+      name: fixture.away?.name,
+      logo: fixture.away?.logo || null,
     },
 
-    // Соревнование
     competition: {
-      id: stage.Sid,
-      name: stage.Snm,
+      id: fixture.competition?.id,
+      name: fixture.competition?.name,
     },
-    league: league.id, // relationship
+    league: league.id,
 
-    // Статус
-    status: normalizeStatus(fixture.Eps),
+    status: 'scheduled',
 
-    // Дополнительная информация
-    round: fixture.Rnd,
-    group: fixture.Grp,
+    round: fixture.round != null && fixture.round !== '' ? String(fixture.round) : null,
+    group: fixture.group_id || null,
 
-    // Стадион
-    venue: fixture.Venue
+    venue: fixture.location
       ? {
-          name: fixture.Venue.StadiumName,
-          city: fixture.Venue.CityName,
-          country: fixture.Venue.CountryName,
+          name: fixture.location,
+          city: null,
+          country: fixture.country?.name || null,
         }
       : null,
 
-    // Коэффициенты (если есть)
-    odds: fixture.Odds
+    odds: fixture.odds
       ? {
           pre: {
-            home: fixture.Odds.Pre?.Home,
-            draw: fixture.Odds.Pre?.Draw,
-            away: fixture.Odds.Pre?.Away,
+            home: fixture.odds.pre?.['1'] ?? null,
+            draw: fixture.odds.pre?.['X'] ?? null,
+            away: fixture.odds.pre?.['2'] ?? null,
           },
-          live: fixture.Odds.Live
+          live: fixture.odds.live
             ? {
-                home: fixture.Odds.Live.Home,
-                draw: fixture.Odds.Live.Draw,
-                away: fixture.Odds.Live.Away,
+                home: fixture.odds.live?.['1'] ?? null,
+                draw: fixture.odds.live?.['X'] ?? null,
+                away: fixture.odds.live?.['2'] ?? null,
               }
             : null,
         }
       : null,
 
-    // История коэффициентов (если есть)
-    oddsHistory: fixture.OddsHistory
-      ? fixture.OddsHistory.map((odds) => ({
-          timestamp: new Date(odds.timestamp * 1000),
-          odds: {
-            pre: odds.Pre
-              ? {
-                  home: odds.Pre.Home,
-                  draw: odds.Pre.Draw,
-                  away: odds.Pre.Away,
-                }
-              : null,
-            live: odds.Live
-              ? {
-                  home: odds.Live.Home,
-                  draw: odds.Live.Draw,
-                  away: odds.Live.Away,
-                }
-              : null,
-          },
-          source: 'api',
-        }))
-      : [],
+    oddsHistory: [],
   }
 }
 
@@ -370,27 +423,7 @@ function mergeOddsHistory(existingHistory, newHistory) {
   return merged.slice(-100)
 }
 
-/**
- * Нормализует статус матча
- */
-function normalizeStatus(apiStatus) {
-  switch (apiStatus) {
-    case 'NS':
-      return 'scheduled' // Not Started
-    case 'LIVE':
-      return 'live' // Live
-    case 'FT':
-      return 'finished' // Full Time
-    case 'PST':
-      return 'postponed' // Postponed
-    case 'CANC':
-      return 'cancelled' // Cancelled
-    default:
-      return 'scheduled'
-  }
-}
-
-// Глобальные переменные для ст��тистики
+// Глобальные переменные для статистики
 let created = 0
 let updated = 0
 let errors = 0

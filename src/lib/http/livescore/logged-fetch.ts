@@ -1,6 +1,5 @@
 import { getPayload } from 'payload'
-import { NextRequest } from 'next/server'
-import config from '@/payload.config'
+import { NextRequest } from 'next/server.js'
 import { apiCache } from '@/lib/api-cache'
 import { rateLimiter } from '@/lib/http/livescore/rate-limiter'
 
@@ -55,6 +54,7 @@ export class LoggedFetch {
    */
   private async getPayload() {
     if (!this.payload) {
+      const { default: config } = await import('@/payload.config')
       this.payload = await getPayload({ config })
     }
     return this.payload
@@ -244,7 +244,9 @@ export class LoggedFetch {
     params: Record<string, unknown>,
   ): Promise<Response> {
     const baseUrl = process.env.LIVESCORE_API_BASE || 'https://livescore-api.com/api-client'
-    const url = new URL(endpoint, baseUrl)
+    const base = new URL(baseUrl.endsWith('/') ? baseUrl : baseUrl + '/')
+    const path = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
+    const url = new URL(path, base)
 
     // Добавляем авторизацию
     const apiKey = process.env.LIVESCORE_KEY || ''
@@ -275,9 +277,10 @@ export class LoggedFetch {
       headers: {
         'User-Agent': 'Livescore-App/1.0',
         Accept: 'application/json',
+        // Отключаем keep-alive: undici переиспользует стale-соединения и получает ETIMEDOUT
+        Connection: 'close',
       },
-      // Таймаут 10 секунд
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(30000),
     })
 
     return response

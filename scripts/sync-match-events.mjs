@@ -5,9 +5,27 @@
  * Работает в режиме "вперёд/назад/луп" для обработки live матчей
  */
 
+import dotenv from 'dotenv'
 import { getPayload } from 'payload'
-import { loggedFetch } from '../src/lib/http/livescore/logged-fetch.js'
-import config from '../src/payload.config.js'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { loggedFetch } from '../src/lib/http/livescore/logged-fetch.ts'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Загрузка env
+const envCandidates = [
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(process.cwd(), '.env.local'),
+  path.resolve(__dirname, '.env'),
+  path.resolve(__dirname, '.env.local'),
+  path.resolve(process.cwd(), '.env.docker'),
+  path.resolve(__dirname, '.env.docker'),
+]
+for (const p of envCandidates) {
+  dotenv.config({ path: p })
+}
 
 const BATCH_SIZE = 10 // Обрабатывать по 10 матчей за раз
 const MAX_LIVE_MATCHES = 50 // Максимум 50 live матчей
@@ -22,7 +40,18 @@ async function syncMatchEvents() {
   let errors = 0
 
   try {
+    // Проверяем переменные окружения
+    if (!process.env.DATABASE_URI) {
+      console.error('��шибка: не задан DATABASE_URI в .env')
+      process.exit(1)
+    }
+    if (!process.env.PAYLOAD_SECRET) {
+      console.error('Ошибка: не задан PAYLOAD_SECRET в .env')
+      process.exit(1)
+    }
+
     // Инициализируем Payload
+    const { default: config } = await import('../src/payload.config.ts')
     const payload = await getPayload({ config })
 
     // Получаем live матчи

@@ -5,9 +5,27 @@
  * Ищет матчи без событий и скачивает их события
  */
 
+import dotenv from 'dotenv'
 import { getPayload } from 'payload'
-import { loggedFetch } from '../src/lib/http/livescore/logged-fetch.js'
-import config from '../src/payload.config.js'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { loggedFetch } from '../src/lib/http/livescore/logged-fetch.ts'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Загрузка env
+const envCandidates = [
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(process.cwd(), '.env.local'),
+  path.resolve(__dirname, '.env'),
+  path.resolve(__dirname, '.env.local'),
+  path.resolve(process.cwd(), '.env.docker'),
+  path.resolve(__dirname, '.env.docker'),
+]
+for (const p of envCandidates) {
+  dotenv.config({ path: p })
+}
 
 const BATCH_SIZE = 20 // Обрабатывать по 20 матчей за раз
 const MAX_MATCHES = 1000 // Максимум 1000 матчей за раз
@@ -21,7 +39,18 @@ async function syncMatchEventsRetro() {
   let errors = 0
 
   try {
+    // Проверяем переменные окружения
+    if (!process.env.DATABASE_URI) {
+      console.error('Ошибка: не задан DATABASE_URI в .env')
+      process.exit(1)
+    }
+    if (!process.env.PAYLOAD_SECRET) {
+      console.error('Ошибка: не задан PAYLOAD_SECRET в .env')
+      process.exit(1)
+    }
+
     // Инициализируем Payload
+    const { default: config } = await import('../src/payload.config.ts')
     const payload = await getPayload({ config })
 
     // Находим матчи, у которых еще нет событий
@@ -38,7 +67,9 @@ async function syncMatchEventsRetro() {
       sort: '-date', // Сначала свежие матчи
     })
 
-    console.log(`[sync-match-events-retro] Найдено ${matchesWithoutEvents.docs.length} потенциальных матчей`)
+    console.log(
+      `[sync-match-events-retro] Найдено ${matchesWithoutEvents.docs.length} потенциальных матчей`,
+    )
 
     // Фильтруем матчи, у которых действительно нет событий
     const matchesToProcess = []
@@ -58,7 +89,10 @@ async function syncMatchEventsRetro() {
           matchesToProcess.push(match)
         }
       } catch (error) {
-        console.warn(`[sync-match-events-retro] Ошибка проверки событий для матча ${match.matchId}:`, error?.message || error)
+        console.warn(
+          `[sync-match-events-retro] Ошибка проверки событий для матча ${match.matchId}:`,
+          error?.message || error,
+        )
       }
     }
 
@@ -98,7 +132,9 @@ async function processMatchesBatch(payload, matches) {
 
   for (const match of matches) {
     try {
-      console.log(`[sync-match-events-retro] Обработка матча ${match.matchId}: ${match.homeTeam} - ${match.awayTeam}`)
+      console.log(
+        `[sync-match-events-retro] Обработка матча ${match.matchId}: ${match.homeTeam} - ${match.awayTeam}`,
+      )
 
       // Получаем события матча
       const eventsData = await loggedFetch.get(
@@ -121,7 +157,9 @@ async function processMatchesBatch(payload, matches) {
       const eventsCount = await upsertMatchEvents(payload, match.id, eventsData.event)
       eventsCreated += eventsCount
 
-      console.log(`[sync-match-events-retro] Создано ${eventsCount} событий для матча ${match.matchId}`)
+      console.log(
+        `[sync-match-events-retro] Создано ${eventsCount} событий для матча ${match.matchId}`,
+      )
     } catch (error) {
       console.error(`[sync-match-events-retro] Ошибка обработки матча ${match.matchId}:`, error)
       errors++
@@ -183,7 +221,10 @@ async function upsertMatchEvents(payload, payloadMatchId, events) {
 
       created++
     } catch (error) {
-      console.warn(`[sync-match-events-retro] Ошибка сохранения события матча ${payloadMatchId}:`, error?.message || error)
+      console.warn(
+        `[sync-match-events-retro] Ошибка сохранения события матча ${payloadMatchId}:`,
+        error?.message || error,
+      )
     }
   }
 

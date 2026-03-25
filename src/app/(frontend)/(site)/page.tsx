@@ -15,17 +15,6 @@ import PredictionPreview from '@/components/posts/PredictionPreview'
 import RichTextRenderer from '@/components/RichTextRenderer'
 import { extractTextFromLexical, truncateText } from '@/lib/lexical-utils'
 
-import {
-  getCompetitionsListJson,
-  getFixturesMatchesJson,
-  getMatchesLiveJson,
-} from '@/app/(frontend)/client'
-import {
-  getPriorityLeagueIds,
-  sortMatchesByLeaguePriority,
-  isPriorityLeague,
-  getAllPriorityLeagues,
-} from '@/lib/highlight-competitions'
 import { getSidebarLeaguesForWidget } from '@/lib/leagues'
 import WeekFixturesGrouped from '@/components/home/WeekFixturesGrouped'
 import LiveMatchesWidget from '@/components/home/LiveMatchesWidget'
@@ -74,38 +63,12 @@ async function getPostsPage(pageParam?: string) {
   }
 }
 
-async function getPriorityLeagueMatches() {
-  // Заглушка для серверного рендеринга - данные будут загружены на клиенте
-  return { matches: [], rawData: { fixtures: [], message: 'Данные загружаются на клиенте' } }
-}
-
-async function getTopUpcomingMatches() {
-  // Заглушка для серверного рендеринга - данные будут загружены на клиенте
-  return []
-}
-
-async function getLiveMatchesTop() {
-  // Заглушка для серверного рендеринга - данные будут загружены на клиенте
-  return []
-}
-
 export default async function Home({ searchParams }: { searchParams: SearchParams }) {
   const { page } = await searchParams
-  const [
-    { items, page: curPage, totalPages },
-    topUpcoming,
-    liveTop,
-    priorityMatches,
-    leaguesSettings,
-  ] = await Promise.all([
+  const [{ items, page: curPage, totalPages }, leaguesSettings] = await Promise.all([
     getPostsPage(page),
-    getTopUpcomingMatches(),
-    getLiveMatchesTop(),
-    getPriorityLeagueMatches(),
     getSidebarLeaguesForWidget(),
   ])
-
-  const priorityLeagues = getAllPriorityLeagues()
 
   return (
     <Section>

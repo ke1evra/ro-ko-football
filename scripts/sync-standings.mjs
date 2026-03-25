@@ -5,9 +5,27 @@
  * Запускается по запросу администратора через админ-панель
  */
 
+import dotenv from 'dotenv'
 import { getPayload } from 'payload'
-import { loggedFetch } from '../src/lib/http/livescore/logged-fetch.js'
-import config from '../src/payload.config.js'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { loggedFetch } from '../src/lib/http/livescore/logged-fetch.ts'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Загрузка env
+const envCandidates = [
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(process.cwd(), '.env.local'),
+  path.resolve(__dirname, '.env'),
+  path.resolve(__dirname, '.env.local'),
+  path.resolve(process.cwd(), '.env.docker'),
+  path.resolve(__dirname, '.env.docker'),
+]
+for (const p of envCandidates) {
+  dotenv.config({ path: p })
+}
 
 async function syncStandings(leagueId = null, seasonId = null) {
   console.log('[sync-standings] Начинаем синхронизацию турнирных таблиц...')
@@ -19,7 +37,18 @@ async function syncStandings(leagueId = null, seasonId = null) {
   let errors = 0
 
   try {
+    // Проверяем переменные окружения
+    if (!process.env.DATABASE_URI) {
+      console.error('Ошибка: не задан DATABASE_URI в .env')
+      process.exit(1)
+    }
+    if (!process.env.PAYLOAD_SECRET) {
+      console.error('Ошибка: не задан PAYLOAD_SECRET в .env')
+      process.exit(1)
+    }
+
     // Инициализируем Payload
+    const { default: config } = await import('../src/payload.config.ts')
     const payload = await getPayload({ config })
 
     // Определяем какие лиги/сезоны синхронизировать

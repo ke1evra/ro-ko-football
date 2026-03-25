@@ -11,7 +11,7 @@
 */
 
 import { loggedFetch } from './logged-fetch'
-import { NextRequest } from 'next/server'
+import { NextRequest } from 'next/server.js'
 
 export type FetchLike = typeof fetch
 

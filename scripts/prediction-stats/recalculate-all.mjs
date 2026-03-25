@@ -15,7 +15,7 @@ import { getPayload } from 'payload'
 import {
   calculatePredictionStats,
   savePredictionStats,
-} from '../../src/lib/prediction-stats-calculator.ts'
+} from '../../src/lib/prediction-stats-calculator.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -33,7 +33,7 @@ for (const p of envCandidates) {
   dotenv.config({ path: p })
 }
 
-const { default: config } = await import('../../src/payload.config.ts')
+const { default: config } = await import('../../src/payload.config.js')
 
 const args = process.argv.slice(2)
 const skipConfirm = args.includes('--confirm')

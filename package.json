@@ -33,6 +33,7 @@
     "db:apply-on-prod": "echo \"Run this on the server: chmod +x import-and-cleanup.sh && ./import-and-cleanup.sh\"",
     "deploy": "node deploy.mjs",
     "deploy:shell": "sh deploy.sh",
+    "deploy:pm2": "sh deploy-pm2.sh",
     "local-dev": "sh local-dev.sh",
     "start-all": "sh start-all.sh",
     "start-separate": "sh start-separate.sh",
@@ -49,7 +50,8 @@
     "leagues:names:import": "node --loader @esbuild-kit/esm-loader scripts/import-league-names.mjs",
     "matches:import:forward": "tsx scripts/import-matches-forward.mjs",
     "matches:import:backward": "tsx scripts/import-matches-backward.mjs",
-    "matches:import:forward:loop": "pnpm run matches:import:forward -- --loop --interval=600000",
+    "matches:import:forward:loop": "pnpm run matches:import:forward -- --loop --interval=1000",
+    "matches:import:forward:loop:stats": "pnpm run matches:import:forward -- --loop --interval=60000 --with-stats",
     "matches:import:backward:loop": "pnpm run matches:import:backward -- --loop",
     "predictions:stats:calc": "tsx scripts/prediction-stats/calculate-all.mjs",
     "predictions:stats:calc:force": "tsx scripts/prediction-stats/calculate-all.mjs --force",
@@ -57,7 +59,14 @@
     "predictions:stats:recalc": "tsx scripts/prediction-stats/recalculate-all.mjs",
     "predictions:stats:by-match": "tsx scripts/prediction-stats/calculate-by-match.mjs",
     "predictions:stats:by-user": "tsx scripts/prediction-stats/calculate-by-user.mjs",
-    "predictions:stats:by-post": "tsx scripts/prediction-stats/calculate-by-post.mjs"
+    "predictions:stats:by-post": "tsx scripts/prediction-stats/calculate-by-post.mjs",
+    "sync:fixtures": "tsx scripts/sync-fixtures.mjs",
+    "sync:seasons": "tsx scripts/sync-seasons.mjs",
+    "sync:standings": "tsx scripts/sync-standings.mjs",
+    "sync:teams": "tsx scripts/sync-teams.mjs",
+    "sync:countries": "tsx scripts/sync-countries.mjs",
+    "sync:match-events": "tsx scripts/sync-match-events.mjs",
+    "sync:match-events:retro": "tsx scripts/sync-match-events-retro.mjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
