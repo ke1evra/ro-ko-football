@@ -146,6 +146,10 @@ export class LoggedFetch {
       result = await response.json()
       cacheStats.livescoreApi.cached = true
 
+      // ✅ Регистрируем успешный запрос в rate limiter
+      rateLimiter.registerRequest()
+
+
       // Сохраняем в кэш
       if (!skipCache) {
         apiCache.set(cacheKey, result, ttl)
