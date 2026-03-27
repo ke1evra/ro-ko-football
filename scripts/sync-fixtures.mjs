@@ -28,7 +28,7 @@ for (const p of envCandidates) {
 }
 
 const BATCH_SIZE = 50 // Обрабатывать по 50 матчей за раз
-const SYNC_DAYS = 7 // Синхронизировать фикстуры на ближайшие 7 дней
+const SYNC_DAYS = 10 // Синхронизировать фикстуры на ближайшие 10 дней
 
 const mask = (v) =>
   typeof v === 'string' && v.length > 6 ? `${v.slice(0, 3)}***${v.slice(-2)}` : v ? 'set' : 'empty'
@@ -294,18 +294,48 @@ async function processFixturesBatch(payload, fixtures, league) {
   for (const operation of operations) {
     try {
       if (operation.type === 'create') {
-        await payload.create({
+        // Логируем данные перед созданием для отладки
+        console.log('[sync-fixtures] Создание фикстуры с данными:', {
+          fixtureId: operation.data.fixtureId,
+          homeTeam: operation.data.homeTeam,
+          awayTeam: operation.data.awayTeam,
+          competition: operation.data.competition,
+        })
+
+        const result = await payload.create({
           collection: 'fixtures',
           data: operation.data,
           overrideAccess: true,
         })
+        console.log('[sync-fixtures] Фикстура создана:', {
+          id: result.id,
+          fixtureId: result.fixtureId,
+          homeTeam: result.homeTeam,
+          awayTeam: result.awayTeam,
+          competition: result.competition,
+        })
         created++
       } else if (operation.type === 'update') {
-        await payload.update({
+        // Логируем данные перед обновлением для отладки
+        console.log('[sync-fixtures] Обновление фикстуры с данными:', {
+          fixtureId: operation.data.fixtureId,
+          homeTeam: operation.data.homeTeam,
+          awayTeam: operation.data.awayTeam,
+          competition: operation.data.competition,
+        })
+
+        const result = await payload.update({
           collection: 'fixtures',
           id: operation.id,
           data: operation.data,
           overrideAccess: true,
+        })
+        console.log('[sync-fixtures] Фикстура обновлена:', {
+          id: result.id,
+          fixtureId: result.fixtureId,
+          homeTeam: result.homeTeam,
+          awayTeam: result.awayTeam,
+          competition: result.competition,
         })
         updated++
       }
@@ -319,13 +349,6 @@ async function processFixturesBatch(payload, fixtures, league) {
 /**
  * Нормализует данные фикстуры из livescore-api.com в формат Payload
  *
- * Реальный формат ответа API:
- * { id, date, time, round, group_id, location,
- *   home: {id, name, logo}, away: {id, name, logo},
- *   competition: {id, name}, country, federation,
- *   odds: { pre: {"1":..., "X":..., "2":...}, live: {...} } }
- */
-/**
  * Формат ответа /fixtures/list.json:
  * { id, date, time, round, group_id, location,
  *   home: {id, name, logo, stadium, country_id},
@@ -339,26 +362,43 @@ function normalizeFixture(fixture, league) {
   const matchDate = dateStr ? new Date(`${dateStr}T${timeStr}Z`) : null
   const timeFormatted = timeStr ? timeStr.substring(0, 5) : null
 
+  // Валидация обязательных полей
+  if (!fixture.home?.id || !fixture.home?.name) {
+    console.warn('[normalizeFixture] Отсутствуют данные домашней команды:', fixture.id)
+  }
+  if (!fixture.away?.id || !fixture.away?.name) {
+    console.warn('[normalizeFixture] Отсутствуют данные гостевой команды:', fixture.id)
+  }
+  if (!fixture.competition?.id || !fixture.competition?.name) {
+    console.warn('[normalizeFixture] Отсутствуют данные соревнования:', fixture.id)
+  }
+
   return {
     fixtureId: fixture.id,
     date: matchDate,
     time: timeFormatted,
 
+    // Домашняя команда - обязательно с teamId и именем
     homeTeam: {
-      id: fixture.home?.id,
-      name: fixture.home?.name,
+      teamId: Number(fixture.home?.id) || 0,
+      name: String(fixture.home?.name || 'Unknown Home Team'),
       logo: fixture.home?.logo || null,
     },
+
+    // Гостевая команда - обязательно с teamId и именем
     awayTeam: {
-      id: fixture.away?.id,
-      name: fixture.away?.name,
+      teamId: Number(fixture.away?.id) || 0,
+      name: String(fixture.away?.name || 'Unknown Away Team'),
       logo: fixture.away?.logo || null,
     },
 
+    // Соревнование - обязательно с competitionId и именем
     competition: {
-      id: fixture.competition?.id,
-      name: fixture.competition?.name,
+      competitionId: Number(fixture.competition?.id) || 0,
+      name: String(fixture.competition?.name || 'Unknown Competition'),
     },
+
+    // Связь с лигой
     league: league.id,
 
     status: 'scheduled',

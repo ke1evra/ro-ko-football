@@ -51,10 +51,13 @@ const Fixtures: CollectionConfig = {
       label: 'Домашняя команда',
       fields: [
         {
-          name: 'id',
+          name: 'teamId',
           type: 'number',
           required: true,
           label: 'ID команды',
+          admin: {
+            description: 'Уникальный ID команды из API',
+          },
         },
         {
           name: 'name',
@@ -79,10 +82,13 @@ const Fixtures: CollectionConfig = {
       label: 'Гостевая команда',
       fields: [
         {
-          name: 'id',
+          name: 'teamId',
           type: 'number',
           required: true,
           label: 'ID команды',
+          admin: {
+            description: 'Уникальный ID команды из API',
+          },
         },
         {
           name: 'name',
@@ -109,10 +115,13 @@ const Fixtures: CollectionConfig = {
       label: 'Соревнование',
       fields: [
         {
-          name: 'id',
+          name: 'competitionId',
           type: 'number',
           required: true,
           label: 'ID соревнования',
+          admin: {
+            description: 'Уникальный ID соревнования из API',
+          },
         },
         {
           name: 'name',

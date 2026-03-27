@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    // Date range: specific date or today + 7 days
+    // Date range: specific date or today + 10 days (синхронизировано с sync-fixtures.mjs)
     const today = new Date()
     today.setUTCHours(0, 0, 0, 0)
 
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
     } else {
       fromDate = today
       toDate = new Date(today)
-      toDate.setDate(today.getDate() + 7)
+      toDate.setDate(today.getDate() + 9) // +9 дней = 10 дней всего (сегодня + 9)
       toDate.setUTCHours(23, 59, 59, 999)
     }
 
@@ -80,7 +80,8 @@ export async function GET(req: NextRequest) {
     ]
 
     if (!includeAll && explicitCompetition) {
-      andConditions.push({ 'competition.id': { equals: Number(explicitCompetition) } })
+      // Фильтр по competitionId (новое имя поля после переименования)
+      andConditions.push({ 'competition.competitionId': { equals: Number(explicitCompetition) } })
     }
 
     const result = await payload.find({

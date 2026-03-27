@@ -1014,7 +1014,10 @@ export interface Fixture {
    */
   time?: string | null;
   homeTeam: {
-    id: number;
+    /**
+     * Уникальный ID команды из API
+     */
+    teamId: number;
     name: string;
     /**
      * URL логотипа команды
@@ -1022,7 +1025,10 @@ export interface Fixture {
     logo?: string | null;
   };
   awayTeam: {
-    id: number;
+    /**
+     * Уникальный ID команды из API
+     */
+    teamId: number;
     name: string;
     /**
      * URL логотипа команды
@@ -1030,7 +1036,10 @@ export interface Fixture {
     logo?: string | null;
   };
   competition: {
-    id: number;
+    /**
+     * Уникальный ID соревнования из API
+     */
+    competitionId: number;
     name: string;
   };
   /**
@@ -2614,21 +2623,21 @@ export interface FixturesSelect<T extends boolean = true> {
   homeTeam?:
     | T
     | {
-        id?: T;
+        teamId?: T;
         name?: T;
         logo?: T;
       };
   awayTeam?:
     | T
     | {
-        id?: T;
+        teamId?: T;
         name?: T;
         logo?: T;
       };
   competition?:
     | T
     | {
-        id?: T;
+        competitionId?: T;
         name?: T;
       };
   league?: T;
