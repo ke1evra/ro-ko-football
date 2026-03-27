@@ -123,9 +123,7 @@ async function httpProbe(url, insecure = false) {
     const lib = url.startsWith('https') ? https : http
     const req = lib.get(
       url,
-      insecure && url.startsWith('https')
-        ? { rejectUnauthorized: false }
-        : undefined,
+      insecure && url.startsWith('https') ? { rejectUnauthorized: false } : undefined,
       (res) => {
         // потребим тело, чтобы корректно закрыть
         res.resume()
@@ -146,7 +144,9 @@ const noPull = args.has('--no-pull')
 
 // -------------------- prechecks --------------------
 // очистим старый лог
-try { fs.unlinkSync(LOG_FILE) } catch {}
+try {
+  fs.unlinkSync(LOG_FILE)
+} catch {}
 writeLog('=== START DEPLOY ===')
 log('== Предпроверки окружения ==')
 if (!cmdExists('node')) fail('Node.js не найден')
@@ -161,11 +161,17 @@ if (!cmdExists('docker')) {
   tryRun(`${envApt} apt-get remove -y docker docker-engine docker.io containerd runc || true`)
   run(`${envApt} apt-get autoremove -y`)
   run(`${envApt} apt-get update -y`)
-  run(`${envApt} apt-get install -y --no-install-recommends apt-transport-https software-properties-common ca-certificates curl gnupg lsb-release`)
+  run(
+    `${envApt} apt-get install -y --no-install-recommends apt-transport-https software-properties-common ca-certificates curl gnupg lsb-release`,
+  )
   run('install -m 0755 -d /etc/apt/keyrings')
-  run('bash -lc "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg"')
+  run(
+    'bash -lc "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg"',
+  )
   run('chmod a+r /etc/apt/keyrings/docker.gpg')
-  run('bash -lc "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable\" > /etc/apt/sources.list.d/docker.list"')
+  run(
+    'bash -lc "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable\" > /etc/apt/sources.list.d/docker.list"',
+  )
   run(`${envApt} apt-get update -y`)
 
   function aptFix() {
@@ -179,29 +185,39 @@ if (!cmdExists('docker')) {
   // затем пробуем официальный docker-ce.
   let installed = false
   try {
-    run(`${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker.io docker-compose-plugin`)
+    run(
+      `${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker.io docker-compose-plugin`,
+    )
     installed = true
   } catch (eA) {
     warn('Установка docker.io не удалась. Попытка автоматического исправления и повтор...')
     aptFix()
     try {
-      run(`${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker.io docker-compose-plugin`)
+      run(
+        `${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker.io docker-compose-plugin`,
+      )
       installed = true
     } catch (eA2) {
       warn('Повт��рная установка docker.io не удалась. Пытаюсь установить официальный docker-ce...')
       aptFix()
       try {
-        run(`${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin`)
+        run(
+          `${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin`,
+        )
         installed = true
       } catch (eB) {
         aptFix()
         try {
-          run(`${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin`)
+          run(
+            `${envApt} apt-get -o Dpkg::Options::=--force-confnew install -y docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin`,
+          )
           installed = true
         } catch (eB2) {
           writeLog('Ошибка установки Docker: все варианты исчерпаны.')
           writeLog('Рекомендуется вручную проверить команды:')
-          writeLog('  apt-cache policy docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin containerd.io docker.io')
+          writeLog(
+            '  apt-cache policy docker-ce docker-ce-cli docker-buildx-plugin docker-compose-plugin containerd.io docker.io',
+          )
           writeLog('  cat /etc/apt/sources.list.d/docker.list')
           writeLog('  cat /etc/os-release')
           fail('Автоустановка Docker не удалась. См. deploy.log для подробностей.')
@@ -231,7 +247,9 @@ if (!havePnpm) {
     } catch {}
   }
   if (!havePnpm && cmdExists('npm')) {
-    warn('corepack недоступен или не активировал pnpm — устанавливаю pnpm глобально через npm i -g pnpm')
+    warn(
+      'corepack недоступен или не активировал pnpm — устанавливаю pnpm глобально через npm i -g pnpm',
+    )
     try {
       run('npm install -g pnpm')
       havePnpm = cmdExists('pnpm')
@@ -251,7 +269,7 @@ if (!noPull && cmdExists('git')) {
 }
 if (cmdExists('pnpm')) {
   run('pnpm --version')
-  run('pnpm install --frozen-lockfile')
+  run('pnpm install')
 } else if (cmdExists('npm')) {
   warn('pnpm недоступен — выполняю установку зависимостей через npm ci (fallback)')
   run('npm --version')
@@ -326,7 +344,9 @@ if ((busy80 || busy443) && !forcePorts) {
   const busy443b = await portBusy(443)
   if (busy80b || busy443b) {
     warn(`После попытки остановки сервисов порты заняты: 80=${busy80b}, 443=${busy443b}`)
-    warn('Завершение. Запустите с --force-ports-override для теста на 8080/8443 или освободите порты.')
+    warn(
+      'Завершение. Запустите с --force-ports-override для теста на 8080/8443 или освободите порты.',
+    )
     process.exit(2)
   } else {
     log('Порты 80/443 освобождены автоматически.')
@@ -400,5 +420,9 @@ log(`  docker compose -f ${COMPOSE_FILE} up -d --build`)
 log(`  docker compose -f ${COMPOSE_FILE} down`)
 
 log('\nПодсказки:')
-log('- Для автоматического выпуска публичных сертификатов удалите caddy.tls: "internal" из compose и убедитесь, что DNS rocoscore.ru указывает на сервер, а п��рты 80/443 свободны.')
-log('- Для локального прогона можно использовать: node deploy.mjs --mode=local --force-ports-override')
+log(
+  '- Для автоматического выпуска публичных сертификатов удалите caddy.tls: "internal" из compose и убедитесь, что DNS rocoscore.ru указывает на сервер, а п��рты 80/443 свободны.',
+)
+log(
+  '- Для локального прогона можно использовать: node deploy.mjs --mode=local --force-ports-override',
+)
