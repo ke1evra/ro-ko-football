@@ -78,6 +78,14 @@ export interface Config {
     predictionStats: PredictionStat;
     'bet-markets': BetMarket;
     'outcome-groups': OutcomeGroup;
+    apiRequestLogs: ApiRequestLog;
+    fixtures: Fixture;
+    seasons: Season;
+    standings: Standing;
+    matchEvents: MatchEvent;
+    teams: Team;
+    countries: Country;
+    'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -95,6 +103,14 @@ export interface Config {
     predictionStats: PredictionStatsSelect<false> | PredictionStatsSelect<true>;
     'bet-markets': BetMarketsSelect<false> | BetMarketsSelect<true>;
     'outcome-groups': OutcomeGroupsSelect<false> | OutcomeGroupsSelect<true>;
+    apiRequestLogs: ApiRequestLogsSelect<false> | ApiRequestLogsSelect<true>;
+    fixtures: FixturesSelect<false> | FixturesSelect<true>;
+    seasons: SeasonsSelect<false> | SeasonsSelect<true>;
+    standings: StandingsSelect<false> | StandingsSelect<true>;
+    matchEvents: MatchEventsSelect<false> | MatchEventsSelect<true>;
+    teams: TeamsSelect<false> | TeamsSelect<true>;
+    countries: CountriesSelect<false> | CountriesSelect<true>;
+    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -102,6 +118,7 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
+  fallbackLocale: null;
   globals: {
     topMatchesLeagues: TopMatchesLeague;
     sidebarLeagues: SidebarLeague;
@@ -298,7 +315,7 @@ export interface Post {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -723,6 +740,10 @@ export interface Match {
    */
   fixtureId?: number | null;
   /**
+   * Связь с фикстурой из коллекции Fixtures
+   */
+  fixture?: (string | null) | Fixture;
+  /**
    * Дополнительный внешний идентификатор
    */
   externalId?: string | null;
@@ -969,6 +990,149 @@ export interface Match {
     | number
     | boolean
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Фикстуры матчей с коэффициентами и историей
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "fixtures".
+ */
+export interface Fixture {
+  id: string;
+  /**
+   * Уникальный ID фикстуры из LiveScore API
+   */
+  fixtureId: number;
+  /**
+   * Дата проведения матча
+   */
+  date: string;
+  /**
+   * Время начала матча (HH:MM)
+   */
+  time?: string | null;
+  homeTeam: {
+    /**
+     * Уникальный ID команды из API
+     */
+    teamId: number;
+    name: string;
+    /**
+     * URL логотипа команды
+     */
+    logo?: string | null;
+  };
+  awayTeam: {
+    /**
+     * Уникальный ID команды из API
+     */
+    teamId: number;
+    name: string;
+    /**
+     * URL логотипа команды
+     */
+    logo?: string | null;
+  };
+  competition: {
+    /**
+     * Уникальный ID соревнования из API
+     */
+    competitionId: number;
+    name: string;
+  };
+  /**
+   * Связь с коллекцией лиг
+   */
+  league: string | League;
+  /**
+   * Текущий статус матча
+   */
+  status: 'scheduled' | 'live' | 'finished' | 'postponed' | 'cancelled';
+  /**
+   * Раунд/тур соревнования
+   */
+  round?: string | null;
+  /**
+   * Группа (для турниров с группами)
+   */
+  group?: string | null;
+  venue?: {
+    name?: string | null;
+    city?: string | null;
+    country?: string | null;
+  };
+  odds?: {
+    pre?: {
+      /**
+       * Коэффициент на победу хозяев
+       */
+      home?: number | null;
+      /**
+       * Коэффициент на ничью
+       */
+      draw?: number | null;
+      /**
+       * Коэффициент на победу гостей
+       */
+      away?: number | null;
+    };
+    live?: {
+      /**
+       * Live коэффициент на победу хозяев
+       */
+      home?: number | null;
+      /**
+       * Live коэффициент на ничью
+       */
+      draw?: number | null;
+      /**
+       * Live коэффициент на победу гостей
+       */
+      away?: number | null;
+    };
+  };
+  /**
+   * Полная история изменения коэффициентов
+   */
+  oddsHistory?:
+    | {
+        /**
+         * Когда были зафиксированы коэффициенты
+         */
+        timestamp: string;
+        odds: {
+          pre?: {
+            home?: number | null;
+            draw?: number | null;
+            away?: number | null;
+          };
+          live?: {
+            home?: number | null;
+            draw?: number | null;
+            away?: number | null;
+          };
+        };
+        /**
+         * Откуда получены коэффициенты
+         */
+        source: 'api' | 'manual';
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Связь с реальным матчем из коллекции Matches
+   */
+  match?: (string | null) | Match;
+  /**
+   * Когда данные последний раз синхронизировались с API
+   */
+  lastSyncAt: string;
+  /**
+   * Откуда получены данные
+   */
+  syncSource: 'fixtures' | 'live' | 'manual';
   updatedAt: string;
   createdAt: string;
 }
@@ -1299,6 +1463,383 @@ export interface PredictionStat {
   createdAt: string;
 }
 /**
+ * Логи всех запросов к LiveScore API с метриками кэширования
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "apiRequestLogs".
+ */
+export interface ApiRequestLog {
+  id: string;
+  /**
+   * Эндпоинт LiveScore API (/matches/live.json, /fixtures/matches.json)
+   */
+  endpoint: string;
+  /**
+   * Параметры, переданные в запрос
+   */
+  params?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Откуда был сделан запрос
+   */
+  source: 'api-route' | 'page' | 'script' | 'component';
+  /**
+   * Статус код ответа от LiveScore API
+   */
+  statusCode: number;
+  /**
+   * Общее время выполнения запроса в миллисекундах
+   */
+  duration: number;
+  /**
+   * Откуда были получены данные
+   */
+  cacheLevel: 'memory' | 'database' | 'livescore';
+  cacheStats?: {
+    memoryCache?: {
+      /**
+       * Было ли попадание в in-memory кэш
+       */
+      hit?: boolean | null;
+      /**
+       * Время жизни записи в кэше
+       */
+      ttl?: number | null;
+      /**
+       * Как давно данные были помещены в кэш
+       */
+      age?: number | null;
+    };
+    database?: {
+      /**
+       * Были ли данные найдены в MongoDB
+       */
+      hit?: boolean | null;
+      /**
+       * Когда данные последний раз синхронизировались
+       */
+      lastSyncAt?: string | null;
+      /**
+       * Устарели ли данные в БД
+       */
+      isStale?: boolean | null;
+      /**
+       * Сколько времени прошло с момента устаревания
+       */
+      staleSince?: number | null;
+    };
+    livescoreApi?: {
+      /**
+       * Был ли сделан запрос к LiveScore API
+       */
+      called?: boolean | null;
+      /**
+       * Статус код ответа от LiveScore API
+       */
+      statusCode?: number | null;
+      /**
+       * Время ответа от LiveScore API
+       */
+      duration?: number | null;
+      /**
+       * Был ли результат сохранён в БД
+       */
+      cached?: boolean | null;
+      /**
+       * Номер попытки при retry
+       */
+      attempt?: number | null;
+    };
+  };
+  summary?: {
+    /**
+     * Общее количество запросов за период времени
+     */
+    totalRequests?: number | null;
+    /**
+     * Количество попаданий в кэш (память + БД)
+     */
+    cacheHits?: number | null;
+    /**
+     * Количество попаданий в in-memory кэш
+     */
+    memoryHits?: number | null;
+    /**
+     * Количество попаданий в MongoDB
+     */
+    databaseHits?: number | null;
+    /**
+     * Количество обращений к LiveScore API
+     */
+    livescoreApiCalls?: number | null;
+    /**
+     * Процент попаданий в кэш (память + БД)
+     */
+    cacheHitRate?: number | null;
+    /**
+     * Среднее время выполнения запросов
+     */
+    avgDuration?: number | null;
+  };
+  /**
+   * Пользователь, сделавший запрос (если авторизован)
+   */
+  userId?: (string | null) | User;
+  /**
+   * IP адрес клиента
+   */
+  ipAddress?: string | null;
+  /**
+   * User Agent браузера/клиента
+   */
+  userAgent?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Сезоны футбольных лиг
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "seasons".
+ */
+export interface Season {
+  id: string;
+  /**
+   * Уникальный ID сезона из LiveScore API
+   */
+  seasonId: number;
+  /**
+   * Человеко-читаемое название сезона (2024/25, 2024, etc.)
+   */
+  name: string;
+  /**
+   * Дата начала сезона
+   */
+  startDate: string;
+  /**
+   * Дата окончания сезона
+   */
+  endDate: string;
+  /**
+   * Является ли этот сезон текущим активным сезоном
+   */
+  isCurrent: boolean;
+  /**
+   * Лига, к которой относится сезон
+   */
+  league: string | League;
+  /**
+   * Когда данные последний раз синхронизировались с API
+   */
+  lastSyncAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Турнирные таблицы лиг
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "standings".
+ */
+export interface Standing {
+  id: string;
+  /**
+   * Лига, к которой относится таблица
+   */
+  league: string | League;
+  /**
+   * Сезон, к которому относится таблица
+   */
+  season: string | Season;
+  /**
+   * Текущая позиция команды в таблице
+   */
+  position: number;
+  team: {
+    id: number;
+    name: string;
+  };
+  /**
+   * Количество сыгранных матчей
+   */
+  played: number;
+  /**
+   * Количество побед
+   */
+  won: number;
+  /**
+   * Количество ничьих
+   */
+  drawn: number;
+  /**
+   * Количество поражений
+   */
+  lost: number;
+  /**
+   * Количество забитых голов
+   */
+  goalsFor: number;
+  /**
+   * Количество пропущенных голов
+   */
+  goalsAgainst: number;
+  /**
+   * Количество набранных очков
+   */
+  points: number;
+  /**
+   * Последние результаты (например: WWDLL)
+   */
+  form?: string | null;
+  /**
+   * Когда данные последний раз синхронизировались с API
+   */
+  lastSyncAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * События матчей (голы, карточки, замены)
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "matchEvents".
+ */
+export interface MatchEvent {
+  id: string;
+  /**
+   * Матч, к которому относится событие
+   */
+  match: string | Match;
+  /**
+   * Минута матча, когда произошло событие
+   */
+  minute: number;
+  /**
+   * Тип произошедшего события
+   */
+  type: 'goal' | 'yellow' | 'red' | 'substitution' | 'own_goal' | 'penalty' | 'var' | 'other';
+  /**
+   * Команда, которая совершила действие
+   */
+  team: 'home' | 'away';
+  player?: {
+    id?: number | null;
+    name?: string | null;
+  };
+  /**
+   * Игрок, отдавший голевую передачу
+   */
+  assistPlayer?: string | null;
+  /**
+   * Игрок, которого заменили
+   */
+  playerOut?: string | null;
+  /**
+   * Игрок, который вышел на замену
+   */
+  playerIn?: string | null;
+  /**
+   * Дополнительное описание события
+   */
+  description?: string | null;
+  /**
+   * Когда данные последний раз синхронизировались с API
+   */
+  lastSyncAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Футбольные команды
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teams".
+ */
+export interface Team {
+  id: string;
+  /**
+   * Уникальный ID команды из LiveScore API
+   */
+  teamId: number;
+  /**
+   * Полное название команды
+   */
+  name: string;
+  country: {
+    id: number;
+    name: string;
+  };
+  /**
+   * URL логотипа команды
+   */
+  logo?: string | null;
+  /**
+   * Домашний стадион команды
+   */
+  stadium?: string | null;
+  /**
+   * Когда данные последний раз синхронизировались с API
+   */
+  lastSyncAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Страны для футбольных команд и лиг
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "countries".
+ */
+export interface Country {
+  id: string;
+  /**
+   * Уникальный ID страны из LiveScore API
+   */
+  countryId: number;
+  /**
+   * Полное название страны
+   */
+  name: string;
+  /**
+   * URL флага страны
+   */
+  flag?: string | null;
+  /**
+   * Трёхбуквенный код страны по FIFA (например: RUS, GER)
+   */
+  fifaCode?: string | null;
+  /**
+   * Когда данные последний раз синхронизировались с API
+   */
+  lastSyncAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv".
+ */
+export interface PayloadKv {
+  id: string;
+  key: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
@@ -1348,6 +1889,34 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'outcome-groups';
         value: string | OutcomeGroup;
+      } | null)
+    | ({
+        relationTo: 'apiRequestLogs';
+        value: string | ApiRequestLog;
+      } | null)
+    | ({
+        relationTo: 'fixtures';
+        value: string | Fixture;
+      } | null)
+    | ({
+        relationTo: 'seasons';
+        value: string | Season;
+      } | null)
+    | ({
+        relationTo: 'standings';
+        value: string | Standing;
+      } | null)
+    | ({
+        relationTo: 'matchEvents';
+        value: string | MatchEvent;
+      } | null)
+    | ({
+        relationTo: 'teams';
+        value: string | Team;
+      } | null)
+    | ({
+        relationTo: 'countries';
+        value: string | Country;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1591,6 +2160,7 @@ export interface LeaguesSelect<T extends boolean = true> {
 export interface MatchesSelect<T extends boolean = true> {
   matchId?: T;
   fixtureId?: T;
+  fixture?: T;
   externalId?: T;
   displayName?: T;
   date?: T;
@@ -1985,6 +2555,254 @@ export interface OutcomeGroupsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "apiRequestLogs_select".
+ */
+export interface ApiRequestLogsSelect<T extends boolean = true> {
+  endpoint?: T;
+  params?: T;
+  source?: T;
+  statusCode?: T;
+  duration?: T;
+  cacheLevel?: T;
+  cacheStats?:
+    | T
+    | {
+        memoryCache?:
+          | T
+          | {
+              hit?: T;
+              ttl?: T;
+              age?: T;
+            };
+        database?:
+          | T
+          | {
+              hit?: T;
+              lastSyncAt?: T;
+              isStale?: T;
+              staleSince?: T;
+            };
+        livescoreApi?:
+          | T
+          | {
+              called?: T;
+              statusCode?: T;
+              duration?: T;
+              cached?: T;
+              attempt?: T;
+            };
+      };
+  summary?:
+    | T
+    | {
+        totalRequests?: T;
+        cacheHits?: T;
+        memoryHits?: T;
+        databaseHits?: T;
+        livescoreApiCalls?: T;
+        cacheHitRate?: T;
+        avgDuration?: T;
+      };
+  userId?: T;
+  ipAddress?: T;
+  userAgent?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "fixtures_select".
+ */
+export interface FixturesSelect<T extends boolean = true> {
+  fixtureId?: T;
+  date?: T;
+  time?: T;
+  homeTeam?:
+    | T
+    | {
+        teamId?: T;
+        name?: T;
+        logo?: T;
+      };
+  awayTeam?:
+    | T
+    | {
+        teamId?: T;
+        name?: T;
+        logo?: T;
+      };
+  competition?:
+    | T
+    | {
+        competitionId?: T;
+        name?: T;
+      };
+  league?: T;
+  status?: T;
+  round?: T;
+  group?: T;
+  venue?:
+    | T
+    | {
+        name?: T;
+        city?: T;
+        country?: T;
+      };
+  odds?:
+    | T
+    | {
+        pre?:
+          | T
+          | {
+              home?: T;
+              draw?: T;
+              away?: T;
+            };
+        live?:
+          | T
+          | {
+              home?: T;
+              draw?: T;
+              away?: T;
+            };
+      };
+  oddsHistory?:
+    | T
+    | {
+        timestamp?: T;
+        odds?:
+          | T
+          | {
+              pre?:
+                | T
+                | {
+                    home?: T;
+                    draw?: T;
+                    away?: T;
+                  };
+              live?:
+                | T
+                | {
+                    home?: T;
+                    draw?: T;
+                    away?: T;
+                  };
+            };
+        source?: T;
+        id?: T;
+      };
+  match?: T;
+  lastSyncAt?: T;
+  syncSource?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "seasons_select".
+ */
+export interface SeasonsSelect<T extends boolean = true> {
+  seasonId?: T;
+  name?: T;
+  startDate?: T;
+  endDate?: T;
+  isCurrent?: T;
+  league?: T;
+  lastSyncAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "standings_select".
+ */
+export interface StandingsSelect<T extends boolean = true> {
+  league?: T;
+  season?: T;
+  position?: T;
+  team?:
+    | T
+    | {
+        id?: T;
+        name?: T;
+      };
+  played?: T;
+  won?: T;
+  drawn?: T;
+  lost?: T;
+  goalsFor?: T;
+  goalsAgainst?: T;
+  points?: T;
+  form?: T;
+  lastSyncAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "matchEvents_select".
+ */
+export interface MatchEventsSelect<T extends boolean = true> {
+  match?: T;
+  minute?: T;
+  type?: T;
+  team?: T;
+  player?:
+    | T
+    | {
+        id?: T;
+        name?: T;
+      };
+  assistPlayer?: T;
+  playerOut?: T;
+  playerIn?: T;
+  description?: T;
+  lastSyncAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teams_select".
+ */
+export interface TeamsSelect<T extends boolean = true> {
+  teamId?: T;
+  name?: T;
+  country?:
+    | T
+    | {
+        id?: T;
+        name?: T;
+      };
+  logo?: T;
+  stadium?: T;
+  lastSyncAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "countries_select".
+ */
+export interface CountriesSelect<T extends boolean = true> {
+  countryId?: T;
+  name?: T;
+  flag?: T;
+  fifaCode?: T;
+  lastSyncAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv_select".
+ */
+export interface PayloadKvSelect<T extends boolean = true> {
+  key?: T;
+  data?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

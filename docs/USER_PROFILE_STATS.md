@@ -18,6 +18,7 @@
 Компонент для отображения общей статистики прогнозов.
 
 **Показатели:**
+
 - **Всего событий** - общее количество предсказанных событий
 - **Выиграло** - количество и процент выигранных событий
 - **Проиграло** - количество и процент проигранных событий
@@ -26,11 +27,13 @@
 - **Не определено** - события без результата (матч не окончен, нет данных)
 
 **Визуализация:**
+
 - Сетка с основными метриками
 - Цветные бейджи для быстрого восприятия
 - Прогресс-бар с распределением результатов
 
 **Props:**
+
 ```typescript
 interface PredictionStatsCardProps {
   stats: {
@@ -45,15 +48,18 @@ interface PredictionStatsCardProps {
 ```
 
 **Пример использования:**
+
 ```tsx
-<PredictionStatsCard stats={{
-  total: 50,
-  won: 30,
-  lost: 15,
-  undecided: 5,
-  hitRate: 0.6,
-  roi: 0.12
-}} />
+<PredictionStatsCard
+  stats={{
+    total: 50,
+    won: 30,
+    lost: 15,
+    undecided: 5,
+    hitRate: 0.6,
+    roi: 0.12,
+  }}
+/>
 ```
 
 ---
@@ -65,6 +71,7 @@ interface PredictionStatsCardProps {
 Компонент для отображения списка прогнозов пользователя.
 
 **Функции:**
+
 - Загрузка прогнозов с сервера
 - Сортировка по дате (новые/старые) и качеству (лучшие/худшие)
 - Отображение статуса (рассчитан/в ожидании)
@@ -72,6 +79,7 @@ interface PredictionStatsCardProps {
 - Ссылки на полный текст прогноза
 
 **Props:**
+
 ```typescript
 interface UserPredictionsListProps {
   userId: string
@@ -79,12 +87,14 @@ interface UserPredictionsListProps {
 ```
 
 **Сортировка:**
+
 - `recent` - новые сначала (по умолчанию)
 - `oldest` - старые сначала
 - `best` - лучшие по hit rate
 - `worst` - худшие по hit rate
 
 **Пример использования:**
+
 ```tsx
 <UserPredictionsList userId={user.id} />
 ```
@@ -98,9 +108,11 @@ interface UserPredictionsListProps {
 Получить агрегированную статистику прогнозов пользователя.
 
 **Параметры:**
+
 - `userId` - ID пользователя (path parameter)
 
 **Ответ:**
+
 ```json
 {
   "success": true,
@@ -121,6 +133,7 @@ interface UserPredictionsListProps {
 ```
 
 **Логика:**
+
 1. Получить все записи `predictionStats` для пользователя
 2. Агрегировать данные из поля `summary` каждой записи
 3. Рассчитать средние значения:
@@ -134,6 +147,7 @@ interface UserPredictionsListProps {
 Получить список прогнозов пользователя с опциональной сортировкой.
 
 **Параметры:**
+
 - `userId` - ID пользователя (path parameter)
 - `sort` - тип сортировки (query parameter):
   - `recent` - новые сначала (по умолчанию)
@@ -142,6 +156,7 @@ interface UserPredictionsListProps {
   - `worst` - худшие по hit rate
 
 **Ответ:**
+
 ```json
 {
   "success": true,
@@ -166,6 +181,7 @@ interface UserPredictionsListProps {
 ```
 
 **Логика:**
+
 1. Получить все посты-прогнозы пользователя
 2. Для каждого поста получить связанную статистику
 3. Применить сортировку
@@ -180,10 +196,12 @@ interface UserPredictionsListProps {
 На странице профиля добавлены две вкладки:
 
 ### Вкладка "Общая статистика"
+
 - Компонент `PredictionStatsContainer` загружает статистику
 - Отображает `PredictionStatsCard` с метриками
 
 ### Вкладка "Мои прогнозы"
+
 - Компонент `UserPredictionsList` загружает и отображает список
 - Позволяет сортировать и фильтровать прогнозы
 
@@ -200,23 +218,23 @@ interface UserPredictionsListProps {
   author: Relationship<Users>
   status: 'pending' | 'settled'
   evaluatedAt: Date
-  
+
   summary: {
-    total: number        // Всего событий
-    won: number          // Выиграло
-    lost: number         // Проиграло
-    undecided: number    // Не определено
-    hitRate: number      // 0..1
-    roi: number          // -1..∞
+    total: number // Всего событий
+    won: number // Выиграло
+    lost: number // Проиграло
+    undecided: number // Не определено
+    hitRate: number // 0..1
+    roi: number // -1..∞
   }
-  
+
   details: Array<{
     event: string
     coefficient: number
     result: 'won' | 'lost' | 'undecided'
     reason?: string
   }>
-  
+
   scoring: {
     points: number
     breakdown: JSON
@@ -266,11 +284,13 @@ export function MyProfile({ userId }: { userId: string }) {
 ## Стили и дизайн
 
 Компоненты используют:
+
 - **shadcn/ui** компоненты (Card, Badge, Button, Select, Tabs)
 - **Tailwind CSS** для стилизации
 - **date-fns** для форматирования дат (русская локаль)
 
 Цветовая схема:
+
 - 🟢 Зелёный - выигрыши, прибыль
 - 🔴 Красный - проигрыши, убытки
 - 🟡 Жёлтый - неопределённые результаты
@@ -325,11 +345,13 @@ curl http://localhost:3100/api/predictions/user/USER_ID?sort=best
 ### Статистика не отображается
 
 **Причины:**
+
 1. Нет рассчитанной статистики - запустите скрипт подсчёта
 2. Пользователь не авторизован - проверьте AuthContext
 3. API маршрут не работает - проверьте консоль браузера
 
 **Решение:**
+
 ```bash
 # Пересчитать статистику
 node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.mjs --force
@@ -338,11 +360,13 @@ node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.mjs
 ### Прогнозы не загружаются
 
 **Причины:**
+
 1. Неверный userId
 2. Нет прогнозов у пользователя
 3. Ошибка в API маршруте
 
 **Решение:**
+
 - Проверьте консоль браузера на ошибки
 - Проверьте сетевые запросы в DevTools
 - Убедитесь что у пользователя есть посты с `postType: 'prediction'`

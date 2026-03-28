@@ -90,7 +90,9 @@ try {
     // Предполагаем, что прод база на том же сервере, но с другим именем или портом
     // Пользователь должен скорректировать вручную
     envVars.PROD_DATABASE_URI = 'mongodb://localhost:27017/payload-prod'
-    console.log('✅ PROD_DATABASE_URI=mongodb://localhost:27017/payload-prod задан (скорректируйте при необходимости)')
+    console.log(
+      '✅ PROD_DATABASE_URI=mongodb://localhost:27017/payload-prod задан (скорректируйте при необходимости)',
+    )
   }
 
   // Задаем прод-специфичные переменные, если не заданы
@@ -120,7 +122,8 @@ try {
   }
 
   if (!envVars.PROD_LIVESCORE_API_BASE) {
-    envVars.PROD_LIVESCORE_API_BASE = envVars.LIVESCORE_API_BASE || 'https://livescore-api.com/api-client'
+    envVars.PROD_LIVESCORE_API_BASE =
+      envVars.LIVESCORE_API_BASE || 'https://livescore-api.com/api-client'
     console.log('✅ PROD_LIVESCORE_API_BASE задан')
   }
 
@@ -266,5 +269,7 @@ console.log('- Рабочая директория: .next/standalone')
 console.log('- Логи доступны в директории ./logs/')
 console.log('- Мониторинг: pm2 monit')
 console.log('- Просмотр логов: pm2 logs')
-console.log('\n⚠️ Не забудьте настроить nginx или другой reverse proxy для проксирования запросов на localhost:4317')
+console.log(
+  '\n⚠️ Не забудьте настроить nginx или другой reverse proxy для проксирования запросов на localhost:4317',
+)
 console.log('Пример nginx конфигурации см. в документации проекта')

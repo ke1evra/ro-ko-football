@@ -5,10 +5,13 @@ import { AlertCircle, ArrowLeft } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { findMatchByMatchId, findMatchByTeamsAndDate } from '@/lib/payload-client'
+import {
+  findMatchByMatchId,
+  findMatchByTeamsAndDate,
+  findFixtureById,
+} from '@/lib/payload-client'
 import MatchPageClient from '@/components/matches/MatchPageClient'
 import FixturePageClient from '@/components/fixtures/FixturePageClient'
-import H2HBlock from '@/components/fixtures/H2HBlock'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
@@ -111,6 +114,54 @@ async function findMatchInPayload(params: MatchParams) {
   } catch (error) {
     console.error('[findMatchInPayload] Error:', error)
     return null
+  }
+}
+
+/**
+ * Ищет фикстуру в Payload CMS по fixtureId
+ */
+async function findFixtureInPayloadById(fixtureId: number) {
+  try {
+    const fixture = await findFixtureById(fixtureId)
+    return fixture
+  } catch (error) {
+    console.error('[findFixtureInPayloadById] Error:', error)
+    return null
+  }
+}
+
+/**
+ * Преобразует фикстуру из Payload в формат, совместимый с findMatch
+ */
+function transformPayloadFixture(fixture: any): any {
+  return {
+    id: fixture.fixtureId,
+    fixtureId: fixture.fixtureId,
+    date: fixture.date,
+    time: fixture.time || '',
+    home: {
+      id: fixture.homeTeam?.id,
+      name: fixture.homeTeam?.name,
+      logo: fixture.homeTeam?.logo,
+    },
+    away: {
+      id: fixture.awayTeam?.id,
+      name: fixture.awayTeam?.name,
+      logo: fixture.awayTeam?.logo,
+    },
+    competition: fixture.competition
+      ? {
+          id: fixture.competition.id,
+          name: fixture.competition.name,
+        }
+      : undefined,
+    status: fixture.status,
+    odds: fixture.odds,
+    urls: fixture.urls,
+    location: fixture.location,
+    venue: fixture.venue,
+    round: fixture.round,
+    group_id: fixture.groupId,
   }
 }
 
@@ -294,6 +345,7 @@ async function findMatchInLiveScoreApi(matchId: number) {
 
 /**
  * Основная логика поиска матча
+ * Приоритет: Payload Matches → Payload Fixtures → API
  */
 async function findMatch(params: MatchParams) {
   const matchDate = new Date(params.date)
@@ -301,11 +353,11 @@ async function findMatch(params: MatchParams) {
   today.setHours(0, 0, 0, 0)
   matchDate.setHours(0, 0, 0, 0)
 
-  // Если указан matchId → Payload → LiveScore API
+  // Если указан matchId → Payload Matches → LiveScore API
   if (params.matchId) {
     const payloadMatch = await findMatchInPayloadById(params.matchId)
     if (payloadMatch) {
-      return { source: 'payload', match: payloadMatch }
+      return { source: 'payload-match', match: payloadMatch }
     }
 
     const liveScoreResult = await findMatchInLiveScoreApi(params.matchId)
@@ -319,7 +371,17 @@ async function findMatch(params: MatchParams) {
   const isFutureOrToday = matchDate >= today
 
   if (isFutureOrToday) {
-    // fixtures → live → history
+    // Payload Fixtures → Payload Matches → API Fixtures → Live → History
+    const payloadFixture = await findFixtureInPayloadById(params.fixtureId)
+    if (payloadFixture) {
+      return { source: 'payload-fixture', match: transformPayloadFixture(payloadFixture) }
+    }
+
+    const payloadMatch = await findMatchInPayload(params)
+    if (payloadMatch) {
+      return { source: 'payload-match', match: payloadMatch }
+    }
+
     const fixturesResult = await findMatchInFixtures(params)
     if (fixturesResult && fixturesResult.match) {
       return { source: 'fixtures', match: fixturesResult.match, debug: fixturesResult }
@@ -335,7 +397,12 @@ async function findMatch(params: MatchParams) {
       return { source: 'history', match: historyMatch }
     }
   } else {
-    // history → live → fixtures
+    // Payload Fixtures → History → Live → API Fixtures
+    const payloadFixture = await findFixtureInPayloadById(params.fixtureId)
+    if (payloadFixture) {
+      return { source: 'payload-fixture', match: transformPayloadFixture(payloadFixture) }
+    }
+
     const historyMatch = await findMatchInHistory(params)
     if (historyMatch) {
       return { source: 'history', match: historyMatch }
@@ -486,7 +553,7 @@ export default async function MatchV2Page({ params }: { params: Promise<{ slug: 
   const match = result.match
   const source = (result as any).source as string | undefined
 
-  // Получаем валидный matchId (реальный ID матча, не равный fixtureId и не из fixtures)
+  // Получаем в��лидный matchId (реальный ID матча, не равный fixtureId и не из fixtures)
   const rawMatchId = (() => {
     const mid: unknown = (match as any)?.matchId
     if (typeof mid === 'number') return mid
@@ -497,7 +564,10 @@ export default async function MatchV2Page({ params }: { params: Promise<{ slug: 
     return NaN
   })()
   const hasValidMatchId =
-    Number.isFinite(rawMatchId) && rawMatchId !== parsed.fixtureId && source !== 'fixtures'
+    Number.isFinite(rawMatchId) &&
+    rawMatchId !== parsed.fixtureId &&
+    source !== 'fixtures' &&
+    source !== 'payload-fixture'
 
   // Редирект только если в URL нет matchId и мы нашли валидный реальный matchId
   if (hasValidMatchId && !parsed.matchId) {

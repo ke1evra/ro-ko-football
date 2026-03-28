@@ -6,14 +6,14 @@ services:
       context: .
       dockerfile: Dockerfile.worker
     # Доступ к хостовым сервисам (Mongo и т.п.) как у app
-    network_mode: "host"
+    network_mode: 'host'
     env_file:
       - ./.env
     environment:
-      DATABASE_URI: "mongodb://syncadmin:syncadminsyncadmin123qQ!@127.0.0.1:27017/payload?authSource=admin"
+      DATABASE_URI: 'mongodb://syncadmin:syncadminsyncadmin123qQ!@127.0.0.1:27017/payload?authSource=admin'
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
       NODE_ENV: ${NODE_ENV}
-      APP_URL: "http://localhost:3100"
+      APP_URL: 'http://localhost:3100'
       LIVESCORE_KEY: ${LIVESCORE_KEY}
       LIVESCORE_SECRET: ${LIVESCORE_SECRET}
     command: pnpm matches:import:forward:loop

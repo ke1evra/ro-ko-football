@@ -30,9 +30,19 @@ module.exports = {
         HOST: '0.0.0.0',
         HOSTNAME: '0.0.0.0',
         NODE_OPTIONS: '--no-deprecation',
-        // Базовые переменные (остальные из .env файла)
         NEXT_TELEMETRY_DISABLED: '1',
         NEXT_PUBLIC_SITE_URL: 'https://rocoscore.ru',
+      },
+      // Для локального запуска (MongoDB на localhost вместо host.docker.internal)
+      env_local: {
+        NODE_ENV: 'production',
+        PORT: 4317,
+        HOST: '0.0.0.0',
+        HOSTNAME: '0.0.0.0',
+        NODE_OPTIONS: '--no-deprecation',
+        NEXT_TELEMETRY_DISABLED: '1',
+        NEXT_PUBLIC_SITE_URL: 'http://localhost:4317',
+        DATABASE_URI: 'mongodb://payload:97136842qQ@localhost:27017/payload?authSource=admin',
       },
 
       // Настройки автоперезапуска

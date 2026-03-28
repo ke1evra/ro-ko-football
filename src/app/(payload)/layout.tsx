@@ -28,7 +28,10 @@ const serverFunction: ServerFunctionClient = async function (args) {
     console.error('[PAYLOAD LAYOUT] Digest:', err.digest)
     console.error('[PAYLOAD LAYOUT] Message:', err.message)
     console.error('[PAYLOAD LAYOUT] Stack:', err.stack)
-    console.error('[PAYLOAD LAYOUT] Full error:', JSON.stringify(err, Object.getOwnPropertyNames(err), 2))
+    console.error(
+      '[PAYLOAD LAYOUT] Full error:',
+      JSON.stringify(err, Object.getOwnPropertyNames(err), 2),
+    )
     console.error('[PAYLOAD LAYOUT] ==============================================')
     throw error
   }

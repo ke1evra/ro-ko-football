@@ -99,14 +99,47 @@ async function getLatestMatchDate(payload) {
   return null
 }
 
+async function getPriorityCompetitionIds(payload) {
+  try {
+    const res = await payload.findGlobal({
+      slug: 'topMatchesLeagues',
+      depth: 2,
+      overrideAccess: true,
+    })
+    const items = res?.leagues || []
+    return items
+      .filter((item) => item?.enabled !== false && item?.league?.competitionId)
+      .map((item) => item.league.competitionId)
+  } catch {
+    return []
+  }
+}
+
 async function syncMatches(payload, { days = 7, pageSize = 30, withStats = true } = {}) {
-  // Определяем стартовую дату: последняя дата в БД или сегодня
-  let startDate = new Date()
+  const today = new Date()
+  today.setUTCHours(0, 0, 0, 0)
+
+  // Нижняя граница: не дальше чем days дней назад от сегодня
+  const minStartDate = new Date(today)
+  minStartDate.setDate(today.getDate() - days)
+
+  let startDate = today
 
   const latestDate = await getLatestMatchDate(payload)
   if (latestDate) {
-    startDate = new Date(latestDate)
-    console.log(`[SYNC] Найдена последняя дата в БД: ${startDate.toLocaleDateString('ru-RU')}`)
+    const candidate = new Date(latestDate)
+    candidate.setUTCHours(0, 0, 0, 0)
+    console.log(`[SYNC] Найдена последняя дата в БД: ${candidate.toLocaleDateString('ru-RU')}`)
+
+    // Берём позднейшую из двух дат — чтобы не лезть дальше days дней назад
+    if (candidate > minStartDate) {
+      startDate = candidate
+    } else {
+      console.log(
+        `[SYNC] Дата в БД (${candidate.toLocaleDateString('ru-RU')}) старше ${days} дней → стартуем с ${minStartDate.toLocaleDateString('ru-RU')}`,
+      )
+      startDate = minStartDate
+    }
   } else {
     console.log(`[SYNC] В БД нет матчей, начинаем с сегодняшней даты`)
   }
@@ -114,11 +147,20 @@ async function syncMatches(payload, { days = 7, pageSize = 30, withStats = true 
   const dateRange = getDateRange(days, startDate)
   console.log(`[SYNC] Синхронизация матчей с ${dateRange.from} по ${dateRange.to}`)
 
+  // Фильтр по приоритетным лигам из CMS — без него API тормозит (возвращает всё мировое расписание)
+  const competitionIds = await getPriorityCompetitionIds(payload)
+  if (competitionIds.length > 0) {
+    console.log(`[SYNC] Фильтр по лигам: ${competitionIds.join(', ')}`)
+  } else {
+    console.log(`[SYNC] Фильтр по лигам: не задан (запрос без фильтра)`)
+  }
+
   // Используем общий модуль для синхронизации
   const { processed, stats } = await processHistoryPeriod(payload, {
     from: dateRange.from,
     to: dateRange.to,
     pageSize,
+    competitionIds: competitionIds.length > 0 ? competitionIds : undefined,
     withStats,
   })
 
@@ -185,9 +227,11 @@ async function runLoop(payload, options, interval) {
 async function main() {
   const days = Number(parseArg('days', 7))
   const pageSize = Number(parseArg('pageSize', 30))
-  const withStats = !hasFlag('no-stats') // по умолчанию true, отключается флагом --no-stats
   const loop = hasFlag('loop')
   const interval = Number(parseArg('interval', 600000)) // 10 минут по умолчанию
+  // В loop-режиме stats отключены по умолчанию (можно включить через --with-stats)
+  // В одиночном режиме stats включены по умолчанию (можно отключить через --no-stats)
+  const withStats = loop ? hasFlag('with-stats') : !hasFlag('no-stats')
 
   if (!process.env.DATABASE_URI) {
     console.error('Ошибка: не задан DATABASE_URI в .env')

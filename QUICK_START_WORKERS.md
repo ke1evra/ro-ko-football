@@ -82,11 +82,13 @@ docker compose -f docker-compose.prediction-stats.yml down
 ### Воркеры не запускаются
 
 1. Проверьте, что MongoDB запущена:
+
    ```bash
    mongosh 'mongodb://syncadmin:syncadminsyncadmin123qQ!@127.0.0.1:27017/payload?authSource=admin' --eval 'db.version()'
    ```
 
 2. Проверьте переменные окружения в `.env`:
+
    ```bash
    cat .env | grep -E 'DATABASE_URI|PAYLOAD_SECRET|LIVESCORE'
    ```
@@ -99,11 +101,13 @@ docker compose -f docker-compose.prediction-stats.yml down
 ### Статистика не рассчитывается
 
 1. Проверьте, что есть завершенные матчи:
+
    ```bash
    mongosh 'mongodb://...' --eval 'db.matches.find({status: "finished"}).count()'
    ```
 
 2. Проверьте, что есть прогнозы:
+
    ```bash
    mongosh 'mongodb://...' --eval 'db.posts.find({postType: "prediction"}).count()'
    ```

@@ -3,18 +3,21 @@
 ## Что делают воркеры
 
 ### 1. Импорт матчей (matches-import-forward)
+
 - **Что делает**: Импортирует новые матчи из API LiveScore
 - **Интервал**: Каждые 10 минут
 - **Файл**: `docker-compose.matches-import-forward.yml`
 - **Команда**: `pnpm run matches:import:forward:loop`
 
 ### 2. Расчет статистики прогнозов (prediction-stats)
+
 - **Что делает**: Рассчитывает результаты прогнозов на основе завершенных матчей
 - **Интервал**: Каждые 10 минут
 - **Файл**: `docker-compose.prediction-stats.yml`
 - **Команда**: `pnpm run predictions:stats:calc:loop`
 
 ### 3. Импорт истории матчей (matches-import-backward)
+
 - **Что делает**: Импортирует исторические матчи
 - **Интервал**: Постоянно (пока не импортирует все)
 - **Файл**: `docker-compose.matches-import-backward.yml`
@@ -34,14 +37,18 @@ matches-import-forward → prediction-stats
 ## Рекомендуемая конфигурация
 
 ### Для продакшена
+
 Запустить оба воркера:
+
 ```bash
 docker compose -f docker-compose.matches-import-forward.yml up -d
 docker compose -f docker-compose.prediction-stats.yml up -d
 ```
 
 ### Для разработки
+
 Запускать по необходимости:
+
 ```bash
 # Только импорт матчей
 pnpm run matches:import:forward
@@ -53,6 +60,7 @@ pnpm run predictions:stats:calc
 ## Мониторинг
 
 ### Проверка работы воркеров
+
 ```bash
 # Статус контейнеров
 docker ps | grep -E 'matches_import|prediction_stats'
@@ -63,6 +71,7 @@ docker compose -f docker-compose.prediction-stats.yml logs -f
 ```
 
 ### Проверка данных в БД
+
 ```bash
 # Количество матчей
 mongosh 'mongodb://...' --eval 'db.matches.countDocuments()'
@@ -80,20 +89,25 @@ mongosh 'mongodb://...' --eval 'db.predictionstats.countDocuments()'
 ## Частые проблемы
 
 ### Статистика не рассчитывается
+
 **Причина**: Нет завершенных матчей или прогнозов
-**Решение**: 
+**Решение**:
+
 1. Проверить, что импорт матчей работает
 2. Проверить, что есть прогнозы в БД
 3. Проверить логи воркера
 
 ### Воркер постоянно перезапускается
+
 **Причина**: Ошибка подключения к БД или неверные env переменные
 **Решение**:
+
 1. Проверить `.env` файл
 2. ��роверить, что MongoDB запущена
 3. Проверить логи: `docker compose -f ... logs`
 
 ### Высокая нагрузка на БД
+
 **Причина**: Слишком частый запуск воркеров
 **Решение**: Увеличить интервал в `package.json` или docker-compose файле
 

@@ -183,17 +183,9 @@ function GroupedLeaguesList({
 }
 
 export default function LeaguesListWidget({ settings, className }: LeaguesListWidgetProps) {
-  // Если настройки не загружены или виджет отключён
-  if (!settings?.enabled) {
-    return (
-      <div className={`text-sm text-muted-foreground text-center py-4 ${className}`}>
-        Список лиг отключён в настройках
-      </div>
-    )
-  }
-
   // Фильтруем и сортируем лиги
   const filteredLeagues = React.useMemo(() => {
+    if (!settings?.enabled || !settings.leagues) return []
     return settings.leagues
       .filter((league) => {
         if (!league.enabled) return false
@@ -203,6 +195,15 @@ export default function LeaguesListWidget({ settings, className }: LeaguesListWi
       .sort((a, b) => a.priority - b.priority)
       .slice(0, settings.maxItems)
   }, [settings])
+
+  // Если настройки не загружены или виджет отключён
+  if (!settings?.enabled) {
+    return (
+      <div className={`text-sm text-muted-foreground text-center py-4 ${className}`}>
+        Список лиг отключён в настройках
+      </div>
+    )
+  }
 
   if (filteredLeagues.length === 0) {
     return (

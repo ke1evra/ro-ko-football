@@ -13,6 +13,7 @@
 Контейнер использует легкий `Dockerfile.worker` (без сборки Next.js) и запускает скрипт `calculate-all.mjs` в режиме loop с интервалом 10 минут (600000 мс).
 
 Скрипт:
+
 1. Находит все прогнозы в коллекции `posts` с типом `prediction`
 2. Проверяет, есть ли уже статистика для каждого прогноза
 3. Если статистики нет и все матчи завершены - рассчитывает и сохраняет
@@ -71,7 +72,7 @@ pnpm run predictions:stats:calc:loop
 Чтобы изменить интервал, отредактируйте `docker-compose.prediction-stats.yml`:
 
 ```yaml
-command: pnpm predictions:stats:calc:loop --interval=300000  # 5 минут
+command: pnpm predictions:stats:calc:loop --interval=300000 # 5 минут
 ```
 
 Ил�� в `package.json`:
@@ -134,6 +135,7 @@ docker compose -f docker-compose.prediction-stats.yml up -d
 ```
 
 Логика работы:
+
 1. `matches-import-forward` импортирует новые матчи каждые 10 минут
 2. `prediction-stats` проверяет завершенные матчи и рассчитывает статистику каждые 10 минут
 
@@ -156,16 +158,19 @@ docker compose -f docker-compose.prediction-stats.yml down
 ### Статистика не рассчитывается
 
 1. Проверьте, что контейнер запущен:
+
    ```bash
    docker compose -f docker-compose.prediction-stats.yml ps
    ```
 
 2. Проверьте логи на ошибки:
+
    ```bash
    docker compose -f docker-compose.prediction-stats.yml logs --tail=50
    ```
 
 3. Проверьте, что матчи завершены:
+
    ```bash
    mongosh 'mongodb://...' --eval 'db.matches.find({status: "finished"}).count()'
    ```
@@ -178,6 +183,7 @@ docker compose -f docker-compose.prediction-stats.yml down
 ### Контейнер постоянно перезапускается
 
 Проверьте переменные окружения в `.env`:
+
 - `DATABASE_URI` - должен быть корректным
 - `PAYLOAD_SECRET` - должен быть задан
 

@@ -40,7 +40,10 @@ async function getConfig() {
   }
 }
 
-async function wrap(factoryName: string, pick: (routes: any, config: any) => Handler): Promise<Handler> {
+async function wrap(
+  factoryName: string,
+  pick: (routes: any, config: any) => Handler,
+): Promise<Handler> {
   const [routes, config] = await Promise.all([loadRoutes(), getConfig()])
   try {
     return pick(routes, config)

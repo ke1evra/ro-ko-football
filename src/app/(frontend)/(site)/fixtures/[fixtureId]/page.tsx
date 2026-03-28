@@ -60,7 +60,56 @@ type FixtureNormalized = {
 async function findFixtureById(fixtureId: number): Promise<FixtureNormalized | null> {
   console.log(`[findFixtureById] Searching for fixture ${fixtureId}`)
 
-  // Используем те же параметры, что и виджет: диапазон дат + приоритетные лиги
+  // Payload CMS — основной источник
+  try {
+    const payloadInst = await getPayload({ config: await configPromise })
+    const result = await payloadInst.find({
+      collection: 'fixtures',
+      where: { fixtureId: { equals: fixtureId } },
+      limit: 1,
+      depth: 0,
+    })
+
+    if (result.docs.length > 0) {
+      const doc = result.docs[0] as any
+      const dateStr = doc.date ? new Date(doc.date).toISOString().split('T')[0] : ''
+      console.log(`[findFixtureById] Found fixture in Payload CMS`)
+      return {
+        id: doc.fixtureId,
+        date: dateStr,
+        time: doc.time || '',
+        home: { id: doc.homeTeam?.id ?? 0, name: doc.homeTeam?.name ?? 'Команда дома' },
+        away: { id: doc.awayTeam?.id ?? 0, name: doc.awayTeam?.name ?? 'Команда гостей' },
+        competition: doc.competition?.id
+          ? { id: doc.competition.id, name: doc.competition.name || '' }
+          : undefined,
+        location: doc.venue?.name || null,
+        round: doc.round || undefined,
+        group_id: doc.group ? Number(doc.group) || null : null,
+        odds: doc.odds
+          ? {
+              pre: {
+                '1': doc.odds.pre?.home ?? undefined,
+                X: doc.odds.pre?.draw ?? undefined,
+                '2': doc.odds.pre?.away ?? undefined,
+              },
+              live: doc.odds.live
+                ? {
+                    '1': doc.odds.live?.home ?? null,
+                    X: doc.odds.live?.draw ?? null,
+                    '2': doc.odds.live?.away ?? null,
+                  }
+                : undefined,
+            }
+          : undefined,
+        status: doc.status,
+      }
+    }
+  } catch (error) {
+    console.error(`[findFixtureById] Error in Payload CMS:`, error)
+  }
+
+  // Fallback: внешний API
   const today = new Date()
   const endDate = new Date(today)
   endDate.setDate(today.getDate() + 7)

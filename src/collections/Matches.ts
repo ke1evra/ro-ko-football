@@ -62,6 +62,17 @@ export const Matches: CollectionConfig = {
         position: 'sidebar',
       },
     },
+
+    // Связь с фикстурой
+    {
+      name: 'fixture',
+      type: 'relationship',
+      relationTo: 'fixtures',
+      admin: {
+        description: 'Связь с фикстурой из коллекции Fixtures',
+        position: 'sidebar',
+      },
+    },
     {
       name: 'externalId',
       type: 'text',

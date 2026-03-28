@@ -27,7 +27,7 @@ async function checkSchema() {
     console.log(`🎯 Первый исход: ${outcome.name}`)
     console.log(`\n📋 Поля исхода:`)
     console.log(JSON.stringify(Object.keys(outcome), null, 2))
-    
+
     console.log(`\n📄 Полная структур��:`)
     console.log(JSON.stringify(outcome, null, 2))
   }
@@ -35,7 +35,7 @@ async function checkSchema() {
   process.exit(0)
 }
 
-checkSchema().catch(err => {
+checkSchema().catch((err) => {
   console.error('❌ Ошибка:', err)
   process.exit(1)
 })

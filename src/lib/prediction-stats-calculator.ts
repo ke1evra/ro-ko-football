@@ -7,7 +7,9 @@ import type { Post, Match, OutcomeGroup } from '../payload-types'
 
 // Типы для работы
 type PredictionOutcome = NonNullable<NonNullable<Post['prediction']>['outcomes']>[number]
-type OutcomeCondition = NonNullable<NonNullable<OutcomeGroup['outcomes']>[number]['conditions']>[number]
+type OutcomeCondition = NonNullable<
+  NonNullable<OutcomeGroup['outcomes']>[number]['conditions']
+>[number]
 type ConditionLogic = 'AND' | 'OR'
 
 interface CalculationResult {

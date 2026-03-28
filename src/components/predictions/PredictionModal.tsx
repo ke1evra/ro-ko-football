@@ -434,7 +434,11 @@ export default function PredictionModal({
 
   const handleSelectedOutcomeChange = (outcome: PredictionOutcome | null) => {
     console.log('[PredictionModal] selected outcome changed', outcome)
-    updateFormData('outcome', outcome)
+    setFormData((prev) => {
+      const updated = { ...prev, outcome }
+      console.log('[PredictionModal] formData updated:', updated)
+      return updated
+    })
   }
 
   if (!isOpen) {
@@ -589,9 +593,18 @@ export default function PredictionModal({
           {isAuthenticated && (
             <div className="border-t bg-background px-6 py-4 flex justify-end gap-2 sticky bottom-0 z-10">
               <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
-                Отмена
+                Отм��на
               </Button>
-              <Button type="button" onClick={handleCreatePrediction} disabled={isCreateDisabled}>
+              <Button
+                type="button"
+                onClick={handleCreatePrediction}
+                disabled={isCreateDisabled}
+                title={
+                  isCreateDisabled
+                    ? `Заполните: ${!formData.title ? 'заголовок' : ''} ${!formData.content ? 'описание' : ''} ${!formData.outcome ? 'исход и коэффициент' : ''}`
+                    : 'Создать прогноз'
+                }
+              >
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isSubmitting ? 'Создание прогноза...' : 'Создать прогноз'}
               </Button>

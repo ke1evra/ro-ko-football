@@ -108,6 +108,7 @@
 ## Файлы
 
 ### Новые файлы
+
 - [x] `src/components/profile/PredictionStatsCard.tsx`
 - [x] `src/components/profile/UserPredictionsList.tsx`
 - [x] `src/app/api/predictions/stats/[userId]/route.ts`
@@ -118,6 +119,7 @@
 - [x] `docs/PROFILE_CHECKLIST.md` (этот файл)
 
 ### Обновлённые файлы
+
 - [x] `src/app/(frontend)/(site)/profile/page.tsx`
 
 ## Статус
@@ -129,11 +131,13 @@
 ## Как начать
 
 1. Убедитесь что статистика рассчитана:
+
    ```bash
    node --loader @esbuild-kit/esm-loader scripts/prediction-stats/calculate-all.mjs
    ```
 
 2. Откройте страницу профиля:
+
    ```
    http://localhost:3100/profile
    ```
@@ -143,6 +147,7 @@
 ## Поддержка
 
 Если у вас есть вопросы:
+
 1. Прочитайте `docs/USER_PROFILE_STATS.md`
 2. Прочитайте `docs/PROFILE_SETUP_GUIDE.md`
 3. Проверьте консоль браузера на ошибки

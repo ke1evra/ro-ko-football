@@ -3,6 +3,7 @@
 ## Финальное решение
 
 ✅ **Вариант 1: Всё в массиве conditions**
+
 - Нет дублирования
 - Единая структура
 - Простой код
@@ -15,26 +16,26 @@
 ```typescript
 interface OutcomeData {
   name: string
-  
+
   // Массив условий (единственный способ)
   conditions: Array<{
     comparisonOperator: ComparisonOperator
-    
+
     // Для исходов матча (П1, Х, П2, 1Х, 12, Х2)
     outcomeValue?: number
     set?: Array<{ value: number }>
-    
+
     // Для обычных исходов (ТБ, ТМ, ИТБ, ИТМ, ОЗ)
     calculationType?: 'sum' | 'min' | 'max' | 'home' | 'away' | 'difference'
     value?: number
-    
+
     // Для специальных операторов
     range?: { lower?: number; upper?: number }
     eventFilter?: { type: string; team?: string; period?: string }
   }>
-  
+
   // Логика объединения (для комбинированных исходов)
-  conditionLogic?: 'AND' | 'OR'  // По умолчанию AND
+  conditionLogic?: 'AND' | 'OR' // По умолчанию AND
 }
 ```
 
@@ -136,6 +137,7 @@ interface OutcomeData {
    - ✅ Специальные поля: `range`, `eventFilter`
 
 3. **Обновить структуру `conditions`:**
+
    ```typescript
    {
      name: 'conditions',
@@ -183,8 +185,8 @@ interface OutcomeData {
          type: 'number',
          admin: {
            description: 'Значение для сравнения (например, 2.5 для ТБ 2.5)',
-           condition: (_, siblingData) => 
-             siblingData?.calculationType && 
+           condition: (_, siblingData) =>
+             siblingData?.calculationType &&
              !['between', 'in', 'even', 'odd'].includes(siblingData?.comparisonOperator)
          }
        },
@@ -193,8 +195,8 @@ interface OutcomeData {
          type: 'number',
          admin: {
            description: 'Значение исхода матча (1 = П1, 0 = Х, 2 = П2)',
-           condition: (_, siblingData) => 
-             !siblingData?.calculationType && 
+           condition: (_, siblingData) =>
+             !siblingData?.calculationType &&
              siblingData?.comparisonOperator === 'eq'
          }
        },
@@ -238,13 +240,14 @@ interface OutcomeData {
      defaultValue: 'AND',
      admin: {
        description: 'Логика объединения условий. Показывается только если условий больше одного.',
-       condition: (_, siblingData) => 
+       condition: (_, siblingData) =>
          Array.isArray(siblingData?.conditions) && siblingData.conditions.length > 1
      }
    }
    ```
 
 **Результат:**
+
 - ✅ Чистая структура без дублирования
 - ✅ Условная видимость полей
 - ✅ Админ видит только нужные поля
@@ -258,22 +261,23 @@ interface OutcomeData {
 **Что делаем:**
 
 1. **Обновить интерфейс `OutcomeData`:**
+
    ```typescript
    export interface OutcomeData {
      name: string
-     
+
      // Массив условий
      conditions?: Array<{
        comparisonOperator: ComparisonOperator
-       
+
        // Для исходов матча
        outcomeValue?: number
        set?: Array<number | { value: number }>
-       
+
        // Для обычных исходов
        calculationType?: 'sum' | 'min' | 'max' | 'home' | 'away' | 'difference'
        value?: number
-       
+
        // Для специальных операторов
        range?: { lower?: number; upper?: number }
        eventFilter?: {
@@ -282,9 +286,9 @@ interface OutcomeData {
          period?: 'any' | '1h' | '2h'
        }
      }>
-     
+
      conditionLogic?: 'AND' | 'OR'
-     
+
      // Старые поля (deprecated, для обратной совместимости)
      comparisonOperator?: ComparisonOperator
      outcomeValue?: number
@@ -297,6 +301,7 @@ interface OutcomeData {
    ```
 
 2. **Добавить функцию нормализации (обратная совместимость):**
+
    ```typescript
    /**
     * Нормализация исхода: конвертирует старую структуру в новую
@@ -306,78 +311,79 @@ interface OutcomeData {
      if (outcome.conditions && outcome.conditions.length > 0) {
        return outcome
      }
-     
+
      // Конвертируем старую структуру
      const condition: any = {
-       comparisonOperator: outcome.comparisonOperator || 'eq'
+       comparisonOperator: outcome.comparisonOperator || 'eq',
      }
-     
+
      // Исход матча
      if (outcome.outcomeValue !== undefined) {
        condition.outcomeValue = outcome.outcomeValue
      }
-     
+
      // Множество
      if (outcome.set) {
        condition.set = outcome.set
      }
-     
+
      // Обычный исход
      if (outcome.scope || outcome.aggregation) {
        condition.calculationType = deriveCalculationTypeFromOld(
          outcome.scope || 'both',
-         outcome.aggregation || 'auto'
+         outcome.aggregation || 'auto',
        )
      }
-     
+
      // Значение
      if (outcome.value !== undefined) {
        condition.value = outcome.value
      } else if (outcome.values && outcome.values.length > 0) {
        condition.value = outcome.values[0].value
      }
-     
+
      // Диапазон
      if (outcome.range) {
        condition.range = outcome.range
      }
-     
+
      // Фильтр событий
      if (outcome.eventFilter) {
        condition.eventFilter = outcome.eventFilter
      }
-     
+
      return {
        name: outcome.name,
        conditions: [condition],
-       conditionLogic: outcome.conditionLogic
+       conditionLogic: outcome.conditionLogic,
      }
    }
-   
+
    /**
     * Конвертация старых scope + aggregation в новый calculationType
     */
    function deriveCalculationTypeFromOld(
      scope: string,
-     aggregation: string
+     aggregation: string,
    ): 'sum' | 'min' | 'max' | 'home' | 'away' | 'difference' {
      // Явное переопределение через aggregation
      if (aggregation === 'sum') return 'sum'
      if (aggregation === 'min') return 'min'
      if (aggregation === 'max') return 'max'
      if (aggregation === 'difference') return 'difference'
-     
+
      // По scope
      if (scope === 'home') return 'home'
      if (scope === 'away') return 'away'
      if (scope === 'difference') return 'difference'
-     
+
      // По умолчанию
      return 'sum'
    }
    ```
 
 3. **Обновить `createMappingFromCMS`:**
+
    ```typescript
    export function createMappingFromCMS(
      market: MarketData,
@@ -385,62 +391,63 @@ interface OutcomeData {
    ): PredictionMapping | null {
      // Нормализуем исход
      const normalized = normalizeOutcome(outcome)
-     
+
      // Если нет условий — ошибка
      if (!normalized.conditions || normalized.conditions.length === 0) {
        return null
      }
-     
+
      // Для простых исходов (одно условие) — создаём маппинг напрямую
      if (normalized.conditions.length === 1) {
        return createMappingFromCondition(market, normalized.conditions[0])
      }
-     
+
      // Для комбинированных исходов — используем evaluateOutcome
      return null // Комбинированные обрабатываются через evaluateOutcome
    }
    ```
 
 4. **Добавить `createMappingFromCondition`:**
+
    ```typescript
    /**
     * Создать маппинг из одного условия
     */
    function createMappingFromCondition(
      market: MarketData,
-     condition: NonNullable<OutcomeData['conditions']>[0]
+     condition: NonNullable<OutcomeData['conditions']>[0],
    ): PredictionMapping | null {
      const config = market.mappingConfig
      if (!config) return null
-     
+
      const mapping: PredictionMapping = {
-       comparisonOperator: condition.comparisonOperator
+       comparisonOperator: condition.comparisonOperator,
      }
-     
+
      // Исход матча
      if (config.statType === 'outcome') {
        mapping.statPath = 'outcome'
        mapping.calculationType = 'outcome'
-       
+
        if (condition.outcomeValue !== undefined) {
          mapping.predictedValue = condition.outcomeValue
        }
        if (condition.set) {
-         mapping.setValues = condition.set.map(item => 
-           typeof item === 'object' ? item.value : item
+         mapping.setValues = condition.set.map((item) =>
+           typeof item === 'object' ? item.value : item,
          )
        }
-       
+
        return mapping
      }
-     
+
      // Голы или числовая статистика
      const basePath = config.statPath || 'goals'
-     
+
      // Определяем calculationType
      if (condition.calculationType) {
        mapping.calculationType = mapCalculationType(condition.calculationType)
-       
+
        // Для home/away добавляем путь
        if (condition.calculationType === 'home') {
          mapping.statPath = `${basePath}.home`
@@ -453,50 +460,58 @@ interface OutcomeData {
        mapping.statPath = basePath
        mapping.calculationType = 'sum'
      }
-     
+
      // Значение
      if (condition.value !== undefined) {
        mapping.predictedValue = condition.value
      }
-     
+
      // Диапазон
      if (condition.range) {
        mapping.rangeLower = condition.range.lower
        mapping.rangeUpper = condition.range.upper
      }
-     
+
      // Множество
      if (condition.set) {
-       mapping.setValues = condition.set.map(item => 
-         typeof item === 'object' ? item.value : item
+       mapping.setValues = condition.set.map((item) =>
+         typeof item === 'object' ? item.value : item,
        )
      }
-     
+
      // Фильтр событий
      if (condition.eventFilter) {
        mapping.eventFilter = condition.eventFilter
      }
-     
+
      return mapping
    }
-   
+
    /**
     * Маппинг calculationType в CalculationType
     */
    function mapCalculationType(ct: string): CalculationType {
      switch (ct) {
-       case 'sum': return 'sum'
-       case 'min': return 'min'
-       case 'max': return 'max'
-       case 'home': return 'direct'
-       case 'away': return 'direct'
-       case 'difference': return 'difference'
-       default: return 'sum'
+       case 'sum':
+         return 'sum'
+       case 'min':
+         return 'min'
+       case 'max':
+         return 'max'
+       case 'home':
+         return 'direct'
+       case 'away':
+         return 'direct'
+       case 'difference':
+         return 'difference'
+       default:
+         return 'sum'
      }
    }
    ```
 
 5. **Обновить `evaluateOutcome`:**
+
    ```typescript
    /**
     * Оценка исхода с поддержкой комбинированных условий
@@ -509,41 +524,42 @@ interface OutcomeData {
    ): boolean | null {
      // Нормализуем исход
      const normalized = normalizeOutcome(outcome)
-     
+
      if (!normalized.conditions || normalized.conditions.length === 0) {
        return null
      }
-     
+
      // Оцениваем все условия
      const results: (boolean | null)[] = []
-     
+
      for (const condition of normalized.conditions) {
        const mapping = createMappingFromCondition(market, condition)
        if (!mapping) return null
-       
+
        const result = evaluateMapping(match, matchStats, mapping)
        if (result === null) return null
-       
+
        results.push(result)
      }
-     
+
      // Если одно условие — возвращаем его
      if (results.length === 1) {
        return results[0]
      }
-     
+
      // Применяем логику объединения
      const logic = normalized.conditionLogic || 'AND'
-     
+
      if (logic === 'OR') {
-       return results.some(r => r === true)
+       return results.some((r) => r === true)
      } else {
-       return results.every(r => r === true)
+       return results.every((r) => r === true)
      }
    }
    ```
 
 **Результат:**
+
 - ✅ Поддержка новой структуры
 - ✅ Обратная совместимость со старой
 - ✅ Работа с комбинированными исходами
@@ -565,124 +581,124 @@ import config from '../src/payload.config.js'
  */
 async function migrateOutcomes() {
   console.log('🚀 Начинаем миграцию исходов...')
-  
+
   const payload = await getPayload({ config })
-  
+
   // Получаем все outcome groups
   const groups = await payload.find({
     collection: 'outcome-groups',
     limit: 1000,
   })
-  
+
   console.log(`📦 Найдено ${groups.docs.length} групп исходов`)
-  
+
   let migratedCount = 0
   let skippedCount = 0
-  
+
   for (const group of groups.docs) {
     if (!group.outcomes || group.outcomes.length === 0) {
       console.log(`⏭️  Пропускаем группу "${group.name}" (нет исходов)`)
       skippedCount++
       continue
     }
-    
-    const migratedOutcomes = group.outcomes.map(outcome => {
+
+    const migratedOutcomes = group.outcomes.map((outcome) => {
       // Если уже новая структура — пропускаем
       if (outcome.conditions && outcome.conditions.length > 0) {
         return outcome
       }
-      
+
       // Конвертируем в новую структуру
       const condition = {
-        comparisonOperator: outcome.comparisonOperator || 'eq'
+        comparisonOperator: outcome.comparisonOperator || 'eq',
       }
-      
+
       // Исход матча
       if (outcome.outcomeValue !== undefined) {
         condition.outcomeValue = outcome.outcomeValue
       }
-      
+
       // Множество
       if (outcome.set) {
         condition.set = outcome.set
       }
-      
+
       // Обычный исход
       if (outcome.scope || outcome.aggregation) {
         condition.calculationType = deriveCalculationType(
           outcome.scope || 'both',
-          outcome.aggregation || 'auto'
+          outcome.aggregation || 'auto',
         )
       }
-      
+
       // Значение
       if (outcome.value !== undefined) {
         condition.value = outcome.value
       } else if (outcome.values && outcome.values.length > 0) {
         condition.value = outcome.values[0].value
       }
-      
+
       // Диапазон
       if (outcome.range) {
         condition.range = outcome.range
       }
-      
+
       // Фильтр событий
       if (outcome.eventFilter) {
         condition.eventFilter = outcome.eventFilter
       }
-      
+
       // Дополнительные условия (если есть)
       const additionalConditions = []
       if (outcome.conditions && outcome.conditions.length > 0) {
         for (const oldCondition of outcome.conditions) {
           const newCondition = {
-            comparisonOperator: oldCondition.comparisonOperator
+            comparisonOperator: oldCondition.comparisonOperator,
           }
-          
+
           if (oldCondition.scope || oldCondition.aggregation) {
             newCondition.calculationType = deriveCalculationType(
               oldCondition.scope || 'both',
-              oldCondition.aggregation || 'auto'
+              oldCondition.aggregation || 'auto',
             )
           }
-          
+
           if (oldCondition.value !== undefined) {
             newCondition.value = oldCondition.value
           } else if (oldCondition.values && oldCondition.values.length > 0) {
             newCondition.value = oldCondition.values[0].value
           }
-          
+
           if (oldCondition.range) {
             newCondition.range = oldCondition.range
           }
-          
+
           if (oldCondition.set) {
             newCondition.set = oldCondition.set
           }
-          
+
           additionalConditions.push(newCondition)
         }
       }
-      
+
       return {
         name: outcome.name,
         conditions: [condition, ...additionalConditions],
-        conditionLogic: outcome.conditionLogic || 'AND'
+        conditionLogic: outcome.conditionLogic || 'AND',
       }
     })
-    
+
     // Обновляем группу
     await payload.update({
       collection: 'outcome-groups',
       id: group.id,
       data: { outcomes: migratedOutcomes },
     })
-    
+
     console.log(`✅ Мигрирована группа "${group.name}" (${group.outcomes.length} исходов)`)
     migratedCount++
   }
-  
+
   console.log('\n📊 Итоги миграции:')
   console.log(`✅ Мигрировано: ${migratedCount} групп`)
   console.log(`⏭️  Пропущено: ${skippedCount} групп`)
@@ -698,12 +714,12 @@ function deriveCalculationType(scope, aggregation) {
   if (aggregation === 'min') return 'min'
   if (aggregation === 'max') return 'max'
   if (aggregation === 'difference') return 'difference'
-  
+
   // По scope
   if (scope === 'home') return 'home'
   if (scope === 'away') return 'away'
   if (scope === 'difference') return 'difference'
-  
+
   // По умолчанию
   return 'sum'
 }
@@ -711,18 +727,20 @@ function deriveCalculationType(scope, aggregation) {
 // Запуск
 migrateOutcomes()
   .then(() => process.exit(0))
-  .catch(err => {
+  .catch((err) => {
     console.error('❌ Ошибка миграции:', err)
     process.exit(1)
   })
 ```
 
 **Как запустить:**
+
 ```bash
 node scripts/migrate-outcomes-to-conditions.mjs
 ```
 
 **Результат:**
+
 - ✅ Все старые исходы конвертированы в новую структуру
 - ✅ Сохранены все данные
 - ✅ Логи миграции
@@ -755,37 +773,33 @@ node scripts/migrate-outcomes-to-conditions.mjs
 ```typescript
 // Тест 1: П1
 const test1 = {
-  name: "П1",
-  conditions: [
-    { comparisonOperator: "eq", outcomeValue: 1 }
-  ]
+  name: 'П1',
+  conditions: [{ comparisonOperator: 'eq', outcomeValue: 1 }],
 }
 
 // Тест 2: ТБ 2.5
 const test2 = {
-  name: "ТБ 2.5",
-  conditions: [
-    { comparisonOperator: "gt", calculationType: "sum", value: 2.5 }
-  ]
+  name: 'ТБ 2.5',
+  conditions: [{ comparisonOperator: 'gt', calculationType: 'sum', value: 2.5 }],
 }
 
 // Тест 3: ОЗ + ТБ 2.5
 const test3 = {
-  name: "ОЗ + ТБ 2.5",
+  name: 'ОЗ + ТБ 2.5',
   conditions: [
-    { comparisonOperator: "gte", calculationType: "min", value: 1 },
-    { comparisonOperator: "gt", calculationType: "sum", value: 2.5 }
+    { comparisonOperator: 'gte', calculationType: 'min', value: 1 },
+    { comparisonOperator: 'gt', calculationType: 'sum', value: 2.5 },
   ],
-  conditionLogic: "AND"
+  conditionLogic: 'AND',
 }
 
 // Тест 4: Старая структура (обратная совместимость)
 const test4 = {
-  name: "ТБ 2.5 (старая)",
-  comparisonOperator: "gt",
-  scope: "both",
-  aggregation: "sum",
-  values: [{ value: 2.5 }]
+  name: 'ТБ 2.5 (старая)',
+  comparisonOperator: 'gt',
+  scope: 'both',
+  aggregation: 'sum',
+  values: [{ value: 2.5 }],
 }
 ```
 
@@ -804,6 +818,7 @@ const test4 = {
 ## Чек-лист выполнения
 
 ### Реализация
+
 - [ ] **Этап 1:** Обновить OutcomeGroups.ts
   - [ ] Убрать старые поля (scope, aggregation, values)
   - [ ] Обновить структуру conditions
@@ -831,6 +846,7 @@ const test4 = {
   - [ ] Обновить README.md
 
 ### Деплой
+
 - [ ] Бэкап БД
 - [ ] Деплой кода
 - [ ] Запуск миграции
@@ -841,15 +857,15 @@ const test4 = {
 
 ## Оценка времени
 
-| Этап | Время |
-|------|-------|
-| Этап 1: OutcomeGroups.ts | 1-2 часа |
-| Этап 2: prediction-mapping-from-cms.ts | 2-3 часа |
-| Этап 3: Миграция | 1-2 часа |
-| Этап 4: Тестирование | 2-3 часа |
-| Этап 5: Документация | 1 час |
-| Деплой | 1 час |
-| **ИТОГО** | **8-12 часов (~1.5 дня)** |
+| Этап                                   | Время                     |
+| -------------------------------------- | ------------------------- |
+| Этап 1: OutcomeGroups.ts               | 1-2 часа                  |
+| Этап 2: prediction-mapping-from-cms.ts | 2-3 часа                  |
+| Этап 3: Миграция                       | 1-2 часа                  |
+| Этап 4: Тестирование                   | 2-3 часа                  |
+| Этап 5: Документация                   | 1 час                     |
+| Деплой                                 | 1 час                     |
+| **ИТОГО**                              | **8-12 часов (~1.5 дня)** |
 
 ---
 
@@ -892,6 +908,7 @@ const test4 = {
 ## Контакты для вопросов
 
 Если возникнут вопросы в процессе реализации, обращайтесь к этому документу и к файлам:
+
 - `docs/FINAL_SYSTEM_DESIGN.md`
 - `docs/CONDITIONS_STRUCTURE_COMPARISON.md`
 - `docs/COMBINED_CONDITIONS_ANALYSIS.md`
