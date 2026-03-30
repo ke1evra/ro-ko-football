@@ -158,7 +158,7 @@ export function PredictorCard({ author, currentPostId }: PredictorCardProps) {
               {recentPredictions.map((prediction) => (
                 <Link
                   key={prediction.id}
-                  href={`/posts/${prediction.id}`}
+                  href={prediction.slug ? `/posts/${prediction.slug}` : `/posts?pid=${prediction.id}`}
                   className="block p-3 rounded-lg border border-primary/20 hover:bg-primary/5 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-2">

@@ -437,7 +437,10 @@ async function getPredictionsForFixture(fixtureId: number) {
     const predictionsRes = await payload.find({
       collection: 'posts',
       where: {
-        and: [{ postType: { equals: 'prediction' } }, { fixtureId: { equals: fixtureId } }],
+        and: [
+          { postType: { equals: 'prediction' } },
+          { 'prediction.outcomes.fixtureId': { equals: fixtureId } },
+        ],
       },
       sort: '-publishedAt',
       limit: 10,
