@@ -192,7 +192,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2 text-lg">
                         <Target className="h-4 w-4 text-primary" />
-                        {isExpress ? `Экспресс-прогноз (${outcomes.length})` : 'Исход прогноза'}
+                        {isExpress ? `Экспресс-прогноз (${outcomes.length})` : 'Исход'}
                       </CardTitle>
                     </div>
                   </CardHeader>

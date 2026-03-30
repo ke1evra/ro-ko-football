@@ -265,13 +265,13 @@ export default function DynamicEventsForm({
             defaultValue={selectedMarket?.groups?.length > 0 ? [selectedMarket.groups[0].id] : []}
             className="w-full"
           >
-            {selectedMarket?.groups?.map((group) => (
-              <AccordionItem key={group.id} value={group.id}>
+            {selectedMarket?.groups?.map((group, groupIdx) => (
+              <AccordionItem key={`group-${selectedMarketId}-${groupIdx}`} value={group.id}>
                 <AccordionTrigger>{group.name}</AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-3">
                     {(() => {
-                      const outcomesWithValues = group.outcomes.filter(
+                      const outcomesWithValues = (group.outcomes || []).filter(
                         (o) => o.values && o.values.length > 0,
                       )
 
@@ -453,7 +453,7 @@ export default function DynamicEventsForm({
 
                   {/* Исходы без значений */}
                   {(() => {
-                    const noValue = group.outcomes.filter(
+                    const noValue = (group.outcomes || []).filter(
                       (outcome) => !outcome.values || outcome.values.length === 0,
                     )
 

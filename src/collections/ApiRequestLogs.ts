@@ -313,12 +313,10 @@ const ApiRequestLogs: CollectionConfig = {
   ],
 
   // Индексы для быстрого поиска
+  // Примечание: createdAt индексируется автоматически через timestamps: true
   indexes: [
     {
       fields: ['endpoint'],
-    },
-    {
-      fields: ['createdAt'],
     },
     {
       fields: ['cacheLevel'],

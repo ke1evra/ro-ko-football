@@ -144,9 +144,16 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                         ) : null}
                       </Link>
                       {(post as any).postType === 'prediction' && (
-                        <div className="ml-2 flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                          <TrendingUp className="h-3 w-3" />
-                          Прогноз
+                        <div className="ml-2 flex flex-col items-end gap-1">
+                          <div className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                            <TrendingUp className="h-3 w-3" />
+                            Прогноз
+                          </div>
+                          {(post as any).prediction?.outcomes?.[0]?.coefficient && (
+                            <div className="text-sm font-bold text-primary">
+                              {((post as any).prediction.outcomes[0].coefficient as number).toFixed(2)}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
