@@ -149,7 +149,6 @@ export class LoggedFetch {
       // ✅ Регистрируем успешный запрос в rate limiter
       rateLimiter.registerRequest()
 
-
       // Сохраняем в кэш
       if (!skipCache) {
         apiCache.set(cacheKey, result, ttl)

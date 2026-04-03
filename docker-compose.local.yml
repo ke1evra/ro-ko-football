@@ -1,0 +1,63 @@
+# Docker Compose configuration for local development with local MongoDB
+# Usage: docker compose -f docker-compose.local.yml up --build
+#
+# This configuration uses bridge network with port mapping to avoid
+# EADDRINUSE issues on macOS with host network mode
+
+name: payload-local
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Enable Docker layer caching for faster builds (CI/CD)
+      cache_from:
+        - app:latest
+    
+    # Port mapping to avoid port conflicts on macOS
+    # Container port 3100 is mapped to host port 3101
+    ports:
+      - '3101:3100'
+    
+    # Use host.docker.internal to access MongoDB on macOS/Windows host
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    
+    # Environment file with local MongoDB connection string
+    env_file:
+      - .env
+    
+    # Environment variables for local development
+    environment:
+      # Connect to MongoDB on host machine using host.docker.internal
+      DATABASE_URI: 'mongodb://syncadmin:syncadminsyncadmin123qQ!@host.docker.internal:27017/payload?authSource=admin'
+      NODE_ENV: 'development'
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:-a82e5800fc67cc3d64aa919d88982b0b7ba5e87b6baf845965dac0dabed378ac}
+      APP_URL: 'http://localhost:3101'
+      PORT: '3100'
+      DOCKER_ENV: 'true'
+      # API keys from .env
+      LIVESCORE_KEY: ${LIVESCORE_KEY:-}
+      LIVESCORE_SECRET: ${LIVESCORE_SECRET:-}
+    
+    # Resource limits for local development
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8g
+        reservations:
+          cpus: '2.0'
+          memory: 4g
+    
+    # Health check to verify app is running
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:3100']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    
+    # Auto-restart on failure
+    restart: unless-stopped

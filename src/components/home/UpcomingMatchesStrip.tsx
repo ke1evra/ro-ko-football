@@ -68,7 +68,14 @@ function normalizeFixture(fx: any): StripMatch | null {
   if (!Number.isFinite(id)) return null
 
   const home = {
-    id: Number(fx?.home_id || fx?.home?.id || fx?.home?.teamId || fx?.homeTeam?.id || fx?.homeTeam?.teamId || 0),
+    id: Number(
+      fx?.home_id ||
+        fx?.home?.id ||
+        fx?.home?.teamId ||
+        fx?.homeTeam?.id ||
+        fx?.homeTeam?.teamId ||
+        0,
+    ),
     name: String(
       fx?.home_name || fx?.home?.name || fx?.homeTeam?.name || fx?.homeName || 'Команда дома',
     ),
@@ -76,14 +83,27 @@ function normalizeFixture(fx: any): StripMatch | null {
   }
 
   const away = {
-    id: Number(fx?.away_id || fx?.away?.id || fx?.away?.teamId || fx?.awayTeam?.id || fx?.awayTeam?.teamId || 0),
+    id: Number(
+      fx?.away_id ||
+        fx?.away?.id ||
+        fx?.away?.teamId ||
+        fx?.awayTeam?.id ||
+        fx?.awayTeam?.teamId ||
+        0,
+    ),
     name: String(
       fx?.away_name || fx?.away?.name || fx?.awayTeam?.name || fx?.awayName || 'Команда гостей',
     ),
     logo: fx?.away?.logo || fx?.away_logo || fx?.awayTeam?.logo || null,
   }
 
-  const compId = fx?.competition_id || fx?.competition?.competitionId || fx?.competition?.id || fx?.league?.id || fx?.competitionId || fx?.league?.competitionId
+  const compId =
+    fx?.competition_id ||
+    fx?.competition?.competitionId ||
+    fx?.competition?.id ||
+    fx?.league?.id ||
+    fx?.competitionId ||
+    fx?.league?.competitionId
   const competition = compId
     ? {
         id: Number(compId),
@@ -92,7 +112,7 @@ function normalizeFixture(fx: any): StripMatch | null {
         ),
       }
     : undefined
-  
+
   // Логирование для отладки ID соревнования
   if (!compId && fx?.id) {
     console.warn('[normalizeFixture] Не найден ID соревнования для фикстуры:', {
@@ -345,7 +365,7 @@ export function UpcomingMatchesStrip({ initial }: { initial: any[] }) {
   const futureMatches = React.useMemo(() => {
     const now = new Date()
     now.setUTCHours(0, 0, 0, 0)
-    
+
     // Загружаем все фикстуры из базы без ограничения по дате окончания
     return items.filter((m) => {
       const matchTime = new Date(`${m.date}T${m.time || '00:00'}Z`)

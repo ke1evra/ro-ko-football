@@ -1,21 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server'
+/**
+ * Shared API functions for fixtures
+ * These functions can be used directly in Server Components without HTTP fetch
+ */
+
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
-export const dynamic = 'force-dynamic'
-
-interface TeamData {
+// Types
+export interface TeamData {
   id: unknown
   name: unknown
   logo: unknown | null
 }
 
-interface CompetitionData {
+export interface CompetitionData {
   id: unknown
   name: unknown
 }
 
-interface ApiFixture {
+export interface ApiFixture {
   id: unknown
   fixtureId: unknown
   date: string
@@ -39,12 +42,20 @@ interface ApiFixture {
   venue: unknown
 }
 
-function payloadDocToApiFormat(doc: unknown): ApiFixture {
+export interface FixturesResult {
+  fixtures: ApiFixture[]
+  lastUpdated: string
+  error?: string
+}
+
+/**
+ * Convert Payload document to API format
+ */
+export function payloadDocToApiFormat(doc: unknown): ApiFixture {
   const docRecord = doc as Record<string, unknown>
   const dateIso = docRecord.date ? new Date(docRecord.date as string).toISOString() : ''
   const dateStr = dateIso ? dateIso.split('T')[0] : ''
 
-  // Преобразование homeTeam и awayTeam в структуру, совместимую с компонентами
   const homeTeam = docRecord.homeTeam as Record<string, unknown> | undefined
   const awayTeam = docRecord.awayTeam as Record<string, unknown> | undefined
   const competition = docRecord.competition as Record<string, unknown> | undefined
@@ -61,7 +72,6 @@ function payloadDocToApiFormat(doc: unknown): ApiFixture {
     logo: awayTeam?.logo || null,
   }
 
-  // Преобразование competition в структуру с id и name
   const normalizedCompetition: CompetitionData | undefined = competition
     ? {
         id: competition.competitionId,
@@ -94,18 +104,19 @@ function payloadDocToApiFormat(doc: unknown): ApiFixture {
   }
 }
 
-export async function GET(req: NextRequest) {
+/**
+ * Fetch upcoming fixtures from Payload
+ * Can be used directly in Server Components
+ */
+export async function fetchFixtures(options: {
+  size?: number
+  live?: boolean
+  competitionId?: number
+  includeAll?: boolean
+  date?: string
+} = {}): Promise<FixturesResult> {
   try {
-    const { searchParams } = new URL(req.url)
-
-    let size = Number(searchParams.get('size') || '60')
-    if (!Number.isFinite(size) || size <= 0) size = 60
-    size = Math.min(size, 200)
-
-    const live = searchParams.get('live') === 'true'
-    const explicitCompetition = searchParams.get('competition_id')
-    const includeAll = searchParams.get('all') === 'true'
-    const dateParam = searchParams.get('date')
+    const { size = 60, live = false, competitionId, includeAll = false, date } = options
 
     const payload = await getPayload({ config: await configPromise })
 
@@ -114,69 +125,84 @@ export async function GET(req: NextRequest) {
         collection: 'fixtures',
         where: { status: { equals: 'live' } },
         sort: 'date',
-        limit: size,
+        limit: Math.min(size, 200),
         depth: 0,
       })
       const fixtures = result.docs.map(payloadDocToApiFormat)
-      return NextResponse.json(
-        { matches: fixtures, lastUpdated: new Date().toISOString() },
-        { headers: { 'Cache-Control': 'public, s-maxage=20, stale-while-revalidate=60' } },
-      )
+      return {
+        fixtures,
+        lastUpdated: new Date().toISOString(),
+      }
     }
 
-    // Date range: specific date or today + 10 days (синхронизировано с sync-fixtures.mjs)
+    // Date range calculation
     const today = new Date()
     today.setUTCHours(0, 0, 0, 0)
 
     let fromDate: Date
     let toDate: Date
 
-    if (dateParam && dateParam !== 'today') {
-      fromDate = new Date(dateParam)
+    if (date && date !== 'today') {
+      fromDate = new Date(date)
       fromDate.setUTCHours(0, 0, 0, 0)
-      toDate = new Date(dateParam)
+      toDate = new Date(date)
       toDate.setUTCHours(23, 59, 59, 999)
     } else {
       fromDate = today
       toDate = new Date(today)
-      toDate.setDate(today.getDate() + 9) // +9 дней = 10 дней всего (сегодня + 9)
+      toDate.setDate(today.getDate() + 9)
       toDate.setUTCHours(23, 59, 59, 999)
     }
 
-    // Построение условий фильтрации для Payload
-    // Используем as any для совместимости с типом Where из Payload
-    // TODO: Заменить на правильный тип Where когда будет обновлена типизация Payload
-    const whereConditions = {
+    // Build where conditions
+    const whereConditions: Record<string, unknown> = {
       and: [
         { date: { greater_than_equal: fromDate.toISOString() } },
         { date: { less_than_equal: toDate.toISOString() } },
       ],
     }
 
-    if (!includeAll && explicitCompetition) {
-      // Фильтр по competitionId (новое имя поля после переименования)
+    if (!includeAll && competitionId) {
       const andArray = whereConditions.and as Array<Record<string, unknown>>
-      andArray.push({ 'competition.competitionId': { equals: Number(explicitCompetition) } })
+      andArray.push({ 'competition.competitionId': { equals: competitionId } })
     }
 
     const result = await payload.find({
       collection: 'fixtures',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      where: whereConditions as any,
+      where: whereConditions as Parameters<typeof payload.find>[0]['where'],
       sort: 'date',
-      limit: size,
+      limit: Math.min(size, 200),
       depth: 0,
     })
 
     const fixtures = result.docs.map(payloadDocToApiFormat)
-    console.log(`[fixtures] Payload returned ${fixtures.length} fixtures`)
+    console.log(`[fetchFixtures] Payload returned ${fixtures.length} fixtures`)
 
-    return NextResponse.json(
-      { fixtures, lastUpdated: new Date().toISOString() },
-      { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } },
-    )
+    return {
+      fixtures,
+      lastUpdated: new Date().toISOString(),
+    }
   } catch (e) {
-    console.error('[fixtures] payload error:', e)
-    return NextResponse.json({ fixtures: [], error: 'failed' }, { status: 500 })
+    console.error('[fetchFixtures] payload error:', e)
+    return {
+      fixtures: [],
+      lastUpdated: new Date().toISOString(),
+      error: 'failed',
+    }
   }
+}
+
+/**
+ * Fetch fixtures for a specific league/season
+ */
+export async function fetchFixturesByLeague(
+  league: string,
+  season: string,
+  date?: string,
+): Promise<FixturesResult> {
+  const competitionId = Number(league)
+  if (!Number.isFinite(competitionId)) {
+    return { fixtures: [], lastUpdated: new Date().toISOString(), error: 'Invalid league ID' }
+  }
+  return fetchFixtures({ competitionId, size: 60, date })
 }

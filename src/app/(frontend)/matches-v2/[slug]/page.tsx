@@ -5,11 +5,7 @@ import { AlertCircle, ArrowLeft } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import {
-  findMatchByMatchId,
-  findMatchByTeamsAndDate,
-  findFixtureById,
-} from '@/lib/payload-client'
+import { findMatchByMatchId, findMatchByTeamsAndDate, findFixtureById } from '@/lib/payload-client'
 import MatchPageClient from '@/components/matches/MatchPageClient'
 import FixturePageClient from '@/components/fixtures/FixturePageClient'
 import { getPayload } from 'payload'

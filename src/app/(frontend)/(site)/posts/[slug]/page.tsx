@@ -89,7 +89,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
     if (
       matchInfo.homeTeamId &&
       matchInfo.awayTeamId &&
-      matchInfo.date &&
+      matchInfo.startTime &&
       matchInfo.home &&
       matchInfo.away
     ) {
@@ -98,7 +98,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         awayTeamName: matchInfo.away,
         homeTeamId: matchInfo.homeTeamId,
         awayTeamId: matchInfo.awayTeamId,
-        date: matchInfo.date,
+        date: matchInfo.startTime,
         fixtureId: outcome.fixtureId,
       })
     }
@@ -157,9 +157,9 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                           <h2 className="text-xl font-bold leading-tight">
                             {outcomes[0].matchInfo.home} — {outcomes[0].matchInfo.away}
                           </h2>
-                          {(outcomes[0].matchInfo.date || outcomes[0].matchInfo.time) && (
+                          {outcomes[0].matchInfo.startTime && (
                             <p className="text-sm text-muted-foreground">
-                              {outcomes[0].matchInfo.date} {outcomes[0].matchInfo.time}
+                              {outcomes[0].matchInfo.startTime}
                             </p>
                           )}
                         </div>

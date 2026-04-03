@@ -4,6 +4,7 @@ import { logErrorWithDigest } from './error-logger'
 
 /**
  * Получить настройки лиг для виджета топ матчей
+ * С graceful degradation - возвращает null при ошибке MongoDB
  */
 export async function getTopMatchesLeagues() {
   try {
@@ -17,17 +18,14 @@ export async function getTopMatchesLeagues() {
     return data
   } catch (error) {
     logErrorWithDigest(error as Error & { digest?: string }, 'getTopMatchesLeagues')
-    console.error('[LEAGUES] getTopMatchesLeagues error details:', {
-      message: (error as Error).message,
-      stack: (error as Error).stack,
-      digest: (error as Error & { digest?: string }).digest,
-    })
+    console.error('[LEAGUES] getTopMatchesLeagues error:', (error as Error).message)
     return null
   }
 }
 
 /**
  * Получить настройки лиг для сайдбара
+ * С graceful degradation - возвращает null при ошибке MongoDB
  */
 export async function getSidebarLeagues() {
   try {
@@ -40,127 +38,157 @@ export async function getSidebarLeagues() {
 
     return data
   } catch (error) {
-    console.error('Ошибка при получении настроек сайдбара:', error)
+    console.error('[LEAGUES] getSidebarLeagues error:', (error as Error).message)
     return null
   }
 }
 
 /**
  * Получить отфильтрованный список лиг для топ матчей
+ * С graceful degradation - возвращает пустой массив при ошибке
  */
 export async function getFilteredTopMatchesLeagues() {
-  const settings = await getTopMatchesLeagues()
+  try {
+    const settings = await getTopMatchesLeagues()
 
-  if (!settings?.enabled || !settings?.leagues) {
+    if (!settings?.enabled || !settings?.leagues) {
+      return []
+    }
+
+    return settings.leagues
+      .filter((item: any) => item.enabled && item.league)
+      .sort((a: any, b: any) => (a.priority || 999) - (b.priority || 999))
+      .slice(0, settings.maxMatches || 10)
+      .map((item: any) => ({
+        league: item.league,
+        priority: item.priority,
+      }))
+  } catch (error) {
+    console.error('[LEAGUES] getFilteredTopMatchesLeagues error:', (error as Error).message)
     return []
   }
-
-  return settings.leagues
-    .filter((item: any) => item.enabled && item.league)
-    .sort((a: any, b: any) => (a.priority || 999) - (b.priority || 999))
-    .slice(0, settings.maxMatches || 10)
-    .map((item: any) => ({
-      league: item.league,
-      priority: item.priority,
-    }))
 }
 
 /**
  * Получить отфильтрованный список лиг для сайдбара
+ * С graceful degradation - возвращает пустой массив при ошибке
  */
 export async function getFilteredSidebarLeagues() {
-  const settings = await getSidebarLeagues()
+  try {
+    const settings = await getSidebarLeagues()
 
-  if (!settings?.enabled || !settings?.leagues) {
+    if (!settings?.enabled || !settings?.leagues) {
+      return []
+    }
+
+    return settings.leagues
+      .filter((item: any) => item.enabled && item.league)
+      .sort((a: any, b: any) => (a.priority || 999) - (b.priority || 999))
+      .slice(0, settings.maxItems || 15)
+      .map((item: any) => ({
+        league: item.league,
+        customName: item.customName,
+        priority: item.priority,
+        highlightColor: item.highlightColor,
+        showMatchCount: item.showMatchCount,
+      }))
+  } catch (error) {
+    console.error('[LEAGUES] getFilteredSidebarLeagues error:', (error as Error).message)
     return []
   }
-
-  return settings.leagues
-    .filter((item: any) => item.enabled && item.league)
-    .sort((a: any, b: any) => (a.priority || 999) - (b.priority || 999))
-    .slice(0, settings.maxItems || 15)
-    .map((item: any) => ({
-      league: item.league,
-      customName: item.customName,
-      priority: item.priority,
-      highlightColor: item.highlightColor,
-      showMatchCount: item.showMatchCount,
-    }))
 }
 
 /**
  * Получить ID лиг для топ матчей (для использования в API запросах)
+ * С graceful degradation - возвращает пустой массив при ошибке MongoDB
  */
 export async function getTopMatchesLeagueIds(): Promise<number[]> {
-  const settings = await getTopMatchesLeagues()
+  try {
+    const settings = await getTopMatchesLeagues()
 
-  if (!settings?.enabled || !settings?.leagues) {
+    if (!settings?.enabled || !settings?.leagues) {
+      return []
+    }
+
+    const ids = settings.leagues
+      .filter((item: any) => item.enabled && item.league && item.league.competitionId)
+      .sort((a: any, b: any) => (a.priority || 999) - (b.priority || 999))
+      .map((item: any) => item.league.competitionId)
+      .filter((id: any) => typeof id === 'number')
+
+    return ids
+  } catch (error) {
+    logErrorWithDigest(error as Error & { digest?: string }, 'getTopMatchesLeagueIds')
+    console.error('[LEAGUES] getTopMatchesLeagueIds error:', (error as Error).message)
     return []
   }
-
-  const ids = settings.leagues
-    .filter((item: any) => item.enabled && item.league && item.league.competitionId)
-    .sort((a: any, b: any) => (a.priority || 999) - (b.priority || 999))
-    .map((item: any) => item.league.competitionId)
-    .filter((id: any) => typeof id === 'number')
-
-  console.log('[LEAGUES] getTopMatchesLeagueIds result:', ids)
-  return ids
 }
 
 /**
  * Получить ID лиг для сайдбара (для использования в API запросах)
+ * С graceful degradation - возвращает пустой массив при ошибке
  */
 export async function getSidebarLeagueIds(): Promise<number[]> {
-  const leagues = await getFilteredSidebarLeagues()
-  return leagues
-    .map((item: any) => item.league?.competitionId)
-    .filter((id: any) => typeof id === 'number')
+  try {
+    const leagues = await getFilteredSidebarLeagues()
+    return leagues
+      .map((item: any) => item.league?.competitionId)
+      .filter((id: any) => typeof id === 'number')
+  } catch (error) {
+    console.error('[LEAGUES] getSidebarLeagueIds error:', (error as Error).message)
+    return []
+  }
 }
 
 /**
  * Получить настройки лиг для виджета сайдбара (с полной информацией)
+ * С graceful degradation - возвращает null при ошибке
  */
 export async function getSidebarLeaguesForWidget() {
-  const settings = await getSidebarLeagues()
+  try {
+    const settings = await getSidebarLeagues()
 
-  if (!settings?.enabled || !settings?.leagues) {
+    if (!settings?.enabled || !settings?.leagues) {
+      return null
+    }
+
+    // Преобразуем данные в формат для виджета
+    const leagues = settings.leagues
+      .filter((item: any) => item.enabled && item.league)
+      .map((item: any) => ({
+        id: item.league.id,
+        competitionId: item.league.competitionId,
+        name: item.league.name,
+        displayName: item.league.displayName,
+        countryName: item.league.countryName,
+        countryId: item.league.countryId,
+        customName: item.customName,
+        priority: item.priority || 999,
+        enabled: item.enabled,
+        highlightColor: item.highlightColor,
+        showMatchCount: item.showMatchCount || false,
+        tier: item.league.tier,
+        isActive: item.league.active,
+        matchCount: 0, // TODO: Можно добавить подсчёт матчей
+      }))
+
+    return {
+      enabled: settings.enabled,
+      title: settings.title || 'Лиги',
+      maxItems: settings.maxItems || 15,
+      showFlags: settings.showFlags !== false,
+      groupByCountry: settings.groupByCountry || false,
+      displaySettings: {
+        showOnlyActive: settings.displaySettings?.showOnlyActive !== false,
+        showTiers: settings.displaySettings?.showTiers || false,
+        compactMode: settings.displaySettings?.compactMode || false,
+        showLogos: settings.displaySettings?.showLogos || false,
+      },
+      leagues,
+    }
+  } catch (error) {
+    console.error('[LEAGUES] getSidebarLeaguesForWidget error:', (error as Error).message)
     return null
-  }
-
-  // Преобразуем данные в формат для виджета
-  const leagues = settings.leagues
-    .filter((item: any) => item.enabled && item.league)
-    .map((item: any) => ({
-      id: item.league.id,
-      competitionId: item.league.competitionId,
-      name: item.league.name,
-      displayName: item.league.displayName,
-      countryName: item.league.countryName,
-      countryId: item.league.countryId,
-      customName: item.customName,
-      priority: item.priority || 999,
-      enabled: item.enabled,
-      highlightColor: item.highlightColor,
-      showMatchCount: item.showMatchCount || false,
-      tier: item.league.tier,
-      isActive: item.league.active,
-      matchCount: 0, // TODO: Можно добавить подсчёт матчей
-    }))
-
-  return {
-    enabled: settings.enabled,
-    title: settings.title || 'Лиги',
-    maxItems: settings.maxItems || 15,
-    showFlags: settings.showFlags !== false,
-    groupByCountry: settings.groupByCountry || false,
-    displaySettings: {
-      showOnlyActive: settings.displaySettings?.showOnlyActive !== false,
-      showTiers: settings.displaySettings?.showTiers || false,
-      compactMode: settings.displaySettings?.compactMode || false,
-      showLogos: settings.displaySettings?.showLogos || false,
-    },
-    leagues,
   }
 }
 

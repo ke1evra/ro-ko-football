@@ -1,13 +1,15 @@
 /**
  * Виджет live-матчей для отображения текущих игр
  * Показывает матчи, которые идут прямо сейчас
+ * 
+ * Использует прямые вызовы функций API вместо HTTP fetch для избежания ECONNREFUSED в Docker
  */
 
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Clock, Zap } from 'lucide-react'
-import type { LiveMatchesResponse } from '@/lib/live-score-api/dto'
+import { fetchLiveMatches } from '@/lib/api'
 
 interface LiveMatchesWidgetProps {
   league: string
@@ -15,28 +17,23 @@ interface LiveMatchesWidgetProps {
 
 export default async function LiveMatchesWidget({ league }: LiveMatchesWidgetProps) {
   try {
-    // Получаем live-матчи
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/live/${league}`,
-      {
-        next: {
-          revalidate: 90, // 90 секунд для live данных
-          tags: [`live:${league}`],
-        },
-      },
-    )
+    // Используем прямой вызов API функции вместо HTTP fetch
+    const competitionId = Number(league)
+    const result = await fetchLiveMatches({
+      size: 50,
+      ...(Number.isFinite(competitionId) && competitionId > 0 ? { competitionId } : {}),
+    })
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch live matches: ${response.status}`)
+    if (result.error) {
+      throw new Error(result.error)
     }
 
-    const data: LiveMatchesResponse = await response.json()
+    const matches = result.matches || []
 
     // Если нет live-матчей
-    const matches = Array.isArray(data.matches) ? data.matches : []
     if (matches.length === 0) {
       // Проверяем, есть ли ошибка в ответе
-      const hasError = 'error' in data && data.error
+      const hasError = !!result.error
 
       return (
         <div className="text-center py-8 text-muted-foreground">
@@ -46,8 +43,8 @@ export default async function LiveMatchesWidget({ league }: LiveMatchesWidgetPro
           </p>
           <p className="text-xs mt-1">
             Обновлено:{' '}
-            {data.lastUpdated
-              ? new Date(data.lastUpdated).toLocaleTimeString('ru-RU')
+            {result.lastUpdated
+              ? new Date(result.lastUpdated).toLocaleTimeString('ru-RU')
               : 'Неизвестно'}
           </p>
           {hasError && (
@@ -84,7 +81,7 @@ export default async function LiveMatchesWidget({ league }: LiveMatchesWidgetPro
         {/* Время последнего обновления */}
         <div className="text-xs text-muted-foreground text-center pt-2 border-t">
           Обновлено:{' '}
-          {data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString('ru-RU') : 'Неизвестно'}
+          {result.lastUpdated ? new Date(result.lastUpdated).toLocaleTimeString('ru-RU') : 'Неизвестно'}
         </div>
 
         {/* Ссылка на все live-матчи, если их много */}

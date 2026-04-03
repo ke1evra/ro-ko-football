@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
       console.log(`[fixtures-test] Params:`, testCase.params)
 
       const res = await getFixturesMatchesJson(testCase.params as any, {
-        cache: 'no-store',
+        skipCache: true, // Пропускаем кэш для тестов
         next: { revalidate: 0 },
         timeoutMs: 8000,
       })

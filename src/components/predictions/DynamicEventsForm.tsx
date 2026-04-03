@@ -34,8 +34,7 @@ export interface PredictionOutcome {
     away: string
     awayTeamId?: number
     competition?: string
-    date: string
-    time: string
+    startTime?: string
   }
 }
 
@@ -60,8 +59,7 @@ interface DynamicEventsFormProps {
     home: { name: string; id: number }
     away: { name: string; id: number }
     competition?: { name: string }
-    date: string
-    time: string
+    startTime?: string
   }
   fixtureId?: number
   onSelectedOutcomeChange: (outcome: PredictionOutcome | null) => void
@@ -159,8 +157,7 @@ export default function DynamicEventsForm({
         away: matchData.away.name,
         awayTeamId: matchData.away.id,
         competition: matchData.competition?.name,
-        date: matchData.date,
-        time: matchData.time,
+        startTime: matchData.startTime || undefined,
       },
     }
 

@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
-import { FlagImage } from './FlagImage'
+import React, { useState } from 'react'
+import Image from 'next/image'
 
 // Fallback эмодзи флагов для основных стран
 const COUNTRY_FLAG_EMOJI: Record<string, string> = {
@@ -34,66 +34,38 @@ export function TeamFlagImage({
   size = 'large',
   className,
 }: TeamFlagImageProps) {
-  const [flagUrl, setFlagUrl] = React.useState<string | null>(fallbackSrc || null)
-  const [isLoading, setIsLoading] = React.useState(false)
-  const [hasError, setHasError] = React.useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
-  React.useEffect(() => {
-    // Если нет teamId или это явно фиктивный ID (1, 2), не пытаемся загружать
-    if (!teamId || teamId === 1 || teamId === 2 || teamId === '1' || teamId === '2') {
-      setIsLoading(false)
-      setHasError(true)
-      return
-    }
-
-    setIsLoading(true)
-    setHasError(false)
-
-    // Используем URL API напрямую как источник изображения
-    const flagApiUrl = `/api/flags/${teamId}`
-
-    // Проверяем, что изображение загружается
-    const img = new Image()
-    img.onload = () => {
-      setFlagUrl(flagApiUrl)
-      setIsLoading(false)
-      setHasError(false)
-    }
-    img.onerror = () => {
-      // Логируем ошибку только для реальных ID команд (больше 10)
-      if (Number(teamId) > 10) {
-        console.error('Error loading team flag:', teamId)
-      }
-      setIsLoading(false)
-      setHasError(true)
-    }
-    img.src = flagApiUrl
-  }, [teamId])
-
-  if (isLoading) {
-    return (
-      <div
-        className={`${
-          size === 'large' ? 'w-12 h-12' : size === 'medium' ? 'w-8 h-8' : 'w-4 h-4'
-        } bg-muted animate-pulse rounded ${className || ''}`}
-      />
-    )
+  const sizeClasses = {
+    small: 'w-4 h-4',
+    medium: 'w-8 h-8',
+    large: 'w-12 h-12',
   }
 
-  // Если есть ошибка или нет URL, показываем fallback
-  if (hasError || !flagUrl) {
-    const fallbackEmoji = countryName ? COUNTRY_FLAG_EMOJI[countryName] || '⚽' : '⚽'
+  const emojiSizes = {
+    small: 'text-sm',
+    medium: 'text-base',
+    large: 'text-xl',
+  }
 
+  // Определяем размер для FlagImage
+  const flagImageSize = size === 'medium' ? 'large' : size
+
+  // Определяем URL флага
+  const flagUrl = fallbackSrc || (teamId && teamId !== 1 && teamId !== 2 && teamId !== '1' && teamId !== '2'
+    ? `/api/flags/${teamId}`
+    : null)
+
+  const fallbackEmoji = countryName ? COUNTRY_FLAG_EMOJI[countryName] || '⚽' : '⚽'
+
+  // Если нет валидного teamId или URL флага, показываем fallback
+  if (!flagUrl) {
     return (
       <div
-        className={`${
-          size === 'large' ? 'w-12 h-12' : size === 'medium' ? 'w-8 h-8' : 'w-4 h-4'
-        } flex items-center justify-center bg-muted rounded ${className || ''}`}
+        className={`${sizeClasses[size]} flex items-center justify-center bg-muted rounded ${className || ''}`}
       >
         <span
-          className={`${
-            size === 'large' ? 'text-xl' : size === 'medium' ? 'text-base' : 'text-sm'
-          }`}
+          className={emojiSizes[size]}
           aria-hidden
           title={teamName || countryName || 'Команда'}
         >
@@ -105,15 +77,20 @@ export function TeamFlagImage({
 
   return (
     <div
-      className={`${
-        size === 'large' ? 'w-12 h-12' : size === 'medium' ? 'w-8 h-8' : 'w-4 h-4'
-      } overflow-hidden rounded ${className || ''}`}
+      className={`${sizeClasses[size]} overflow-hidden rounded ${className || ''}`}
     >
-      <FlagImage
+      {isLoading && (
+        <div className={`${sizeClasses[size]} bg-muted animate-pulse rounded`} />
+      )}
+      <Image
         src={flagUrl}
-        countryName={countryName}
-        size={size === 'medium' ? 'large' : size}
-        className="w-full h-full object-cover"
+        alt={`Флаг ${teamName || countryName || 'команды'}`}
+        width={size === 'large' ? 48 : size === 'medium' ? 32 : 16}
+        height={size === 'large' ? 48 : size === 'medium' ? 32 : 16}
+        className={`w-full h-full object-cover ${isLoading ? 'hidden' : ''}`}
+        unoptimized
+        onLoad={() => setIsLoading(false)}
+        onError={() => setIsLoading(false)}
       />
     </div>
   )

@@ -22,6 +22,8 @@ export type RequestConfig = RequestInit & {
     tags?: string[]
   }
   timeoutMs?: number
+  /** Skip cache and force fresh data from API (useful for Server Components) */
+  skipCache?: boolean
 }
 
 export type ResponseErrorConfig<T = unknown> = {
@@ -54,7 +56,7 @@ export function createCustomFetch({
       body?: TBody
     } & RequestConfig,
   ): Promise<{ data: TRes; status: number; statusText: string }> {
-    const { method = 'GET', url: configUrl = '', params, timeoutMs = 8000, ...restConfig } = config
+    const { method = 'GET', url: configUrl = '', params, timeoutMs = 8000, skipCache = false, ...restConfig } = config
 
     // Поддержка только GET запросов для LiveScore API
     if (method !== 'GET') {
@@ -120,7 +122,7 @@ export function createCustomFetch({
         source: 'api-route',
         request,
         ttl,
-        skipCache: false, // Используем кэширование
+        skipCache, // Используем переданное значение или false по умолчанию
       })
 
       return {

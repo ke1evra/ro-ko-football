@@ -1,10 +1,10 @@
 'use client'
 
-import * as React from 'react'
+import { useMemo } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { CountryFlagImage } from '@/components/CountryFlagImage'
-import { Calendar, Trophy, Users } from 'lucide-react'
+import { Trophy, Users } from 'lucide-react'
 
 export type LeagueItem = {
   id: string
@@ -126,7 +126,7 @@ function GroupedLeaguesList({
   showLogos: boolean
 }) {
   // Группируем лиги по странам
-  const groupedLeagues = React.useMemo(() => {
+  const groupedLeagues = useMemo(() => {
     const groups = new Map<string, { countryId?: number; leagues: LeagueItem[] }>()
 
     leagues.forEach((league) => {
@@ -184,7 +184,7 @@ function GroupedLeaguesList({
 
 export default function LeaguesListWidget({ settings, className }: LeaguesListWidgetProps) {
   // Фильтруем и сортируем лиги
-  const filteredLeagues = React.useMemo(() => {
+  const filteredLeagues = useMemo(() => {
     if (!settings?.enabled || !settings.leagues) return []
     return settings.leagues
       .filter((league) => {

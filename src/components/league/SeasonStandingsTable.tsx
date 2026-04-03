@@ -50,8 +50,7 @@ async function getStandings(leagueId: string, seasonId?: number): Promise<Standi
     console.log(`[SeasonStandingsTable] Параметры запроса:`, params)
 
     const response = await getCompetitionsStandingsJson(params, {
-      next: { revalidate: 300 },
-      cache: 'no-store',
+      next: { revalidate: 300 }, // Кэшировать на 5 минут
     })
 
     console.log(`[SeasonStandingsTable] Полный ответ API:`, response)
