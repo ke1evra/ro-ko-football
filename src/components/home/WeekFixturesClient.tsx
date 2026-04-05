@@ -65,11 +65,24 @@ export function WeekFixturesClient({
   const [retrying, setRetrying] = useState(false)
 
   const grouped = useMemo(() => {
+    // Filter future matches and sort by date/time
+    const now = Date.now()
+    const filteredMatches = matches
+      .filter(m => {
+        const matchTime = new Date(`${m.date}T${m.time || '00:00'}Z`).getTime()
+        return matchTime > now
+      })
+      .sort((a, b) => {
+        const dateA = new Date(`${a.date}T${a.time || '00:00'}Z`).getTime()
+        const dateB = new Date(`${b.date}T${b.time || '00:00'}Z`).getTime()
+        return dateA - dateB
+      })
+
     const byDate = new Map<
       string,
       Map<string, { competition?: { id: number; name: string }; matches: UpcomingMatch[] }>
     >()
-    for (const m of matches) {
+    for (const m of filteredMatches) {
       const dateKey = m.date
       const leagueKey = m.competition ? `${m.competition.id}:${m.competition.name}` : '0:Прочее'
       let leagues = byDate.get(dateKey)

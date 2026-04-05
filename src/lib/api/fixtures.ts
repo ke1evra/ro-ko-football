@@ -135,9 +135,12 @@ export async function fetchFixtures(options: {
       }
     }
 
-    // Date range calculation
+    // Date range calculation (always in UTC)
     const today = new Date()
     today.setUTCHours(0, 0, 0, 0)
+
+    // Logging for debugging
+    console.log('[fetchFixtures] Current server time (UTC):', today.toISOString())
 
     let fromDate: Date
     let toDate: Date
@@ -153,6 +156,11 @@ export async function fetchFixtures(options: {
       toDate.setDate(today.getDate() + 9)
       toDate.setUTCHours(23, 59, 59, 999)
     }
+
+    console.log('[fetchFixtures] Date range:', {
+      fromDate: fromDate.toISOString(),
+      toDate: toDate.toISOString(),
+    })
 
     // Build where conditions
     const whereConditions: Record<string, unknown> = {
@@ -177,6 +185,22 @@ export async function fetchFixtures(options: {
 
     const fixtures = result.docs.map(payloadDocToApiFormat)
     console.log(`[fetchFixtures] Payload returned ${fixtures.length} fixtures`)
+    
+    // Log sample fixtures
+    if (fixtures.length > 0) {
+      console.log('[fetchFixtures] First fixture:', {
+        id: fixtures[0].fixtureId,
+        date: fixtures[0].date,
+        time: fixtures[0].time,
+        home: fixtures[0].home_name,
+        away: fixtures[0].away_name,
+      })
+      console.log('[fetchFixtures] Last fixture:', {
+        id: fixtures[fixtures.length - 1].fixtureId,
+        date: fixtures[fixtures.length - 1].date,
+        time: fixtures[fixtures.length - 1].time,
+      })
+    }
 
     return {
       fixtures,

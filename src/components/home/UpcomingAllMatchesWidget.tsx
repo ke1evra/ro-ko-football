@@ -97,20 +97,25 @@ async function fetchUpcomingMatches(): Promise<FetchResult> {
       .filter((m) => Number.isFinite(m.id))
 
     // Sort by date/time (nearest first)
+    // External API returns dates in Moscow timezone (UTC+3), so parse accordingly
     const withTime = normalized.map((m) => {
-      const tsVal = new Date(`${m.date}T${m.time || '00:00'}Z`).getTime()
+      // Parse as Moscow timezone to get correct UTC timestamp
+      const tsVal = new Date(`${m.date}T${m.time || '00:00'}:00+03:00`).getTime()
       const ts = Number.isFinite(tsVal) ? tsVal : Number.MAX_SAFE_INTEGER
       return { ...m, ts }
     }) as (SimpleFixture & { ts: number })[]
 
-    // Filter only future matches and sort by time
+    // Filter only future matches (strictly greater than now) and sort by time ascending
     const now = Date.now()
     const futureMatches = withTime
       .filter((m) => m.ts > now)
       .sort((a, b) => a.ts - b.ts)
 
-    console.log('[UpcomingAllMatchesWidget] Future matches count:', futureMatches.length)
-    console.log('[UpcomingAllMatchesWidget] First match if any:', futureMatches[0])
+    console.log('[UpcomingAllMatchesWidget] Filtered future matches count:', futureMatches.length)
+    console.log('[UpcomingAllMatchesWidget] Current timestamp (UTC):', now, new Date(now).toISOString())
+    if (futureMatches.length > 0) {
+      console.log('[UpcomingAllMatchesWidget] First match timestamp:', futureMatches[0].ts, new Date(futureMatches[0].ts).toISOString())
+    }
 
     return { matches: futureMatches, error: null }
   } catch (error) {

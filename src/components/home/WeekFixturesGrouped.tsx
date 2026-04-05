@@ -35,17 +35,19 @@ async function fetchWeekMatches(): Promise<FetchMatchesResult> {
   try {
     // Use skipCache: true for Server Components to bypass memory cache
     // This ensures fresh data is fetched on each SSR request
+    const nowUtc = new Date()
     console.log('[WeekFixturesGrouped] Fetching fixtures with skipCache=true...')
+    console.log('[WeekFixturesGrouped] Current server time (UTC):', nowUtc.toISOString())
     
     const res = await getFixturesMatchesJson({ size: 100 }, {
       skipCache: true,
     })
 
     console.log('[WeekFixturesGrouped] API response status:', res.status)
-    console.log('[WeekFixturesGrouped] Raw fixtures count:', (res.data as any)?.data?.fixtures?.length || 0)
-
+    
     const data = res.data as any
     const fixtures = (data?.data?.fixtures || data?.fixtures || []) as any[]
+    console.log('[WeekFixturesGrouped] Raw fixtures count from API:', fixtures.length)
 
     // Transform fixtures to UpcomingMatch format
     const matches: UpcomingMatch[] = fixtures.map((fx: any) => {
@@ -97,11 +99,49 @@ async function fetchWeekMatches(): Promise<FetchMatchesResult> {
       return { ...m, ts }
     })
 
-    // Filter only future matches
+    // Filter only future matches (in UTC)
     const now = Date.now()
+    console.log('[WeekFixturesGrouped] Filtering matches - current UTC timestamp:', now)
+    console.log('[WeekFixturesGrouped] Total matches after transform:', withTime.length)
+    
+    // Log date range of matches
+    if (withTime.length > 0) {
+      const dates = withTime.map(m => m.date).sort()
+      console.log('[WeekFixturesGrouped] Date range of matches:', {
+        earliest: dates[0],
+        latest: dates[dates.length - 1],
+        allDates: [...new Set(dates)],
+      })
+      
+      // Log first few matches for debugging
+      console.log('[WeekFixturesGrouped] First 5 matches:')
+      withTime.slice(0, 5).forEach((m, i) => {
+        console.log(`  [${i}]: id=${m.id}, date=${m.date}, time=${m.time}, ts=${m.ts}, ts_date=${new Date(m.ts).toISOString()}`)
+      })
+    }
+    
+    // Count how many would be filtered out
+    const pastMatches = withTime.filter((m) => m.ts <= now)
+    if (pastMatches.length > 0) {
+      console.log('[WeekFixturesGrouped] WARNING: Found', pastMatches.length, 'past matches that would be filtered:')
+      pastMatches.slice(0, 5).forEach((m, i) => {
+        console.log(`  [${i}]: id=${m.id}, date=${m.date}, time=${m.time}, ts=${m.ts}, ts_date=${new Date(m.ts).toISOString()}`)
+      })
+    }
+
     const futureMatches = withTime
       .filter((m) => m.ts > now)
       .sort((a, b) => a.ts - b.ts)
+    
+    console.log('[WeekFixturesGrouped] Matches after filter:', futureMatches.length)
+    if (futureMatches.length > 0) {
+      console.log('[WeekFixturesGrouped] First future match:', {
+        id: futureMatches[0].id,
+        date: futureMatches[0].date,
+        time: futureMatches[0].time,
+        ts_date: new Date(futureMatches[0].ts).toISOString(),
+      })
+    }
 
     return { matches: futureMatches, error: null }
   } catch (error) {

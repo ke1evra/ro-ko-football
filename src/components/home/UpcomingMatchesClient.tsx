@@ -31,7 +31,8 @@ interface UpcomingMatchesClientProps {
 
 function formatDay(date: string, time?: string) {
   try {
-    return new Date(`${date}T${time || '00:00'}Z`).toLocaleString('ru-RU', {
+    // Parse as Moscow timezone for correct display
+    return new Date(`${date}T${time || '00:00'}:00+03:00`).toLocaleString('ru-RU', {
       day: '2-digit',
       month: '2-digit',
     })
@@ -50,7 +51,23 @@ export function UpcomingMatchesClient({
   const [visible, setVisible] = React.useState(initialVisible)
   const [retrying, setRetrying] = React.useState(false)
 
-  const visibleItems = initialMatches.slice(0, visible)
+  // Filter future matches and sort by date
+  // Parse dates as Moscow timezone (UTC+3) since external API returns Moscow times
+  const futureMatches = React.useMemo(() => {
+    const now = Date.now()
+    return initialMatches
+      .filter(m => {
+        const matchTime = new Date(`${m.date}T${m.time || '00:00'}:00+03:00`).getTime()
+        return matchTime > now
+      })
+      .sort((a, b) => {
+        const dateA = new Date(`${a.date}T${a.time || '00:00'}:00+03:00`).getTime()
+        const dateB = new Date(`${b.date}T${b.time || '00:00'}:00+03:00`).getTime()
+        return dateA - dateB
+      })
+  }, [initialMatches])
+
+  const visibleItems = futureMatches.slice(0, visible)
 
   // Handle retry on client side
   const handleRetry = () => {
@@ -115,7 +132,7 @@ export function UpcomingMatchesClient({
       )}
 
       {/* Show "Show more" button only when there are more items and no error */}
-      {!hasError && initialMatches.length > visible && (
+      {!hasError && futureMatches.length > visible && (
         <div className="pt-1">
           <Button variant="outline" size="sm" onClick={() => setVisible((v) => v + pageSize)}>
             Показать ещё

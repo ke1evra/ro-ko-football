@@ -150,14 +150,20 @@ async function fetchUpcomingMatches(): Promise<StripMatch[]> {
     const list: any[] = result.fixtures || []
     const normalized = list.map(normalizeFixture).filter(Boolean) as StripMatch[]
 
-    // Фильтруем только будущие матчи
-    const now = new Date()
-    now.setUTCHours(0, 0, 0, 0)
+    // Фильтруем только будущие матчи (matchTime > now - строго больше, чтобы исключить текущий момент)
+    // и сортируем по возрастанию даты
+    const now = new Date().getTime()
 
-    const futureMatches = normalized.filter((m) => {
-      const matchTime = new Date(`${m.date}T${m.time || '00:00'}Z`)
-      return matchTime >= now
-    })
+    const futureMatches = normalized
+      .filter((m) => {
+        const matchTime = new Date(`${m.date}T${m.time || '00:00'}Z`).getTime()
+        return matchTime > now
+      })
+      .sort((a, b) => {
+        const timeA = new Date(`${a.date}T${a.time || '00:00'}Z`).getTime()
+        const timeB = new Date(`${b.date}T${b.time || '00:00'}Z`).getTime()
+        return timeA - timeB
+      })
 
     console.log(`[UpcomingMatchesStripServer] Loaded ${futureMatches.length} upcoming matches`)
     return futureMatches
