@@ -1,13 +1,15 @@
 /**
  * Виджет ближайших матчей (fixtures)
  * Показывает предстоящие игры с группировкой по дням
+ * 
+ * Использует прямые вызовы функций API вместо HTTP fetch для избежания ECONNREFUSED в Docker
  */
 
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Calendar, MapPin } from 'lucide-react'
-import type { FixturesResponse } from '@/lib/live-score-api/dto'
+import { fetchFixturesByLeague } from '@/lib/api'
 
 interface FixturesWidgetProps {
   league: string
@@ -17,29 +19,19 @@ interface FixturesWidgetProps {
 
 export default async function FixturesWidget({ league, season, date }: FixturesWidgetProps) {
   try {
-    // Получаем ближайшие матчи
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/fixtures/${league}/${season}${date ? `?date=${date}` : ''}`,
-      {
-        next: {
-          revalidate: 120, // 2 минуты
-          tags: [`fixtures:${league}:${season}`],
-        },
-      },
-    )
+    // Используем прямой вызов API функции вместо HTTP fetch
+    const result = await fetchFixturesByLeague(league, season, date)
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch fixtures: ${response.status}`)
+    if (result.error) {
+      throw new Error(result.error)
     }
 
-    const data: FixturesResponse & { fixtures?: any[]; lastUpdated?: string; error?: string } =
-      await response.json()
+    const fixtures = result.fixtures || []
 
     // Если нет предстоящих матчей
-    const fixtures = Array.isArray(data.fixtures) ? data.fixtures : []
     if (fixtures.length === 0) {
       // Проверяем, есть ли ошибка в ответе
-      const hasError = 'error' in data && data.error
+      const hasError = !!result.error
 
       return (
         <div className="text-center py-8 text-muted-foreground">
@@ -49,8 +41,8 @@ export default async function FixturesWidget({ league, season, date }: FixturesW
           </p>
           <p className="text-xs mt-1">
             Обновлено:{' '}
-            {data.lastUpdated
-              ? new Date(data.lastUpdated).toLocaleTimeString('ru-RU')
+            {result.lastUpdated
+              ? new Date(result.lastUpdated).toLocaleTimeString('ru-RU')
               : 'Неизвестно'}
           </p>
           {hasError && (
@@ -118,7 +110,7 @@ export default async function FixturesWidget({ league, season, date }: FixturesW
         {/* Время последнего обновления */}
         <div className="text-xs text-muted-foreground text-center pt-2 border-t">
           Обновлено:{' '}
-          {data.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString('ru-RU') : 'Неизвестно'}
+          {result.lastUpdated ? new Date(result.lastUpdated).toLocaleTimeString('ru-RU') : 'Неизвестно'}
         </div>
 
         {/* Ссылка на все матчи */}

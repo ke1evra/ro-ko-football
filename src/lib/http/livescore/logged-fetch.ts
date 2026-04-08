@@ -149,7 +149,6 @@ export class LoggedFetch {
       // ✅ Регистрируем успешный запрос в rate limiter
       rateLimiter.registerRequest()
 
-
       // Сохраняем в кэш
       if (!skipCache) {
         apiCache.set(cacheKey, result, ttl)
@@ -357,6 +356,17 @@ export class LoggedFetch {
   private async logRequest(entry: LogEntry): Promise<void> {
     try {
       const payload = await this.getPayload()
+
+      // Валидируем source - должно быть одно из допустимых значений
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const validSources: string[] = ['api-route', 'page', 'script', 'component', 'widget']
+      const source = entry.source as string
+      if (!validSources.includes(source)) {
+        console.warn(
+          `[LoggedFetch] Невалидный source: "${source}", заменяем на "component"`,
+        )
+        entry.source = 'component'
+      }
 
       // Вычисляем итоговую статистику
       const summary = {

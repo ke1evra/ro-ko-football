@@ -13,8 +13,8 @@ interface AuthRedirectProps {
 
 export function AuthRedirect({
   user,
-  redirectTo = '/dashboard',
-  message = 'Вы уже вошли в систему. Перенаправление на панель управления...',
+  redirectTo = '/my-profile',
+  message = 'Вы уже вошли в систему. Перенаправление в личный кабинет...',
 }: AuthRedirectProps) {
   const router = useRouter()
 

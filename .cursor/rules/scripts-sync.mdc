@@ -1,0 +1,26 @@
+---
+description: scripts/ sync workers, imports, and one-off tooling
+globs: scripts/**/*.mjs,scripts/**/*.ts,scripts/**/*.mts
+alwaysApply: false
+---
+
+# Scripts & sync workers
+
+## Role
+
+- `scripts/` contains ETL/sync jobs (fixtures, standings, teams, etc.) and maintenance tooling.
+- Many scripts run with **`tsx`** or **node** loaders—match the shebang / npm script pattern already used for that file.
+
+## Safety
+
+- Prefer **idempotent** updates (upsert / unique keys) so reruns do not duplicate data.
+- Respect env vars (`.env` / deployment secrets). Never commit credentials.
+- When changing sync shape, update **Payload collections** and run `pnpm run generate:types`.
+
+## Operations
+
+- Use existing `pnpm run sync:*` and `pnpm run predictions:stats:*` commands from `package.json` instead of inventing new entrypoints unless necessary.
+
+## Logging
+
+- Follow existing logging patterns in scripts (chalk, structured messages) for consistency with PM2/Docker log scraping.

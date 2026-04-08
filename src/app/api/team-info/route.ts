@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     // Получаем список команд и ищем нужную
     const res = await getTeamsListJson(
       { size: 100 },
-      { cache: 'no-store', next: { revalidate: 0 }, signal: ac.signal },
+      { skipCache: true, next: { revalidate: 0 }, signal: ac.signal },
     )
     clearTimeout(to)
 

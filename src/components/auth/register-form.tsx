@@ -107,7 +107,9 @@ export const RegisterForm = () => {
         description:
           'Проверьте email для верификации аккаунта. Перенаправление на панель управления...',
       })
-      router.push('/dashboard')
+      // FIX: Use window.location.href instead of router.push() for full page reload
+      // This ensures the cookie is properly synchronized with the server
+      window.location.href = '/my-profile'
     }
   }
 

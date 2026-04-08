@@ -5,7 +5,6 @@
  * Используется обоими скриптами (forward / backward), у которых различается только логика расчёта дат.
  */
 
-
 // ===== Request budget limiter =====
 let REQUEST_BUDGET = Infinity
 export function setRequestBudget(limit) {

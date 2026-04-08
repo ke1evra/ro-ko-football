@@ -50,9 +50,11 @@ export function PredictorCard({ author, currentPostId }: PredictorCardProps) {
         )
         if (predictionsResponse.ok) {
           const predictionsData = await predictionsResponse.json()
-          setRecentPredictions(
-            predictionsData.predictions.filter((p: any) => p.id !== currentPostId).slice(0, 3),
-          )
+          const filtered = predictionsData.predictions
+            .filter((p: any) => p.id !== currentPostId)
+            .slice(0, 3)
+          console.log('[PredictorCard] Recent predictions:', filtered)
+          setRecentPredictions(filtered)
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Ошибка загрузки')
@@ -158,8 +160,8 @@ export function PredictorCard({ author, currentPostId }: PredictorCardProps) {
               {recentPredictions.map((prediction) => (
                 <Link
                   key={prediction.id}
-                  href={prediction.slug ? `/posts/${prediction.slug}` : `/posts?pid=${prediction.id}`}
-                  className="block p-3 rounded-lg border border-primary/20 hover:bg-primary/5 transition-colors"
+                  href={`/posts/${prediction.slug}`}
+                  className="block p-3 rounded-lg border border-primary/20 hover:bg-primary/5 transition-colors relative"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
@@ -174,6 +176,11 @@ export function PredictorCard({ author, currentPostId }: PredictorCardProps) {
                       </Badge>
                     )}
                   </div>
+                  {prediction.coefficient && (
+                    <div className="absolute top-1 right-1 bg-primary text-primary-foreground px-2 py-0.5 rounded text-xs font-bold z-10">
+                      {prediction.coefficient}
+                    </div>
+                  )}
                 </Link>
               ))}
             </div>

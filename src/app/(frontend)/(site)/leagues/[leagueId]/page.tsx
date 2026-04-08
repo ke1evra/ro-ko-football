@@ -62,7 +62,7 @@ async function getLeagueInfo(
     // Получаем информацию о лиге из списка всех лиг
     const response = await getCompetitionsListJson(
       { size: 100 },
-      { next: { revalidate: 300 }, cache: 'no-store' },
+      { next: { revalidate: 300 } }, // Кэшировать на 5 минут
     )
 
     // Проверяем различные структуры, но используем типизированный путь data.data.competition
@@ -262,8 +262,7 @@ async function getLeagueStandings(leagueId: string, seasonId?: number) {
     }
 
     const response = await getCompetitionsStandingsJson(params, {
-      next: { revalidate: 300 },
-      cache: 'no-store',
+      next: { revalidate: 300 }, // Кэшировать на 5 минут
     })
 
     const standings = response.data?.data?.table || []

@@ -15,7 +15,7 @@ export default async function RegisterPage() {
   const user: User | null = await getUser()
 
   if (user) {
-    redirect('/dashboard')
+    redirect('/my-profile')
   }
 
   return (

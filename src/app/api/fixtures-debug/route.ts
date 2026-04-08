@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
 
     const res = await getFixturesMatchesJson(
       { date: new Date(), size: 50 },
-      { cache: 'no-store', next: { revalidate: 0 }, timeoutMs: 10000 },
+      { skipCache: true, next: { revalidate: 0 }, timeoutMs: 10000 },
     )
 
     const fixtures = (res.data?.data?.fixtures || []) as any[]

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/(frontend)/AuthContext'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { LogIn, LogOut, User as UserIcon } from 'lucide-react'
+import { LogIn, LogOut, Shield, User as UserIcon } from 'lucide-react'
 import { UserAvatar } from '@/components/UserAvatar'
 import { SiteLogo } from '@/components/site/Logo'
 import { Container } from '@/components/ds'
@@ -25,7 +24,6 @@ interface HeaderMenuItem {
 
 export const Header = () => {
   const { user, isLoading, logout } = useAuth()
-  const router = useRouter()
 
   const [menu, setMenu] = useState<HeaderMenuItem[]>([])
 
@@ -49,7 +47,7 @@ export const Header = () => {
 
   const handleLogout = () => {
     logout()
-    router.push('/')
+    window.location.href = '/'  // полная перезагрузка для очистки состояния
   }
 
   return (
@@ -89,6 +87,17 @@ export const Header = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                {user.role === 'admin' && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin">
+                        <Shield className="mr-2 h-4 w-4" />
+                        <span>Админ-панель</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem asChild>
                   <Link href="/my-profile">
                     <UserIcon className="mr-2 h-4 w-4" />

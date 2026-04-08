@@ -1,7 +1,7 @@
 import { Footer } from '@/components/site/footer'
 import { Header } from '@/components/site/header'
 import { Main, Container } from '@/components/ds'
-import UpcomingMatchesStrip from '@/components/home/UpcomingMatchesStrip'
+import UpcomingMatchesStripServer from '@/components/home/UpcomingMatchesStripServer'
 import { getTopMatchesLeagues, getTopMatchesLeagueIds } from '@/lib/leagues'
 import '@/lib/global-error-handler'
 
@@ -42,10 +42,11 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <Header />
 
       {/* Виджет с матчами приоритетных лиг - сквозной на уровне лейаута */}
+      {/* Server Component: загружает данные на сервере, Client Component обрабатывает анимации */}
       <div className="border-b bg-stone-200">
         <Container className="py-3">
           <div className="overflow-hidden">
-            <UpcomingMatchesStrip initial={[]} />
+            <UpcomingMatchesStripServer />
           </div>
         </Container>
       </div>

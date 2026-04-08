@@ -379,8 +379,10 @@ export interface Post {
              */
             awayTeamId?: number | null;
             competition?: string | null;
-            date?: string | null;
-            time?: string | null;
+            /**
+             * Полное UTC время матча (открывается в родном дейтпикере)
+             */
+            startTime?: string | null;
           };
           id?: string | null;
         }[]
@@ -1489,7 +1491,7 @@ export interface ApiRequestLog {
   /**
    * Откуда был сделан запрос
    */
-  source: 'api-route' | 'page' | 'script' | 'component';
+  source: 'api-route' | 'page' | 'script' | 'component' | 'widget';
   /**
    * Статус код ответа от LiveScore API
    */
@@ -2074,8 +2076,7 @@ export interface PostsSelect<T extends boolean = true> {
                     away?: T;
                     awayTeamId?: T;
                     competition?: T;
-                    date?: T;
-                    time?: T;
+                    startTime?: T;
                   };
               id?: T;
             };

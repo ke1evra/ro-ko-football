@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 
 import { loginUser } from '@/lib/auth'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { PasswordInput } from '@/components/ui/password-input'
 import { Input } from '@/components/ui/input'
@@ -19,7 +18,6 @@ export const LoginForm = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
-  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -56,7 +54,11 @@ export const LoginForm = () => {
       toast.success('Добро пожаловать обратно!', {
         description: 'Перенаправление на панель управления...',
       })
-      router.push('/dashboard')
+      
+      // Use window.location.href instead of router.push() for full page reload
+      // This ensures the cookie is properly synchronized with the server
+      // and both Header and Middleware see the authenticated state
+      window.location.href = '/my-profile'
     }
   }
 

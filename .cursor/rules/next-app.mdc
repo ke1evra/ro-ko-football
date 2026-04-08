@@ -1,0 +1,27 @@
+---
+description: Next.js App Router pages, layouts, and React components
+globs: src/app/**/*.tsx,src/app/**/*.ts,src/components/**/*.tsx,src/components/**/*.ts
+alwaysApply: false
+---
+
+# Next.js app & components
+
+## App Router
+
+- Routes under `src/app/`. Payload admin routes live under `src/app/(payload)/`—treat as framework-owned; change only with care.
+- Prefer **Server Components** by default. Add `'use client'` only for interactivity, hooks, or browser APIs.
+- Keep data fetching in server components or route handlers; pass serializable props to clients.
+
+## UI
+
+- Reuse `src/components/ui/*` (shadcn). Keep Tailwind classes consistent with surrounding components.
+- For auth-sensitive UI, follow existing patterns (`auth-redirect`, forms under `src/components/auth/`).
+
+## Data
+
+- Merge Payload + LiveScore data using existing helpers under `src/lib/` rather than ad-hoc `fetch` in every component.
+- Respect caching tags / revalidation patterns already used for the feature you touch.
+
+## Imports
+
+- Use `@/` alias for `src/` imports.

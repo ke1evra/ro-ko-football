@@ -26,40 +26,49 @@ export const revalidate = 120
 type SearchParams = Promise<{ page?: string }>
 
 async function getPostsPage(pageParam?: string) {
-  const page = Math.max(1, Number(pageParam || 1) || 1)
-  const limit = 10
-  const payload = await getPayload({ config: await configPromise })
+  try {
+    const page = Math.max(1, Number(pageParam || 1) || 1)
+    const limit = 10
+    const payload = await getPayload({ config: await configPromise })
 
-  const postsRes = await payload.find({
-    collection: 'posts',
-    sort: '-publishedAt',
-    limit,
-    page,
-  })
+    const postsRes = await payload.find({
+      collection: 'posts',
+      sort: '-publishedAt',
+      limit,
+      page,
+    })
 
-  // Подсчёт комментариев (totalDocs) для каждого поста
-  const withCounts = await Promise.all(
-    postsRes.docs.map(async (post) => {
-      try {
-        const commentsRes = await payload.find({
-          collection: 'comments',
-          where: { post: { equals: post.id } },
-          limit: 1,
-          depth: 0,
-        })
-        const commentsCount = commentsRes?.totalDocs ?? 0
-        // Рейтинг — заглушка (0). При необходимости можно агрегировать из commentVotes
-        return { post, commentsCount, rating: 0 }
-      } catch {
-        return { post, commentsCount: 0, rating: 0 }
-      }
-    }),
-  )
+    // Подсчёт комментариев (totalDocs) для каждого поста
+    const withCounts = await Promise.all(
+      postsRes.docs.map(async (post) => {
+        try {
+          const commentsRes = await payload.find({
+            collection: 'comments',
+            where: { post: { equals: post.id } },
+            limit: 1,
+            depth: 0,
+          })
+          const commentsCount = commentsRes?.totalDocs ?? 0
+          // Рейтинг — заглушка (0). При необходимости можно агрегировать из commentVotes
+          return { post, commentsCount, rating: 0 }
+        } catch {
+          return { post, commentsCount: 0, rating: 0 }
+        }
+      }),
+    )
 
-  return {
-    items: withCounts,
-    page,
-    totalPages: postsRes.totalPages || 1,
+    return {
+      items: withCounts,
+      page,
+      totalPages: postsRes.totalPages || 1,
+    }
+  } catch (error) {
+    console.error('[HOME] getPostsPage error:', (error as Error).message)
+    return {
+      items: [],
+      page: 1,
+      totalPages: 1,
+    }
   }
 }
 
@@ -151,7 +160,9 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
                           </div>
                           {(post as any).prediction?.outcomes?.[0]?.coefficient && (
                             <div className="text-sm font-bold text-primary">
-                              {((post as any).prediction.outcomes[0].coefficient as number).toFixed(2)}
+                              {((post as any).prediction.outcomes[0].coefficient as number).toFixed(
+                                2,
+                              )}
                             </div>
                           )}
                         </div>

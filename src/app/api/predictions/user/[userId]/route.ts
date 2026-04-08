@@ -20,7 +20,7 @@ export async function GET(
         and: [{ postType: { equals: 'prediction' } }, { author: { equals: userId } }],
       },
       limit: 1000,
-      depth: 2,
+      depth: 3,
       sort: sort === 'recent' ? '-createdAt' : sort === 'oldest' ? 'createdAt' : undefined,
     })
 
@@ -34,13 +34,20 @@ export async function GET(
         })
 
         const stats = statsResponse.docs[0]
+        const coefficient = post.prediction?.outcomes?.[0]?.coefficient || null
+
+        if (coefficient) {
+          console.log(`[predictions/user] Post ${post.id}: coefficient = ${coefficient}`)
+        }
 
         return {
           id: post.id,
+          slug: post.slug,
           title: post.title,
           createdAt: post.createdAt,
           status: stats?.status || 'pending',
           summary: stats?.summary || null,
+          coefficient,
         }
       }),
     )

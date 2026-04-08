@@ -1,6 +1,7 @@
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { FlatCompat } from '@eslint/eslintrc'
+import noMojibakePlugin from './eslint-plugin-no-mojibake.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -25,11 +26,15 @@ const eslintConfig = [
   },
   ...compat.extends('next/core-web-vitals', 'next/typescript', 'plugin:prettier/recommended'),
   {
+    plugins: {
+      'no-mojibake': noMojibakePlugin,
+    },
     rules: {
       'prettier/prettier': 'warn',
       '@typescript-eslint/ban-ts-comment': 'warn',
       '@typescript-eslint/no-empty-object-type': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',
+      'no-mojibake/no-replacement-characters': 'error',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {

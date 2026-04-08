@@ -20,7 +20,7 @@ export const AppNav = async () => {
       containerClassName="flex justify-between items-center gap-4"
     >
       <Button variant="outline" size="icon" asChild>
-        <Link href="/dashboard">
+        <Link href="/my-profile">
           <Home />
         </Link>
       </Button>

@@ -254,14 +254,12 @@ export const Posts: CollectionConfig = {
                   label: 'Турнир',
                 },
                 {
-                  name: 'date',
-                  type: 'text',
-                  label: 'Дата',
-                },
-                {
-                  name: 'time',
-                  type: 'text',
-                  label: 'Время',
+                  name: 'startTime',
+                  type: 'date',
+                  label: 'Дата и время матча',
+                  admin: {
+                    description: 'Полное UTC время матча (открывается в родном дейтпикере)',
+                  },
                 },
               ],
             },

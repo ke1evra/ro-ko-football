@@ -1,0 +1,27 @@
+---
+description: Next.js route handlers and API typing conventions
+globs: src/app/api/**/*.ts
+alwaysApply: false
+---
+
+# API route handlers (`src/app/api`)
+
+## Types
+
+- Type **inputs** from `Request` (searchParams, JSON body) with Zod or explicit interfaces.
+- For unknown JSON, parse then **narrow** (`unknown` → validate → typed value). Avoid raw `any`.
+- For Payload queries, when the generated `Where` type is too strict, follow `ai.md` §6: prefer `unknown` + validation, then intentional casts with a one-line eslint comment if unavoidable.
+
+## Security
+
+- Do not expose LiveScore or other secrets to the client. Use server-only modules under `src/lib/http/livescore/`.
+- Sanitize and rate-limit UGC-related endpoints consistent with existing routes.
+
+## Responses
+
+- Return `Response.json` with appropriate HTTP status codes.
+- Keep error messages safe for clients (no stack traces in production responses).
+
+## Verification
+
+- After edits, run `pnpm run type-check`. Optionally `npx eslint <file>` for the touched route.

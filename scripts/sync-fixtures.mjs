@@ -442,7 +442,30 @@ function normalizeFixture(fixture, league) {
         }
       : null,
 
-    oddsHistory: [],
+    // Создаём запись истории коэффициентов с текущими значениями
+    // mergeOddsHistory добавит её к существующей истории при обновлении
+    oddsHistory:
+      fixture.odds && (fixture.odds.pre || fixture.odds.live)
+        ? [
+            {
+              timestamp: new Date().toISOString(),
+              odds: {
+                pre: {
+                  home: fixture.odds.pre?.['1'] ?? null,
+                  draw: fixture.odds.pre?.['X'] ?? null,
+                  away: fixture.odds.pre?.['2'] ?? null,
+                },
+                live: fixture.odds.live
+                  ? {
+                      home: fixture.odds.live?.['1'] ?? null,
+                      draw: fixture.odds.live?.['X'] ?? null,
+                      away: fixture.odds.live?.['2'] ?? null,
+                    }
+                  : null,
+              },
+            },
+          ]
+        : [],
   }
 }
 
@@ -454,9 +477,19 @@ function mergeOddsHistory(existingHistory, newHistory) {
 
   // Добавляем новые записи
   for (const newEntry of newHistory) {
-    const existingIndex = merged.findIndex(
-      (entry) => entry.timestamp.getTime() === newEntry.timestamp.getTime(),
-    )
+    // timestamp может быть строкой (ISO из Payload) или Date объектом
+    const newTimestamp =
+      typeof newEntry.timestamp === 'string'
+        ? new Date(newEntry.timestamp).getTime()
+        : newEntry.timestamp.getTime()
+
+    const existingIndex = merged.findIndex((entry) => {
+      const existingTimestamp =
+        typeof entry.timestamp === 'string'
+          ? new Date(entry.timestamp).getTime()
+          : entry.timestamp.getTime()
+      return existingTimestamp === newTimestamp
+    })
 
     if (existingIndex >= 0) {
       // Обновляем существующую запись
@@ -468,7 +501,12 @@ function mergeOddsHistory(existingHistory, newHistory) {
   }
 
   // Сортируем по времени (новые в конце)
-  merged.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+  // timestamp может быть строкой (ISO из Payload) или Date объектом
+  merged.sort((a, b) => {
+    const timeA = typeof a.timestamp === 'string' ? new Date(a.timestamp).getTime() : a.timestamp.getTime()
+    const timeB = typeof b.timestamp === 'string' ? new Date(b.timestamp).getTime() : b.timestamp.getTime()
+    return timeA - timeB
+  })
 
   // Ограничиваем историю последними 100 записями
   return merged.slice(-100)

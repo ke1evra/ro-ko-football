@@ -132,8 +132,7 @@ async function getStandings(leagueId: string, seasonId: string): Promise<Standin
         lang: 'ru',
       },
       {
-        next: { revalidate: 300 },
-        cache: 'no-store',
+        next: { revalidate: 300 }, // Кэшировать на 5 минут
       },
     )
 

@@ -293,3 +293,111 @@ Located in `src/lib/highlight-competitions.ts`:
 - UEFA_CHAMPIONS_LEAGUE: 268
 - UEFA_EUROPA_LEAGUE: 245
 - UEFA_CONFERENCE_LEAGUE: 446
+
+---
+
+## 6. Development Guidelines
+
+### Процесс разработки и проверки кода
+
+**ОБЯЗАТЕЛЬНЫЙ ПРОЦЕСС ДЛЯ КАЖДОЙ ИТЕРАЦИИ:**
+
+1. **Разработка функционала**
+2. **Проверка ESLint** (стиль кода):
+   ```bash
+   npx eslint src/app/api/fixtures/route.ts
+   ```
+3. **Проверка TypeScript** (типизация) - **ОБЯЗАТЕЛЬНО**:
+   ```bash
+   npm run type-check
+   ```
+4. **Создание файла итерации** `NN_ITERATION_*.md` с описанием функционала
+
+**Если `npm run type-check` показывает ошибки - итерация не завершена!**
+
+### TypeScript Type Checking
+
+**ВАЖНО**: Используйте правильную команду для проверки типов, чтобы не пропустить ошибки!
+
+#### Команды проверки типов:
+
+1. **ESLint** - для проверки стиля кода:
+   ```bash
+   npx eslint src/app/api/fixtures/route.ts
+   ```
+
+2. **TypeScript с пропуском node_modules** - быстрая проверка:
+   ```bash
+   npx tsc --noEmit --skipLibCheck src/app/api/fixtures/route.ts
+   ```
+
+3. **TypeScript полная проверка** - перед коммитом (используется в IDE) - **ОБЯЗАТЕЛЬНО**:
+   ```bash
+   npm run type-check
+   ```
+   Это использует `tsconfig.typecheck.json` и ловит все ошибки типизации!
+
+#### Почему IDE показывает ошибки, а ESLint нет?
+
+- **ESLint** проверяет только стиль кода и правила линтера
+- **TypeScript** проверяет типизацию и совместимость типов
+- **IDE** (VS Code) использует TypeScript для подсветки ошибок в реальном времени
+- Команда `npm run type-check` использует `tsconfig.typecheck.json` и ловит все ошибки типизации
+
+#### Частые ошибки типизации:
+
+- **TS2322**: Тип не совместим с ожидаемым типом
+  - Пример: `Record<string, unknown>` не совместим с типом `Where` из Payload
+  - Решение: используйте `as any` с комментарием `// eslint-disable-next-line @typescript-eslint/no-explicit-any`
+
+- **TS2345**: Несовместимость типов параметров функции
+  - Проверьте, что тип параметра соответствует типу аргумента
+  - Пример: функция ожидает `Record<string, unknown>`, но получает `Fixture`
+  - Решение: используйте `as unknown` для приведения типов
+
+- **TS2536**: Индекс типа не совпадает
+  - Проверьте, что объект имеет индексную сигнатуру `[key: string]: unknown`
+
+#### Правила типизации для API маршрутов:
+
+1. **Всегда типизируйте параметры функций**:
+
+   ```typescript
+   // ❌ Неправильно
+   function transform(doc) { ... }
+
+   // ✅ Правильно
+   function transform(doc: unknown): ApiFixture { ... }
+   ```
+
+2. **Используйте `unknown` для данных из Payload**:
+
+   ```typescript
+   // Payload возвращает типизированные объекты, но их структура может варьироваться
+   const doc = doc as Record<string, unknown>
+   ```
+
+3. **Создавайте интерфейсы для возвращаемых данных**:
+
+   ```typescript
+   interface ApiFixture {
+     id: unknown
+     date: string
+     // ... другие поля
+   }
+   ```
+
+4. **Используйте `as any` для несовместимых типов Payload**:
+
+   ```typescript
+   // Payload API имеет сложную типизацию, иногда нужно использовать as any
+   where: whereConditions as any,
+   // Добавьте комментарий для отключения линтера:
+   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   ```
+
+#### Инструменты для проверки:
+
+- **ESLint**: `npx eslint src/app/api/fixtures/route.ts`
+- **TypeScript**: `npm run type-check` (полная проверка) - **ОБЯЗАТЕЛЬНО**
+- **IDE**: VS Code с расширением TypeScript автоматически показывает ошибки типов

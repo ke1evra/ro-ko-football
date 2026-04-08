@@ -276,7 +276,7 @@ export function welcomeEmailTemplate(email: string): string {
           <h1>Welcome to our platform!</h1>
           <p>Hi ${email},</p>
           <p>Thanks for verifying your email address. Your account is now fully activated and you can access all features.</p>
-          <a href="${appUrl}/dashboard" class="button">Go to Dashboard</a>
+          <a href="${appUrl}/my-profile" class="button">Go to Profile</a>
           <p>If you have any questions, feel free to reach out to our support team.</p>
           <div class="footer">
             <p>Happy to have you on board!</p>

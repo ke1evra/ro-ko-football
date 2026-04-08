@@ -7,10 +7,27 @@ import FinishedMatchesClient, {
 } from '@/components/home/FinishedMatchesClient'
 
 export default async function YesterdaysMatchesWidget({ limit = 200 }: { limit?: number }) {
-  const payload = await getPayloadClient()
+  let payload = null
+  let allowedCompetitionIds: number[] = []
 
-  // Список лиг из CMS (топ-лиги)
-  const allowedCompetitionIds = await getTopMatchesLeagueIds()
+  try {
+    payload = await getPayloadClient()
+    allowedCompetitionIds = await getTopMatchesLeagueIds()
+  } catch (error) {
+    console.error('[WIDGET] YesterdaysMatchesWidget MongoDB error:', (error as Error).message)
+    // Graceful degradation - возвращаем пустой виджет
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Вчерашние матчи</CardTitle>
+          <CardDescription>Временно недоступно</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">Данные загружаются...</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   // Фильтрация: только завершённые матчи выбранных лиг
   const where =
@@ -23,17 +40,7 @@ export default async function YesterdaysMatchesWidget({ limit = 200 }: { limit?:
         }
       : { status: { equals: 'finished' } }
 
-  // Берём последние завершённые матчи из Payload только для выбранных лиг
-  const res = await payload.find({
-    collection: 'matches',
-    where,
-    sort: '-date',
-    limit,
-    depth: 0,
-    overrideAccess: true,
-  })
-
-  const items = (res.docs || []) as Array<{
+  let items: Array<{
     id: string
     matchId: number
     fixtureId?: number
@@ -51,7 +58,22 @@ export default async function YesterdaysMatchesWidget({ limit = 200 }: { limit?:
     lastChangedAt?: string
     updatedAt?: string
     createdAt?: string
-  }>
+  }> = []
+
+  try {
+    // Берём последние завершённые матчи из Payload только для выбранных лиг
+    const res = await payload.find({
+      collection: 'matches',
+      where,
+      sort: '-date',
+      limit,
+      depth: 0,
+      overrideAccess: true,
+    })
+    items = (res.docs || []) as typeof items
+  } catch (error) {
+    console.error('[WIDGET] YesterdaysMatchesWidget find error:', (error as Error).message)
+  }
 
   // Собираем карту названий лиг из Payload
   const competitionIds = Array.from(

@@ -1,12 +1,15 @@
 /**
  * Компонент live-матчей для конкретного соревнования
  * Использует externalId соревнования для фильтрации матчей
+ * 
+ * Использует прямые вызовы функций API вместо HTTP fetch для избежания ECONNREFUSED в Docker
  */
 
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { AlertCircle, Clock } from 'lucide-react'
+import { fetchLiveMatchesByCompetition } from '@/lib/api'
 
 interface CompetitionLiveMatchesProps {
   competitionExtId: string
@@ -18,27 +21,14 @@ export default async function CompetitionLiveMatches({
   competitionName,
 }: CompetitionLiveMatchesProps) {
   try {
-    // Получаем все live-матчи и фильтруем по соревнованию
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/live/all`,
-      {
-        next: {
-          revalidate: 60, // 1 минута для live данных
-          tags: [`live-matches:${competitionExtId}`],
-        },
-      },
-    )
+    // Используем прямой вызов API функции вместо HTTP fetch
+    const result = await fetchLiveMatchesByCompetition(competitionExtId)
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch live matches: ${response.status}`)
+    if (result.error) {
+      throw new Error(result.error)
     }
 
-    const data = await response.json()
-
-    // Фильтруем матчи по ID соревнования
-    const competitionMatches =
-      data.matches?.filter((match: any) => match.competition?.id.toString() === competitionExtId) ||
-      []
+    const competitionMatches = result.matches || []
 
     if (competitionMatches.length === 0) {
       return (
