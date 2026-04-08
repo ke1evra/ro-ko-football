@@ -1491,7 +1491,7 @@ export interface ApiRequestLog {
   /**
    * Откуда был сделан запрос
    */
-  source: 'api-route' | 'page' | 'script' | 'component';
+  source: 'api-route' | 'page' | 'script' | 'component' | 'widget';
   /**
    * Статус код ответа от LiveScore API
    */

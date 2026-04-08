@@ -96,14 +96,57 @@ async function fetchUpcomingMatches(): Promise<FetchResult> {
       }))
       .filter((m) => Number.isFinite(m.id))
 
+    /**
+     * Safely parse date string to timestamp
+     */
+    const safeParseTimestamp = (date: string, time?: string): number | null => {
+      if (!date || typeof date !== 'string') {
+        console.warn('[UpcomingAllMatchesWidget] Invalid date value:', date)
+        return null
+      }
+      
+      // Validate date format (YYYY-MM-DD)
+      const dateRegex = /^\d{4}-\d{1,2}-\d{1,2}$/
+      if (!dateRegex.test(date)) {
+        console.warn('[UpcomingAllMatchesWidget] Date format invalid:', date)
+        return null
+      }
+      
+      const timeStr = time && /^\d{1,2}:\d{2}$/.test(time) ? time : '00:00'
+      const dateTimeStr = `${date}T${timeStr}:00+03:00`
+      
+      try {
+        const parsed = new Date(dateTimeStr)
+        const ts = parsed.getTime()
+        if (isNaN(ts)) {
+          console.warn('[UpcomingAllMatchesWidget] Parsed date is NaN:', dateTimeStr)
+          return null
+        }
+        return ts
+      } catch (err) {
+        console.warn('[UpcomingAllMatchesWidget] Error parsing date:', dateTimeStr, err)
+        return null
+      }
+    }
+
     // Sort by date/time (nearest first)
     // External API returns dates in Moscow timezone (UTC+3), so parse accordingly
-    const withTime = normalized.map((m) => {
-      // Parse as Moscow timezone to get correct UTC timestamp
-      const tsVal = new Date(`${m.date}T${m.time || '00:00'}:00+03:00`).getTime()
-      const ts = Number.isFinite(tsVal) ? tsVal : Number.MAX_SAFE_INTEGER
-      return { ...m, ts }
-    }) as (SimpleFixture & { ts: number })[]
+    const withTime = normalized
+      .filter((m) => {
+        // Filter out matches with empty/invalid dates
+        const hasValidDate = m.date && typeof m.date === 'string' && m.date.length >= 8
+        if (!hasValidDate) {
+          console.warn('[UpcomingAllMatchesWidget] Skipping match with invalid date:', m.id, m.date)
+          return false
+        }
+        return true
+      })
+      .map((m) => {
+        // Parse as Moscow timezone to get correct UTC timestamp
+        const ts = safeParseTimestamp(m.date, m.time)
+        return { ...m, ts: ts ?? Number.MAX_SAFE_INTEGER }
+      })
+      .filter((m) => m.ts !== Number.MAX_SAFE_INTEGER) as (SimpleFixture & { ts: number })[]
 
     // Filter only future matches (strictly greater than now) and sort by time ascending
     const now = Date.now()
@@ -112,9 +155,15 @@ async function fetchUpcomingMatches(): Promise<FetchResult> {
       .sort((a, b) => a.ts - b.ts)
 
     console.log('[UpcomingAllMatchesWidget] Filtered future matches count:', futureMatches.length)
-    console.log('[UpcomingAllMatchesWidget] Current timestamp (UTC):', now, new Date(now).toISOString())
+    console.log('[UpcomingAllMatchesWidget] Current timestamp (UTC):', now, new Date().toISOString())
     if (futureMatches.length > 0) {
-      console.log('[UpcomingAllMatchesWidget] First match timestamp:', futureMatches[0].ts, new Date(futureMatches[0].ts).toISOString())
+      const firstMatchTs = futureMatches[0].ts
+      try {
+        const dateStr = new Date(firstMatchTs).toISOString()
+        console.log('[UpcomingAllMatchesWidget] First match timestamp:', firstMatchTs, dateStr)
+      } catch {
+        console.log('[UpcomingAllMatchesWidget] First match timestamp:', firstMatchTs, '(invalid date)')
+      }
     }
 
     return { matches: futureMatches, error: null }

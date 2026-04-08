@@ -10,6 +10,7 @@ import {
   generateLegacyFixtureUrl,
 } from '@/lib/match-url-utils'
 import { AlertCircle, RefreshCw } from 'lucide-react'
+import { type LiveItem, normalize } from './live-matches-utils'
 
 // Функция для перевода статусов матча на русский язык
 function translateStatus(status: string): string {
@@ -153,104 +154,8 @@ function MatchTimer({
   )
 }
 
-export type LiveItem = {
-  id: number
-  fixtureId?: number
-  date?: string
-  time?: string
-  compName?: string
-  home: {
-    name: string
-    id?: number | string
-    score?: number
-  }
-  away: {
-    name: string
-    id?: number | string
-    score?: number
-  }
-  status?: string
-  time_status?: string | null
-  location?: string
-  scores?: {
-    score?: string
-    ht_score?: string
-    ft_score?: string
-  }
-}
-
-export function normalize(match: any): LiveItem | null {
-  const id = Number(match?.id)
-  const fixtureId = Number(match?.fixture_id ?? match?.fixtureId)
-  if (!Number.isFinite(id) && !Number.isFinite(fixtureId)) return null
-
-  console.log(`[LiveMatchesWidget] Обрабатываем лайв матч ${id}:`, {
-    id: match?.id,
-    fixture_id: match?.fixture_id,
-    date: match?.date,
-    home: { id: match?.home?.id, name: match?.home?.name },
-    away: { id: match?.away?.id, name: match?.away?.name },
-  })
-
-  // Извлекаем информацию о командах
-  const homeName = match?.home?.name || 'Команда дома'
-  const awayName = match?.away?.name || 'Команда гостей'
-  const homeId = match?.home?.id
-  const awayId = match?.away?.id
-
-  // Извлекаем счёт из строки "2 - 1" в отдельные числа
-  const scoreString = match?.scores?.score || ''
-  let homeScore: number | undefined
-  let awayScore: number | undefined
-
-  console.log(`[LiveMatchesWidget] Исходный счёт для матча ${id}:`, scoreString)
-
-  if (scoreString && typeof scoreString === 'string') {
-    const scoreParts = scoreString.split(' - ').map((s) => s.trim())
-    if (scoreParts.length === 2) {
-      homeScore = parseInt(scoreParts[0]) || 0
-      awayScore = parseInt(scoreParts[1]) || 0
-      console.log(`[LiveMatchesWidget] Разобранный счёт: ${homeScore} - ${awayScore}`)
-    }
-  }
-
-  const compName = match?.competition?.name || match?.league?.name
-  const status = match?.status
-  const time_status = match?.time_status != null ? String(match?.time_status) : null
-  const location = match?.location
-
-  const result = {
-    id: Number.isFinite(id) ? id : fixtureId!,
-    fixtureId: Number.isFinite(fixtureId) ? fixtureId : undefined,
-    date: match?.date,
-    time: match?.time,
-    compName,
-    home: {
-      name: homeName,
-      id: homeId,
-      score: homeScore,
-    },
-    away: {
-      name: awayName,
-      id: awayId,
-      score: awayScore,
-    },
-    status,
-    time_status: time_status ?? null,
-    location,
-    scores: match?.scores,
-  }
-
-  console.log(`[LiveMatchesWidget] Финальный результат для матча ${id}:`, {
-    id: result.id,
-    fixtureId: result.fixtureId,
-    date: result.date,
-    homeId: result.home.id,
-    awayId: result.away.id,
-  })
-
-  return result
-}
+// Re-export types from shared utility for backward compatibility
+export { type LiveItem, normalize } from './live-matches-utils'
 
 // Безопасный парсер времени начала матча
 function parseDateMs(input?: string): number | null {
@@ -405,8 +310,8 @@ interface LiveMatchesWidgetClientProps {
   hasError?: boolean
 }
 
-export default function LiveMatchesWidgetClient({ 
-  initialItems = [], 
+export default function LiveMatchesWidgetClient({
+  initialItems = [],
   error: serverError,
   hasError: serverHasError,
 }: LiveMatchesWidgetClientProps) {
@@ -418,64 +323,67 @@ export default function LiveMatchesWidgetClient({
   const [nextRefreshAt, setNextRefreshAt] = React.useState<number>(Date.now() + 60000)
   const [retrying, setRetrying] = React.useState(false)
 
-  const load = React.useCallback(async (nextPage: number) => {
-    try {
-      setLoading(true)
-      const controller = new AbortController()
-      const to = setTimeout(() => controller.abort(), 8000)
-      const url = `/api/fixtures?live=true&all=true&page=${nextPage}`
-      console.log('[LiveMatchesWidget] Fetch:', url)
-      const res = await fetch(url, {
-        signal: controller.signal,
-      })
-      console.log('[LiveMatchesWidget] HTTP status:', res.status)
-      clearTimeout(to)
-      if (!res.ok) {
-        console.error('[LiveMatchesWidget] Fetch failed:', res.status, res.statusText)
-        return
-      }
-      let data: any
+  const load = React.useCallback(
+    async (nextPage: number) => {
       try {
-        data = await res.json()
+        setLoading(true)
+        const controller = new AbortController()
+        const to = setTimeout(() => controller.abort(), 8000)
+        const url = `/api/fixtures?live=true&all=true&page=${nextPage}`
+        console.log('[LiveMatchesWidget] Fetch:', url)
+        const res = await fetch(url, {
+          signal: controller.signal,
+        })
+        console.log('[LiveMatchesWidget] HTTP status:', res.status)
+        clearTimeout(to)
+        if (!res.ok) {
+          console.error('[LiveMatchesWidget] Fetch failed:', res.status, res.statusText)
+          return
+        }
+        let data: any
+        try {
+          data = await res.json()
+        } catch (e) {
+          console.error('[LiveMatchesWidget] JSON parse error:', e)
+          throw e
+        }
+        console.log('[LiveMatchesWidget] API JSON:', data)
+        if (Array.isArray(data?.matches)) {
+          console.log(
+            '[LiveMatchesWidget] Matches sample:',
+            data.matches.slice(0, 5).map((m: any) => ({
+              id: m?.id,
+              fixture_id: m?.fixture_id,
+              status: m?.status,
+              time_status: m?.time_status,
+              date: m?.date,
+              time: m?.time,
+              score: m?.scores?.score,
+            })),
+          )
+        }
+        const raw = (data?.matches || []) as any[]
+        const normalized = raw.map(normalize).filter(Boolean) as LiveItem[]
+        if (normalized.length === 0) {
+          setHasMore(false)
+        }
+        setItems((prev) => {
+          // Если есть начальные данные и это первая страница, используем их как базу
+          const base = nextPage === 1 && initialItems.length > 0 ? initialItems : prev
+          // убираем дубли по id
+          const map = new Map<number, LiveItem>()
+          ;[...base, ...normalized].forEach((it) => map.set(it.id, it))
+          return Array.from(map.values())
+        })
+        setPage(nextPage)
       } catch (e) {
-        console.error('[LiveMatchesWidget] JSON parse error:', e)
-        throw e
+        console.error('[LiveMatchesWidget] load error:', e)
+      } finally {
+        setLoading(false)
       }
-      console.log('[LiveMatchesWidget] API JSON:', data)
-      if (Array.isArray(data?.matches)) {
-        console.log(
-          '[LiveMatchesWidget] Matches sample:',
-          data.matches.slice(0, 5).map((m: any) => ({
-            id: m?.id,
-            fixture_id: m?.fixture_id,
-            status: m?.status,
-            time_status: m?.time_status,
-            date: m?.date,
-            time: m?.time,
-            score: m?.scores?.score,
-          })),
-        )
-      }
-      const raw = (data?.matches || []) as any[]
-      const normalized = raw.map(normalize).filter(Boolean) as LiveItem[]
-      if (normalized.length === 0) {
-        setHasMore(false)
-      }
-      setItems((prev) => {
-        // Если есть начальные данные и это первая страница, используем их как базу
-        const base = nextPage === 1 && initialItems.length > 0 ? initialItems : prev
-        // убираем дубли по id
-        const map = new Map<number, LiveItem>()
-        ;[...base, ...normalized].forEach((it) => map.set(it.id, it))
-        return Array.from(map.values())
-      })
-      setPage(nextPage)
-    } catch (e) {
-      console.error('[LiveMatchesWidget] load error:', e)
-    } finally {
-      setLoading(false)
-    }
-  }, [initialItems.length])
+    },
+    [initialItems.length],
+  )
 
   const handleManualRefresh = React.useCallback(() => {
     void load(1)
@@ -559,9 +467,7 @@ export default function LiveMatchesWidgetClient({
       )}
 
       {items.length === 0 && !loading && !serverHasError && (
-        <div className="text-center py-4 text-muted-foreground text-sm">
-          Нет активных матчей
-        </div>
+        <div className="text-center py-4 text-muted-foreground text-sm">Нет активных матчей</div>
       )}
 
       {visibleItems.map((m) => {
@@ -598,7 +504,10 @@ export default function LiveMatchesWidgetClient({
           (m.time_status && /^(FT|FULL TIME)$/i.test(m.time_status))
 
         return (
-          <div key={m.id} className="relative border rounded-lg p-3 bg-card hover:bg-accent transition-colors">
+          <div
+            key={m.id}
+            className="relative border rounded-lg p-3 bg-card hover:bg-accent transition-colors"
+          >
             {/* Мини-таймер обновления для каждого матча */}
             <RefreshWidget nextRefreshAt={nextRefreshAt} onRefresh={handleManualRefresh} />
 
@@ -658,9 +567,7 @@ export default function LiveMatchesWidgetClient({
               {isFinished ? (
                 <div className="text-xs text-muted-foreground">
                   {statusText || 'Завершён'}
-                  {m.scores?.ht_score && (
-                    <span className="ml-2">(тайм: {m.scores.ht_score})</span>
-                  )}
+                  {m.scores?.ht_score && <span className="ml-2">(тайм: {m.scores.ht_score})</span>}
                 </div>
               ) : (
                 <>

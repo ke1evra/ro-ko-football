@@ -29,14 +29,57 @@ interface UpcomingMatchesClientProps {
   hasError?: boolean
 }
 
-function formatDay(date: string, time?: string) {
+/**
+ * Safely parse a date/time string and return a valid Date object or null
+ */
+function safeParseDate(date: string, time?: string): Date | null {
+  if (!date || typeof date !== 'string') {
+    console.warn('[UpcomingMatchesClient] Invalid date value:', date)
+    return null
+  }
+  
+  // Validate date format (should be YYYY-MM-DD)
+  const dateRegex = /^\d{4}-\d{1,2}-\d{1,2}$/
+  if (!dateRegex.test(date)) {
+    console.warn('[UpcomingMatchesClient] Date format invalid:', date)
+    return null
+  }
+  
+  const timeStr = time && /^\d{1,2}:\d{2}$/.test(time) ? time : '00:00'
+  const dateTimeStr = `${date}T${timeStr}:00+03:00`
+  
   try {
-    // Parse as Moscow timezone for correct display
-    return new Date(`${date}T${time || '00:00'}:00+03:00`).toLocaleString('ru-RU', {
+    const parsed = new Date(dateTimeStr)
+    if (isNaN(parsed.getTime())) {
+      console.warn('[UpcomingMatchesClient] Parsed date is invalid:', dateTimeStr)
+      return null
+    }
+    return parsed
+  } catch (err) {
+    console.warn('[UpcomingMatchesClient] Error parsing date:', dateTimeStr, err)
+    return null
+  }
+}
+
+/**
+ * Safely get timestamp from date/time, returns Infinity on invalid input
+ */
+function safeGetTime(date: string, time?: string): number {
+  const parsed = safeParseDate(date, time)
+  return parsed ? parsed.getTime() : Infinity
+}
+
+function formatDay(date: string, time?: string) {
+  const parsed = safeParseDate(date, time)
+  if (!parsed) return ''
+  
+  try {
+    return parsed.toLocaleString('ru-RU', {
       day: '2-digit',
       month: '2-digit',
     })
-  } catch {
+  } catch (err) {
+    console.warn('[UpcomingMatchesClient] Error formatting date:', err)
     return ''
   }
 }
@@ -53,17 +96,27 @@ export function UpcomingMatchesClient({
 
   // Filter future matches and sort by date
   // Parse dates as Moscow timezone (UTC+3) since external API returns Moscow times
+  // Use safe parsing to avoid "Invalid time value" errors
   const futureMatches = React.useMemo(() => {
     const now = Date.now()
     return initialMatches
       .filter(m => {
-        const matchTime = new Date(`${m.date}T${m.time || '00:00'}:00+03:00`).getTime()
-        return matchTime > now
+        // Validate that date exists and has correct format before parsing
+        if (!m.date || typeof m.date !== 'string') {
+          console.warn('[UpcomingMatchesClient] Skipping match without valid date:', m.id)
+          return false
+        }
+        const matchTime = safeGetTime(m.date, m.time)
+        // Exclude invalid dates and past matches
+        return matchTime !== Infinity && matchTime > now
       })
       .sort((a, b) => {
-        const dateA = new Date(`${a.date}T${a.time || '00:00'}:00+03:00`).getTime()
-        const dateB = new Date(`${b.date}T${b.time || '00:00'}:00+03:00`).getTime()
-        return dateA - dateB
+        const timeA = safeGetTime(a.date, a.time)
+        const timeB = safeGetTime(b.date, b.time)
+        // Put invalid dates at the end
+        if (timeA === Infinity) return 1
+        if (timeB === Infinity) return -1
+        return timeA - timeB
       })
   }, [initialMatches])
 

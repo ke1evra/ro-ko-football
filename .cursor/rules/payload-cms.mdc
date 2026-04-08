@@ -1,0 +1,29 @@
+---
+description: Payload 3 collections, globals, access, and hooks
+globs: src/collections/**/*.ts,src/globals/**/*.ts,src/payload.config.ts
+alwaysApply: false
+---
+
+# Payload CMS
+
+## Conventions
+
+- Collections live in `src/collections/`, globals in `src/globals/`, registered in `src/payload.config.ts`.
+- Use Russian labels/descriptions where the codebase already does for admin UX.
+- Keep `access` explicit: prefer small helpers (e.g. `isAdmin`) co-located or imported from the same pattern as `Users` collection.
+
+## After schema changes
+
+1. Run `pnpm run generate:types` so `src/payload-types.ts` stays in sync.
+2. If custom admin React is involved, run `pnpm run generate:importmap` when Payload prompts or imports break.
+
+## Patterns
+
+- **Relationships**: set `relationTo`, `required`, and indexes when querying/filtering heavily.
+- **Hooks**: use `beforeValidate` / `afterChange` for derived fields, slugs, and cache revalidation—follow existing hooks in collections.
+- **Football data collections** often disallow public `create`/`update`/`delete` when filled only by sync scripts—mirror existing `Fixtures`-style access unless product requires otherwise.
+
+## Types
+
+- Prefer generated `User`, `Config` types from `@/payload-types` in access functions and hooks.
+- When Payload `Where` types fight with `Record<string, unknown>`, use the project’s existing escape hatches (narrow types first; `as unknown as …` or documented `eslint-disable` only as last resort—see `ai.md` §6).

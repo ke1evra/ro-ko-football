@@ -72,9 +72,9 @@ export default function FinishedMatchesClient({
       {list.map((m) => (
         <Link key={m.id} href={m.url} className="block">
           <div className="w-full border rounded-lg p-3 bg-card hover:bg-accent transition-colors relative">
-            {/* Мини-плашка с датой (как в UpcomingMatchesStrip) */}
+            {/* Мини-плашка с датой + временем (как в UpcomingMatchesStrip) */}
             <div className="absolute -top-2 left-2 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-medium rounded-full">
-              {formatDateLabel(m.date)}
+              {formatDateLabel(m.date)} {formatTime(m.date)}
             </div>
 
             {/* Команды + счёт напротив */}

@@ -20,7 +20,11 @@ export default async function LoginPage({
   const user: User | null = await getUser()
 
   if (user) {
-    redirect('/dashboard')
+    // Redirect based on user role
+    if ((user as { role?: string }).role === 'admin') {
+      redirect('/admin')
+    }
+    redirect('/my-profile')
   }
 
   const params = await searchParams

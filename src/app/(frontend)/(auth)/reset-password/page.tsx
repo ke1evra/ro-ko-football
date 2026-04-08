@@ -32,7 +32,7 @@ function ResetPasswordForm() {
           toast.info('Уже вошли в систему', {
             description: 'Вы уже вошли в систему. Перенаправление на панель управления...',
           })
-          router.push('/dashboard')
+          router.push('/my-profile')
         }
       } catch (_error) {
         // User is not authenticated, continue with reset flow

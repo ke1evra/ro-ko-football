@@ -46,6 +46,7 @@ const ApiRequestLogs: CollectionConfig = {
         { label: 'Страница', value: 'page' },
         { label: 'Скрипт', value: 'script' },
         { label: 'Компонент', value: 'component' },
+        { label: 'Виджет', value: 'widget' },
       ],
       admin: {
         description: 'Откуда был сделан запрос',

@@ -6,6 +6,8 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { payloadDocToApiFormat, type ApiFixture } from './fixtures'
+import { loggedFetch } from '@/lib/http/livescore/logged-fetch'
+import type { GetMatchesLiveJson200 } from '@/app/(frontend)/client/types/GetMatchesLiveJson'
 
 // Types
 export interface LiveMatch {
@@ -45,11 +47,13 @@ export interface LiveMatchesResult {
   matches: LiveMatch[]
   lastUpdated: string
   error?: string
+  source?: string
 }
 
 /**
  * Fetch live matches from Payload
  * Can be used directly in Server Components
+ * Falls back to LiveScore API if no matches in database
  */
 export async function fetchLiveMatches(options: {
   size?: number
@@ -60,7 +64,7 @@ export async function fetchLiveMatches(options: {
 
     const payload = await getPayload({ config: await configPromise })
 
-    // Build where conditions
+    // Build where conditions - only search for 'live' status (normalized value)
     const whereConditions: Record<string, unknown> = {
       status: { equals: 'live' },
     }
@@ -76,6 +80,14 @@ export async function fetchLiveMatches(options: {
       limit: Math.min(size, 200),
       depth: 1,
     })
+
+    console.log(`[fetchLiveMatches] Database query returned ${result.docs.length} documents`)
+
+    // If no live matches in database, fetch from LiveScore API
+    if (result.docs.length === 0) {
+      console.log('[fetchLiveMatches] No live matches in database, fetching from LiveScore API...')
+      return await fetchLiveMatchesFromApi({ size, competitionId })
+    }
 
     const matches: LiveMatch[] = result.docs.map((doc) => {
       const docRecord = doc as unknown as Record<string, unknown>
@@ -124,7 +136,7 @@ export async function fetchLiveMatches(options: {
       }
     })
 
-    console.log(`[fetchLiveMatches] Returning ${matches.length} live matches`)
+    console.log(`[fetchLiveMatches] Returning ${matches.length} live matches from database`)
 
     return {
       matches,
@@ -132,6 +144,85 @@ export async function fetchLiveMatches(options: {
     }
   } catch (e) {
     console.error('[fetchLiveMatches] error:', e)
+    // Try to fetch from API as fallback
+    return await fetchLiveMatchesFromApi(options)
+  }
+}
+
+/**
+ * Fetch live matches directly from LiveScore API
+ * Used as fallback when no matches in database
+ */
+async function fetchLiveMatchesFromApi(options: {
+  size?: number
+  competitionId?: number
+} = {}): Promise<LiveMatchesResult> {
+  try {
+    const { size = 50, competitionId } = options
+
+    const params: Record<string, unknown> = {}
+    if (competitionId) {
+      params.competition_id = competitionId
+    }
+
+    const response = await loggedFetch.get<GetMatchesLiveJson200>(
+      '/matches/live.json',
+      params,
+      { source: 'widget', ttl: 30000 } // 30 second cache
+    )
+
+    if (!response?.data?.match || !Array.isArray(response.data.match)) {
+      console.log('[fetchLiveMatchesFromApi] No matches in API response')
+      return {
+        matches: [],
+        lastUpdated: new Date().toISOString(),
+      }
+    }
+
+    const apiMatches = response.data.match.slice(0, size)
+    console.log(`[fetchLiveMatchesFromApi] API returned ${apiMatches.length} matches`)
+
+    const matches: LiveMatch[] = apiMatches.map((apiMatch: any) => ({
+      id: apiMatch.id,
+      fixtureId: apiMatch.fixture_id,
+      date: apiMatch.date,
+      matchTime: apiMatch.time,
+      homeTeam: {
+        id: apiMatch.home?.id || 0,
+        name: apiMatch.home?.name || 'Команда дома',
+        logo: apiMatch.home?.logo || undefined,
+      },
+      awayTeam: {
+        id: apiMatch.away?.id || 0,
+        name: apiMatch.away?.name || 'Команда гостей',
+        logo: apiMatch.away?.logo || undefined,
+      },
+      score: {
+        home: apiMatch.scores?.score ? parseInt(apiMatch.scores.score.split(' - ')[0]) || 0 : 0,
+        away: apiMatch.scores?.score ? parseInt(apiMatch.scores.score.split(' - ')[1]) || 0 : 0,
+      },
+      homeScore: apiMatch.scores?.score ? parseInt(apiMatch.scores.score.split(' - ')[0]) || 0 : 0,
+      awayScore: apiMatch.scores?.score ? parseInt(apiMatch.scores.score.split(' - ')[1]) || 0 : 0,
+      status: 'live',
+      minute: apiMatch.minute,
+      time: apiMatch.time_status,
+      competition: apiMatch.competition
+        ? {
+            id: apiMatch.competition.id,
+            name: apiMatch.competition.name,
+          }
+        : undefined,
+    }))
+
+    console.log(`[fetchLiveMatchesFromApi] Returning ${matches.length} matches from LiveScore API`)
+
+    return {
+      matches,
+      lastUpdated: new Date().toISOString(),
+      source: 'livescore-api',
+    }
+  } catch (e) {
+    console.error('[fetchLiveMatchesFromApi] error:', e)
     return {
       matches: [],
       lastUpdated: new Date().toISOString(),

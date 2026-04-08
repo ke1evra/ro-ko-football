@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { loggedFetch } from '@/lib/http/livescore/logged-fetch'
+import type { GetMatchesLiveJson200 } from '@/app/(frontend)/client/types/GetMatchesLiveJson'
 
 export const dynamic = 'force-dynamic'
 
@@ -110,6 +112,7 @@ export async function GET(req: NextRequest) {
     const payload = await getPayload({ config: await configPromise })
 
     if (live) {
+      console.log(`[API /fixtures] Fetching live matches with size=${size}`)
       const result = await payload.find({
         collection: 'fixtures',
         where: { status: { equals: 'live' } },
@@ -117,6 +120,67 @@ export async function GET(req: NextRequest) {
         limit: size,
         depth: 0,
       })
+      console.log(`[API /fixtures] Found ${result.docs.length} live matches in database`)
+
+      // If no live matches in database, fetch from LiveScore API
+      if (result.docs.length === 0) {
+        console.log('[API /fixtures] No matches in DB, fetching from LiveScore API...')
+        try {
+          const apiResponse = await loggedFetch.get<GetMatchesLiveJson200>(
+            '/matches/live.json',
+            {},
+            { source: 'api-route', ttl: 30000 }
+          )
+
+          if (apiResponse?.data?.match && Array.isArray(apiResponse.data.match)) {
+            const apiMatches = apiResponse.data.match.slice(0, size).map((match: any) => ({
+              id: match.id,
+              fixtureId: match.fixture_id || match.id,
+              date: match.date,
+              time: match.time,
+              home: {
+                id: match.home?.id,
+                name: match.home?.name || 'Команда дома',
+                logo: match.home?.logo || null,
+              },
+              away: {
+                id: match.away?.id,
+                name: match.away?.name || 'Команда гостей',
+                logo: match.away?.logo || null,
+              },
+              homeTeam: match.home,
+              awayTeam: match.away,
+              home_id: match.home?.id,
+              away_id: match.away?.id,
+              home_name: match.home?.name,
+              away_name: match.away?.name,
+              home_logo: match.home?.logo || null,
+              away_logo: match.away?.logo || null,
+              competition: match.competition
+                ? {
+                    id: match.competition.id,
+                    name: match.competition.name,
+                  }
+                : undefined,
+              league: null,
+              status: 'live',
+              odds: match.odds,
+              round: match.round,
+              group: match.group_id,
+              venue: match.location ? { name: match.location, city: null, country: match.country?.name } : null,
+              scores: match.scores,
+            }))
+            console.log(`[API /fixtures] Returning ${apiMatches.length} matches from LiveScore API`)
+            return NextResponse.json(
+              { matches: apiMatches, lastUpdated: new Date().toISOString(), source: 'livescore-api' },
+              { headers: { 'Cache-Control': 'public, s-maxage=20, stale-while-revalidate=60' } },
+            )
+          }
+        } catch (apiError) {
+          console.error('[API /fixtures] Error fetching from LiveScore API:', apiError)
+        }
+      }
+
       const fixtures = result.docs.map(payloadDocToApiFormat)
       return NextResponse.json(
         { matches: fixtures, lastUpdated: new Date().toISOString() },

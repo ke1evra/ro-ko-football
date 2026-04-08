@@ -11,10 +11,8 @@
  * Использует прямые вызовы функций API вместо HTTP fetch для избежания ECONNREFUSED в Docker
  */
 
-import LiveMatchesWidgetClient, {
-  type LiveItem,
-  normalize,
-} from './LiveMatchesWidgetClient'
+import LiveMatchesWidgetClient from './LiveMatchesWidgetClient'
+import { type LiveItem, normalize } from './live-matches-utils'
 import { fetchLiveMatches } from '@/lib/api'
 
 interface LiveMatchesWidgetProps {
@@ -41,9 +39,20 @@ async function fetchLiveMatchesData(page = 1): Promise<FetchResult> {
     }
 
     const raw = (result.matches || []) as any[]
-    const normalized = raw.map(normalize).filter(Boolean) as LiveItem[]
+    console.log(`[LiveMatchesWidget] Raw matches from API: ${raw.length}`)
+    if (raw.length > 0) {
+      console.log(`[LiveMatchesWidget] First raw match structure:`, {
+        id: raw[0]?.id,
+        fixtureId: raw[0]?.fixtureId,
+        hasHome: !!raw[0]?.home,
+        hasHomeTeam: !!raw[0]?.homeTeam,
+        homeName: raw[0]?.home?.name || raw[0]?.homeTeam?.name,
+      })
+    }
 
-    console.log(`[LiveMatchesWidget] Loaded ${normalized.length} live matches`)
+    const normalized = raw.map(normalize).filter(Boolean) as LiveItem[]
+    console.log(`[LiveMatchesWidget] After normalize: ${normalized.length} matches (filtered out ${raw.length - normalized.length})`)
+
     return { items: normalized, error: null }
   } catch (error) {
     let errorMessage = 'Failed to load live matches'

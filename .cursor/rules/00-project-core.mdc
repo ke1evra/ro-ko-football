@@ -1,0 +1,33 @@
+---
+description: Core stack, scope, and quality bar for the whole repo
+alwaysApply: true
+---
+
+# Project core (Rocoscore)
+
+## Stack
+
+- Next.js 15 App Router, React 19, TypeScript strict, Tailwind 4, shadcn/Radix patterns in `src/components/ui/`.
+- Payload 3.70 + MongoDB. Config: `src/payload.config.ts`. Generated types: `src/payload-types.ts` (regenerate after schema edits).
+- Path alias: `@/*` → `src/*`.
+
+## Workflow
+
+- Prefer **pnpm** (`pnpm run …`) as in `package.json`.
+- Before treating work as complete, run **`pnpm run type-check`**. It uses `tsconfig.typecheck.json` and is stricter than ESLint alone.
+- For style + auto-fix pipeline: `pnpm run lint` (runs Next lint + Prettier).
+
+## Change discipline
+
+- Match existing naming, imports, and Payload patterns in neighboring files.
+- Avoid drive-by refactors and unrelated file edits.
+- Do not add unsolicited README/docs unless the user asked.
+
+## Scope reminders (`ai.md`)
+
+- MVP excludes: chat, notifications, social login, heavy player-level analytics—do not introduce them without explicit product ask.
+
+## Reference docs
+
+- `ai.md` — product, API client overview, mandatory dev checklist.
+- `AGENTS_SYSTEM.md` — domain agents and deep file ownership when unsure where logic belongs.

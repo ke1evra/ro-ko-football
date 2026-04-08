@@ -6,8 +6,8 @@ import Link from 'next/link'
 
 const NAV_MENU_ITEMS = [
   {
-    label: 'Dashboard',
-    href: '/dashboard',
+    label: 'Мой профиль',
+    href: '/my-profile',
   },
   {
     label: 'Logs',

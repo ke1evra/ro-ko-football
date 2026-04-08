@@ -1,0 +1,23 @@
+---
+description: LiveScore HTTP wrapper, rate limiting, and logging
+globs: src/lib/http/livescore/**/*.ts
+alwaysApply: false
+---
+
+# LiveScore HTTP layer
+
+## Files
+
+- `customFetch.ts` — server-side fetch compatible with generated Kubb clients; reads `LIVESCORE_*` env.
+- `logged-fetch.ts` — instrumentation / logging for API calls (keep consistent when adding endpoints).
+- `rate-limiter.ts` — throttle behavior; do not bypass without an explicit product reason.
+
+## Rules
+
+- All **browser-facing** routes must call LiveScore **only from server** code (route handlers, server components, sync scripts).
+- When adding a new API consumer, reuse these wrappers instead of raw `fetch` to keys.
+- If you change error handling, ensure `ApiRequestLogs` (collection) expectations stay aligned where used.
+
+## Reference
+
+- Service surface area and method names: `ai.md` §5 (catalogs/matches/tables/fixtures/events/lineups/utility).
