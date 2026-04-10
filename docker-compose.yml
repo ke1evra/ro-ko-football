@@ -6,20 +6,26 @@ services:
       context: .
       dockerfile: Dockerfile
     # Используем сеть хоста напрямую. Это самый надежный способ
-    # для контейнера получить доступ к сервисам, запущенным на хосте.
+    # для контейнера получить доступ к сервисам, запущенным на хосте (MongoDB и т.д.).
     network_mode: 'host'
     # Директивы 'ports' и 'extra_hosts' игнорируются при network_mode: host
 
-    # Файл .env будет по-прежнему использоваться для PAYLOAD_SECRET и т.д.
+    # Файл .env должен содержать правильные значения для:
+    # - APP_URL: реальный домен сервера (например, https://rocoscore.ru)
+    # - DATABASE_URI: mongodb://user:pass@127.0.0.1:27017/db (с 127.0.0.1 для network_mode: host)
     env_file:
       - ./.env
 
-    # Переопределяем DATABASE_URI для работы с network_mode: host
+    # Значения по умолчанию используются только если переменные НЕ заданы в .env
     environment:
-      DATABASE_URI: 'mongodb://syncadmin:syncadminsyncadmin123qQ!@127.0.0.1:27017/payload?authSource=admin'
+      # MongoDB: используйте 127.0.0.1 или localhost (НЕ mongodb service name!)
+      DATABASE_URI: ${DATABASE_URI:-mongodb://syncadmin:syncadminsyncadmin123qQ!@127.0.0.1:27017/payload?authSource=admin}
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
       NODE_ENV: ${NODE_ENV}
-      APP_URL: 'http://localhost:3100'
+      # ВАЖНО: APP_URL должен быть реальным доменом сервера!
+      # Примеры: https://rocoscore.ru, http://91.209.135.34:3100
+      # localhost НЕ будет работать при обращении с другого устройства!
+      APP_URL: ${APP_URL:-http://localhost:3100}
       LIVESCORE_KEY: ${LIVESCORE_KEY}
       LIVESCORE_SECRET: ${LIVESCORE_SECRET}
 
