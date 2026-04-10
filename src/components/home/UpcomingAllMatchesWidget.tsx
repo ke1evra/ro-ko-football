@@ -8,7 +8,7 @@
  * 4. Tracks loading/error state for proper SSR rendering
  */
 
-import { getFixturesMatchesJson } from '@/app/(frontend)/client'
+import { fetchFixtures } from '@/lib/api/fixtures'
 
 type SimpleFixture = {
   id: number
@@ -46,21 +46,14 @@ interface FetchResult {
  */
 async function fetchUpcomingMatches(): Promise<FetchResult> {
   try {
-    // Use skipCache: true for Server Components to bypass memory cache
-    // This ensures fresh data is fetched on each SSR request
-    console.log('[UpcomingAllMatchesWidget] Fetching fixtures with skipCache=true...')
-    console.log('[UpcomingAllMatchesWidget] ENV check - LIVESCORE_API_BASE:', process.env.LIVESCORE_API_BASE ? 'set' : 'NOT SET')
-    console.log('[UpcomingAllMatchesWidget] ENV check - LIVESCORE_KEY:', process.env.LIVESCORE_KEY ? 'set' : 'NOT SET')
+    const result = await fetchFixtures({ size: 100 })
 
-    const res = await getFixturesMatchesJson({ size: 100 }, {
-      skipCache: true,
-    })
+    if (result.error) {
+      console.error('[UpcomingAllMatchesWidget] API error:', result.error)
+      return { matches: [], error: result.error }
+    }
 
-    console.log('[UpcomingAllMatchesWidget] API response status:', res.status)
-    console.log('[UpcomingAllMatchesWidget] API response data:', JSON.stringify(res.data).slice(0, 500))
-
-    const data = res.data as any
-    const fixtures = (data?.data?.fixtures || data?.fixtures || []) as any[]
+    const fixtures = (result.fixtures || []) as any[]
 
     console.log('[UpcomingAllMatchesWidget] Raw fixtures count:', fixtures.length)
 
@@ -130,7 +123,7 @@ async function fetchUpcomingMatches(): Promise<FetchResult> {
     }
 
     // Sort by date/time (nearest first)
-    // External API returns dates in Moscow timezone (UTC+3), so parse accordingly
+    // Fixtures API returns dates/times in project format; preserve existing parsing logic
     const withTime = normalized
       .filter((m) => {
         // Filter out matches with empty/invalid dates

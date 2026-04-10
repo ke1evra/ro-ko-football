@@ -1,5 +1,8 @@
+"use client"
+
 import React from 'react'
 import Image from 'next/image'
+import { useState } from 'react'
 import { getTeamLogoUrl, getTeamLogoAlt, TEAM_FALLBACK_EMOJI } from '@/lib/team-logo-utils'
 
 interface TeamLogoProps {
@@ -10,6 +13,8 @@ interface TeamLogoProps {
 }
 
 export function TeamLogo({ teamId, teamName, size = 'medium', className }: TeamLogoProps) {
+  const [hasImageError, setHasImageError] = useState(false)
+
   // Размеры в зависимости от пропа size
   const sizeClasses = {
     small: 'w-6 h-6',
@@ -29,8 +34,8 @@ export function TeamLogo({ teamId, teamName, size = 'medium', className }: TeamL
     large: 'text-xl',
   }
 
-  // Если нет teamId, показываем fallback
-  if (!teamId) {
+  // Если нет teamId или была ошибка загрузки, показываем fallback
+  if (!teamId || hasImageError) {
     return (
       <div
         className={`${sizeClasses[size]} flex items-center justify-center bg-muted rounded ${className || ''}`}
@@ -50,6 +55,7 @@ export function TeamLogo({ teamId, teamName, size = 'medium', className }: TeamL
         width={sizePixels[size]}
         height={sizePixels[size]}
         className="w-full h-full object-contain"
+        onError={() => setHasImageError(true)}
         unoptimized // Отключаем оптимизацию Next.js для статических файлов
       />
     </div>
